@@ -1,6 +1,6 @@
 {
   "name": "@ind.ie/https-server",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "HTTPS server that uses nodecert",
   "main": "index.js",
   "bin": "bin/https-server.js",
@@ -18,7 +18,7 @@
   },
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "@ind.ie/nodecert": "^1.0.0",
+    "@ind.ie/nodecert": "^1.0.3",
     "express": "^4.16.4",
     "morgan": "^1.9.1"
   }

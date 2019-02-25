@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Nothing yet.
 
+## [1.0.2] - 2019-02-25
+
+## Changed
+
+  - Uses nodecert v1.0.3 with seamless install on macOS as well as Linux.
+
 ## [1.0.1] - 2019-02-25
 
 ### Fixed
@@ -16,7 +22,7 @@ Nothing yet.
 
 ### Added
 
-  - Support for manually-specifying the port
+  - Support for manually-specifying the port.
 
 ## [1.0.0] - 2019-02-25
 
