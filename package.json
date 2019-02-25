@@ -1,0 +1,24 @@
+{
+  "name": "@ind.ie/https-server",
+  "version": "1.0.0",
+  "description": "HTTPS server that uses nodecert",
+  "main": "index.js",
+  "bin": "bin/https-server.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@source.ind.ie:hypha/tools/https-server.git"
+  },
+  "author": {
+    "name": "Aral Balkan",
+    "email": "aral@ind.ie",
+    "url": "https://ar.al"
+  },
+  "license": "AGPL-3.0-or-later",
+  "dependencies": {
+    "express": "^4.16.4",
+    "morgan": "^1.9.1"
+  }
+}
