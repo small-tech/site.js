@@ -4,8 +4,8 @@ An HTTPS server that uses [nodecert](https://source.ind.ie/hypha/tools/nodecert)
 
 ## Design goals
 
-  * __Command-line use:__ https-server _directory_
-  * Easy integration into Express
+  * ✔ __Command-line use:__ https-server _directory_
+  * TO-DO: Easy integration into Express
 
 ## Installation
 
