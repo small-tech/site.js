@@ -1,6 +1,6 @@
 # https-server
 
-__Work in progress__ Please do not use yet.
+__Work in progress:__ Please do not use yet.
 
 An HTTPS server that uses [nodecert](https://source.ind.ie/hypha/tools/nodecert).
 
@@ -20,8 +20,9 @@ npm i -g @ind.ie/https-server
 ## Usage
 
 ### Commandline
+
 ```sh
-nodecert <folder-to-serve>
+https-server <folder-to-serve>
 ```
 
 If you do not already have TLS certificates, they will be created for you automatically using nodecert.
