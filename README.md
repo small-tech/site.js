@@ -15,6 +15,28 @@ npm i -g @ind.ie/https-server
 
 (On macOS, you must [manually install the dependency](#macos-dependency) for now.)
 
+## Regarding port 443
+
+The server is started on port 443 by default. This is on purpose as an overarching goal of https-server is to make your development environment mirror your production environment as closely possible to remove that complexity from the code you have to write. 
+
+However, you must have your system setup to allow Node (Linux) or your account (macOS) to bind to so-called “privileged” ports so that this works. I will automate this as part of the process in the future but, for the time being:
+
+### Linux
+
+```sh
+sudo setcap 'cap_net_bind_service=+ep' $(which node)
+```
+
+### macOS
+
+```sh
+sudo touch /etc/authbind/byport/443
+sudo chown $(whoami) /etc/authbind/byport/443
+sudo chmod 755 /etc/authbind/byport/443
+```
+
+macOS instructions courtesy of [Setup authbind on Mac OS](https://medium.com/@steve.mu.dev/setup-authbind-on-mac-os-6aee72cb828) by Steve Mu.
+
 ## Usage
 
 ### Commandline
