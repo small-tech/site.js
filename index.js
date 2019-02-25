@@ -24,7 +24,12 @@ if (!fs.existsSync(pathToServe)) {
   process.exit(1)
 }
 
-// TODO: Require and run node-cert to ensure that certificates exist.
+// Leave a space between the command prompt and any output from us.
+// (Because whitespace rocks.)
+console.log('')
+
+// Requiring nodecert ensures that locally-trusted TLS certificates exist.
+require('@ind.ie/nodecert')
 
 const nodecertDirectory = path.join(os.homedir(), '.nodecert')
 
