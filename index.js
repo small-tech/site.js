@@ -12,6 +12,7 @@ if (arguments.length > 4) {
   process.exit()
 }
 
+
 // If no path is passed, serve the current folder.
 // If there is a path, serve that.
 let pathToServe = '.'
@@ -20,7 +21,7 @@ if (arguments.length >= 3) {
 }
 
 let port = 443
-// If a port is given, use that.
+// If a port is specified, use that instead.
 if (arguments.length === 4) {
   port = parseInt(arguments[3])
 }
@@ -33,6 +34,23 @@ if (!fs.existsSync(pathToServe)) {
 // Leave a space between the command prompt and any output from us.
 // (Because whitespace rocks.)
 console.log('')
+
+//
+// If the requested port is < 1024 ensure that we can bind to it. Note: this is
+// only a problem on Linux systems. As of macOS Mojave, privileged ports are
+// history on macOS (source regarding version:
+// https://news.ycombinator.com/item?id=18302380 confirmed with first-party
+// tests) and are not an issue on (at least client versions of) Windows.
+// Good riddance too, as these so-called privileged ports are a relic from the
+// days of mainframes and they actually have a negative impact on security today.
+//
+// More background:
+// https://www.staldal.nu/tech/2007/10/31/why-can-only-root-listen-to-ports-below-1024/
+//
+if (port < 1024 && os.platform() === 'linux') {
+  // sudo setcap 'cap_net_bind_service=+ep' $(which node)
+  console.log('TODO: Linux: ensure we can bind to ports < 1024.')
+}
 
 // Requiring nodecert ensures that locally-trusted TLS certificates exist.
 require('@ind.ie/nodecert')
