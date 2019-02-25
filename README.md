@@ -15,7 +15,7 @@ npm i -g @ind.ie/https-server
 
 (On macOS, you must [manually install the dependency](#macos-dependency) for now.)
 
-## Regarding port 443
+## Note regarding port 443
 
 The server is started on port 443 by default. This is on purpose as an overarching goal of https-server is to make your development environment mirror your production environment as closely possible to remove that complexity from the code you have to write. 
 
@@ -42,8 +42,13 @@ macOS instructions courtesy of [Setup authbind on Mac OS](https://medium.com/@st
 ### Commandline
 
 ```sh
-https-server <folder-to-serve>
+https-server [folder-to-serve] [port]
 ```
+
+Both arguments are optional. Currently, if you want to specify the port manually, you must also specify the folder-to-serve.
+
+  * `[folder-to-serve]` defaults to `.` (the current directory)
+  * `[port]` defaults to 443. (See [note regarding port 443](#note-regarding-port-443), above.)
 
 If you do not already have TLS certificates, they will be created for you automatically using nodecert.
 
