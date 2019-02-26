@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Nothing yet.
 
+## [1.0.4] - 2019-02-26
+
+## Changed
+
+ -- Uses nodecert v1.0.4 (with progress indication).
+
 ## [1.0.3] - 2019-02-26
 
 ## Added
