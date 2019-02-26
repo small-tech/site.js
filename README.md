@@ -14,28 +14,6 @@ An HTTPS server that uses [nodecert](https://source.ind.ie/hypha/tools/nodecert)
 npm i -g @ind.ie/https-server
 ```
 
-## Note regarding port 443
-
-The server is started on port 443 by default. This is on purpose as an overarching goal of https-server is to make your development environment mirror your production environment as closely possible to remove that complexity from the code you have to write. 
-
-However, you must have your system setup to allow Node (Linux) or your account (macOS) to bind to so-called “privileged” ports so that this works. I will automate this as part of the process in the future but, for the time being:
-
-### Linux
-
-```sh
-sudo setcap 'cap_net_bind_service=+ep' $(which node)
-```
-
-### macOS
-
-```sh
-sudo touch /etc/authbind/byport/443
-sudo chown $(whoami) /etc/authbind/byport/443
-sudo chmod 755 /etc/authbind/byport/443
-```
-
-macOS instructions courtesy of [Setup authbind on Mac OS](https://medium.com/@steve.mu.dev/setup-authbind-on-mac-os-6aee72cb828) by Steve Mu.
-
 ## Usage
 
 ### Commandline
@@ -47,11 +25,11 @@ https-server [folder-to-serve] [port]
 Both arguments are optional. Currently, if you want to specify the port manually, you must also specify the folder-to-serve.
 
   * `[folder-to-serve]` defaults to `.` (the current directory)
-  * `[port]` defaults to 443. (See [note regarding port 443](#note-regarding-port-443), above.)
+  * `[port]` defaults to 443 (automatically privileges Node.js to bind to it on Linux. This is not an issue on macOS & Windows.)
 
 If you do not already have TLS certificates, they will be created for you automatically using [nodecert](https://source.ind.ie/hypha/tools/nodecert).
 
-All dependencies will be installed automatically for you if they do not exist if you have apt, yum (untested), or pacman (untested) on Linux or if you have [Homebrew](https://brew.sh/) or [MacPorts](https://www.macports.org/) (untested) on macOS. 
+All dependencies will be installed automatically for you if they do not exist if you have apt, yum (untested), or pacman (untested) on Linux or if you have [Homebrew](https://brew.sh/) or [MacPorts](https://www.macports.org/) (untested) on macOS.
 
 ## Help wanted
 

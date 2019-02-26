@@ -4,6 +4,7 @@ const express = require('express')
 const morgan = require('morgan')
 const path = require('path')
 const os = require('os')
+const childProcess = require('child_process')
 
 const arguments = process.argv
 
@@ -11,7 +12,6 @@ if (arguments.length > 4) {
   console.log('Usage: https-server [folder-to-serve (default=.)] [port (default=443)]')
   process.exit()
 }
-
 
 // If no path is passed, serve the current folder.
 // If there is a path, serve that.
@@ -37,7 +37,7 @@ console.log('')
 
 //
 // If the requested port is < 1024 ensure that we can bind to it. Note: this is
-// only a problem on Linux systems. As of macOS Mojave, privileged ports are
+// only an issue on Linux systems. As of macOS Mojave, privileged ports are
 // history on macOS (source regarding version:
 // https://news.ycombinator.com/item?id=18302380 confirmed with first-party
 // tests) and are not an issue on (at least client versions of) Windows.
@@ -48,8 +48,22 @@ console.log('')
 // https://www.staldal.nu/tech/2007/10/31/why-can-only-root-listen-to-ports-below-1024/
 //
 if (port < 1024 && os.platform() === 'linux') {
-  // sudo setcap 'cap_net_bind_service=+ep' $(which node)
-  console.log('TODO: Linux: ensure we can bind to ports < 1024.')
+  const options = {env: process.env}
+  try {
+    childProcess.execSync("setcap -v 'cap_net_bind_service=+ep' $(which node)", options)
+  } catch (error) {
+    try {
+      // Allow Node.js to bind to ports < 1024.
+      childProcess.execSync("sudo setcap 'cap_net_bind_service=+ep' $(which node)", options)
+      // Fork a new instance of the server so that it is launched with the privileged Node.js.
+      childProcess.fork(path.join(__dirname, 'index.js'), [pathToServe, port], {env: process.env, shell: true})
+      // We’re done here. Go into an endless loop. Exiting (Ctrl+C) this will also exit the child process.
+      while(1){}
+    } catch (error) {
+      console.log(`\n Error: could not get privileges for Node.js to bind to port ${port}.`, error)
+      process.exit(1)
+    }
+  }
 }
 
 // Requiring nodecert ensures that locally-trusted TLS certificates exist.

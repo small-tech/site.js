@@ -1,6 +1,6 @@
 {
   "name": "@ind.ie/https-server",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "HTTPS server that uses nodecert",
   "main": "index.js",
   "bin": "bin/https-server.js",
