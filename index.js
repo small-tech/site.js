@@ -31,10 +31,6 @@ if (!fs.existsSync(pathToServe)) {
   process.exit(1)
 }
 
-// Leave a space between the command prompt and any output from us.
-// (Because whitespace rocks.)
-console.log('')
-
 //
 // If the requested port is < 1024 ensure that we can bind to it. Note: this is
 // only an issue on Linux systems. As of macOS Mojave, privileged ports are
@@ -91,7 +87,7 @@ try {
     if (serverPort !== 443) {
       portSuffix = `:${serverPort}`
     }
-    console.log(`\n 🎉 Serving ${pathToServe} on https://localhost${portSuffix}\n`)
+    console.log(` 🎉 Serving ${pathToServe} on https://localhost${portSuffix}\n`)
   })
 } catch (error) {
   console.log('\nError: could not start server', error)
