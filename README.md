@@ -5,7 +5,7 @@ An HTTPS server that uses [nodecert](https://source.ind.ie/hypha/tools/nodecert)
 ## Design goals
 
   * ✔ Command-line app
-  * To-do: Easy integration into Express
+  * ✔ Easy integration with Express, etc.
   * To-do: Seamless switch to using ACME/Let’s Encrypt in production
 
 ## Installation
@@ -31,15 +31,56 @@ If you do not already have TLS certificates, they will be created for you automa
 
 All dependencies will be installed automatically for you if they do not exist if you have apt, pacman, or yum (untested) on Linux or if you have [Homebrew](https://brew.sh/) or [MacPorts](https://www.macports.org/) (untested) on macOS.
 
+### API
+
+http-server provides a `createServer` method that behaves like the built-in _https_ module’s createServer function so anywhere you use `https.createServer`, you can simply replace it with `httpsServer.createServer`.
+
+### createServer([options], [requestListener])
+
+  * options: [(Object)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) Accepts options from [tls.createServer()](https://nodejs.org/api/tls.html#tls_tls_createserver_options_secureconnectionlistener), [tls.createSecureContext()](https://nodejs.org/api/tls.html#tls_tls_createsecurecontext_options) and [http.createServer()](https://nodejs.org/api/http.html#http_http_createserver_options_requestlistener). Populates the `cert` and `key` properties from the automatically-created [nodecert](https://source.ind.ie/hypha/tools/nodecert/) certificates and will overwrite them if they exist in the options object you pass in.
+
+  * requestListener: [(Function)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function) A listener to be added to the 'request' event.
+
+  * Returns: [https.Server](https://nodejs.org/api/https.html#https_class_https_server) instance, configured with locally-trusted certificates.
+
+#### Example
+
+```js
+const httpsServer = require('https-server')
+const express = require('express')
+
+const app = express()
+app.use(express.static('.'))
+
+const server = httpsServer.createServer(options, app).listen(443, () => {
+  console.log(` 🎉 Serving on https://localhost\n`)
+})
+```
+
+### serve([pathToServe], [port])
+
+  * pathToServe: [(string)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string) path to serve using [Express](http://expressjs.com/).static.
+
+  * port: [(number)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#Number_type) the port to serve on. Defaults to 443. (On Linux, privileges to bind to the port are automatically obtained for you.)
+
+#### Example
+
+```js
+const httpsServer = require('https-server')
+
+// Serve the current directory over https://localhost
+const server = httpsServer.serve()
+```
+
 ## Help wanted
 
-I’ve currently only tested this on Pop!_OS 18.10 (Ubuntu-based distro). I can use your help to test this on other platforms:
+I can use your help to test https-server on other the following platforms:
 
   * Windows 64-bit (should work without requiring any dependencies)
   * Linux with yum
   * macOS with MacPorts
 
-If you get a chance to try out https-server on the above platforms, please [let me know how/if it works](https://github.com/indie-mirror/https-server/issues). Thank you.
+Please [let me know how/if it works](https://github.com/indie-mirror/https-server/issues). Thank you!
 
 ## Thanks
 
