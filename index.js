@@ -53,17 +53,28 @@ class HttpsServer {
 
   // Starts a static server serving the contents of the passed path at the passed port
   // and returns the server.
-  serve(pathToServe = '.', callback = null, options = {}) {
+  serve(pathToServe = '.', callback = null, port = 443) {
 
-    // Can be called as serve(pathToServe, callback) also.
-    if (typeof callback === 'object') {
-      options = callback
+    // Can also be called as serve(pathToServe, port)
+    if (typeof callback === 'number') {
+      port = callback
       callback = null
     }
 
-    const port = options.port || 443
-    const isHTTP2 = options.http2 || false
-    const serverCreationMethod = isHTTP2 ? this.createSecureServer : this.createServer
+    // Express does not support HTTP2 yet. Disabling this until support is added.
+    // Once it’s ready we will replace the port argument with and options object.
+    // ===================================================================================
+    // Can be called as serve(pathToServe, callback) also.
+    // if (typeof callback === 'object') {
+    //   options = callback
+    //   callback = null
+    // }
+    // const port = options.port || 443
+    // const isHTTP2 = options.http2 || false
+    // const serverCreationMethod = isHTTP2 ? this.createSecureServer : this.createServer
+    // ===================================================================================
+
+    const serverCreationMethod = this.createServer
 
     this.ensureWeCanBindToPort(port, pathToServe)
 
@@ -75,11 +86,11 @@ class HttpsServer {
         if (serverPort !== 443) {
           portSuffix = `:${serverPort}`
         }
-        let isHTTP2Note = ''
-        if (isHTTP2) {
-          isHTTP2Note = ' (HTTP2)'
-        }
-        console.log(` 🎉 Serving ${pathToServe} on https://localhost${portSuffix}${isHTTP2Note}\n`)
+        // let isHTTP2Note = ''
+        // if (isHTTP2) {
+        //   isHTTP2Note = ' (HTTP2)'
+        // }
+        console.log(` 🎉 Serving ${pathToServe} on https://localhost${portSuffix}\n`) //${isHTTP2Note}\n`)
       }
     }
 

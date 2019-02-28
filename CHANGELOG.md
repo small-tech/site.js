@@ -12,15 +12,20 @@ Nothing yet.
 
 ### Added
 
-  - HTTP2 support
+  - HTTP2 support (API-only)
 
 ### Changed
+
+  - Command-line arguments: specify port using `--port N`
+  - Update `serve` method signature: `serve (pathToServe = '.', callback = null, port = 443)`
+
+### Fixed
 
   - Start using [semver](https://semver.org/) properly (most of the previous releases should have been minor version bumps.) This is a major bump as there is a backwards-incompatible API change to the serve() method.
 
 ## [1.0.7] - 2019-02-28
 
-### Fixes
+### Fixed
 
   - Fix regression with automatic privileged port binding on Linux.
 

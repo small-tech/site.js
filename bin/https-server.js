@@ -9,17 +9,21 @@ if (arguments._.length > 1 || arguments.help === true) {
 
   const usageFolderToServe = clr('folder-to-serve', 'green')
   const usagePortOption = `${clr('--port', 'yellow')} ${clr('N', 'cyan')}`
-  const usageHttp2Option = clr('--http2', 'yellow')
+
+  // For when Express static gets HTTP2 support:
+  // ===================================================================================
+  // const usageHttp2Option = clr('--http2', 'yellow')
+  //     • ${usageHttp2Option}\t\t${clr('flag', 'italic')}\tRequests an HTTP2 server (optional; defaults to HTTP1).
+  // ===================================================================================
 
   const usage = `
   ${clr('Usage:', 'underline')}
 
-  ${clr('https-server', 'bold')} [${usageFolderToServe}] [${usagePortOption}] [${usageHttp2Option}]
+  ${clr('https-server', 'bold')} [${usageFolderToServe}] [${usagePortOption}]
 
-    • ${usageFolderToServe}\t${clr('string', 'italic')}\tPath to the folder to serve (optional; defaults to current folder).
-    • ${usagePortOption}\t\t${clr('number', 'italic')}\tThe port to start the server on (optional; defaults to 443).
-    • ${usageHttp2Option}\t\t${clr('flag', 'italic')}\tRequests an HTTP2 server (optional; defaults to HTTP1).
-    `.replace(/\n$/, '').replace(/^\n/, '')
+  • ${usageFolderToServe}\t${clr('string', 'italic')}\tPath to the folder to serve (optional; defaults to current folder).
+  • ${usagePortOption}\t\t${clr('number', 'italic')}\tThe port to start the server on (optional; defaults to 443).
+  `.replace(/\n$/, '').replace(/^\n/, '')
 
   console.log(usage)
   process.exit()
@@ -43,10 +47,12 @@ if (!fs.existsSync(pathToServe)) {
   process.exit(1)
 }
 
-const http2 = (arguments.http2 === true)
+// For when Express static gets HTTP2 support:
+// const http2 = (arguments.http2 === true)
+console.log(pathToServe)
 
 // Start the server.
-httpsServer.serve(pathToServe, {port, http2})
+httpsServer.serve(pathToServe, port)
 
 // Helpers.
 
