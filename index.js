@@ -71,6 +71,11 @@ class HttpsServer {
   // as these so-called privileged ports are a relic from the days of mainframes and they
   // actually have a negative impact on security today:
   // https://www.staldal.nu/tech/2007/10/31/why-can-only-root-listen-to-ports-below-1024/
+  //
+  // Note: this might cause issues if https-server is used as a library as it assumes that the
+  // ===== current app is in index.js and that it can be forked. This might be an issue if a
+  //       process manager is already being used, etc. Worth keeping an eye on and possibly
+  //       making this method an optional part of server startup.
   ensureWeCanBindToPort (port) {
     if (port < 1024 && os.platform() === 'linux') {
       const options = {env: process.env}
