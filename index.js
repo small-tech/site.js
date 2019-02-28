@@ -62,7 +62,7 @@ class HttpsServer {
     }
 
     const port = options.port || 443
-    const isHTTP2 = options.isHTTP2 || false
+    const isHTTP2 = options.http2 || false
     const serverCreationMethod = isHTTP2 ? this.createSecureServer : this.createServer
 
     this.ensureWeCanBindToPort(port, pathToServe)
@@ -75,7 +75,11 @@ class HttpsServer {
         if (serverPort !== 443) {
           portSuffix = `:${serverPort}`
         }
-        console.log(` 🎉 Serving ${pathToServe} on https://localhost${portSuffix}\n`)
+        let isHTTP2Note = ''
+        if (isHTTP2) {
+          isHTTP2Note = ' (HTTP2)'
+        }
+        console.log(` 🎉 Serving ${pathToServe} on https://localhost${portSuffix}${isHTTP2Note}\n`)
       }
     }
 

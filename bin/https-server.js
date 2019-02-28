@@ -43,8 +43,10 @@ if (!fs.existsSync(pathToServe)) {
   process.exit(1)
 }
 
+const http2 = (arguments.http2 === true)
+
 // Start the server.
-httpsServer.serve(pathToServe, {port})
+httpsServer.serve(pathToServe, {port, http2})
 
 // Helpers.
 
