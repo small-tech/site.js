@@ -12,8 +12,7 @@ require('@ind.ie/nodecert')
 const nodecertDirectory = path.join(os.homedir(), '.nodecert')
 
 if (!fs.existsSync(nodecertDirectory)) {
-  console.log('\nError: requires nodecert.\n\nInstall: npm i -g nodecert\nRun    : nodecert\n\nMore information: https://source.ind.ie/hypha/tools/nodecert\n')
-  process.exit(1)
+  throw new Error('Error: requires nodecert.\n\nInstall: npm i -g nodecert\nRun    : nodecert\n\nMore information: https://source.ind.ie/hypha/tools/nodecert')
 }
 
 
@@ -36,8 +35,20 @@ class HttpsServer {
 
   // Starts a static server serving the contents of the passed path at the passed port
   // and returns the server.
-  serve(pathToServe = '.', port = 443) {
+  serve(pathToServe = '.', port = 443, callback = null) {
     this.ensureWeCanBindToPort(port)
+
+    // If a callback isn’t provided, fallback to a default one that gives a status update.
+    if (callback === null) {
+      callback = function () {
+        const serverPort = this.address().port
+        let portSuffix = ''
+        if (serverPort !== 443) {
+          portSuffix = `:${serverPort}`
+        }
+        console.log(` 🎉 Serving ${pathToServe} on https://localhost${portSuffix}\n`)
+      }
+    }
 
     // Create an express server to serve the path using Morgan for logging.
     const app = express()
@@ -45,19 +56,13 @@ class HttpsServer {
     app.use(express.static(pathToServe))
 
     try {
-      const server = this.createServer({}, app).listen(port, () => {
-        const serverPort = server.address().port
-        let portSuffix = ''
-        if (serverPort !== 443) {
-          portSuffix = `:${serverPort}`
-        }
-        console.log(` 🎉 Serving ${pathToServe} on https://localhost${portSuffix}\n`)
-      })
-      return server
+      const server = this.createServer({}, app).listen(port, callback)
     } catch (error) {
       console.log('\nError: could not start server', error)
-      process.exit(1)
+      throw error
     }
+
+    return server
   }
 
 
@@ -81,7 +86,7 @@ class HttpsServer {
           while(1){}
         } catch (error) {
           console.log(`\n Error: could not get privileges for Node.js to bind to port ${port}.`, error)
-          process.exit(1)
+          throw error
         }
       }
     }
