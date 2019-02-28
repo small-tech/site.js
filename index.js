@@ -56,14 +56,13 @@ class HttpsServer {
   serve(pathToServe = '.', callback = null, options = {}) {
 
     // Can be called as serve(pathToServe, callback) also.
-    if (typeof options === 'function') {
-      callback = options
-      options = {}
+    if (typeof callback === 'object') {
+      options = callback
+      callback = null
     }
 
     const port = options.port || 443
     const isHTTP2 = options.isHTTP2 || false
-
     const serverCreationMethod = isHTTP2 ? this.createSecureServer : this.createServer
 
     this.ensureWeCanBindToPort(port, pathToServe)

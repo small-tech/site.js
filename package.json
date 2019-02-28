@@ -20,7 +20,9 @@
   "license": "AGPL-3.0-or-later",
   "dependencies": {
     "@ind.ie/nodecert": "^1.0.6",
+    "ansi-escape-sequences": "^4.0.1",
     "express": "^4.16.4",
+    "minimist": "^1.2.0",
     "morgan": "^1.9.1"
   },
   "devDependencies": {
