@@ -1,4 +1,5 @@
 const https = require('https')
+const http2 = require('http2')
 const fs = require('fs')
 const express = require('express')
 const morgan = require('morgan')
@@ -33,9 +34,38 @@ class HttpsServer {
   }
 
 
+  // Returns and HTTP2 Http2SecureServer instance, the same as you would get with
+  // require('http2').createSecureServer() – configured with your nodecert certificates.
+  // If you do pass a key and cert, they will be overwritten. Also the allowHTTP1 flag
+  // of the created server is set to true.
+  createSecureServer (options = {}, requestListener = undefined) {
+    const defaultOptions = {
+      key: fs.readFileSync(path.join(nodecertDirectory, 'localhost-key.pem')),
+      cert: fs.readFileSync(path.join(nodecertDirectory, 'localhost.pem')),
+      allowHTTP1: true
+    }
+
+    Object.assign(options, defaultOptions)
+
+    return http2.createSecureServer(options, requestListener)
+  }
+
+
   // Starts a static server serving the contents of the passed path at the passed port
   // and returns the server.
-  serve(pathToServe = '.', port = 443, callback = null) {
+  serve(pathToServe = '.', callback = null, options = {}) {
+
+    // Can be called as serve(pathToServe, callback) also.
+    if (typeof options === 'function') {
+      callback = options
+      options = {}
+    }
+
+    const port = options.port || 443
+    const isHTTP2 = options.isHTTP2 || false
+
+    const serverCreationMethod = isHTTP2 ? this.createSecureServer : this.createServer
+
     this.ensureWeCanBindToPort(port, pathToServe)
 
     // If a callback isn’t provided, fallback to a default one that gives a status update.
@@ -57,7 +87,7 @@ class HttpsServer {
 
     let server
     try {
-      server = this.createServer({}, app).listen(port, callback)
+      server = serverCreationMethod({}, app).listen(port, callback)
     } catch (error) {
       console.log('\nError: could not start server', error)
       throw error

@@ -8,6 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Nothing yet.
 
+## [2.0.0] - 2019-02-28
+
+### Added
+
+  - HTTP2 support
+
+### Changed
+
+  - Start using [semver](https://semver.org/) properly (most of the previous releases should have been minor version bumps.) This is a major bump as there is a backwards-incompatible API change to the serve() method.
+
 ## [1.0.7] - 2019-02-28
 
 ### Fixes
