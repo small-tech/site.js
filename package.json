@@ -19,7 +19,7 @@
   },
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "@ind.ie/nodecert": "^1.0.5",
+    "@ind.ie/nodecert": "^1.0.6",
     "express": "^4.16.4",
     "morgan": "^1.9.1"
   },
