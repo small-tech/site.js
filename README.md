@@ -52,6 +52,7 @@ const express = require('express')
 const app = express()
 app.use(express.static('.'))
 
+const options = {} // (optional) customise your server
 const server = httpsServer.createServer(options, app).listen(443, () => {
   console.log(` 🎉 Serving on https://localhost\n`)
 })

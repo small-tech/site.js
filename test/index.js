@@ -24,11 +24,22 @@ async function secureGet (url) {
 }
 
 
-test('static serve', t => {
-  t.plan(4)
-  let server = httpsServer.serve('test/site', 443, async () => {
-    t.ok(server instanceof https.Server, 'https.Server instance is returned')
+test('create server', t => {
+  t.plan(2)
+  const server = httpsServer.createServer()
+  t.ok(server instanceof https.Server, 'https.Server instance is returned')
+
+  server.listen(443, () => {
     t.equal(server.address().port, 443, 'the requested port is set')
+    t.end()
+    server.close()
+  })
+})
+
+
+test('static serve', t => {
+  t.plan(2)
+  const server = httpsServer.serve('test/site', 443, async () => {
 
     let response
     try {
