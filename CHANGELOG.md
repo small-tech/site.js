@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Nothing yet.
 
+## [1.0.7] - 2019-02-28
+
+### Fixes
+
+  - Fix regression with automatic privileged port binding on Linux.
+
 ## [1.0.6] - 2019-02-28
 
 ### Changed

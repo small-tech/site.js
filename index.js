@@ -36,7 +36,7 @@ class HttpsServer {
   // Starts a static server serving the contents of the passed path at the passed port
   // and returns the server.
   serve(pathToServe = '.', port = 443, callback = null) {
-    this.ensureWeCanBindToPort(port)
+    this.ensureWeCanBindToPort(port, pathToServe)
 
     // If a callback isn’t provided, fallback to a default one that gives a status update.
     if (callback === null) {
@@ -77,7 +77,7 @@ class HttpsServer {
   // ===== current app is in index.js and that it can be forked. This might be an issue if a
   //       process manager is already being used, etc. Worth keeping an eye on and possibly
   //       making this method an optional part of server startup.
-  ensureWeCanBindToPort (port) {
+  ensureWeCanBindToPort (port, pathToServe) {
     if (port < 1024 && os.platform() === 'linux') {
       const options = {env: process.env}
       try {
