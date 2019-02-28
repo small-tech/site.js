@@ -55,8 +55,9 @@ class HttpsServer {
     app.use(morgan('tiny'))
     app.use(express.static(pathToServe))
 
+    let server
     try {
-      const server = this.createServer({}, app).listen(port, callback)
+      server = this.createServer({}, app).listen(port, callback)
     } catch (error) {
       console.log('\nError: could not start server', error)
       throw error

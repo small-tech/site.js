@@ -6,7 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
-Nothing yet.
+## Changed
+
+  - Uses nodecert v1.0.5: certificates now work in Node.js (e.g., via https.get(), etc.).
+
+## Added
+
+  - Unit tests.
 
 ## [1.0.5] - 2019-02-27
 
@@ -18,7 +24,7 @@ Nothing yet.
 
 ## Changed
 
- -- Uses nodecert v1.0.4 (with progress indication).
+  - Uses nodecert v1.0.4 (with progress indication).
 
 ## [1.0.3] - 2019-02-26
 

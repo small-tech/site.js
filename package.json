@@ -1,11 +1,12 @@
 {
   "name": "@ind.ie/https-server",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "HTTPS server that uses nodecert",
   "main": "index.js",
   "bin": "bin/https-server.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "tape test/index.js"
   },
   "repository": {
     "type": "git",
@@ -18,8 +19,11 @@
   },
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "@ind.ie/nodecert": "^1.0.4",
+    "@ind.ie/nodecert": "^1.0.5",
     "express": "^4.16.4",
     "morgan": "^1.9.1"
+  },
+  "devDependencies": {
+    "tape": "^4.10.1"
   }
 }
