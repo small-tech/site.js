@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Nothing yet.
 
+## [2.0.1] - 2019-03-01
+
+### Fixed
+
+  - Remove erroneously-added console log message.
+
 ## [2.0.0] - 2019-02-28
 
 ### Added

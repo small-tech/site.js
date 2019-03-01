@@ -49,7 +49,6 @@ if (!fs.existsSync(pathToServe)) {
 
 // For when Express static gets HTTP2 support:
 // const http2 = (arguments.http2 === true)
-console.log(pathToServe)
 
 // Start the server.
 httpsServer.serve(pathToServe, port)
