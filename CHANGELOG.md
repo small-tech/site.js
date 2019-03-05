@@ -12,7 +12,9 @@ Nothing yet.
 
 ### Removed
 
-  - HTTP2 support (HTTP2 is not useful for [Small Tech](https://ar.al/2019/03/04/small-technology/) as it simply further privileges servers. If you need HTTP2, [use v2.0.1]().)
+  - HTTP2 support
+
+    HTTP2 is not useful for [Small Tech](https://ar.al/2019/03/04/small-technology/) as it simply further privileges centralised servers. If you need HTTP2, use [https-server version 2.0.1](https://source.ind.ie/hypha/tools/https-server/tags/2.0.1).
 
 ## [2.0.1] - 2019-03-01
 
