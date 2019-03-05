@@ -19,7 +19,7 @@ npm i -g @ind.ie/https-server
 https-server [folder-to-serve] [--port N]
 ```
 
-All arguments are optional. By default, a secure HTTP1 server will be created to serve the current folder over port 443.
+All arguments are optional. By default, a secure HTTPS server will be created to serve the current folder over port 443.
 
 If you do not already have TLS certificates, they will be created for you automatically using [nodecert](https://source.ind.ie/hypha/tools/nodecert).
 
@@ -28,7 +28,7 @@ All dependencies will be installed automatically for you if they do not exist if
 
 ### API
 
-__https-server__ provides a `createServer` method that behaves like the built-in _https_ module’s `createServer` function so anywhere you use `https.createServer`, you can simply replace it with `httpsServer.createServer`. Similarly, there is also a `createSecureServer` method that mirrors the function in the _http2_ module.
+__https-server__ provides a `createServer` method that behaves like the built-in _https_ module’s `createServer` function so anywhere you use `https.createServer`, you can simply replace it with `httpsServer.createServer`.
 
 
 #### createServer([options], [requestListener])
@@ -53,28 +53,6 @@ const server = httpsServer.createServer(options, app).listen(443, () => {
   console.log(` 🎉 Serving on https://localhost\n`)
 })
 ```
-
-
-#### createSecureServer([options], [requestListener])
-
-  - __options__ _(object)___:__ see [http2.createSecureServer](https://nodejs.org/api/http2.html#http2_http2_createsecureserver_options_onrequesthandler). Populates the `cert` and `key` properties from the automatically-created [nodecert](https://source.ind.ie/hypha/tools/nodecert/) certificates and will overwrite them if they exist in the options object you pass in.
-
-  - __requestListener__ _(function)___:__ see [http2.createSecureServer](https://nodejs.org/api/http2.html#http2_http2_createsecureserver_options_onrequesthandler)
-
-  - ___Returns:___ [Http2SecureServer](https://nodejs.org/api/http2.html#http2_class_http2secureserver) instance, configured with locally-trusted certificates.
-
-##### Example
-
-```js
-const httpsServer = require('https-server')
-const express = require('express')
-
-const options = {} // (optional) customise your server
-const server = httpsServer.createSecureServer(options, app).listen(443, () => {
-  console.log(` 🎉 Serving on https://localhost (HTTP2)\n`)
-})
-```
-
 
 #### serve([pathToServe], [callback], [port])
 
@@ -110,7 +88,6 @@ Please [let me know how/if it works](https://github.com/indie-mirror/https-serve
 
   - Command-line app. ✔
   - Easy integration with Express, etc. ✔
-  - HTTP2 support (API only). ✔
   - To-do: Seamless switch to using ACME/Let’s Encrypt in production.
 
 ## Thanks

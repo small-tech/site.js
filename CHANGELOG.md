@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Nothing yet.
 
+## [3.0.0] - 2019-03-05
+
+### Removed
+
+  - HTTP2 support (HTTP2 is not useful for [Small Tech](https://ar.al/2019/03/04/small-technology/) as it simply further privileges servers. If you need HTTP2, [use v2.0.1]().)
+
 ## [2.0.1] - 2019-03-01
 
 ### Fixed

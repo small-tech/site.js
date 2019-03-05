@@ -37,20 +37,6 @@ test('create https server', t => {
 })
 
 
-test('create http2 server', t => {
-  t.plan(2)
-  const server = httpsServer.createSecureServer()
-  // http2 does not export the Http2SecureServer class so we cannot use instanceof to test here.
-  t.equal(server.constructor.name, 'Http2SecureServer', 'is Http2SecureServer')
-
-  server.listen(443, () => {
-    t.equal(server.address().port, 443, 'the requested port is set on Http2SecureServer')
-    t.end()
-    server.close()
-  })
-})
-
-
 test('static serve https', t => {
   t.plan(3)
   const server = httpsServer.serve('test/site', async () => {
@@ -72,29 +58,3 @@ test('static serve https', t => {
     server.close()
   })
 })
-
-
-// For when Express/.static gets HTTPS support.
-// test('static serve HTTP2', t => {
-//   t.plan(3)
-//   const server = httpsServer.serve('test/site', async () => {
-
-//     t.equal(server.constructor.name, 'Http2SecureServer', 'is Http2SecureServer')
-
-//     let response
-//     try {
-//       response = await secureGet('https://localhost/index.html')
-//     } catch (error) {
-//       console.log(error)
-//       process.exit(1)
-//     }
-
-//     t.equal(response.statusCode, 200, 'request succeeds')
-//     t.equal(response.body, indexHTML, 'index loads')
-//     t.end()
-
-//     server.close()
-//   }, {
-//     isHTTP2: true
-//   })
-// })
