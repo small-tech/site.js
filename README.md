@@ -1,6 +1,6 @@
 # HTTPS Server
 
-HTTPS Server is a secure [Small Tech](https://ar.al/2019/03/04/small-technology/) personal server for seamless development and live use.
+HTTPS Server is a secure [Small Tech](https://ar.al/2019/03/04/small-technology/) personal web server for seamless development and live use.
 
 HTTP Server uses [nodecert](https://source.ind.ie/hypha/tools/nodecert) for seamless locally-trusted TLS certificate provisioning and use during development and [Greenlock](https://git.coolaj86.com/coolaj86/greenlock.js) for seamless globally-trusted [Let’s Encrypt](https://letsencrypt.org/) TLS certificate provisioning and use on live environments.
 
