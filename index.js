@@ -20,6 +20,7 @@ class HttpsServer {
 
   // Create and return a TLS server with a locally-trusted certificate.
   createTLSServerWithLocallyTrustedCertificate (options = {}, requestListener = undefined) {
+    console.log('[https-server] Using local certificates.')
     const defaultOptions = {
       key: fs.readFileSync(path.join(nodecertDirectory, 'localhost-key.pem')),
       cert: fs.readFileSync(path.join(nodecertDirectory, 'localhost.pem'))
@@ -32,8 +33,10 @@ class HttpsServer {
 
   // Create and return a TLS server with a globally-trusted certificate.
   createTLSServerWithGloballyTrustedCertificate () {
+    console.log('[https-server] Using global certificates. TODO')
     // TODO
   }
+
 
   // Returns an https server instance – the same as you’d get with
   // require('https').createServer – configured with your nodecert certificates.
@@ -42,7 +45,12 @@ class HttpsServer {
     // TODO: Create local certificate authority and certificates if on development
     // ===== or use Greenlock on production to ensure that we have Let’s Encrypt
     //       certificates set up.
-    return this.createTLSServerWithLocallyTrustedCertificate(options, requestListener)
+    if (options.certificateType === 'global') {
+      return this.createTLSServerWithGloballyTrustedCertificate (options, requestListener)
+    } else {
+      // Default to using local certificates.
+      return this.createTLSServerWithLocallyTrustedCertificate(options, requestListener)
+    }
   }
 
 
