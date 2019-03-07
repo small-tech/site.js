@@ -29,7 +29,7 @@ class HttpsServer {
   // Returns an https server instance – the same as you’d get with
   // require('https').createServer – configured with your locally-trusted nodecert
   // certificates by default. If you pass in an email address, globally-trusted
-  // are obtained from Let’s Encrypt.
+  // TLS certificates are obtained from Let’s Encrypt.
   //
   // Note: if you pass in a key and cert in the options object, they will not be
   // ===== used and will be overwritten.
