@@ -1,7 +1,7 @@
 {
   "name": "@ind.ie/https-server",
-  "version": "3.0.0",
-  "description": "HTTPS server that uses nodecert",
+  "version": "4.0.0",
+  "description": "A secure Small Tech personal web server for seamless development and live use.",
   "main": "index.js",
   "bin": "bin/https-server.js",
   "scripts": {
