@@ -53,6 +53,7 @@ class HttpsServer {
 
     // Can also be called as serve(pathToServe, port)
     if (typeof callback === 'number') {
+      email = port
       port = callback
       callback = null
     }
@@ -78,7 +79,7 @@ class HttpsServer {
 
     let server
     try {
-      server = this.createServer({certificateType, email}, app).listen(port, callback)
+      server = this.createServer({email}, app).listen(port, callback)
     } catch (error) {
       console.log('\nError: could not start server', error)
       throw error

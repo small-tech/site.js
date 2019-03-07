@@ -49,9 +49,11 @@ if (arguments.port !== undefined) {
 
 // If an email is passed, use it.
 let email = undefined
-if (arguments.email !== undefined) {
-  email = arguments.email
+if (arguments.global !== undefined) {
+  email = arguments.global
 }
+
+console.log('email', email)
 
 if (!fs.existsSync(pathToServe)) {
   console.log(` 🤔 Error: could not find path ${pathToServe}\n`)
