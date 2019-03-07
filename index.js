@@ -1,10 +1,14 @@
+const http = require('http')
 const https = require('https')
 const fs = require('fs')
-const express = require('express')
-const morgan = require('morgan')
 const path = require('path')
 const os = require('os')
 const childProcess = require('child_process')
+
+const express = require('express')
+const morgan = require('morgan')
+const Greenlock = require('greenlock')
+const redirectHTTPS = require('redirect-https')
 
 // Requiring nodecert ensures that locally-trusted TLS certificates exist.
 require('@ind.ie/nodecert')
@@ -18,25 +22,9 @@ if (!fs.existsSync(nodecertDirectory)) {
 
 class HttpsServer {
 
-  // Create and return a TLS server with a locally-trusted certificate.
-  createTLSServerWithLocallyTrustedCertificate (options = {}, requestListener = undefined) {
-    console.log('[https-server] Using local certificates.')
-    const defaultOptions = {
-      key: fs.readFileSync(path.join(nodecertDirectory, 'localhost-key.pem')),
-      cert: fs.readFileSync(path.join(nodecertDirectory, 'localhost.pem'))
-    }
-
-    Object.assign(options, defaultOptions)
-
-    return https.createServer(options, requestListener)
-  }
-
-  // Create and return a TLS server with a globally-trusted certificate.
-  createTLSServerWithGloballyTrustedCertificate () {
-    console.log('[https-server] Using global certificates. TODO')
-    // TODO
-  }
-
+  //
+  // Public.
+  //
 
   // Returns an https server instance – the same as you’d get with
   // require('https').createServer – configured with your nodecert certificates.
@@ -46,10 +34,10 @@ class HttpsServer {
     // ===== or use Greenlock on production to ensure that we have Let’s Encrypt
     //       certificates set up.
     if (options.certificateType === 'global') {
-      return this.createTLSServerWithGloballyTrustedCertificate (options, requestListener)
+      return this._createTLSServerWithGloballyTrustedCertificate (options, requestListener)
     } else {
       // Default to using local certificates.
-      return this.createTLSServerWithLocallyTrustedCertificate(options, requestListener)
+      return this._createTLSServerWithLocallyTrustedCertificate(options, requestListener)
     }
   }
 
@@ -64,7 +52,7 @@ class HttpsServer {
       callback = null
     }
 
-    this.ensureWeCanBindToPort(port, pathToServe)
+    this._ensureWeCanBindToPort(port, pathToServe)
 
     // If a callback isn’t provided, fallback to a default one that gives a status update.
     if (callback === null) {
@@ -95,6 +83,70 @@ class HttpsServer {
   }
 
 
+  //
+  // Private.
+  //
+
+  _createTLSServerWithLocallyTrustedCertificate (options, requestListener = undefined) {
+    console.log('[https-server] Using locally-trusted certificates.')
+    const defaultOptions = {
+      key: fs.readFileSync(path.join(nodecertDirectory, 'localhost-key.pem')),
+      cert: fs.readFileSync(path.join(nodecertDirectory, 'localhost.pem'))
+    }
+
+    Object.assign(options, defaultOptions)
+
+    return https.createServer(options, requestListener)
+  }
+
+
+  _createTLSServerWithGloballyTrustedCertificate (options, requestListener = undefined) {
+    console.log('[https-server] Using globally-trusted certificates.')
+
+    if (options.email === undefined) {
+      throw new Error('Globally-trusted certificates require a valid email value in the options object. This is a Let’s Encrypt requirement.')
+    }
+
+    const email = options.email
+    delete options.email // Let’s be nice and not pollute that object.
+
+    // Certificates are automatically obtained for the hostname and the www. subdomain of the hostname
+    // for the machine that we are running on.
+    const hostname = os.hostname()
+
+    const greenlock = Greenlock.create({
+      // Note: while testing, you might want to use the staging server at:
+      // ===== https://acme-staging-v02.api.letsencrypt.org/directory
+      server: 'https://acme-v02.api.letsencrypt.org/directory',
+
+      version: 'draft-11',
+      configDir: `~/.nodecert/${hostname}/`,
+      approvedDomains: [hostname, `www.${hostname}`],
+      agreeTos: true,
+      telemetry: false,
+      communityMember: false,
+      app,
+      email,
+    })
+
+    // Create an HTTP server to handle redirects for the Let’s Encrypt ACME HTTP-01 challenge method that we use.
+    const httpsRedirectionMiddleware = redirectHTTPS()
+    const httpServer = http.createServer(greenlock.middleware(httpsRedirectionMiddleware))
+    httpServer.listen(80, () => {
+      console.log('[https-server] (Globally-trusted TLS) HTTP → HTTPS redirection active.')
+    })
+
+    // Debug
+    console.log('greenlock.tlsOptions', greenlock.tlsOptions)
+
+    // Add the TLS options from Greenlock to any existing options that might have been passed in.
+    Object.assign(options, greenlock.tlsOptions)
+
+    // Create and return the HTTPS server.
+    return https.createServer(options, requestListener)
+  }
+
+
   // If we’re on Linux and the requested port is < 1024 ensure that we can bind to it.
   // (As of macOS Mojave, privileged ports are only an issue on Linux. Good riddance too,
   // as these so-called privileged ports are a relic from the days of mainframes and they
@@ -105,7 +157,7 @@ class HttpsServer {
   // ===== current app is in index.js and that it can be forked. This might be an issue if a
   //       process manager is already being used, etc. Worth keeping an eye on and possibly
   //       making this method an optional part of server startup.
-  ensureWeCanBindToPort (port, pathToServe) {
+  _ensureWeCanBindToPort (port, pathToServe) {
     if (port < 1024 && os.platform() === 'linux') {
       const options = {env: process.env}
       try {
