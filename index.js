@@ -18,10 +18,8 @@ if (!fs.existsSync(nodecertDirectory)) {
 
 class HttpsServer {
 
-  // Returns an https server instance – the same as you’d get with
-  // require('https').createServer – configured with your nodecert certificates.
-  // If you do pass a key and cert, they will be overwritten.
-  createServer (options = {}, requestListener = undefined) {
+  // Create and return a TLS server with a locally-trusted certificate.
+  createTLSServerWithLocallyTrustedCertificate (options = {}, requestListener = undefined) {
     const defaultOptions = {
       key: fs.readFileSync(path.join(nodecertDirectory, 'localhost-key.pem')),
       cert: fs.readFileSync(path.join(nodecertDirectory, 'localhost.pem'))
@@ -32,18 +30,31 @@ class HttpsServer {
     return https.createServer(options, requestListener)
   }
 
+  // Create and return a TLS server with a globally-trusted certificate.
+  createTLSServerWithGloballyTrustedCertificate () {
+    // TODO
+  }
+
+  // Returns an https server instance – the same as you’d get with
+  // require('https').createServer – configured with your nodecert certificates.
+  // If you do pass a key and cert, they will be overwritten.
+  createServer (options = {}, requestListener = undefined) {
+    // TODO: Create local certificate authority and certificates if on development
+    // ===== or use Greenlock on production to ensure that we have Let’s Encrypt
+    //       certificates set up.
+    return this.createTLSServerWithLocallyTrustedCertificate(options, requestListener)
+  }
+
 
   // Starts a static server serving the contents of the passed path at the passed port
   // and returns the server.
-  serve(pathToServe = '.', callback = null, port = 443) {
+  serve (pathToServe = '.', callback = null, port = 443) {
 
     // Can also be called as serve(pathToServe, port)
     if (typeof callback === 'number') {
       port = callback
       callback = null
     }
-
-    const serverCreationMethod = this.createServer
 
     this.ensureWeCanBindToPort(port, pathToServe)
 
@@ -66,7 +77,7 @@ class HttpsServer {
 
     let server
     try {
-      server = serverCreationMethod({}, app).listen(port, callback)
+      server = this.createServer({}, app).listen(port, callback)
     } catch (error) {
       console.log('\nError: could not start server', error)
       throw error
