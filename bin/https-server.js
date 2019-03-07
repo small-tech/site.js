@@ -1,27 +1,36 @@
 #!/usr/bin/env node
 const fs = require('fs')
+const path = require('path')
 var ansi = require('ansi-escape-sequences')
 const httpsServer = require('../index.js')
 
 const arguments = require('minimist')(process.argv.slice(2))
 
-if (arguments._.length > 1 || arguments.help === true) {
+if (arguments._.length > 2 || arguments.help === true) {
 
   const usageFolderToServe = clr('folder-to-serve', 'green')
   const usagePortOption = `${clr('--port', 'yellow')} ${clr('N', 'cyan')}`
   const usageGlobalOption = `${clr('--global', 'yellow')} ${clr('you@your.site', 'cyan')}`
+  const usageVersionOption = `${clr('--version', 'yellow')}`
 
   const usage = `
   ${clr('Usage:', 'underline')}
 
-  ${clr('https-server', 'bold')} [${usageFolderToServe}] [${usagePortOption}] [${usageGlobalOption}]
+  ${clr('https-server', 'bold')} [${usageFolderToServe}] [${usagePortOption}] [${usageGlobalOption}] [${usageVersionOption}]
 
-  • ${usageFolderToServe}\t\tPath to the folder to serve (optional; defaults to current folder).
-  • ${usagePortOption}\t\t\tThe port to start the server on (optional; defaults to 443).
+  • ${usageFolderToServe}\t\tPath to the folder to serve (defaults to current folder).
+  • ${usagePortOption}\t\t\tThe port to start the server on (defaults to 443).
   • ${usageGlobalOption}\tUse globally-trusted certificates. The email address is required by Let’s Encrypt.
+  • ${usageVersionOption}\t\t\tDisplay the version.
   `.replace(/\n$/, '').replace(/^\n/, '')
 
   console.log(usage)
+  process.exit()
+}
+
+if (arguments.version !== undefined) {
+  const version = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), 'utf-8')).version
+  console.log(`  https-server v${version}\n`)
   process.exit()
 }
 
