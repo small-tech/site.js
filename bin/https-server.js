@@ -53,8 +53,6 @@ if (arguments.global !== undefined) {
   email = arguments.global
 }
 
-console.log('email', email)
-
 if (!fs.existsSync(pathToServe)) {
   console.log(` 🤔 Error: could not find path ${pathToServe}\n`)
   process.exit(1)

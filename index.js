@@ -49,14 +49,16 @@ class HttpsServer {
   // Starts a static server serving the contents of the passed path at the passed port
   // and returns the server. If an email address is provided, then global certificates
   // are obtained and used from Let’s Encrypt.
-  serve (pathToServe = '.', callback = null, port = 443, email = undefined) {
+  serve (pathToServe = '.', callback = null, port = undefined, email = undefined) {
 
-    // Can also be called as serve(pathToServe, port)
+    // Can also be called as serve(pathToServe, port, [email])
     if (typeof callback === 'number') {
       email = port
       port = callback
       callback = null
     }
+
+    if (port === undefined) port = 443 // The default port.
 
     this._ensureWeCanBindToPort(port, pathToServe)
 
@@ -68,7 +70,8 @@ class HttpsServer {
         if (serverPort !== 443) {
           portSuffix = `:${serverPort}`
         }
-        console.log(` 🎉 Serving ${pathToServe} on https://localhost${portSuffix}\n`)
+        const location = email === undefined ? `localhost${portSuffix}` : os.hostname()
+        console.log(` 🎉 Serving ${pathToServe} on https://${location}\n`)
       }
     }
 
@@ -94,7 +97,7 @@ class HttpsServer {
   //
 
   _createTLSServerWithLocallyTrustedCertificate (options, requestListener = undefined) {
-    console.log('[https-server] Using locally-trusted certificates.')
+    console.log(' 🚧 [https-server] Using locally-trusted certificates.')
     const defaultOptions = {
       key: fs.readFileSync(path.join(nodecertDirectory, 'localhost-key.pem')),
       cert: fs.readFileSync(path.join(nodecertDirectory, 'localhost.pem'))
@@ -107,7 +110,7 @@ class HttpsServer {
 
 
   _createTLSServerWithGloballyTrustedCertificate (options, requestListener = undefined) {
-    console.log('[https-server] Using globally-trusted certificates.')
+    console.log(' 🌍 [https-server] Using globally-trusted certificates.')
 
     const email = options.email
     delete options.email // Let’s be nice and not pollute that object.
@@ -134,11 +137,8 @@ class HttpsServer {
     const httpsRedirectionMiddleware = redirectHTTPS()
     const httpServer = http.createServer(greenlock.middleware(httpsRedirectionMiddleware))
     httpServer.listen(80, () => {
-      console.log('[https-server] (Globally-trusted TLS) HTTP → HTTPS redirection active.')
+      console.log(' 👉 [https-server] (Globally-trusted TLS) HTTP → HTTPS redirection active.')
     })
-
-    // Debug
-    console.log('greenlock.tlsOptions', greenlock.tlsOptions)
 
     // Add the TLS options from Greenlock to any existing options that might have been passed in.
     Object.assign(options, greenlock.tlsOptions)
