@@ -27,13 +27,17 @@ class HttpsServer {
   //
 
   // Returns an https server instance – the same as you’d get with
-  // require('https').createServer – configured with your nodecert certificates.
-  // If you do pass a key and cert, they will be overwritten.
+  // require('https').createServer – configured with your locally-trusted nodecert
+  // certificates by default. If you pass in an email address, globally-trusted
+  // are obtained from Let’s Encrypt.
+  //
+  // Note: if you pass in a key and cert in the options object, they will not be
+  // ===== used and will be overwritten.
   createServer (options = {}, requestListener = undefined) {
     // TODO: Create local certificate authority and certificates if on development
     // ===== or use Greenlock on production to ensure that we have Let’s Encrypt
     //       certificates set up.
-    if (options.certificateType === 'global') {
+    if (options.email !== undefined) {
       return this._createTLSServerWithGloballyTrustedCertificate (options, requestListener)
     } else {
       // Default to using local certificates.
@@ -43,8 +47,9 @@ class HttpsServer {
 
 
   // Starts a static server serving the contents of the passed path at the passed port
-  // and returns the server.
-  serve (pathToServe = '.', callback = null, port = 443) {
+  // and returns the server. If an email address is provided, then global certificates
+  // are obtained and used from Let’s Encrypt.
+  serve (pathToServe = '.', callback = null, port = 443, email = undefined) {
 
     // Can also be called as serve(pathToServe, port)
     if (typeof callback === 'number') {
@@ -73,7 +78,7 @@ class HttpsServer {
 
     let server
     try {
-      server = this.createServer({}, app).listen(port, callback)
+      server = this.createServer({certificateType, email}, app).listen(port, callback)
     } catch (error) {
       console.log('\nError: could not start server', error)
       throw error
@@ -103,10 +108,6 @@ class HttpsServer {
   _createTLSServerWithGloballyTrustedCertificate (options, requestListener = undefined) {
     console.log('[https-server] Using globally-trusted certificates.')
 
-    if (options.email === undefined) {
-      throw new Error('Globally-trusted certificates require a valid email value in the options object. This is a Let’s Encrypt requirement.')
-    }
-
     const email = options.email
     delete options.email // Let’s be nice and not pollute that object.
 
@@ -125,7 +126,6 @@ class HttpsServer {
       agreeTos: true,
       telemetry: false,
       communityMember: false,
-      app,
       email,
     })
 

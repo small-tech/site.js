@@ -9,20 +9,16 @@ if (arguments._.length > 1 || arguments.help === true) {
 
   const usageFolderToServe = clr('folder-to-serve', 'green')
   const usagePortOption = `${clr('--port', 'yellow')} ${clr('N', 'cyan')}`
-
-  // For when Express static gets HTTP2 support:
-  // ===================================================================================
-  // const usageHttp2Option = clr('--http2', 'yellow')
-  //     • ${usageHttp2Option}\t\t${clr('flag', 'italic')}\tRequests an HTTP2 server (optional; defaults to HTTP1).
-  // ===================================================================================
+  const usageGlobalOption = `${clr('--global', 'yellow')} ${clr('you@your.site', 'cyan')}`
 
   const usage = `
   ${clr('Usage:', 'underline')}
 
-  ${clr('https-server', 'bold')} [${usageFolderToServe}] [${usagePortOption}]
+  ${clr('https-server', 'bold')} [${usageFolderToServe}] [${usagePortOption}] [${usageGlobalOption}]
 
-  • ${usageFolderToServe}\t${clr('string', 'italic')}\tPath to the folder to serve (optional; defaults to current folder).
-  • ${usagePortOption}\t\t${clr('number', 'italic')}\tThe port to start the server on (optional; defaults to 443).
+  • ${usageFolderToServe}\t\tPath to the folder to serve (optional; defaults to current folder).
+  • ${usagePortOption}\t\t\tThe port to start the server on (optional; defaults to 443).
+  • ${usageGlobalOption}\tUse globally-trusted certificates. The email address is required by Let’s Encrypt.
   `.replace(/\n$/, '').replace(/^\n/, '')
 
   console.log(usage)
@@ -42,16 +38,19 @@ if (arguments.port !== undefined) {
   port = parseInt(arguments.port)
 }
 
+// If an email is passed, use it.
+let email = undefined
+if (arguments.email !== undefined) {
+  email = arguments.email
+}
+
 if (!fs.existsSync(pathToServe)) {
   console.log(` 🤔 Error: could not find path ${pathToServe}\n`)
   process.exit(1)
 }
 
-// For when Express static gets HTTP2 support:
-// const http2 = (arguments.http2 === true)
-
 // Start the server.
-httpsServer.serve(pathToServe, port)
+httpsServer.serve(pathToServe, port, email)
 
 // Helpers.
 
