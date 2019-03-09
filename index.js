@@ -52,9 +52,17 @@ class HttpsServer {
     // object are optional. Check and populate the defaults.
     if (options === undefined) options = {}
     const pathToServe = typeof options.path === 'string' ? options.path : '.'
-    const callback = typeof options.callback === 'function' ? options.callback : null
     const port = typeof options.port === 'number' ? options.port : 443
     const global = typeof options.global === 'boolean' ? options.global : false
+    const callback = typeof options.callback === 'function' ? options.callback : function () {
+      const serverPort = this.address().port
+      let portSuffix = ''
+      if (serverPort !== 443) {
+        portSuffix = `:${serverPort}`
+      }
+      const location = global ? os.hostname() : `localhost${portSuffix}`
+      console.log(` 🎉 Serving ${pathToServe} on https://${location}\n`)
+    }
 
     // Check for a valid port range
     // (port above 49,151 are ephemeral ports. See https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic,_private_or_ephemeral_ports)
@@ -67,19 +75,6 @@ class HttpsServer {
     // and using a mainframe and hopefully Linux will join the rest of the modern world
     // in dropping this requirement soon (macOS just did in Mojave).
     this._ensureWeCanBindToPort(port, pathToServe)
-
-    // If a callback isn’t provided, fallback to a default one that gives a status update.
-    if (callback === null) {
-      callback = function () {
-        const serverPort = this.address().port
-        let portSuffix = ''
-        if (serverPort !== 443) {
-          portSuffix = `:${serverPort}`
-        }
-        const location = email === undefined ? `localhost${portSuffix}` : os.hostname()
-        console.log(` 🎉 Serving ${pathToServe} on https://${location}\n`)
-      }
-    }
 
     // Create an express server to serve the path using Morgan for logging.
     const app = express()
@@ -132,7 +127,7 @@ class HttpsServer {
       agreeTos: true,
       telemetry: false,
       communityMember: false,
-      // email: ' ',
+      email: ' ',
     })
 
     // Create an HTTP server to handle redirects for the Let’s Encrypt ACME HTTP-01 challenge method that we use.

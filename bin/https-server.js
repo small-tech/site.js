@@ -50,7 +50,7 @@ if (arguments.port !== undefined) {
 // If global is specified, use it.
 let global = false
 if (arguments.global !== undefined) {
-  global = arguments.global === 'true'
+  global = arguments.global === true
 }
 
 if (!fs.existsSync(pathToServe)) {
@@ -60,7 +60,7 @@ if (!fs.existsSync(pathToServe)) {
 
 // Start the server.
 httpsServer.serve({
-  path: pathToServer,
+  path: pathToServe,
   port,
   global
 })

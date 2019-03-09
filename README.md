@@ -11,10 +11,25 @@ HTTP Server uses [nodecert](https://source.ind.ie/hypha/tools/nodecert) for seam
 npm i -g @ind.ie/https-server
 ```
 
-
 ## Use
 
 ### Command-line
+
+Start serving the current directory at https://localhost:
+
+```shell
+$ https-server
+```
+
+Start serving the _site_ directory at your hostname:
+
+```shell
+$ https-server site --global
+```
+
+For example, if you run the command on a connected server that has the ar.al domain pointing to it and `ar.al` set in _/etc/hostname_ (on Unix/Linux), you will be able to access the site at https://ar.al. The first time you access it, it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned.
+
+#### Syntax
 
 ```sh
 https-server [folder-to-serve] [--port N] [--global] [--version]
@@ -99,6 +114,8 @@ I can use your help to test HTTPS Server on the following platform/package manag
   - macOS with MacPorts
 
 Please [let me know how/if it works](https://github.com/indie-mirror/https-server/issues). Thank you!
+
+Also, automatic hostname detection has not been implemented for Windows and so globally-trusted certificates will fail on that platform. If you get to it before I do, [I would appreciate a pull request](https://github.com/indie-mirror/https-server/pulls).
 
 
 ## Thanks
