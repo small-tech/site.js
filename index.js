@@ -64,7 +64,7 @@ class WebServer {
         portSuffix = `:${serverPort}`
       }
       const location = global ? os.hostname() : `localhost${portSuffix}`
-      console.log(` 🎉 Serving ${pathToServe} on https://${location}\n`)
+      console.log(`\n 🎉 Serving ${pathToServe} on https://${location}\n`)
     }
 
     // Check for a valid port range
