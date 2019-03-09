@@ -1,16 +1,16 @@
 {
-  "name": "@ind.ie/https-server",
-  "version": "5.1.0",
-  "description": "A secure Small Tech personal web server for seamless development and live use.",
+  "name": "@ind.ie/web-server",
+  "version": "6.0.0",
+  "description": "A secure and seamless Small Tech personal web server.",
   "main": "index.js",
-  "bin": "bin/https-server.js",
+  "bin": "bin/web-server.js",
   "scripts": {
     "start": "node index.js",
     "test": "tape test/index.js"
   },
   "repository": {
     "type": "git",
-    "url": "git@source.ind.ie:hypha/tools/https-server.git"
+    "url": "git@source.ind.ie:hypha/tools/web-server.git"
   },
   "author": {
     "name": "Aral Balkan",

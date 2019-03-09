@@ -1,6 +1,6 @@
 const test = require('tape')
 
-const httpsServer = require('../index.js')
+const webServer = require('../index.js')
 const https = require('https')
 
 const indexHTML = "<!DOCTYPE html><html lang='en'><head><title>Test</title><body><h1>Test</h1></body></html>"
@@ -24,22 +24,22 @@ async function secureGet (url) {
 }
 
 
-test('create https server', t => {
+test('createServer method', t => {
   t.plan(2)
-  const server = httpsServer.createServer()
+  const server = webServer.createServer()
   t.ok(server instanceof https.Server, 'is https.Server')
 
   server.listen(443, () => {
-    t.equal(server.address().port, 443, 'the requested port is set on https.Server')
+    t.equal(server.address().port, 443, 'the requested port is set on returned https.Server')
     t.end()
     server.close()
   })
 })
 
 
-test('static serve https', t => {
+test('serve method', t => {
   t.plan(3)
-  const server = httpsServer.serve({path: 'test/site', callback: async () => {
+  const server = webServer.serve({path: 'test/site', callback: async () => {
 
     t.ok(server instanceof https.Server, 'is https.Server')
 

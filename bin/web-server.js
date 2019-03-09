@@ -2,7 +2,7 @@
 const fs = require('fs')
 const path = require('path')
 var ansi = require('ansi-escape-sequences')
-const httpsServer = require('../index.js')
+const webServer = require('../index.js')
 
 const arguments = require('minimist')(process.argv.slice(2))
 
@@ -16,7 +16,7 @@ if (arguments._.length > 2 || arguments.help === true) {
   const usage = `
   ${clr('Usage:', 'underline')}
 
-  ${clr('https-server', 'bold')} [${usageFolderToServe}] [${usagePortOption}] [${usageGlobalOption}] [${usageVersionOption}]
+  ${clr('web-server', 'bold')} [${usageFolderToServe}] [${usagePortOption}] [${usageGlobalOption}] [${usageVersionOption}]
 
   • ${usageFolderToServe}\t\tPath to the folder to serve (defaults to current folder).
   • ${usagePortOption}\t\t\tThe port to start the server on (defaults to 443).
@@ -29,8 +29,7 @@ if (arguments._.length > 2 || arguments.help === true) {
 }
 
 if (arguments.version !== undefined) {
-  const version = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), 'utf-8')).version
-  console.log(`  https-server v${version}\n`)
+  console.log(webServer.version())
   process.exit()
 }
 
@@ -59,7 +58,7 @@ if (!fs.existsSync(pathToServe)) {
 }
 
 // Start the server.
-httpsServer.serve({
+webServer.serve({
   path: pathToServe,
   port,
   global

@@ -14,7 +14,14 @@ const redirectHTTPS = require('redirect-https')
 const nodecert = require('@ind.ie/nodecert')
 
 
-class HttpsServer {
+class WebServer {
+  // Returns a nicely-formatted version string based on
+  // the version set in the package.json file. (Synchronous.)
+  version () {
+    const version = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json'), 'utf-8')).version
+    return `\n 💖 Indie Web Server v${version}\n`
+  }
+
   // Returns an https server instance – the same as you’d get with
   // require('https').createServer() – configured with your locally-trusted nodecert
   // certificates by default. If you pass in {global: true} in the options object,
@@ -39,9 +46,11 @@ class HttpsServer {
   // •      path: (string)    the path to serve (defaults to the current working directory).
   // •  callback: (function)  the callback to call once the server is ready (a default is provided).
   // •      port: (integer)   the port to bind to (between 0 - 49,151; the default is 443).
-  // •    global:
-  //
+  // •    global: (boolean)   if true, automatically provision an use Let’s Encrypt TLS certificates.
   serve (options) {
+
+    console.log(this.version())
+
     // The options parameter object and all supported properties on the options parameter
     // object are optional. Check and populate the defaults.
     if (options === undefined) options = {}
@@ -92,7 +101,7 @@ class HttpsServer {
   //
 
   _createTLSServerWithLocallyTrustedCertificate (options, requestListener = undefined) {
-    console.log(' 🚧 [https-server] Using locally-trusted certificates.')
+    console.log(' 🚧 [Indie Web Server] Using locally-trusted certificates.')
 
     // Ensure that locally-trusted certificates exist.
     nodecert()
@@ -111,7 +120,7 @@ class HttpsServer {
 
 
   _createTLSServerWithGloballyTrustedCertificate (options, requestListener = undefined) {
-    console.log(' 🌍 [https-server] Using globally-trusted certificates.')
+    console.log(' 🌍 [Indie Web Server] Using globally-trusted certificates.')
 
     // Certificates are automatically obtained for the hostname and the www. subdomain of the hostname
     // for the machine that we are running on.
@@ -140,7 +149,7 @@ class HttpsServer {
     const httpsRedirectionMiddleware = redirectHTTPS()
     const httpServer = http.createServer(acmeTLS.middleware(httpsRedirectionMiddleware))
     httpServer.listen(80, () => {
-      console.log(' 👉 [https-server] (Globally-trusted TLS) HTTP → HTTPS redirection active.')
+      console.log(' 👉 [Indie Web Server] HTTP → HTTPS redirection active.')
     })
 
     // Add the TLS options from ACME TLS to any existing options that might have been passed in.
@@ -183,4 +192,4 @@ class HttpsServer {
   }
 }
 
-module.exports = new HttpsServer()
+module.exports = new WebServer()

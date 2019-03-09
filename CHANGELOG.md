@@ -8,6 +8,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Nothing yet.
 
+## [6.0.0] – 2019-03-09
+
+## Changed
+
+  - __Name:__ HTTPS Server is now called Indie Web Server.
+  - __NPM module:__ @ind.ie/https-server is now @ind.ie/web-server.
+  - __Source code repository:__ Now located at https://source.ind.ie/hypha/tools/web-server/.
+
+## Added
+
+  - [Helmet](https://helmetjs.github.io/) for securing the Express app further.
+
 ## [5.1.0] - 2019-03-09
 
 ### Changed
