@@ -1,14 +1,18 @@
-# HTTPS Server
+# Indie Web Server
 
-HTTPS Server is a secure [Small Tech](https://ar.al/2019/03/04/small-technology/) personal web server for seamless development and live use.
+Indie Web Server (IWS) is a secure and seamless [Small Tech](https://ar.al/2019/03/04/small-technology/) personal web server.
 
-HTTP Server uses [nodecert](https://source.ind.ie/hypha/tools/nodecert) for seamless locally-trusted TLS certificate provisioning and use during development and [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) for seamless globally-trusted [Let’s Encrypt](https://letsencrypt.org/) TLS certificate provisioning and use on live environments.
+  - Zero-configuration – It Just Works 🤞™.
+
+  - Develop and test with automatically-provisioned locally-trusted TLS thanks to [mkcert](https://github.com/FiloSottile/mkcert) via [Nodecert](https://source.ind.ie/hypha/tools/nodecert).
+
+  - Stage and deploy with automatically-provisioned globally-trusted TLS thanks to [Let’s Encrypt](https://letsencrypt.org/) via [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) (with an A score on [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest)).
 
 
 ## Install
 
 ```sh
-npm i -g @ind.ie/https-server
+npm i -g @ind.ie/web-server
 ```
 
 ## Use
@@ -18,55 +22,51 @@ npm i -g @ind.ie/https-server
 Start serving the current directory at https://localhost:
 
 ```shell
-$ https-server
+$ web-server
 ```
 
 Start serving the _site_ directory at your hostname:
 
 ```shell
-$ https-server site --global
+$ web-server site --global
 ```
 
-For example, if you run the command on a connected server that has the ar.al domain pointing to it and `ar.al` set in _/etc/hostname_ (on Unix/Linux), you will be able to access the site at https://ar.al. The first time you access it, it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned.
+For example, if you run the command on a connected server that has the ar.al domain pointing to it and `ar.al` set in _/etc/hostname_ (on Unix/Linux/macOS), you will be able to access the site at https://ar.al. The first time you hit it, it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
 
 #### Syntax
 
 ```sh
-https-server [folder-to-serve] [--port N] [--global] [--version]
+web-server [folder-to-serve] [--port N] [--global] [--version]
 ```
 
-All command-line arguments are optional. By default, an HTTPS server with locally-trusted certificates will be created for you to serve the current folder over port 443.
+All command-line arguments are optional. By default, Indie Web Server will serve your current working folder over port 433 with locally-trusted certificates.
 
-If you do not already have TLS certificates, they will be created for you automatically using [nodecert](https://source.ind.ie/hypha/tools/nodecert).
-
-All dependencies are installed automatically for you if they do not exist if you have apt, pacman, or yum (untested) on Linux or if you have [Homebrew](https://brew.sh/) or [MacPorts](https://www.macports.org/) (untested) on macOS.
-
-If you specify the `--global` flag, globally-trusted Let’s Encrypt TLS certificates are automatically provisioned for you using ACME-TLS the first time you hit your hostname. The hostname for the certificates is automatically set from the hostname of your system (and the _www._ subdomain is also automatically provisioned).
+If you specify the `--global` flag, globally-trusted Let’s Encrypt TLS certificates are automatically provisioned for you using ACME TLS the first time you hit your hostname. The hostname for the certificates is automatically set from the hostname of your system (and the _www._ subdomain is also automatically provisioned).
 
 ### API
 
-HTTPS Server’s `createServer` method behaves like the built-in _https_ module’s `createServer` function. Anywhere you use `https.createServer`, you can simply replace it with `httpsServer.createServer`.
+Indie Web Server’s `createServer` method behaves like the built-in _https_ module’s `createServer` function. Anywhere you use `https.createServer`, you can simply replace it with `httpsServer.createServer`.
 
 
 #### createServer([options], [requestListener])
 
   - __options__ _(object)___:__ see [https.createServer](https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener). Populates the `cert` and `key` properties from the automatically-created [nodecert](https://source.ind.ie/hypha/tools/nodecert/) or Let’s Encrypt certificates and will overwrite them if they exist in the options object you pass in. If your options has `options.global = true` set, globally-trusted TLS certificates are obtained from Let’s Encrypt using ACME TLS.
 
-  - __requestListener__ _(function)___:__ see [https.createServer](https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener). If you don’t pass a request listener, HTTPS Server will use its default one.
+  - __requestListener__ _(function)___:__ see [https.createServer](https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener). If you don’t pass a request listener, Indie Web Server will use its default one.
 
     __Returns:__ [https.Server](https://nodejs.org/api/https.html#https_class_https_server) instance, configured with either locally-trusted certificates via nodecert or globally-trusted ones from Let’s Encrypt.
 
 ##### Example
 
 ```js
-const httpsServer = require('https-server')
+const webServer = require('@ind.ie/web-server')
 const express = require('express')
 
 const app = express()
 app.use(express.static('.'))
 
 const options = {} // to use globally-trusted certificates instead, set this to {global: true}
-const server = httpsServer.createServer(options, app).listen(443, () => {
+const server = webServer.createServer(options, app).listen(443, () => {
   console.log(` 🎉 Serving on https://localhost\n`)
 })
 ```
@@ -86,36 +86,34 @@ Options is an optional parameter object that may contain the following propertie
     __Returns:__ [https.Server](https://nodejs.org/api/https.html#https_class_https_server) instance, configured with either locally or globally-trusted certificates.
 
 
-##### Example
+##### Examples
 
-Using locally-trusted TLS certificates:
+Serve the current directory at https://localhost using locally-trusted TLS certificates:
 
 ```js
-const httpsServer = require('https-server')
-
-// Serve the current directory over https://localhost
-const server = httpsServer.serve()
+const webServer = require('@ind.ie/web-server')
+const server = webServer.serve()
 ```
 
-Using globally-trusted TLS certificates:
+Serve the current directory at your hostname using globally-trusted Let’s Encrypt TLS certificates:
 
 ```js
-const httpsServer = require('https-server')
-
-// Serve the current directory over https://localhost
-const server = httpsServer.serve({global: true})
+const webServer = require('@ind.ie/web-server')
+const server = webServer.serve({global: true})
 ```
 
 ## Help wanted
 
-I can use your help to test HTTPS Server on the following platform/package manager combinations:
+For locally-trusted certificates, all dependencies are installed automatically for you if they do not exist if you have apt, pacman, or yum (untested) on Linux or if you have [Homebrew](https://brew.sh/) or [MacPorts](https://www.macports.org/) (untested) on macOS.
+
+I can use your help to test Indie Web Server on the following platform/package manager combinations:
 
   - Linux with yum
   - macOS with MacPorts
 
-Please [let me know how/if it works](https://github.com/indie-mirror/https-server/issues). Thank you!
+Please [let me know how/if it works](https://github.com/indie-mirror/web-server/issues). Thank you!
 
-Also, automatic hostname detection has not been implemented for Windows and so globally-trusted certificates will fail on that platform. If you get to it before I do, [I would appreciate a pull request](https://github.com/indie-mirror/https-server/pulls).
+Also, automatic hostname detection has not been implemented for Windows and so globally-trusted certificates will fail on that platform. If you get to it before I do, [I would appreciate a pull request](https://github.com/indie-mirror/web-server/pulls).
 
 
 ## Thanks
