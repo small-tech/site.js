@@ -20,7 +20,7 @@
   "license": "AGPL-3.0-or-later",
   "dependencies": {
     "@ind.ie/acme-tls": "^1.0.0",
-    "@ind.ie/nodecert": "^2.0.1",
+    "@ind.ie/nodecert": "^2.0.2",
     "ansi-escape-sequences": "^4.1.0",
     "express": "^4.16.4",
     "helmet": "^3.15.1",
