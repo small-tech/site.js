@@ -1,6 +1,6 @@
 # Indie Web Server
 
-Indie Web Server (IWS) is a secure and seamless [Small Tech](https://ar.al/2019/03/04/small-technology/) personal web server.
+Indie Web Server is a secure and seamless [Small Tech](https://ar.al/2019/03/04/small-technology/) personal web server.
 
   - Zero-configuration – It Just Works 🤞™.
 
