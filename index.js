@@ -6,6 +6,7 @@ const os = require('os')
 const childProcess = require('child_process')
 
 const express = require('express')
+const helmet = require('helmet')
 const morgan = require('morgan')
 const AcmeTLS = require('@ind.ie/acme-tls')
 const redirectHTTPS = require('redirect-https')
@@ -71,7 +72,8 @@ class HttpsServer {
 
     // Create an express server to serve the path using Morgan for logging.
     const app = express()
-    app.use(morgan('tiny'))
+    app.use(helmet())                     // Express.js security with HTTP headers.
+    app.use(morgan('tiny'))               // Logging.
     app.use(express.static(pathToServe))
 
     let server
