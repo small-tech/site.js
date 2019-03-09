@@ -10,7 +10,7 @@ if (arguments._.length > 2 || arguments.help === true) {
 
   const usageFolderToServe = clr('folder-to-serve', 'green')
   const usagePortOption = `${clr('--port', 'yellow')} ${clr('N', 'cyan')}`
-  const usageGlobalOption = `${clr('--global', 'yellow')} ${clr('you@your.site', 'cyan')}`
+  const usageGlobalOption = `${clr('--global', 'yellow')}`
   const usageVersionOption = `${clr('--version', 'yellow')}`
 
   const usage = `
@@ -20,7 +20,7 @@ if (arguments._.length > 2 || arguments.help === true) {
 
   • ${usageFolderToServe}\t\tPath to the folder to serve (defaults to current folder).
   • ${usagePortOption}\t\t\tThe port to start the server on (defaults to 443).
-  • ${usageGlobalOption}\tUse globally-trusted certificates. The email address is required by Let’s Encrypt.
+  • ${usageGlobalOption}\tUse globally-trusted certificates.
   • ${usageVersionOption}\t\t\tDisplay the version.
   `.replace(/\n$/, '').replace(/^\n/, '')
 
@@ -47,10 +47,10 @@ if (arguments.port !== undefined) {
   port = parseInt(arguments.port)
 }
 
-// If an email is passed, use it.
-let email = undefined
+// If global is specified, use it.
+let global = false
 if (arguments.global !== undefined) {
-  email = arguments.global
+  global = arguments.global === 'true'
 }
 
 if (!fs.existsSync(pathToServe)) {
@@ -59,7 +59,11 @@ if (!fs.existsSync(pathToServe)) {
 }
 
 // Start the server.
-httpsServer.serve(pathToServe, port, email)
+httpsServer.serve({
+  path: pathToServer,
+  port,
+  global
+})
 
 // Helpers.
 

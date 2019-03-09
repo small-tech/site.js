@@ -7,7 +7,7 @@ const childProcess = require('child_process')
 
 const express = require('express')
 const morgan = require('morgan')
-const Greenlock = require('greenlock')
+const AcmeTLS = require('@ind.ie/acme-tls')
 const redirectHTTPS = require('redirect-https')
 
 // Requiring nodecert ensures that locally-trusted TLS certificates exist.
@@ -21,23 +21,16 @@ if (!fs.existsSync(nodecertDirectory)) {
 
 
 class HttpsServer {
-
-  //
-  // Public.
-  //
-
   // Returns an https server instance – the same as you’d get with
-  // require('https').createServer – configured with your locally-trusted nodecert
-  // certificates by default. If you pass in an email address, globally-trusted
-  // TLS certificates are obtained from Let’s Encrypt.
+  // require('https').createServer() – configured with your locally-trusted nodecert
+  // certificates by default. If you pass in {global: true} in the options object,
+  // globally-trusted TLS certificates are obtained from Let’s Encrypt.
   //
   // Note: if you pass in a key and cert in the options object, they will not be
   // ===== used and will be overwritten.
   createServer (options = {}, requestListener = undefined) {
-    // TODO: Create local certificate authority and certificates if on development
-    // ===== or use Greenlock on production to ensure that we have Let’s Encrypt
-    //       certificates set up.
-    if (options.email !== undefined) {
+    if (options.global) {
+      delete options.global // Let’s be nice and not pollute that object.
       return this._createTLSServerWithGloballyTrustedCertificate (options, requestListener)
     } else {
       // Default to using local certificates.
@@ -46,20 +39,33 @@ class HttpsServer {
   }
 
 
-  // Starts a static server serving the contents of the passed path at the passed port
-  // and returns the server. If an email address is provided, then global certificates
-  // are obtained and used from Let’s Encrypt.
-  serve (pathToServe = '.', callback = null, port = undefined, email = undefined) {
+  // Starts a static server. You can customise it by passing an options object with the
+  // following properties (all optional):
+  //
+  // •      path: (string)    the path to serve (defaults to the current working directory).
+  // •  callback: (function)  the callback to call once the server is ready (a default is provided).
+  // •      port: (integer)   the port to bind to (between 0 - 49,151; the default is 443).
+  // •    global:
+  //
+  serve (options) {
+    // The options parameter object and all supported properties on the options parameter
+    // object are optional. Check and populate the defaults.
+    if (options === undefined) options = {}
+    const pathToServe = typeof options.path === 'string' ? options.path : '.'
+    const callback = typeof options.callback === 'function' ? options.callback : null
+    const port = typeof options.port === 'number' ? options.port : 443
+    const global = typeof options.global === 'boolean' ? options.global : false
 
-    // Can also be called as serve(pathToServe, port, [email])
-    if (typeof callback === 'number') {
-      email = port
-      port = callback
-      callback = null
+    // Check for a valid port range
+    // (port above 49,151 are ephemeral ports. See https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic,_private_or_ephemeral_ports)
+    if (port < 0 || port > 49151) {
+      throw new Error('Error: specified port must be between 0 and 49,151 inclusive.')
     }
 
-    if (port === undefined) port = 443 // The default port.
-
+    // On Linux, we need to get the Node process special access to so-called privileged
+    // ports (<1,024). This is meaningless security theatre unless you’re living in 1968
+    // and using a mainframe and hopefully Linux will join the rest of the modern world
+    // in dropping this requirement soon (macOS just did in Mojave).
     this._ensureWeCanBindToPort(port, pathToServe)
 
     // If a callback isn’t provided, fallback to a default one that gives a status update.
@@ -82,7 +88,7 @@ class HttpsServer {
 
     let server
     try {
-      server = this.createServer({email}, app).listen(port, callback)
+      server = this.createServer({global}, app).listen(port, callback)
     } catch (error) {
       console.log('\nError: could not start server', error)
       throw error
@@ -90,7 +96,6 @@ class HttpsServer {
 
     return server
   }
-
 
   //
   // Private.
@@ -112,14 +117,11 @@ class HttpsServer {
   _createTLSServerWithGloballyTrustedCertificate (options, requestListener = undefined) {
     console.log(' 🌍 [https-server] Using globally-trusted certificates.')
 
-    const email = options.email
-    delete options.email // Let’s be nice and not pollute that object.
-
     // Certificates are automatically obtained for the hostname and the www. subdomain of the hostname
     // for the machine that we are running on.
     const hostname = os.hostname()
 
-    const greenlock = Greenlock.create({
+    const acmeTLS = AcmeTLS.create({
       // Note: while testing, you might want to use the staging server at:
       // ===== https://acme-staging-v02.api.letsencrypt.org/directory
       server: 'https://acme-v02.api.letsencrypt.org/directory',
@@ -130,18 +132,18 @@ class HttpsServer {
       agreeTos: true,
       telemetry: false,
       communityMember: false,
-      email,
+      // email: ' ',
     })
 
     // Create an HTTP server to handle redirects for the Let’s Encrypt ACME HTTP-01 challenge method that we use.
     const httpsRedirectionMiddleware = redirectHTTPS()
-    const httpServer = http.createServer(greenlock.middleware(httpsRedirectionMiddleware))
+    const httpServer = http.createServer(acmeTLS.middleware(httpsRedirectionMiddleware))
     httpServer.listen(80, () => {
       console.log(' 👉 [https-server] (Globally-trusted TLS) HTTP → HTTPS redirection active.')
     })
 
-    // Add the TLS options from Greenlock to any existing options that might have been passed in.
-    Object.assign(options, greenlock.tlsOptions)
+    // Add the TLS options from ACME TLS to any existing options that might have been passed in.
+    Object.assign(options, acmeTLS.tlsOptions)
 
     // Create and return the HTTPS server.
     return https.createServer(options, requestListener)

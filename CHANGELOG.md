@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Nothing yet.
 
+## [5.0.0] - 2019-03-09
+
+### Changed
+
+  - __Privacy and usability__: Now using [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls/) (fork of Greenlock.js) for Let’s Encrypt certificate provisioning. This removes the artificial and privacy-eroding Greenlock.js requirement to specify an email address for Let’s Encrypt certificates.
+
+  - __API:__ The `serve()` method now accepts a single parameter object (`options`).
+
+## [4.0.0] - 2019-03-08
+
+### Added
+
+  - Add support for globally-trusted Let’s Encrypt TLS certificates.
+
 ## [3.0.0] - 2019-03-05
 
 ### Removed
