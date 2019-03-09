@@ -39,7 +39,7 @@ test('create https server', t => {
 
 test('static serve https', t => {
   t.plan(3)
-  const server = httpsServer.serve('test/site', async () => {
+  const server = httpsServer.serve({path: 'test/site', callback: async () => {
 
     t.ok(server instanceof https.Server, 'is https.Server')
 
@@ -56,5 +56,5 @@ test('static serve https', t => {
     t.end()
 
     server.close()
-  })
+  }})
 })

@@ -8,6 +8,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Nothing yet.
 
+## [5.1.0] - 2019-03-09
+
+### Changed
+
+  - Nodecert is no longer invoked at startup but only if locally-trusted certificates are requested.
+  - ACME TLS globally-trusted Let’s Encrypt certificates are now stored in `~/.acme-tls` (locally trusted nodecert certificates are still stored in `~/.nodecert`).
+
+### Fixed
+
+  - Tests
+
 ## [5.0.0] - 2019-03-09
 
 ### Changed

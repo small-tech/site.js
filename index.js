@@ -10,14 +10,7 @@ const morgan = require('morgan')
 const AcmeTLS = require('@ind.ie/acme-tls')
 const redirectHTTPS = require('redirect-https')
 
-// Requiring nodecert ensures that locally-trusted TLS certificates exist.
-require('@ind.ie/nodecert')
-
-const nodecertDirectory = path.join(os.homedir(), '.nodecert')
-
-if (!fs.existsSync(nodecertDirectory)) {
-  throw new Error('Error: requires nodecert.\n\nInstall: npm i -g nodecert\nRun    : nodecert\n\nMore information: https://source.ind.ie/hypha/tools/nodecert')
-}
+const nodecert = require('@ind.ie/nodecert')
 
 
 class HttpsServer {
@@ -98,6 +91,12 @@ class HttpsServer {
 
   _createTLSServerWithLocallyTrustedCertificate (options, requestListener = undefined) {
     console.log(' 🚧 [https-server] Using locally-trusted certificates.')
+
+    // Ensure that locally-trusted certificates exist.
+    nodecert()
+
+    const nodecertDirectory = path.join(os.homedir(), '.nodecert')
+
     const defaultOptions = {
       key: fs.readFileSync(path.join(nodecertDirectory, 'localhost-key.pem')),
       cert: fs.readFileSync(path.join(nodecertDirectory, 'localhost.pem'))
@@ -122,9 +121,14 @@ class HttpsServer {
       server: 'https://acme-v02.api.letsencrypt.org/directory',
 
       version: 'draft-11',
-      configDir: `~/.nodecert/${hostname}/`,
+
+      // Certificates are stored in ~/.acme-tls/<hostname>
+      configDir: `~/.acme-tls/${hostname}/`,
+
       approvedDomains: [hostname, `www.${hostname}`],
       agreeTos: true,
+
+      // These will be removed altogether soon.
       telemetry: false,
       communityMember: false,
       email: ' ',
