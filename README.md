@@ -102,6 +102,12 @@ const webServer = require('@ind.ie/web-server')
 const server = webServer.serve({global: true})
 ```
 
+## Contributing
+
+Indie Web Server is, by design, a zero-configuration personal web server for single-tenant web applications for and by individuals. As such, as new feature requests will have to be both fit for purpose and survive a trial by fire to be considered. (That is, this is [Small Tech](https://ar.al/2019/03/04/small-technology/), with the emphasis on _small_).
+
+Please file issues and submit pull requests on the [Indie Web Server Github Mirror](https://github.com/indie-mirror/indie-web-server).
+
 ## Help wanted
 
 For locally-trusted certificates, all dependencies are installed automatically for you if they do not exist if you have apt, pacman, or yum (untested) on Linux or if you have [Homebrew](https://brew.sh/) or [MacPorts](https://www.macports.org/) (untested) on macOS.
