@@ -30,8 +30,12 @@ class WebServer {
   // Note: if you pass in a key and cert in the options object, they will not be
   // ===== used and will be overwritten.
   createServer (options = {}, requestListener = undefined) {
-    if (options.global) {
-      delete options.global // Let’s be nice and not pollute that object.
+
+    // Let’s be nice and not continue to pollute the options object.
+    const requestsGlobalCertificateScope = options.global === true
+    if (options.global !== undefined) { delete options.global }
+
+    if (requestsGlobalCertificateScope) {
       return this._createTLSServerWithGloballyTrustedCertificate (options, requestListener)
     } else {
       // Default to using local certificates.
