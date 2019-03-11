@@ -45,7 +45,7 @@ If you specify the `--global` flag, globally-trusted Let’s Encrypt TLS certifi
 
 ### API
 
-Indie Web Server’s `createServer` method behaves like the built-in _https_ module’s `createServer` function. Anywhere you use `https.createServer`, you can simply replace it with `httpsServer.createServer`.
+Indie Web Server’s `createServer` method behaves like the built-in _https_ module’s `createServer` function. Anywhere you use `require('https').createServer`, you can simply replace it with `require('@ind.ie/web-server').createServer`.
 
 
 #### createServer([options], [requestListener])
