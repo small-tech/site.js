@@ -6,7 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
-Nothing yet.
+## Changed
+
+  - Use latest ACME TLS that properly removes email requirement and all telemetry.
 
 ## [6.0.0] – 2019-03-09
 
