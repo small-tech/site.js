@@ -143,10 +143,22 @@ class WebServer {
       approvedDomains: [hostname, `www.${hostname}`],
       agreeTos: true,
 
+      // Instead of an email address, we pass the hostname. ACME TLS is based on
+      // Greenlock.js and those folks decided to make email addresses a requirement
+      // instead of an optional element as is the case with Let’s Encrypt. This has deep
+      // architectural knock-offs including to the way certificates are stored in
+      // the le-store-certbot storage strategy, etc. Instead of forking and gutting
+      // multiple modules (I’ve already had to fork a number to remove the telemetry),
+      // we are using the hostmail in place of the email address as a local identifier.
+      // Our fork of acme-v02 is aware of this and will simply disregard any email
+      // addresses passed that match the hostname before making the call to the ACME
+      // servers. (That module, as it reflects the ACME spec, does _not_ have the email
+      // address as a required property.)
+      email: os.hostname(),
+
       // These will be removed altogether soon.
       telemetry: false,
       communityMember: false,
-      email: ' ',
     })
 
     // Create an HTTP server to handle redirects for the Let’s Encrypt ACME HTTP-01 challenge method that we use.
