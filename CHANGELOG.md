@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Nothing yet.
 
+## [6.2.0] - 2019-02-12
+
+## Changed
+
+  - Uses latest ACME TLS that disables all Greenlock-related telemetry from submodules (such as acme, acme-v2, and rsa-compat) and accepts hostnames as valid local identifiers in place of the artificial and privacy-eroding email address requirement imposed earlier by Greenlock.js).
+
 ## [6.0.0] – 2019-03-09
 
 ## Changed
