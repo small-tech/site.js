@@ -89,6 +89,13 @@ class WebServer {
     app.use(morgan('tiny'))               // Logging.
     app.use(express.static(pathToServe))
 
+    // 404 (Not Found) support.
+    app.use((request, response, next) => {
+
+      // Send default 404 page.
+      response.status(404).send(`<!doctype html><html style="font-family: sans-serif; background-color: #eae7e1"><head><meta charset="utf-8"><title>Error 404: Not found</title></head><body style="display: grid; align-items: center; justify-content: center; height: 100vh; vertical-align: top; margin: 0;"><main><h1 style="font-size: 16vw; color: black; text-align:center; line-height: 0.25">4🤭4</h1><p style="font-size: 4vw; text-align: center; padding-left: 2vw; padding-right: 2vw;"><span>Could not find</span> <span style="color: grey;">${request.path}</span></p></main></body></html>`)
+    })
+
     let server
     try {
       server = this.createServer({global}, app).listen(port, callback)
