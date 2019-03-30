@@ -1,6 +1,6 @@
 {
   "name": "@ind.ie/web-server",
-  "version": "6.2.0",
+  "version": "6.3.0",
   "description": "A secure and seamless Small Tech personal web server.",
   "main": "index.js",
   "bin": "bin/web-server.js",
