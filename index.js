@@ -71,6 +71,14 @@ class WebServer {
       console.log(`\n 🎉 Serving ${pathToServe} on https://${location}\n`)
     }
 
+    // Check if a custom 404 page exists in the requested path. If it does, we will use it.
+    const custom404path = path.join(pathToServe, '/404/index.html')
+    const hasCustom404 = fs.existsSync(custom404path)
+    let custom404 = null
+    if (hasCustom404) {
+      custom404 = fs.readFileSync(custom404path, 'utf-8')
+    }
+
     // Check for a valid port range
     // (port above 49,151 are ephemeral ports. See https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic,_private_or_ephemeral_ports)
     if (port < 0 || port > 49151) {
@@ -91,9 +99,15 @@ class WebServer {
 
     // 404 (Not Found) support.
     app.use((request, response, next) => {
-
-      // Send default 404 page.
-      response.status(404).send(`<!doctype html><html style="font-family: sans-serif; background-color: #eae7e1"><head><meta charset="utf-8"><title>Error 404: Not found</title></head><body style="display: grid; align-items: center; justify-content: center; height: 100vh; vertical-align: top; margin: 0;"><main><h1 style="font-size: 16vw; color: black; text-align:center; line-height: 0.25">4🤭4</h1><p style="font-size: 4vw; text-align: center; padding-left: 2vw; padding-right: 2vw;"><span>Could not find</span> <span style="color: grey;">${request.path}</span></p></main></body></html>`)
+      // If there is a custom 404 page, serve that. The template variable
+      // THE_PATH, if present on the page, will be replaced with the current
+      // request path before it is returned.
+      if (hasCustom404) {
+        response.redirect(`/404?not-found=${request.path}`)
+      } else {
+        // Send default 404 page.
+        response.status(404).send(`<!doctype html><html lang="en" style="font-family: sans-serif; background-color: #eae7e1"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error 404: Not found</title></head><body style="display: grid; align-items: center; justify-content: center; height: 100vh; vertical-align: top; margin: 0;"><main><h1 style="font-size: 16vw; color: black; text-align:center; line-height: 0.25">4🤭4</h1><p style="font-size: 4vw; text-align: center; padding-left: 2vw; padding-right: 2vw;"><span>Could not find</span> <span style="color: grey;">${request.path}</span></p></main></body></html>`)
+      }
     })
 
     let server

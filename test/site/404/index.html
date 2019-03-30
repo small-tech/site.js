@@ -1,14 +1,20 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset='utf-8'>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Hmm… I can’t seem to find that page.</title>
+  <style>
+    html {font-family: sans-serif; background-color: #eae7e1}
+    body {display: grid; align-items: center; justify-content: center; height: 100vh; vertical-align: top; margin: 0;}
+    main {padding-left: 2vw; padding-right: 2vw;}
+  </style>
 </head>
 <body>
-  <h1>Hmm…</h1>
-  <img src="hmm-monster.svg" alt="Green monster, thinking.">
-  <p>Sorry, I dont’ know where THE_PATH is.</p>
+  <main>
+    <h1>Hmm…</h1>
+    <img src="hmm-monster.svg" alt="Green monster, thinking.">
+    <p><strong>Sorry, I can’t find </strong> <span id='that-page'>that page.</span><script>document.getElementById('that-page').innerText = (new URLSearchParams(document.location.search).get('not-found'))</script></p>
+  </main>
 </body>
 </html>
