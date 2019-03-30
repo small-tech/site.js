@@ -53,6 +53,18 @@ test('serve method', t => {
 
     t.equal(response.statusCode, 200, 'request succeeds')
     t.equal(response.body, indexHTML, 'index loads')
+
+    // let notFoundResponse
+    // try {
+    //   response404 = await secureGet('https://localhost/this-page-does-not-exist')
+    // } catch (error) {
+    //   console.log(error)
+    //   process.exit(1)
+    // }
+
+    // t.equal(response.statusCode, 404, 'response is 404')
+    // console.log(response.body)
+
     t.end()
 
     server.close()
