@@ -71,12 +71,20 @@ class WebServer {
       console.log(`\n 🎉 Serving ${pathToServe} on https://${location}\n`)
     }
 
-    // Check if a custom 404 page exists in the requested path. If it does, we will use it.
-    const custom404path = path.join(pathToServe, '/404/index.html')
-    const hasCustom404 = fs.existsSync(custom404path)
+    // Check if a custom 404 page exists at the conventional path. If it does, load it for use later.
+    const custom404Path = path.join(pathToServe, '/404/index.html')
+    const hasCustom404 = fs.existsSync(custom404Path)
     let custom404 = null
     if (hasCustom404) {
-      custom404 = fs.readFileSync(custom404path, 'utf-8')
+      custom404 = fs.readFileSync(custom404Path, 'utf-8')
+    }
+
+    // Check if a custom 500 page exists at the conventional path. If it does, load it for use later.
+    const custom500Path = path.join(pathToServe, '/500/index.html')
+    const hasCustom500 = fs.existsSync(custom500Path)
+    let custom500 = null
+    if (hasCustom500) {
+      custom500 = fs.readFileSync(custom500Path, 'utf-8')
     }
 
     // Check for a valid port range
@@ -96,9 +104,13 @@ class WebServer {
     app.use(helmet())                     // Express.js security with HTTP headers.
     app.use(morgan('tiny'))               // Logging.
 
-    // To test the 500 error:
+    // To test a 500 error, hit /test-500-error
     app.use((request, response, next) => {
-      throw new Error('Bad things have happened.')
+      if (request.path === '/test-500-error') {
+        throw new Error('Bad things have happened.')
+      } else {
+        next()
+      }
     })
 
     app.use(express.static(pathToServe))
@@ -124,9 +136,26 @@ class WebServer {
 
     // 500 (Server error) support.
     app.use((error, request, response, next) => {
-      response.status(500).send(`<!doctype html><html lang="en" style="font-family: sans-serif; background-color: #eae7e1"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error 500: Internal Server Error</title></head><body style="display: grid; align-items: center; justify-content: center; height: 100vh; vertical-align: top; margin: 0;"><main><h1 style="font-size: 16vw; color: black; text-align:center; line-height: 0.25">5🔥😱</h1><p style="font-size: 4vw; text-align: center; padding-left: 2vw; padding-right: 2vw;"><span>Internal Server Error</span><br><br><span style="color: grey;">${error.toString().replace('Error: ', '')}</span></p></main></body></html>`)
+      // Strip the Error: prefix from the message.
+      const errorMessage = error.toString().replace('Error: ', '')
+
+      // If there is a custom 500 path, serve that. The template variable
+      // THE_ERROR, if present on the page, will be replaced with the error description.
+      if (hasCustom500) {
+        // Enable basic template support for including the error message.
+        const custom500WithErrorMessage = custom500.replace('THE_ERROR', errorMessage)
+
+        // Enable relative links to work in custom error pages.
+        const custom500WithErrorMessageAndBase = custom500WithErrorMessage.replace('<head>', '<head>\n\t<base href="/500/">')
+
+        response.status(500).send(custom500WithErrorMessageAndBase)
+      } else {
+        // Send default 500 page.
+        response.status(500).send(`<!doctype html><html lang="en" style="font-family: sans-serif; background-color: #eae7e1"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error 500: Internal Server Error</title></head><body style="display: grid; align-items: center; justify-content: center; height: 100vh; vertical-align: top; margin: 0;"><main><h1 style="font-size: 16vw; color: black; text-align:center; line-height: 0.25">5🔥😱</h1><p style="font-size: 4vw; text-align: center; padding-left: 2vw; padding-right: 2vw;"><span>Internal Server Error</span><br><br><span style="color: grey;">${errorMessage}</span></p></main></body></html>`)
+      }
     })
 
+    // Create the server and start listening on the requested port.
     let server
     try {
       server = this.createServer({global}, app).listen(port, callback)
