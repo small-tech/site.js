@@ -96,6 +96,11 @@ class WebServer {
     app.use(helmet())                     // Express.js security with HTTP headers.
     app.use(morgan('tiny'))               // Logging.
 
+    // To test the 500 error:
+    app.use((request, response, next) => {
+      throw new Error('Bad things have happened.')
+    })
+
     app.use(express.static(pathToServe))
 
     // 404 (Not Found) support.
@@ -115,6 +120,11 @@ class WebServer {
         // Send default 404 page.
         response.status(404).send(`<!doctype html><html lang="en" style="font-family: sans-serif; background-color: #eae7e1"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error 404: Not found</title></head><body style="display: grid; align-items: center; justify-content: center; height: 100vh; vertical-align: top; margin: 0;"><main><h1 style="font-size: 16vw; color: black; text-align:center; line-height: 0.25">4🤭4</h1><p style="font-size: 4vw; text-align: center; padding-left: 2vw; padding-right: 2vw;"><span>Could not find</span> <span style="color: grey;">${request.path}</span></p></main></body></html>`)
       }
+    })
+
+    // 500 (Server error) support.
+    app.use((error, request, response, next) => {
+      response.status(500).send(`<!doctype html><html lang="en" style="font-family: sans-serif; background-color: #eae7e1"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error 500: Internal Server Error</title></head><body style="display: grid; align-items: center; justify-content: center; height: 100vh; vertical-align: top; margin: 0;"><main><h1 style="font-size: 16vw; color: black; text-align:center; line-height: 0.25">5🔥😱</h1><p style="font-size: 4vw; text-align: center; padding-left: 2vw; padding-right: 2vw;"><span>Internal Server Error</span><br><br><span style="color: grey;">${error.toString().replace('Error: ', '')}</span></p></main></body></html>`)
     })
 
     let server
