@@ -113,7 +113,9 @@ test('serve method', t => {
       process.exit(1)
     }
 
-    const expectedCustom404ResponseBodyDeflated = '<!doctypehtml><htmllang="en"><head><basehref="/404/"><metacharset="utf-8"><metaname="viewport"content="width=device-width,initial-scale=1.0"><title>Hmm…Ican’tseemtofindthatpage.</title><style>html{font-family:sans-serif;background-color:#eae7e1}body{display:grid;align-items:center;justify-content:center;height:100vh;vertical-align:top;margin:0;}main{padding-left:2vw;padding-right:2vw;}p{text-align:center;}</style></head><body><main><h1>Hmm…</h1><!--Note:AllyourURLsincustomerrorfilesmustbe--><imgsrc="hmm-monster.svg"alt="Greenmonster,thinking."><p><strong>Sorry,Ican’tfind</strong>/this-page-does-not-exist</p></main></body></html>'
+    // Load the custom 404 file and carry out the transformations that the 404 route would perform. Then strip
+    // it of whitespace and compare to the response we got, also stripped of whitespace.
+    const expectedCustom404ResponseBodyDeflated = fs.readFileSync(path.join(__dirname, 'site', '404', 'index.html'), 'utf-8').replace('THE_PATH', '/this-page-does-not-exist').replace('<head>', '<head>\n\t<base href="/404/">').replace(/\s/g, '')
 
     t.equal(responseCustom404.statusCode, 404, 'response status code is 404')
     t.equal(responseCustom404.body.replace(/\s/g, ''), expectedCustom404ResponseBodyDeflated, 'custom 404 response body')
