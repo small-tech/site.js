@@ -13,7 +13,9 @@ async function secureGet (url) {
   return new Promise((resolve, reject) => {
     https.get(url, (response) => {
       const statusCode = response.statusCode
-      if (statusCode !== 200 && statusCode !== 404) {
+
+      // Reject if it’s not one of the status codes we are testing.
+      if (statusCode !== 200 && statusCode !== 404 && statusCode !== 500) {
         reject({statusCode})
       }
 
@@ -83,7 +85,7 @@ test('serve method default 404', t => {
 
 
 test('serve method', t => {
-  t.plan(5)
+  t.plan(7)
   const server = webServer.serve({path: 'test/site', callback: async () => {
 
     t.ok(server instanceof https.Server, 'is https.Server')
@@ -118,7 +120,25 @@ test('serve method', t => {
     const expectedCustom404ResponseBodyDeflated = fs.readFileSync(path.join(__dirname, 'site', '404', 'index.html'), 'utf-8').replace('THE_PATH', '/this-page-does-not-exist').replace('<head>', '<head>\n\t<base href="/404/">').replace(/\s/g, '')
 
     t.equal(responseCustom404.statusCode, 404, 'response status code is 404')
-    t.equal(responseCustom404.body.replace(/\s/g, ''), expectedCustom404ResponseBodyDeflated, 'custom 404 response body')
+    t.equal(responseCustom404.body.replace(/\s/g, ''), expectedCustom404ResponseBodyDeflated, 'custom 404 response body is as expected')
+
+    //
+    // Test custom 500 page.
+    //
+    let responseCustom500
+    try {
+      responseCustom500 = await secureGet('https://localhost/test-500-error')
+    } catch (error) {
+      console.log(error)
+      process.exit(1)
+    }
+
+    // Load the custom 500 file and carry out the transformations that the 500 route would perform. Then strip
+    // it of whitespace and compare to the response we got, also stripped of whitespace.
+    const expectedCustom500ResponseBodyDeflated = fs.readFileSync(path.join(__dirname, 'site', '500', 'index.html'), 'utf-8').replace('THE_ERROR', 'Bad things have happened.').replace('<head>', '<head>\n\t<base href="/500/">').replace(/\s/g, '')
+
+    t.equal(responseCustom500.statusCode, 500, 'response status code is 500')
+    t.equal(responseCustom500.body.replace(/\s/g, ''), expectedCustom500ResponseBodyDeflated, 'custom 500 response body is as expected')
 
     t.end()
 
