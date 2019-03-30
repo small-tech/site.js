@@ -10,7 +10,7 @@ async function secureGet (url) {
   return new Promise((resolve, reject) => {
     https.get(url, (response) => {
       const statusCode = response.statusCode
-      if (statusCode !== 200) {
+      if (statusCode !== 200 && statusCode !== 404) {
         reject({statusCode})
       }
 
@@ -38,7 +38,7 @@ test('createServer method', t => {
 
 
 test('serve method', t => {
-  t.plan(3)
+  t.plan(5)
   const server = webServer.serve({path: 'test/site', callback: async () => {
 
     t.ok(server instanceof https.Server, 'is https.Server')
@@ -54,16 +54,17 @@ test('serve method', t => {
     t.equal(response.statusCode, 200, 'request succeeds')
     t.equal(response.body, indexHTML, 'index loads')
 
-    // let notFoundResponse
-    // try {
-    //   response404 = await secureGet('https://localhost/this-page-does-not-exist')
-    // } catch (error) {
-    //   console.log(error)
-    //   process.exit(1)
-    // }
+    let response404
+    try {
+      response404 = await secureGet('https://localhost/this-page-does-not-exist')
+    } catch (error) {
+      process.exit(1)
+    }
 
-    // t.equal(response.statusCode, 404, 'response is 404')
-    // console.log(response.body)
+    const custom404PageSourceDeflated = '<!doctypehtml><htmllang="en"><head><basehref="/404/"><metacharset="utf-8"><metaname="viewport"content="width=device-width,initial-scale=1.0"><title>Hmm…Ican’tseemtofindthatpage.</title><style>html{font-family:sans-serif;background-color:#eae7e1}body{display:grid;align-items:center;justify-content:center;height:100vh;vertical-align:top;margin:0;}main{padding-left:2vw;padding-right:2vw;}p{text-align:center;}</style></head><body><main><h1>Hmm…</h1><!--Note:AllyourURLsincustomerrorfilesmustbe--><imgsrc="hmm-monster.svg"alt="Greenmonster,thinking."><p><strong>Sorry,Ican’tfind</strong>/this-page-does-not-exist</p></main></body></html>'
+
+    t.equal(response404.statusCode, 404, 'response is 404')
+    t.equal(response404.body.replace(/\s/g, ''), custom404PageSourceDeflated)
 
     t.end()
 
