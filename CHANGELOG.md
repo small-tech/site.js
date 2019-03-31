@@ -19,7 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Added
 
-  - Native 4042302 support (https://4042302.org/).
+  - Native [404 to 302](https://4042302.org/) support.
   - Programmatic access to the default 404 and 500 error page content.
 
 ## [6.3.0] - 2019-03-30
