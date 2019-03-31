@@ -6,7 +6,7 @@ const ansi = require('ansi-escape-sequences')
 const webServer = require('../index.js')
 
 const pm2 = require('pm2')
-
+const childProcess = require('child_process')
 const arguments = require('minimist')(process.argv.slice(2))
 
 if (arguments._.length > 2 || arguments.help === true) {
@@ -60,13 +60,10 @@ if (!fs.existsSync(pathToServe)) {
   process.exit(1)
 }
 
-
-// If live mode is specified, run as a daemon using pm2,
-// otherwise, start it as a regular process.
+// If live mode is specified, run as a daemon using the pm2 process manager.
+// Otherwise, start it as a regular process.
 if (arguments.live !== undefined) {
-  //
-  // Start a pm2 daemon.
-  //
+
   pm2.connect((error) => {
     if (error) {
       console.log(error)
@@ -80,12 +77,31 @@ if (arguments.live !== undefined) {
       output: '~/.web-server/logs/output.log',
       error: '~/.web-server/logs/error.log',
       pid: '~/.web-server/pids/server.pid',
+      autorestart: true
     }, (error, processObj) => {
-      pm2.disconnect()
       if (error) {
         throw error
       }
-      console.log(`${webServer.version()}\n 😈 Launched as a daemon on https://${os.hostname()}\n`)
+
+      console.log(`${webServer.version()}\n 😈 Launched as daemon on https://${os.hostname()}\n`)
+
+      //
+      // Run the script that tells the process manager to add the server to launch at startup
+      // as a separate process with sudo privileges.
+      //
+      const options = {
+        env: process.env,
+        stdio: 'pipe'
+      }
+
+      // TODO: Check these results for failure.
+      const startupResult = childProcess.execSync(`sudo ${path.join(__dirname, '../node_modules/pm2/bin/pm2')} startup`, options)
+      const permissionsResult = childProcess.execSync('sudo chown $(whoami):$(whoami) /home/$(whoami)/.pm2/rpc.sock /home/$(whoami)/.pm2/pub.sock', options)
+
+      console.log(` 😈 Installed for auto-launch at startup.\n`)
+
+      // Disconnect from the pm2 daemon. This will also exit the script.
+      pm2.disconnect()
     })
   })
 } else {
@@ -99,8 +115,9 @@ if (arguments.live !== undefined) {
   })
 }
 
-
+//
 // Helpers.
+//
 
 // Format ansi strings.
 // Courtesy Bankai (https://github.com/choojs/bankai/blob/master/bin.js#L142)
