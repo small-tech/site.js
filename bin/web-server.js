@@ -9,33 +9,56 @@ const pm2 = require('pm2')
 const childProcess = require('child_process')
 const arguments = require('minimist')(process.argv.slice(2), {boolean: true})
 
+const pm2Path = path.join(__dirname, '../node_modules/pm2/bin/pm2')
+
 if (arguments._.length > 2 || arguments.help === true) {
 
   const usageFolderToServe = clr('folder-to-serve', 'green')
   const usagePortOption = `${clr('--port', 'yellow')}=${clr('N', 'cyan')}`
   const usageStagingOption = `${clr('--staging', 'yellow')}`
   const usageLiveOption = `${clr('--live', 'yellow')}`
+  const usageMonitorOption = `${clr('--monitor', 'yellow')}`
   const usageVersionOption = `${clr('--version', 'yellow')}`
 
   const usage = `
+   ${webServer.version()}
   ${clr('Usage:', 'underline')}
 
-  ${clr('web-server', 'bold')} [${usageFolderToServe}] [${usagePortOption}] [${usageStagingOption}] [${usageVersionOption}]
+  ${clr('web-server', 'bold')} [${usageFolderToServe}] [${usagePortOption}] [${usageStagingOption}] [${usageLiveOption}] [${usageMonitorOption}] [${usageVersionOption}]
 
-  • ${usageFolderToServe}\t\tPath to the folder to serve (defaults to current folder).
-  • ${usagePortOption}\t\t\tThe port to start the server on (defaults to 443).
-  • ${usageStagingOption}\tRun as regular process with globally-trusted certificates.
-  • ${usageLiveOption}\tRun as launch-time daemon with globally-trusted certificates.
-  • ${usageVersionOption}\t\t\tDisplay the version.
+  • ${usageFolderToServe}\tPath to the folder to serve (defaults to current folder).
+  • ${usagePortOption}\t\tThe port to start the server on (defaults to 443).
+  • ${usageStagingOption}\t\tRun as regular process with globally-trusted certificates.
+  • ${usageLiveOption}\t\tRun as launch-time daemon with globally-trusted certificates.
+  • ${usageMonitorOption}\t\tMonitor an already-running live server.
+  • ${usageVersionOption}\t\tDisplay the version.
   `.replace(/\n$/, '').replace(/^\n/, '')
 
   console.log(usage)
   process.exit()
 }
 
+// Version.
 if (arguments.version !== undefined) {
   console.log(webServer.version())
   process.exit()
+}
+
+// Monitor.
+if (arguments.monitor !== undefined) {
+  // Launch pm2 monit.
+  const options = {
+    env: process.env,
+    stdio: 'inherit'
+  }
+
+  try {
+    childProcess.execSync(`sudo ${pm2Path} monit`, options)
+  } catch (error) {
+    console.log(` 👿 Failed to launch the process monitor.\n`)
+    process.exit(1)
+  }
+  process.exit(0)
 }
 
 // If no path is passed, serve the current folder.
