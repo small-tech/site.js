@@ -19,6 +19,7 @@ if (arguments._.length > 2 || arguments.help === true) {
   const usageLiveOption = `${clr('--live', 'yellow')}`
   const usageMonitorOption = `${clr('--monitor', 'yellow')}`
   const usageLogsOption = `${clr('--logs', 'yellow')}`
+  const usageInfoOption = `${clr('--info', 'yellow')}`
   const usageVersionOption = `${clr('--version', 'yellow')}`
 
   const usage = `
@@ -31,8 +32,9 @@ if (arguments._.length > 2 || arguments.help === true) {
   • ${usagePortOption}\t\tThe port to start the server on (defaults to 443).
   • ${usageStagingOption}\t\tRun as regular process with globally-trusted certificates.
   • ${usageLiveOption}\t\tRun as launch-time daemon with globally-trusted certificates.
-  • ${usageMonitorOption}\t\tMonitor an already-running live server.
-  • ${usageLogsOption}\t\tDisplay and tail the server logs.
+  • ${usageMonitorOption}\t\tMonitor the running live server.
+  • ${usageLogsOption}\t\tDisplay and tail the server logs for the running live server.
+  • ${usageInfoOption}\t\tDisplay detailed information about the running live server.
   • ${usageVersionOption}\t\tDisplay the version.
   `.replace(/\n$/, '').replace(/^\n/, '')
 
@@ -75,6 +77,23 @@ if (arguments.logs !== undefined) {
     childProcess.execSync(`sudo ${pm2Path} logs web-server`, options)
   } catch (error) {
     console.log(` 👿 Failed to get the logs.\n`)
+    process.exit(1)
+  }
+  process.exit(0)
+}
+
+// Info (pm2 proxy).
+if (arguments.info !== undefined) {
+  // Launch pm2 logs.
+  const options = {
+    env: process.env,
+    stdio: 'inherit'
+  }
+
+  try {
+    childProcess.execSync(`sudo ${pm2Path} show web-server`, options)
+  } catch (error) {
+    console.log(` 👿 Failed to show detailed information on the web server.\n`)
     process.exit(1)
   }
   process.exit(0)
