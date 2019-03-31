@@ -72,7 +72,7 @@ To do so, create a simple file called `4042302` in the root directory of your we
 
 ### /4042302
 ```
-https://the-previous-verison-of.my.site
+https://the-previous-version-of.my.site
 ```
 
 You can chain the 404 → 302 method any number of times to ensure that none of your links ever break without expending any additional effort to migrate your content.
