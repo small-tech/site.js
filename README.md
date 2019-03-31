@@ -10,6 +10,7 @@ Indie Web Server is a secure and seamless [Small Tech](https://ar.al/2019/03/04/
 
   - Stage and deploy with automatically-provisioned globally-trusted TLS thanks to [Let’s Encrypt](https://letsencrypt.org/) via [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) (with an A score on [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest)).
 
+[Watch a short 4-minute video](https://ar.al/2019/03/14/introducing-indie-web-server-video/) demonstrating how easy it is to install and use Indie Web Server.
 
 ## Install
 
