@@ -51,7 +51,7 @@ npm test
 web-server test/site
 ```
 
-#### Syntax
+## Syntax
 
 ```sh
 web-server [folder-to-serve] [--port N] [--global] [--version]
@@ -69,7 +69,7 @@ Indie Web Server has native support for [the 404 to 302 technique](https://40423
 
 To do so, create a simple file called `4042302` in the root directory of your web content and add the URL of the server that is hosting your older content. e.g.,
 
-#### /4042302
+### /4042302
 {{<highlight shell>}}
 https://the-previous-verison-of.my.site
 {{</highlight>}}
@@ -88,12 +88,12 @@ If you do not create custom error pages, the built-in default error pages will b
 
 When creating your own servers (see [API](#API)), you can generate the default error pages programmatically using the static methods `WebServer.default404ErrorPage()` and `WebServer.default500ErrorPage()`, passing in the missing path and the error message as the argument, respectively to get the HTML string of the error page returned.
 
-### API
+## API
 
 Indie Web Server’s `createServer` method behaves like the built-in _https_ module’s `createServer` function. Anywhere you use `require('https').createServer`, you can simply replace it with `require('@ind.ie/web-server').createServer`.
 
 
-#### createServer([options], [requestListener])
+### createServer([options], [requestListener])
 
   - __options__ _(object)___:__ see [https.createServer](https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener). Populates the `cert` and `key` properties from the automatically-created [nodecert](https://source.ind.ie/hypha/tools/nodecert/) or Let’s Encrypt certificates and will overwrite them if they exist in the options object you pass in. If your options has `options.global = true` set, globally-trusted TLS certificates are obtained from Let’s Encrypt using ACME TLS.
 
@@ -101,7 +101,7 @@ Indie Web Server’s `createServer` method behaves like the built-in _https_ mod
 
     __Returns:__ [https.Server](https://nodejs.org/api/https.html#https_class_https_server) instance, configured with either locally-trusted certificates via nodecert or globally-trusted ones from Let’s Encrypt.
 
-##### Example
+#### Example
 
 ```js
 const webServer = require('@ind.ie/web-server')
@@ -116,7 +116,7 @@ const server = webServer.createServer(options, app).listen(443, () => {
 })
 ```
 
-#### serve([options])
+### serve([options])
 
 Options is an optional parameter object that may contain the following properties, all optional:
 
@@ -131,7 +131,7 @@ Options is an optional parameter object that may contain the following propertie
     __Returns:__ [https.Server](https://nodejs.org/api/https.html#https_class_https_server) instance, configured with either locally or globally-trusted certificates.
 
 
-##### Examples
+#### Examples
 
 Serve the current directory at https://localhost using locally-trusted TLS certificates:
 
