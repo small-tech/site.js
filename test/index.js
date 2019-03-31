@@ -6,8 +6,6 @@ const https = require('https')
 const fs = require('fs')
 const path = require('path')
 
-const indexHTML = "<!DOCTYPE html><html lang='en'><head><title>Test</title><body><h1>Test</h1></body></html>"
-
 
 async function secureGet (url) {
   return new Promise((resolve, reject) => {
@@ -127,7 +125,7 @@ test('serve method', t => {
     }
 
     t.equal(response.statusCode, 200, 'request succeeds')
-    t.equal(response.body, indexHTML, 'index loads')
+    t.equal(response.body.replace(/\s/g, ''), fs.readFileSync(path.join(__dirname, 'site', 'index.html'), 'utf-8').replace(/\s/g, ''), 'index loads')
 
     //
     // Test custom 404 page.
