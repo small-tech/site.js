@@ -8,8 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### To-do
 
-  - Add 4042302 support (https://4042302.org/)
-  - Native binary support
+  - Add 4042302 support (https://4042302.org/).
+  - Integrate pm2 for production use.
+  - Create native binary releases.
 
 ### Done
 
