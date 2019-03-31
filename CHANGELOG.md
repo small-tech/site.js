@@ -8,12 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### To-do
 
-  - Integrate pm2 for production use.
   - Create native binary releases.
 
 ### Done
 
+## [6.5.0] - 2019-03-31
 
+## Added
+
+  - --live flag to run as daemon and handle crashes/restarts via integrated pm2 process manager.
 
 ## [6.4.0] - 2019-03-31
 

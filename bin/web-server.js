@@ -1,8 +1,11 @@
 #!/usr/bin/env node
+const os = require('os')
 const fs = require('fs')
 const path = require('path')
-var ansi = require('ansi-escape-sequences')
+const ansi = require('ansi-escape-sequences')
 const webServer = require('../index.js')
+
+const pm2 = require('pm2')
 
 const arguments = require('minimist')(process.argv.slice(2))
 
@@ -57,12 +60,45 @@ if (!fs.existsSync(pathToServe)) {
   process.exit(1)
 }
 
-// Start the server.
-webServer.serve({
-  path: pathToServe,
-  port,
-  global
-})
+
+// If live mode is specified, run as a daemon using pm2,
+// otherwise, start it as a regular process.
+if (arguments.live !== undefined) {
+  //
+  // Start a pm2 daemon.
+  //
+  pm2.connect((error) => {
+    if (error) {
+      console.log(error)
+      process.exit(1)
+    }
+
+    pm2.start({
+      script: path.join(__dirname, 'daemon.js'),
+      args: pathToServe,
+      name: 'indie-web-server',
+      output: '~/.web-server/logs/output.log',
+      error: '~/.web-server/logs/error.log',
+      pid: '~/.web-server/pids/server.pid',
+    }, (error, processObj) => {
+      pm2.disconnect()
+      if (error) {
+        throw error
+      }
+      console.log(`${webServer.version()}\n 😈 Launched as a daemon on https://${os.hostname()}\n`)
+    })
+  })
+} else {
+  //
+  // Start a regular server process.
+  //
+  webServer.serve({
+    path: pathToServe,
+    port,
+    global
+  })
+}
+
 
 // Helpers.
 
