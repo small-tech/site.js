@@ -7,7 +7,7 @@ const webServer = require('../index.js')
 
 const pm2 = require('pm2')
 const childProcess = require('child_process')
-const arguments = require('minimist')(process.argv.slice(2))
+const arguments = require('minimist')(process.argv.slice(2), {boolean: true})
 
 if (arguments._.length > 2 || arguments.help === true) {
 
@@ -39,7 +39,7 @@ if (arguments.version !== undefined) {
 // If no path is passed, serve the current folder.
 // If there is a path, serve that.
 let pathToServe = '.'
-if (arguments._.length === 1) {
+if (arguments._.length > 0) {
   pathToServe = arguments._[0]
 }
 
@@ -73,7 +73,7 @@ if (arguments.live !== undefined) {
     pm2.start({
       script: path.join(__dirname, 'daemon.js'),
       args: pathToServe,
-      name: 'indie-web-server',
+      name: 'web-server',
       output: '~/.web-server/logs/output.log',
       error: '~/.web-server/logs/error.log',
       pid: '~/.web-server/pids/server.pid',
@@ -94,8 +94,13 @@ if (arguments.live !== undefined) {
         stdio: 'pipe'
       }
 
-      // TODO: Check this for failure.
-      const output = childProcess.execSync(`sudo ${path.join(__dirname, '../node_modules/pm2/bin/pm2')} startup`, options)
+      try {
+        const output = childProcess.execSync(`sudo ${path.join(__dirname, '../node_modules/pm2/bin/pm2')} startup`, options)
+      } catch (error) {
+        console.log(` 👿 Failed to add server for auto-launch at startup.\n`)
+        pm2.disconnect()
+        process.exit(1)
+      }
 
       console.log(` 😈 Installed for auto-launch at startup.\n`)
 

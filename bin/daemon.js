@@ -17,6 +17,6 @@ const pathToServe = args[0]
 // Run the web server.
 const webServer = require('../index.js')
 webServer.serve({
-  pathToServe,
+  path: pathToServe,
   global: true
 })
