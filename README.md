@@ -48,9 +48,16 @@ Start serving the _site_ directory at your _hostname_ as a daemon that will run 
 $ web-server --live site
 ```
 
-The `--live` option uses the [pm2](https://pm2.io/runtime/) process manager and sets up your server to (re)start automatically when you server (re)starts (requires `sudo`) and/or crashes, etc.
+The `--live` option sets up your server to (re)start automatically when you server (re)starts (requires `sudo`) and/or crashes, etc.
 
 For example, if you run the command on a connected server that has the ar.al domain pointing to it and `ar.al` set in _/etc/hostname_ (on Unix/Linux/macOS), you will be able to access the site at https://ar.al. The first time you hit it, it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
+
+Once you have started your live web server daemon, you can use these commands to monitor it, etc.:
+
+  * `--monitor`: monitor an already-running live server daemon process.
+  * `--logs`: display and tail the web server logs.
+
+The live server uses the [pm2](https://pm2.io/runtime/) process manager internally and you can make use of all pm2 functionality via the pm2 command if you need to.
 
 ## Build and test from source
 

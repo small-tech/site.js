@@ -16,7 +16,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Added
 
-  - --live flag to run as daemon and handle crashes/restarts via integrated pm2 process manager.
+  - `--live` flag to run as daemon and handle crashes/restarts via integrated pm2 process manager.
+  - `--monitor` flag to monitor an already-running live server daemon process.
+  - `--logs` flag to display and tail the web server logs for an already-running live server daemon process.
 
 ## Changed
 
