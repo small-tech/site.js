@@ -35,6 +35,21 @@ $ web-server site --global
 
 For example, if you run the command on a connected server that has the ar.al domain pointing to it and `ar.al` set in _/etc/hostname_ (on Unix/Linux/macOS), you will be able to access the site at https://ar.al. The first time you hit it, it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
 
+## Build and test from source
+
+```shell
+# Clone and install.
+git clone https://source.ind.ie/hypha/tools/web-server.git
+cd web-server
+npm i -g .
+
+# Run unit tests.
+npm test
+
+# Serve the test site (visit https://localhost to view).
+web-server test/site
+```
+
 #### Syntax
 
 ```sh
