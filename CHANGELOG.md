@@ -6,7 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
-Nothing yet.
+### To-do
+
+  - Add 4042302 support (https://4042302.org/)
+  - Native binary support
+
+### Done
+
+  - Add programmatic access for default error pages to the API
+
 
 ## [6.3.0] - 2019-03-30
 

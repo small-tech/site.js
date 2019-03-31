@@ -45,9 +45,13 @@ If you specify the `--global` flag, globally-trusted Let’s Encrypt TLS certifi
 
 ### Custom error pages
 
+![Screenshot of the custom 404 error page included in the unit tests](images/custom-404.png)
+
 You can specify a custom error page for 404 (not found) and 500 (internal server error) errors. To do so, create a folder with the status code you want off of the root of your web content (i.e., `/404` and/or `/500`) and place at least an `index.html` file in the folder. You can also, optionally, put any assets you want to display on your error pages into those folders and load them in via relative URLs. Your custom error pages will be served with the proper error code and at the URL that was being accessed.
 
 If you do not create custom error pages, the built-in default error pages will be displayed for 404 and 500 errors.
+
+When creating your own servers (see [API](#API)), you can generate the default error pages programmatically using the static methods `WebServer.default404ErrorPage()` and `WebServer.default500ErrorPage()`, passing in the missing path and the error message as the argument, respectively to get the HTML string of the error page returned.
 
 ### API
 
