@@ -94,9 +94,8 @@ if (arguments.live !== undefined) {
         stdio: 'pipe'
       }
 
-      // TODO: Check these results for failure.
-      const startupResult = childProcess.execSync(`sudo ${path.join(__dirname, '../node_modules/pm2/bin/pm2')} startup`, options)
-      const permissionsResult = childProcess.execSync('sudo chown $(whoami):$(whoami) /home/$(whoami)/.pm2/rpc.sock /home/$(whoami)/.pm2/pub.sock', options)
+      // TODO: Check this for failure.
+      const output = childProcess.execSync(`sudo ${path.join(__dirname, '../node_modules/pm2/bin/pm2')} startup`, options)
 
       console.log(` 😈 Installed for auto-launch at startup.\n`)
 
