@@ -65,7 +65,7 @@ If you specify the `--global` flag, globally-trusted Let’s Encrypt TLS certifi
 
 What if links never died? What if we never broke the Web? What if it didn’t involve any extra work? It’s possible. And easy. Just make your 404s into 302s.
 
-Indie Web Server has native support for [the 404 to 302 technique](https://4042302.org) to ensure an evergreen web. Just serve the old version of your site (e.g., your WordPress site, etc.) from a different subdomain and tell Indie Web Server to forward any unknown requests to that subdomain so that all your existing links magically work when you start using Indie Web Server to serve your new static site.
+Indie Web Server has native support for [the 404 to 302 technique](https://4042302.org) to ensure an evergreen web. Just serve the old version of your site (e.g., your WordPress site, etc.) from a different subdomain and tell Indie Web Server to forward any unknown requests on your new static site to that subdomain so that all your existing links magically work.
 
 To do so, create a simple file called `4042302` in the root directory of your web content and add the URL of the server that is hosting your older content. e.g.,
 
