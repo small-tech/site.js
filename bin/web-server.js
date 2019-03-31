@@ -18,19 +18,21 @@ if (arguments._.length > 2 || arguments.help === true) {
   const usageStagingOption = `${clr('--staging', 'yellow')}`
   const usageLiveOption = `${clr('--live', 'yellow')}`
   const usageMonitorOption = `${clr('--monitor', 'yellow')}`
+  const usageLogsOption = `${clr('--logs', 'yellow')}`
   const usageVersionOption = `${clr('--version', 'yellow')}`
 
   const usage = `
    ${webServer.version()}
   ${clr('Usage:', 'underline')}
 
-  ${clr('web-server', 'bold')} [${usageFolderToServe}] [${usagePortOption}] [${usageStagingOption}] [${usageLiveOption}] [${usageMonitorOption}] [${usageVersionOption}]
+  ${clr('web-server', 'bold')} [${usageFolderToServe}] [${usagePortOption}] [${usageStagingOption}] [${usageLiveOption}] [${usageMonitorOption}] [${usageLogsOption}] [${usageVersionOption}]
 
   • ${usageFolderToServe}\tPath to the folder to serve (defaults to current folder).
   • ${usagePortOption}\t\tThe port to start the server on (defaults to 443).
   • ${usageStagingOption}\t\tRun as regular process with globally-trusted certificates.
   • ${usageLiveOption}\t\tRun as launch-time daemon with globally-trusted certificates.
   • ${usageMonitorOption}\t\tMonitor an already-running live server.
+  • ${usageLogsOption}\t\tDisplay and tail the server logs.
   • ${usageVersionOption}\t\tDisplay the version.
   `.replace(/\n$/, '').replace(/^\n/, '')
 
@@ -44,7 +46,7 @@ if (arguments.version !== undefined) {
   process.exit()
 }
 
-// Monitor.
+// Monitor (pm2 proxy).
 if (arguments.monitor !== undefined) {
   // Launch pm2 monit.
   const options = {
@@ -56,6 +58,23 @@ if (arguments.monitor !== undefined) {
     childProcess.execSync(`sudo ${pm2Path} monit`, options)
   } catch (error) {
     console.log(` 👿 Failed to launch the process monitor.\n`)
+    process.exit(1)
+  }
+  process.exit(0)
+}
+
+// Logs (pm2 proxy).
+if (arguments.logs !== undefined) {
+  // Launch pm2 logs.
+  const options = {
+    env: process.env,
+    stdio: 'inherit'
+  }
+
+  try {
+    childProcess.execSync(`sudo ${pm2Path} logs web-server`, options)
+  } catch (error) {
+    console.log(` 👿 Failed to get the logs.\n`)
     process.exit(1)
   }
   process.exit(0)
