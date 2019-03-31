@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## Changed
 
   - (Breaking) Options that are not boolean flags now require an equals sign. This means that boolean flags like --live and --global can now be used before or after the path to be served whereas previously the path would not be registered if a boolean flag was used before it.
+  - (Breaking) The `--global` flag is now called `--staging`.
 
 ## [6.4.0] - 2019-03-31
 

@@ -22,17 +22,33 @@ npm i -g @ind.ie/web-server
 
 ### Command-line
 
-Start serving the current directory at https://localhost:
+#### Development
+
+Start serving the current directory at https://localhost using locally-trusted certificates:
 
 ```shell
 $ web-server
 ```
 
-Start serving the _site_ directory at your hostname:
+#### Staging
+
+Start serving the _site_ directory at your _hostname_ using globally-trusted Let’s Encrypt certificates:
 
 ```shell
-$ web-server site --global
+$ web-server --staging site
 ```
+
+For example, use [ngrok](https://ngrok.com/) (Pro+) with a custom domain name that you set in your `hostname` file (e.g., in `/etc/hostname` or via `hostnamectl set-hostname <hostname>` or the equivalent for your platform). The first time you hit your staging server via your hosname it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
+
+#### Live
+
+Start serving the _site_ directory at your _hostname_ as a daemon that will run at startup and be restarted if it crashes, etc.:
+
+```shell
+$ web-server --live site
+```
+
+The `--live` option uses the [pm2](https://pm2.io/runtime/) process manager and sets up your server to (re)start automatically when you server (re)starts (requires `sudo`) and/or crashes, etc.
 
 For example, if you run the command on a connected server that has the ar.al domain pointing to it and `ar.al` set in _/etc/hostname_ (on Unix/Linux/macOS), you will be able to access the site at https://ar.al. The first time you hit it, it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
 

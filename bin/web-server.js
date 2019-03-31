@@ -12,18 +12,20 @@ const arguments = require('minimist')(process.argv.slice(2), {boolean: true})
 if (arguments._.length > 2 || arguments.help === true) {
 
   const usageFolderToServe = clr('folder-to-serve', 'green')
-  const usagePortOption = `${clr('--port', 'yellow')} ${clr('N', 'cyan')}`
-  const usageGlobalOption = `${clr('--global', 'yellow')}`
+  const usagePortOption = `${clr('--port', 'yellow')}=${clr('N', 'cyan')}`
+  const usageStagingOption = `${clr('--staging', 'yellow')}`
+  const usageLiveOption = `${clr('--live', 'yellow')}`
   const usageVersionOption = `${clr('--version', 'yellow')}`
 
   const usage = `
   ${clr('Usage:', 'underline')}
 
-  ${clr('web-server', 'bold')} [${usageFolderToServe}] [${usagePortOption}] [${usageGlobalOption}] [${usageVersionOption}]
+  ${clr('web-server', 'bold')} [${usageFolderToServe}] [${usagePortOption}] [${usageStagingOption}] [${usageVersionOption}]
 
   • ${usageFolderToServe}\t\tPath to the folder to serve (defaults to current folder).
   • ${usagePortOption}\t\t\tThe port to start the server on (defaults to 443).
-  • ${usageGlobalOption}\tUse globally-trusted certificates.
+  • ${usageStagingOption}\tRun as regular process with globally-trusted certificates.
+  • ${usageLiveOption}\tRun as launch-time daemon with globally-trusted certificates.
   • ${usageVersionOption}\t\t\tDisplay the version.
   `.replace(/\n$/, '').replace(/^\n/, '')
 
@@ -49,10 +51,10 @@ if (arguments.port !== undefined) {
   port = parseInt(arguments.port)
 }
 
-// If global is specified, use it.
+// If staging is specified, use it.
 let global = false
-if (arguments.global !== undefined) {
-  global = arguments.global === true
+if (arguments.staging !== undefined) {
+  global = true
 }
 
 if (!fs.existsSync(pathToServe)) {
