@@ -61,7 +61,24 @@ All command-line arguments are optional. By default, Indie Web Server will serve
 
 If you specify the `--global` flag, globally-trusted Let’s Encrypt TLS certificates are automatically provisioned for you using ACME TLS the first time you hit your hostname. The hostname for the certificates is automatically set from the hostname of your system (and the _www._ subdomain is also automatically provisioned).
 
-### Custom error pages
+## Native 404 → 302 support for an evergreen web
+
+What if links never died? What if we never broke the Web? What if it didn’t involve any extra work? It’s possible. And easy. Just make your 404s into 302s.
+
+Indie Web Server has native support for [the 404 to 302 technique](https://4042302.org) to ensure an evergreen web. Just serve the old version of your site (e.g., your WordPress site, etc.) from a different subdomain and tell Indie Web Server to forward any unknown requests to that subdomain so that all your existing links magically work when you start using Indie Web Server to serve your new static site.
+
+To do so, create a simple file called `4042302` in the root directory of your web content and add the URL of the server that is hosting your older content. e.g.,
+
+#### /4042302
+{{<highlight shell>}}
+https://the-previous-verison-of.my.site
+{{</highlight>}}
+
+You can chain the 404 → 302 method any number of times to ensure that none of your links ever break without expending any additional effort to migrate your content.
+
+For more information and examples, see [4042302.org](https://4042302.org).
+
+## Custom error pages
 
 ![Screenshot of the custom 404 error page included in the unit tests](images/custom-404.png)
 

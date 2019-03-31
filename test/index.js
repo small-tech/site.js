@@ -11,16 +11,17 @@ async function secureGet (url) {
   return new Promise((resolve, reject) => {
     https.get(url, (response) => {
       const statusCode = response.statusCode
+      const location = response.headers.location
 
       // Reject if it’s not one of the status codes we are testing.
-      if (statusCode !== 200 && statusCode !== 404 && statusCode !== 500) {
+      if (statusCode !== 200 && statusCode !== 404 && statusCode !== 500 && statusCode !== 302) {
         reject({statusCode})
       }
 
       let body = ''
       response.on('data', _ => body += _)
       response.on('end', () => {
-        resolve({statusCode, body})
+        resolve({statusCode, location, body})
       })
     })
   })
@@ -37,6 +38,32 @@ test('createServer method', t => {
     t.end()
     server.close()
   })
+})
+
+
+test('4042302', t => {
+  // See https://4042302.org/get-started/
+  t.plan(2)
+
+  const _4042302FilePath = path.join(__dirname, 'site', '4042302')
+  fs.writeFileSync(_4042302FilePath, 'https://my-previous.site', 'utf-8')
+
+  const server = webServer.serve({path: 'test/site', callback: async () => {
+    let response
+    try {
+      response = await secureGet('https://localhost/this-page-exists-on-my-previous-site')
+    } catch (error) {
+      console.log(error)
+      process.exit(1)
+    }
+
+    t.equal(response.statusCode, 302, '302 status is returned')
+    t.equal(response.location, 'https://my-previous.site/this-page-exists-on-my-previous-site')
+
+    fs.unlinkSync(_4042302FilePath)
+    server.close()
+    t.end()
+  }})
 })
 
 

@@ -81,8 +81,22 @@ class WebServer {
       console.log(`\n 🎉 Serving ${pathToServe} on https://${location}\n`)
     }
 
+    // Check if a 4042302 (404 → 302) redirect has been requested.
+    //
+    // What if links never died? What if we never broke the Web? What if it didn’t involve any extra work?
+    // It’s possible. And easy. (And with Indie Web Server, it’s seamless.)
+    // Just make your 404s into 302s.
+    //
+    // Find out more at https://4042302.org/
+    const _4042302Path = path.join(pathToServe, '4042302')
+    const has4042302 = fs.existsSync(_4042302Path)
+    let _4042302 = null
+    if (has4042302) {
+      _4042302 = fs.readFileSync(_4042302Path, 'utf-8').replace(/\s/g, '')
+    }
+
     // Check if a custom 404 page exists at the conventional path. If it does, load it for use later.
-    const custom404Path = path.join(pathToServe, '/404/index.html')
+    const custom404Path = path.join(pathToServe, '404', 'index.html')
     const hasCustom404 = fs.existsSync(custom404Path)
     let custom404 = null
     if (hasCustom404) {
@@ -90,7 +104,7 @@ class WebServer {
     }
 
     // Check if a custom 500 page exists at the conventional path. If it does, load it for use later.
-    const custom500Path = path.join(pathToServe, '/500/index.html')
+    const custom500Path = path.join(pathToServe, '500', 'index.html')
     const hasCustom500 = fs.existsSync(custom500Path)
     let custom500 = null
     if (hasCustom500) {
@@ -127,10 +141,15 @@ class WebServer {
 
     // 404 (Not Found) support.
     app.use((request, response, next) => {
-      // If there is a custom 404 path, serve that. The template variable
-      // THE_PATH, if present on the page, will be replaced with the current
-      // request path before it is returned.
-      if (hasCustom404) {
+      // If a 4042302 (404 → 302) redirect has been requested, honour that.
+      // (See https://4042302.org/). Otherwise, if there is a custom 404 error page,
+      // serve that. (The template variable THE_PATH, if present on the page, will be
+      // replaced with the current request path before it is returned.)
+      if (has4042302) {
+        const forwardingURL = `${_4042302}${request.url}`
+        console.log(`404 → 302: Forwarding to ${forwardingURL}`)
+        response.redirect(forwardingURL)
+      } else if (hasCustom404) {
         // Enable basic template support for including the missing path.
         const custom404WithPath = custom404.replace('THE_PATH', request.path)
 
