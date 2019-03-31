@@ -71,9 +71,9 @@ Indie Web Server has native support for [the 404 to 302 technique](https://40423
 To do so, create a simple file called `4042302` in the root directory of your web content and add the URL of the server that is hosting your older content. e.g.,
 
 ### /4042302
-{{<highlight shell>}}
+```
 https://the-previous-verison-of.my.site
-{{</highlight>}}
+```
 
 You can chain the 404 → 302 method any number of times to ensure that none of your links ever break without expending any additional effort to migrate your content.
 
