@@ -8,18 +8,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### To-do
 
-  - Add 4042302 support (https://4042302.org/).
   - Integrate pm2 for production use.
   - Create native binary releases.
 
 ### Done
 
-  - Add programmatic access for default error pages to the API
 
 
 ## [6.4.0] - 2019-03-31
 
-  - TODO
+## Added
+
+  - Native 4042302 support (https://4042302.org/).
+  - Programmatic access to the default 404 and 500 error page content.
 
 ## [6.3.0] - 2019-03-30
 
