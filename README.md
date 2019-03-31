@@ -42,7 +42,8 @@ For example, if you run the command on a connected server that has the ar.al dom
 # Clone and install.
 git clone https://source.ind.ie/hypha/tools/web-server.git
 cd web-server
-npm i -g .
+npm i         # Install modules and development dependencies.
+npm i -g .    # Install globally for access to the binary.
 
 # Run unit tests.
 npm test
