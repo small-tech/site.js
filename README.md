@@ -22,9 +22,7 @@ npm i -g @ind.ie/web-server
 
 ## Use
 
-### Command-line
-
-#### Development
+### Development
 
 Start serving the current directory at https://localhost using locally-trusted certificates:
 
@@ -32,7 +30,7 @@ Start serving the current directory at https://localhost using locally-trusted c
 $ web-server
 ```
 
-#### Staging
+### Staging
 
 Start serving the _site_ directory at your _hostname_ using globally-trusted Let’s Encrypt certificates:
 
@@ -42,7 +40,7 @@ $ web-server --staging site
 
 For example, use [ngrok](https://ngrok.com/) (Pro+) with a custom domain name that you set in your `hostname` file (e.g., in `/etc/hostname` or via `hostnamectl set-hostname <hostname>` or the equivalent for your platform). The first time you hit your staging server via your hosname it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
 
-#### Live
+### Live
 
 Start serving the _site_ directory at your _hostname_ as a daemon that will run at startup and be restarted if it crashes, etc.:
 
