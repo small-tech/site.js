@@ -20,22 +20,31 @@ if (arguments._.length > 2 || arguments.help === true) {
   const usageMonitorOption = `${clr('--monitor', 'yellow')}`
   const usageLogsOption = `${clr('--logs', 'yellow')}`
   const usageInfoOption = `${clr('--info', 'yellow')}`
+  const usageOfflineOption = `${clr('--offline', 'yellow')}`
   const usageVersionOption = `${clr('--version', 'yellow')}`
 
   const usage = `
    ${webServer.version()}
   ${clr('Usage:', 'underline')}
 
-  ${clr('web-server', 'bold')} [${usageFolderToServe}] [${usagePortOption}] [${usageStagingOption}] [${usageLiveOption}] [${usageMonitorOption}] [${usageLogsOption}] [${usageVersionOption}]
+  ${clr('web-server', 'bold')} [${usageFolderToServe}] [${clr('options', 'yellow')}]
 
-  • ${usageFolderToServe}\tPath to the folder to serve (defaults to current folder).
-  • ${usagePortOption}\t\tThe port to start the server on (defaults to 443).
-  • ${usageStagingOption}\t\tRun as regular process with globally-trusted certificates.
-  • ${usageLiveOption}\t\tRun as launch-time daemon with globally-trusted certificates.
-  • ${usageMonitorOption}\t\tMonitor the running live server.
-  • ${usageLogsOption}\t\tDisplay and tail the server logs for the running live server.
-  • ${usageInfoOption}\t\tDisplay detailed information about the running live server.
-  • ${usageVersionOption}\t\tDisplay the version.
+  ${usageFolderToServe}\tPath to the folder to serve (defaults to current folder).
+
+  ${clr('Options:', 'underline')}
+
+  ${usagePortOption}\t\tThe port to start the server on (defaults to 443).
+  ${usageVersionOption}\t\tDisplay the version and exit.
+
+  ${usageStagingOption}\t\tLaunch server as regular process with globally-trusted certificates.
+  ${usageLiveOption}\t\tLaunch server as startup daemon with globally-trusted certificates.
+
+  ${clr('With a running live server, you can also:', 'underline')}
+
+  ${usageMonitorOption}\t\tMonitor the server.
+  ${usageLogsOption}\t\tDisplay and tail the server logs.
+  ${usageInfoOption}\t\tDisplay detailed information about the server.
+  ${usageOfflineOption}\t\tTake the server offline and remove it from startup items.
   `.replace(/\n$/, '').replace(/^\n/, '')
 
   console.log(usage)
@@ -53,13 +62,13 @@ if (arguments.monitor !== undefined) {
   // Launch pm2 monit.
   const options = {
     env: process.env,
-    stdio: 'inherit'
+    stdio: 'inherit'  // Display output.
   }
 
   try {
     childProcess.execSync(`sudo ${pm2Path} monit`, options)
   } catch (error) {
-    console.log(` 👿 Failed to launch the process monitor.\n`)
+    console.log(`\n 👿 Failed to launch the process monitor.\n`)
     process.exit(1)
   }
   process.exit(0)
@@ -70,13 +79,13 @@ if (arguments.logs !== undefined) {
   // Launch pm2 logs.
   const options = {
     env: process.env,
-    stdio: 'inherit'
+    stdio: 'inherit'  // Display output.
   }
 
   try {
     childProcess.execSync(`sudo ${pm2Path} logs web-server`, options)
   } catch (error) {
-    console.log(` 👿 Failed to get the logs.\n`)
+    console.log(`\n 👿 Failed to get the logs.\n`)
     process.exit(1)
   }
   process.exit(0)
@@ -87,16 +96,74 @@ if (arguments.info !== undefined) {
   // Launch pm2 logs.
   const options = {
     env: process.env,
-    stdio: 'inherit'
+    stdio: 'inherit'  // Display output.
   }
 
   try {
     childProcess.execSync(`sudo ${pm2Path} show web-server`, options)
   } catch (error) {
-    console.log(` 👿 Failed to show detailed information on the web server.\n`)
+    console.log(`\n 👿 Failed to show detailed information on the web server.\n`)
     process.exit(1)
   }
   process.exit(0)
+}
+
+// Offline (pm2 proxy for unstartup + delete)
+if (arguments.offline !== undefined) {
+  const options = {
+    env: process.env,
+    stdio: 'pipe'   // Suppress output.
+  }
+
+  // Do some cleanup, display a success message and exit.
+  function success () {
+    // Try to reset permissions on pm2 so that future uses of pm2 proxies via web-server
+    // in this session will not require sudo.
+    try {
+      childProcess.execSync('sudo chown $(whoami):$(whoami) /home/$(whoami)/.pm2/rpc.sock /home/$(whoami)/.pm2/pub.sock', options)
+    } catch (error) {
+      console.log(`\n 👿 Warning: could not reset permissions on pm2.`)
+    }
+
+    // All’s good.
+    console.log(`\n 😈 Server is offline and removed from startup items.\n`)
+    process.exit(0)
+  }
+
+  // Is the server running?
+  try {
+    childProcess.execSync(`sudo ${pm2Path} show web-server`, options)
+  } catch (error) {
+    console.log(`\n 👿 Server is not running as a live daemon; nothing to take offline.\n`)
+    process.exit(1)
+  }
+
+  // Try to remove from startup items.
+  try {
+    childProcess.execSync(`sudo ${pm2Path} unstartup`, options)
+  } catch (error) {
+    console.log(`\n 👿 Could not remove the server from startup items.\n`)
+    process.exit(1)
+  }
+
+  // If the server was started as a startup item, unstartup will also
+  // kill the process. Check again to see if the server is running.
+  try {
+    childProcess.execSync(`sudo ${pm2Path} show web-server`, options)
+  } catch (error) {
+    success()
+  }
+
+  // The server is still on (it was not started as a startup item). Use
+  // pm2 delete to remove it.
+  try {
+    childProcess.execSync(`sudo ${pm2Path} delete web-server`, options)
+  } catch (error) {
+    console.log(`\n 👿 Could not delete the server daemon.\n`)
+    process.exit(1)
+  }
+
+  success()
 }
 
 // If no path is passed, serve the current folder.
@@ -151,7 +218,7 @@ if (arguments.live !== undefined) {
       //
       const options = {
         env: process.env,
-        stdio: 'pipe'
+        stdio: 'pipe'     // Suppress output.
       }
 
       try {

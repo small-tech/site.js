@@ -14,18 +14,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [7.0.1] - 2019-04-01
 
+## Added
+
+  - `--offline` command to take a running live server offline (remove it from startup items and delete it from the process manager if necessary).
+
 ## Changed
 
   - No longer using a custom directory for pm2 files.
+  - Simplified the `--help` display.
 
 ## [7.0.0] - 2019-03-31
 
 ## Added
 
   - `--live` flag to run as daemon and handle crashes/restarts via integrated pm2 process manager.
-  - `--monitor` flag to monitor an already-running live server daemon process.
-  - `--logs` flag to display and tail the web server logs for an already-running live server daemon process.
-  - `--info` flag to display detailed information for an already-running live server daemon process.
+  - `--monitor` command to monitor an already-running live server daemon process.
+  - `--logs` command to display and tail the web server logs for an already-running live server daemon process.
+  - `--info` command to display detailed information for an already-running live server daemon process.
 
 ## Changed
 

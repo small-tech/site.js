@@ -8,9 +8,11 @@ Indie Web Server is a secure and seamless [Small Tech](https://ar.al/2019/03/04/
 
   - Develop and test with automatically-provisioned locally-trusted TLS thanks to [mkcert](https://github.com/FiloSottile/mkcert) via [Nodecert](https://source.ind.ie/hypha/tools/nodecert).
 
-  - Stage and deploy with automatically-provisioned globally-trusted TLS thanks to [Let’s Encrypt](https://letsencrypt.org/) via [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) (with an A score on [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest)).
+  - Stage and deploy with automatically-provisioned globally-trusted TLS thanks to [Let’s Encrypt](https://letsencrypt.org/) via [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) (with an A score on [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest)) and the seamlessly integrated [pm2](https://pm2.io/runtime/) process manager.
 
 [Watch a short 4-minute video](https://ar.al/2019/03/14/introducing-indie-web-server-video/) demonstrating how easy Indie Web Server is to install and use.
+
+(Note: the video is about two weeks old and so it does not demonstrate the new `--live` feature for deployments. I will record a new one as soon as I find some time.)
 
 ## Install
 
@@ -52,11 +54,12 @@ The `--live` option sets up your server to (re)start automatically when you serv
 
 For example, if you run the command on a connected server that has the ar.al domain pointing to it and `ar.al` set in _/etc/hostname_ (on Unix/Linux/macOS), you will be able to access the site at https://ar.al. The first time you hit it, it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
 
-Once you have a live web server daemon running, you can use the following commands to get insight into it:
+With a running live server, you can also use the following commands:
 
-  - `--monitor`: monitor the running live server daemon process.
-  - `--logs`: display and tail the web server logs for the running live server daemon process.
-  - `--info`: display detailed information on the running live server daemon process.
+  - `--monitor`: Monitor the server.
+  - `--logs`: Display and tail the server logs.
+  - `--info`: Display detailed information about the server.
+  - `--offline`: Take the server offline and remove it from startup items.
 
 The live server uses the [pm2](https://pm2.io/runtime/) process manager internally. Beyond the commands listed above that Indie Web Server proxies to pm2, you can make use of all pm2 functionality via the pm2 command directly should you need to.
 
