@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Done
 
-## [7.0.1] - 2019-04-01
+## [7.1.0] - 2019-04-01
 
 ## Added
 
@@ -20,8 +20,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Changed
 
-  - No longer using a custom directory for pm2 files.
   - Simplified the `--help` display.
+
+## [7.0.1] - 2019-04-01
+
+## Fixed
+
+  - No longer using a custom directory for pm2 files (fixes directory not found issue).
 
 ## [7.0.0] - 2019-03-31
 
