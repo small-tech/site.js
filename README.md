@@ -8,7 +8,7 @@ Indie Web Server is a secure and seamless [Small Tech](https://ar.al/2019/03/04/
 
   - Develop and test with automatically-provisioned locally-trusted TLS thanks to [mkcert](https://github.com/FiloSottile/mkcert) via [Nodecert](https://source.ind.ie/hypha/tools/nodecert).
 
-  - Stage and deploy with automatically-provisioned globally-trusted TLS thanks to [Let’s Encrypt](https://letsencrypt.org/) via [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) (with an A score on [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest)) and the seamlessly integrated [pm2](https://pm2.io/runtime/) process manager.
+  - Stage and deploy with automatically-provisioned globally-trusted TLS thanks to [Let’s Encrypt](https://letsencrypt.org/) via [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) (with an A score on [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest)) and the seamlessly-integrated [pm2](https://pm2.io/runtime/) process manager.
 
 [Watch a short 4-minute video](https://ar.al/2019/03/14/introducing-indie-web-server-video/) demonstrating how easy Indie Web Server is to install and use.
 
