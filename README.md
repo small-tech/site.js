@@ -175,7 +175,7 @@ const server = webServer.serve({global: true})
 
 ## Contributing
 
-Indie Web Server is, by design, a zero-configuration personal web server for single-tenant web applications for and by individuals. As such, as new feature requests will have to be both fit for purpose and survive a trial by fire to be considered. (That is, this is [Small Tech](https://ar.al/2019/03/04/small-technology/), with the emphasis on _small_).
+Indie Web Server is, by design, a zero-configuration personal web server for single-tenant web applications for and by individuals. As such, any new feature requests will have to be both fit for purpose and survive a trial by fire to be considered. (That is, this is [Small Tech](https://ar.al/2019/03/04/small-technology/), with the emphasis on _small_).
 
 Please file issues and submit pull requests on the [Indie Web Server Github Mirror](https://github.com/indie-mirror/indie-web-server).
 
