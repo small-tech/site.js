@@ -12,6 +12,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Done
 
+## [7.0.1] - 2019-04-01
+
+## Changed
+
+  - No longer using a custom directory for pm2 files.
+
 ## [7.0.0] - 2019-03-31
 
 ## Added

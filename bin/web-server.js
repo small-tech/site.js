@@ -137,9 +137,6 @@ if (arguments.live !== undefined) {
       script: path.join(__dirname, 'daemon.js'),
       args: pathToServe,
       name: 'web-server',
-      output: '~/.web-server/logs/output.log',
-      error: '~/.web-server/logs/error.log',
-      pid: '~/.web-server/pids/server.pid',
       autorestart: true
     }, (error, processObj) => {
       if (error) {
