@@ -6,6 +6,7 @@
   "bin": "bin/web-server.js",
   "scripts": {
     "start": "node index.js",
+    "build": "node_modules/pkg/lib-es5/bin.js --out-path=dist .",
     "test": "tape test/index.js"
   },
   "repository": {
