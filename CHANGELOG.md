@@ -6,11 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
-### To-do
+  - Nothing yet.
 
-  - Create native binary releases.
+## [7.2.0] - TBR
 
-### Done
+## Added
+
+  - Native binary releases.
 
 ## [7.1.0] - 2019-04-01
 
