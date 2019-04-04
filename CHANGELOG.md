@@ -14,6 +14,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - Native binary releases.
 
+## Fixed
+
+  - Fix auto-restart after automatically obtaining privileged port binding privileges via setcap during first run on Linux.
+
 ## [7.1.0] - 2019-04-01
 
 ## Added
