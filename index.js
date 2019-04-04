@@ -297,8 +297,12 @@ class WebServer {
         try {
           // Allow Node.js to bind to ports < 1024.
           childProcess.execSync(`sudo setcap 'cap_net_bind_service=+ep' $(which ${process.title})`, options)
+
+          console.log(' 😇 [Indie Web Server] First run on Linux: got privileges to bind to ports < 1024. Restarting…')
+
           // Fork a new instance of the server so that it is launched with the privileged Node.js.
-          childProcess.fork(path.join(__dirname, 'index.js'), [pathToServe, port], {env: process.env, shell: true})
+          childProcess.fork(path.join(__dirname, 'bin', 'web-server.js'), [pathToServe, `--port=${port}`], {env: process.env})
+
           // We’re done here. Go into an endless loop. Exiting (Ctrl+C) this will also exit the child process.
           while(1){}
         } catch (error) {
