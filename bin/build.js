@@ -53,6 +53,7 @@ async function build () {
   // Check that the local working copy of the Indie Web Site exists at the relative location
   // that we expect it to. If it doesn’t skip this step.
   if (fs.existsSync(pathToWebServerSectionOfSite)) {
+    console.log('   • Copying binaries to the Indie Web Site…')
     const linuxVersionZipFilePath = path.join(linuxVersionWorkingDirectory, zipFileName)
     const macOSVersionZipFilePath = path.join(macOSVersionWorkingDirectory, zipFileName)
     const linuxVersionTargetDirectoryOnSite = path.join(pathToWebServerSectionOfSite, 'linux')
