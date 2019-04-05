@@ -67,7 +67,7 @@ async function build () {
     console.log('   • Skipped copy of binaries to Indie Web Site as could not find the local working copy.')
   }
 
-  console.log('\n 😜👍 Done!\n')
+  console.log('\n 😁👍 Done!\n')
 }
 
 build()
