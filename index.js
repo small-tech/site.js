@@ -301,7 +301,7 @@ class WebServer {
           console.log(' 😇 [Indie Web Server] First run on Linux: got privileges to bind to ports < 1024. Restarting…')
 
           // Fork a new instance of the server so that it is launched with the privileged Node.js.
-          childProcess.fork(path.join(__dirname, 'bin', 'web-server.js'), [pathToServe, `--port=${port}`], {env: process.env})
+          childProcess.fork(path.join(__dirname, 'bin', 'web-server.js'), process.argv.slice(2), {env: process.env})
 
           // We’re done here. Go into an endless loop. Exiting (Ctrl+C) this will also exit the child process.
           while(1){}
