@@ -29,7 +29,7 @@ class WebServer {
   // the version set in the package.json file. (Synchronous.)
   version () {
     const version = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json'), 'utf-8')).version
-    return `\n 💖 Indie Web Server v${version}\n`
+    return `\n 💖 Indie Web Server v${version} running on Node ${process.version}\n`
   }
 
   // Returns an https server instance – the same as you’d get with
