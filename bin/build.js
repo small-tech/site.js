@@ -8,7 +8,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-const { exec } = require('pkg')
+const { compile } = require('nexe')
 const fs = require('fs')
 const path = require('path')
 const package = require('../package.json')
@@ -28,10 +28,19 @@ async function build () {
   // Build.
   //
   console.log('   • Building Linux version…')
-  await exec([ '.', '--target', 'latest-linux-x64', '--output', `${linuxVersionPath}/web-server` ])
+  await compile({
+    input: 'bin/web-server.js',
+    output: `${linuxVersionPath}/web-server`,
+    target: 'linux-x64-10.15.3'
+  })
 
   console.log('   • Building macOS version…')
-  await exec([ '.', '--target', 'latest-macos-x64', '--output', `${macOSVersionPath}/web-server` ])
+
+  await compile({
+    input: 'bin/web-server.js',
+    output: `${macOSVersionPath}/web-server`,
+    target: 'mac-x64-10.15.3'
+  })
 
   //
   // Zip.
