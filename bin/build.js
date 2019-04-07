@@ -28,10 +28,10 @@ async function build () {
   // Build.
   //
   console.log('   • Building Linux version…')
-  await exec([ '.', '--target', 'linux', '--output', `${linuxVersionPath}/web-server` ])
+  await exec([ '.', '--target', 'latest-linux-x64', '--output', `${linuxVersionPath}/web-server` ])
 
   console.log('   • Building macOS version…')
-  await exec([ '.', '--target', 'linux', '--output', `${macOSVersionPath}/web-server` ])
+  await exec([ '.', '--target', 'latest-macos-x64', '--output', `${macOSVersionPath}/web-server` ])
 
   //
   // Zip.
