@@ -9,11 +9,14 @@ const pm2 = require('pm2')
 const childProcess = require('child_process')
 const arguments = require('minimist')(process.argv.slice(2), {boolean: true})
 
-const copy = require('recursive-copy')
+const copy = require('copy-concurrently')
 
-const internalNodeModulesDirectory = path.join(__dirname, '..', 'node_modules')
-const externalNodeModulesDirectory = path.join(os.homedir(), '.indie-web-server', 'node_modules')
-const pm2Path = path.join(externalNodeModulesDirectory, 'pm2', 'bin', 'pm2')
+const { pathToFileURL } = require('url')
+
+const internalNodeModulesDirectory = path.join(__dirname, '../node_modules')
+console.log('internalNodeModulesDirectory', internalNodeModulesDirectory)
+const externalNodeModulesDirectory = path.join(os.homedir(), '.indie-web-server/node_modules')
+const pm2Path = path.join(externalNodeModulesDirectory, 'pm2/bin/pm2')
 
 if (arguments._.length > 2 || arguments.help === true) {
 
@@ -66,21 +69,12 @@ if (arguments.version !== undefined) {
 // binary wrapped with nexe.
 function ensurePM2 (callback) {
   if (!fs.existsSync(externalNodeModulesDirectory)) {
-    console.log(' 👷 First run: copying node modules.')
-    try {
-      fs.mkdirSync(externalNodeModulesDirectory, {recursive: true})
-    } catch (error) {
-      console.log('\n 🔥 Error: could not create external node modules directory', error)
+    copy(internalNodeModulesDirectory, externalNodeModulesDirectory).then((error, results) => {
+      console.log(' 💅 External node modules ready.')
+      callback()
+    }).catch (error => {
+      console.log('\n 🔥 Error: could not copy node modules', error)
       throw error
-    }
-    copy(internalNodeModulesDirectory, externalNodeModulesDirectory, (error, results) => {
-      if (error) {
-        console.log('\n 🔥 Error: could not copy node modules', error)
-        throw error
-      } else {
-        console.log(' 💅 External node modules ready.')
-        callback()
-      }
     })
   } else {
     console.log(' 💅 External node modules ready.')
