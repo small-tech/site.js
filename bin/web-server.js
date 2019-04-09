@@ -19,13 +19,13 @@ if (!fs.existsSync(externalDirectory)) {
   }
 }
 
-const pm2Path = path.join(externalDirectory, 'pm2')
-if (!fs.existsSync(pm2Path)) {
+const nodeModulesZipFilePath = path.join(externalDirectory, 'node_modules.zip')
+if (!fs.existsSync(nodeModulesZipFilePath)) {
   try {
-    const internalPM2Path = path.join(__dirname, 'pm2')
-    fs.copyFileSync(internalPM2Path, pm2Path)
+    const internalnodeModulesZipFilePath = path.join(__dirname, '../node_modules.zip')
+    fs.copyFileSync(internalnodeModulesZipFilePath, nodeModulesZipFilePath)
   } catch (error) {
-    console.log(' 💥 Failed to copy pm2 binary to external directory.', error)
+    console.log(' 💥 Failed to copy node_modules zip file to external directory.', error)
     process.exit(1)
   }
 }
@@ -85,7 +85,7 @@ if (arguments.monitor !== undefined) {
   }
 
   try {
-    childProcess.execSync(`sudo ${pm2Path} monit`, options)
+    childProcess.execSync(`sudo ${nodeModulesZipFilePath} monit`, options)
   } catch (error) {
     console.log(`\n 👿 Failed to launch the process monitor.\n`)
     process.exit(1)
@@ -102,7 +102,7 @@ if (arguments.logs !== undefined) {
   }
 
   try {
-    childProcess.execSync(`sudo ${pm2Path} logs web-server`, options)
+    childProcess.execSync(`sudo ${nodeModulesZipFilePath} logs web-server`, options)
   } catch (error) {
     console.log(`\n 👿 Failed to get the logs.\n`)
     process.exit(1)
@@ -119,7 +119,7 @@ if (arguments.info !== undefined) {
   }
 
   try {
-    childProcess.execSync(`sudo ${pm2Path} show web-server`, options)
+    childProcess.execSync(`sudo ${nodeModulesZipFilePath} show web-server`, options)
   } catch (error) {
     console.log(`\n 👿 Failed to show detailed information on the web server.\n`)
     process.exit(1)
@@ -151,7 +151,7 @@ if (arguments.offline !== undefined) {
 
   // Is the server running?
   try {
-    childProcess.execSync(`sudo ${pm2Path} show web-server`, options)
+    childProcess.execSync(`sudo ${nodeModulesZipFilePath} show web-server`, options)
   } catch (error) {
     console.log(`\n 👿 Server is not running as a live daemon; nothing to take offline.\n`)
     process.exit(1)
@@ -159,7 +159,7 @@ if (arguments.offline !== undefined) {
 
   // Try to remove from startup items.
   try {
-    childProcess.execSync(`sudo ${pm2Path} unstartup`, options)
+    childProcess.execSync(`sudo ${nodeModulesZipFilePath} unstartup`, options)
   } catch (error) {
     console.log(`\n 👿 Could not remove the server from startup items.\n`)
     process.exit(1)
@@ -168,7 +168,7 @@ if (arguments.offline !== undefined) {
   // If the server was started as a startup item, unstartup will also
   // kill the process. Check again to see if the server is running.
   try {
-    childProcess.execSync(`sudo ${pm2Path} show web-server`, options)
+    childProcess.execSync(`sudo ${nodeModulesZipFilePath} show web-server`, options)
   } catch (error) {
     success()
   }
@@ -176,7 +176,7 @@ if (arguments.offline !== undefined) {
   // The server is still on (it was not started as a startup item). Use
   // pm2 delete to remove it.
   try {
-    childProcess.execSync(`sudo ${pm2Path} delete web-server`, options)
+    childProcess.execSync(`sudo ${nodeModulesZipFilePath} delete web-server`, options)
   } catch (error) {
     console.log(`\n 👿 Could not delete the server daemon.\n`)
     process.exit(1)
@@ -241,7 +241,7 @@ if (arguments.live !== undefined) {
       }
 
       try {
-        const output = childProcess.execSync(`sudo ${pm2Path} startup`, options)
+        const output = childProcess.execSync(`sudo ${nodeModulesZipFilePath} startup`, options)
       } catch (error) {
         console.log(` 👿 Failed to add server for auto-launch at startup.\n`)
         pm2.disconnect()
