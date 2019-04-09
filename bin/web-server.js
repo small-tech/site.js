@@ -9,7 +9,26 @@ const pm2 = require('pm2')
 const childProcess = require('child_process')
 const arguments = require('minimist')(process.argv.slice(2), {boolean: true})
 
-const pm2Path = path.join(__dirname, '../node_modules/pm2/bin/pm2')
+const externalDirectory = path.join(os.homedir(), '.indie-web-server')
+if (!fs.existsSync(externalDirectory)) {
+  try {
+    fs.mkdirSync(externalDirectory, {recursive: true})
+  } catch (error) {
+    console.log(' 💥 Failed to create external directory.', error)
+    process.exit(1)
+  }
+}
+
+const pm2Path = path.join(externalDirectory, 'pm2')
+if (!fs.existsSync(pm2Path)) {
+  try {
+    const internalPM2Path = path.join(__dirname, 'pm2')
+    fs.copyFileSync(internalPM2Path, pm2Path)
+  } catch (error) {
+    console.log(' 💥 Failed to copy pm2 binary to external directory.', error)
+    process.exit(1)
+  }
+}
 
 if (arguments._.length > 2 || arguments.help === true) {
 
@@ -222,7 +241,7 @@ if (arguments.live !== undefined) {
       }
 
       try {
-        const output = childProcess.execSync(`sudo ${path.join(__dirname, '../node_modules/pm2/bin/pm2')} startup`, options)
+        const output = childProcess.execSync(`sudo ${pm2Path} startup`, options)
       } catch (error) {
         console.log(` 👿 Failed to add server for auto-launch at startup.\n`)
         pm2.disconnect()

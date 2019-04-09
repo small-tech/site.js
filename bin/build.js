@@ -32,7 +32,7 @@ async function build () {
     input: 'bin/web-server.js',
     output: `${linuxVersionPath}/web-server`,
     target: 'linux-x64-10.15.3',
-    resources: ['package.json', 'bin/daemon.js', 'node_modules/pm2/']
+    resources: ['package.json', 'bin/daemon.js', 'bin/pm2']
   })
 
   console.log('   • Building macOS version…')
