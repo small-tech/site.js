@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [7.2.0] - TBR
 
+## TODO
+
+  - Automate: `zip web-server.zip * -x \*.git\* \*dist-iws\* -r` to create the source code zip to bundle in the binary.
+
 ## Added
 
   - Native binary releases.
@@ -17,6 +21,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## Fixed
 
   - Fix auto-restart after automatically obtaining privileged port binding privileges via setcap during first run on Linux.
+
+## Changed
+
+  - Renamed `dist` folder to `dist-iws` so we can exclude it from the source code zip (used for the binaries) without also exclusing some of the node modules that have dist directories that are required for proper functioning.
 
 ## [7.1.0] - 2019-04-01
 

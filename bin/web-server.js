@@ -9,7 +9,49 @@ const pm2 = require('pm2')
 const childProcess = require('child_process')
 const arguments = require('minimist')(process.argv.slice(2), {boolean: true})
 
-const pm2Path = path.join(__dirname, '../node_modules/pm2/bin/pm2')
+const externalDirectory = path.join(os.homedir(), '.indie-web-server')
+// if (!fs.existsSync(externalDirectory)) {
+//   try {
+//     fs.mkdirSync(externalDirectory, {recursive: true})
+//   } catch (error) {
+//     console.log(' 💥 Failed to create external directory.', error)
+//     process.exit(1)
+//   }
+// }
+
+const pm2Path = path.join(externalDirectory, 'node_modules/pm2/bin/pm2')
+
+const zipFilePath = path.join(os.homedir(), 'web-server.zip')
+if (!fs.existsSync(externalDirectory)) {
+  try {
+    //
+    // Note: we are copying the node_modules.zip file using fs.readFileSync()
+    // ===== and fs.writeFileSync() instead of fs.copyFileSync() as the latter
+    //       does not work currently in binaries that are compiled with
+    //       Nexe (tested with version 3.1.0). See these issues for more details:
+    //
+    //       https://github.com/nexe/nexe/issues/605 (red herring)
+    //       https://github.com/nexe/nexe/issues/607 (actual issue)
+    //
+    const internalZipFilePath = path.join(__dirname, '../web-server.zip')
+    // fs.copyFileSync(internalZipFilePath, zipFilePath)
+    const webServerZip = fs.readFileSync(internalZipFilePath, 'binary')
+    fs.writeFileSync(zipFilePath, webServerZip, 'binary')
+
+    // Unzip the node_modules
+    const options = {
+      env: process.env,
+      stdio: 'inherit'  // Display output.
+    }
+
+    // Unzip the node_modules directory to the external directory.
+    childProcess.execSync(`unzip ${zipFilePath} -d ${externalDirectory}`)
+
+  } catch (error) {
+    console.log(' 💥 Failed to copy Indie Web Server source to external directory.', error)
+    process.exit(1)
+  }
+}
 
 if (arguments._.length > 2 || arguments.help === true) {
 
@@ -201,7 +243,7 @@ if (arguments.live !== undefined) {
     }
 
     pm2.start({
-      script: path.join(__dirname, 'daemon.js'),
+      script: path.join(externalDirectory, 'bin/daemon.js'),
       args: pathToServe,
       name: 'web-server',
       autorestart: true
@@ -222,7 +264,7 @@ if (arguments.live !== undefined) {
       }
 
       try {
-        const output = childProcess.execSync(`sudo ${path.join(__dirname, '../node_modules/pm2/bin/pm2')} startup`, options)
+        const output = childProcess.execSync(`sudo ${pm2Path} startup`, options)
       } catch (error) {
         console.log(` 👿 Failed to add server for auto-launch at startup.\n`)
         pm2.disconnect()
