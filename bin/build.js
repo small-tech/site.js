@@ -17,8 +17,8 @@ const childProcess = require('child_process')
 
 console.log(`\n ⚙ Indie Web Server: building native binaries for version ${version}`)
 
-const linuxVersionPath = `dist/linux/${version}`
-const macOSVersionPath = `dist/macos/${version}`
+const linuxVersionPath = `dist-iws/linux/${version}`
+const macOSVersionPath = `dist-iws/macos/${version}`
 
 fs.mkdirSync(linuxVersionPath, {recursive: true})
 fs.mkdirSync(macOSVersionPath, {recursive: true})
@@ -32,7 +32,7 @@ async function build () {
     input: 'bin/web-server.js',
     output: `${linuxVersionPath}/web-server`,
     target: 'linux-x64-10.15.3',
-    resources: ['package.json', 'bin/daemon.js', 'node_modules.zip']
+    resources: ['package.json', 'bin/daemon.js', 'web-server.zip']
   })
 
   console.log('   • Building macOS version…')

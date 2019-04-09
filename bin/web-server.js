@@ -10,19 +10,19 @@ const childProcess = require('child_process')
 const arguments = require('minimist')(process.argv.slice(2), {boolean: true})
 
 const externalDirectory = path.join(os.homedir(), '.indie-web-server')
-if (!fs.existsSync(externalDirectory)) {
-  try {
-    fs.mkdirSync(externalDirectory, {recursive: true})
-  } catch (error) {
-    console.log(' 💥 Failed to create external directory.', error)
-    process.exit(1)
-  }
-}
+// if (!fs.existsSync(externalDirectory)) {
+//   try {
+//     fs.mkdirSync(externalDirectory, {recursive: true})
+//   } catch (error) {
+//     console.log(' 💥 Failed to create external directory.', error)
+//     process.exit(1)
+//   }
+// }
 
 const pm2Path = path.join(externalDirectory, 'node_modules/pm2/bin/pm2')
 
-const nodeModulesZipFilePath = path.join(externalDirectory, 'node_modules.zip')
-if (!fs.existsSync(nodeModulesZipFilePath)) {
+const zipFilePath = path.join(os.homedir(), 'web-server.zip')
+if (!fs.existsSync(externalDirectory)) {
   try {
     //
     // Note: we are copying the node_modules.zip file using fs.readFileSync()
@@ -33,10 +33,10 @@ if (!fs.existsSync(nodeModulesZipFilePath)) {
     //       https://github.com/nexe/nexe/issues/605 (red herring)
     //       https://github.com/nexe/nexe/issues/607 (actual issue)
     //
-    const internalnodeModulesZipFilePath = path.join(__dirname, '../node_modules.zip')
-    // fs.copyFileSync(internalnodeModulesZipFilePath, nodeModulesZipFilePath)
-    const nodeModulesZip = fs.readFileSync(internalnodeModulesZipFilePath, 'binary')
-    fs.writeFileSync(nodeModulesZipFilePath, nodeModulesZip, 'binary')
+    const internalZipFilePath = path.join(__dirname, '../web-server.zip')
+    // fs.copyFileSync(internalZipFilePath, zipFilePath)
+    const webServerZip = fs.readFileSync(internalZipFilePath, 'binary')
+    fs.writeFileSync(zipFilePath, webServerZip, 'binary')
 
     // Unzip the node_modules
     const options = {
@@ -45,10 +45,10 @@ if (!fs.existsSync(nodeModulesZipFilePath)) {
     }
 
     // Unzip the node_modules directory to the external directory.
-    childProcess.execSync(`unzip ${nodeModulesZipFilePath} -d ${externalDirectory}`)
+    childProcess.execSync(`unzip ${zipFilePath} -d ${externalDirectory}`)
 
   } catch (error) {
-    console.log(' 💥 Failed to copy node_modules zip file to external directory.', error)
+    console.log(' 💥 Failed to copy Indie Web Server source to external directory.', error)
     process.exit(1)
   }
 }
@@ -243,7 +243,7 @@ if (arguments.live !== undefined) {
     }
 
     pm2.start({
-      script: path.join(__dirname, 'daemon.js'),
+      script: path.join(externalDirectory, 'bin/daemon.js'),
       args: pathToServe,
       name: 'web-server',
       autorestart: true
@@ -258,20 +258,20 @@ if (arguments.live !== undefined) {
       // Run the script that tells the process manager to add the server to launch at startup
       // as a separate process with sudo privileges.
       //
-      // const options = {
-      //   env: process.env,
-      //   stdio: 'pipe'     // Suppress output.
-      // }
+      const options = {
+        env: process.env,
+        stdio: 'pipe'     // Suppress output.
+      }
 
-      // try {
-      //   const output = childProcess.execSync(`sudo ${pm2Path} startup`, options)
-      // } catch (error) {
-      //   console.log(` 👿 Failed to add server for auto-launch at startup.\n`)
-      //   pm2.disconnect()
-      //   process.exit(1)
-      // }
+      try {
+        const output = childProcess.execSync(`sudo ${pm2Path} startup`, options)
+      } catch (error) {
+        console.log(` 👿 Failed to add server for auto-launch at startup.\n`)
+        pm2.disconnect()
+        process.exit(1)
+      }
 
-      // console.log(` 😈 Installed for auto-launch at startup.\n`)
+      console.log(` 😈 Installed for auto-launch at startup.\n`)
 
       // Disconnect from the pm2 daemon. This will also exit the script.
       pm2.disconnect()
