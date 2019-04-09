@@ -34,7 +34,7 @@
     "shelljs": "^0.8.3"
   },
   "devDependencies": {
-    "nexe": "^3.0.3",
+    "nexe": "^3.1.0",
     "tape": "^4.10.1"
   }
 }
