@@ -35,8 +35,9 @@ if (!fs.existsSync(externalDirectory)) {
     //       https://github.com/nexe/nexe/issues/605 (red herring)
     //       https://github.com/nexe/nexe/issues/607 (actual issue)
     //
-    const internalZipFilePath = path.join(__dirname, '../web-server.zip')
     // fs.copyFileSync(internalZipFilePath, zipFilePath)
+    //
+    const internalZipFilePath = path.join(__dirname, '../web-server.zip')
     const webServerZip = fs.readFileSync(internalZipFilePath, 'binary')
     fs.writeFileSync(zipFilePath, webServerZip, 'binary')
 
