@@ -61,38 +61,45 @@ if (!fs.existsSync(externalDirectory)) {
 //
 if (arguments._.length > 2 || arguments.help === true) {
 
-  const usageFolderToServe = clr('folder-to-serve', 'green')
+  const usageCommand = `${clr('command', 'green')}`
+  const usageFolderToServe = clr('folder-to-serve', 'cyan')
   const usagePortOption = `${clr('--port', 'yellow')}=${clr('N', 'cyan')}`
-  const usageStagingOption = `${clr('--staging', 'yellow')}`
-  const usageLiveOption = `${clr('--live', 'yellow')}`
+  const usageDevOption = `${clr('--dev', 'yellow')}`
+  const usageTestOption = `${clr('--test', 'yellow')}`
+  const usageOnOption = `${clr('--on', 'yellow')}`
+  const usageOffOption = `${clr('--off', 'yellow')}`
   const usageMonitorOption = `${clr('--monitor', 'yellow')}`
   const usageLogsOption = `${clr('--logs', 'yellow')}`
   const usageInfoOption = `${clr('--info', 'yellow')}`
-  const usageOfflineOption = `${clr('--offline', 'yellow')}`
   const usageVersionOption = `${clr('--version', 'yellow')}`
 
   const usage = `
    ${webServer.version()}
   ${clr('Usage:', 'underline')}
 
-  ${clr('web-server', 'bold')} [${usageFolderToServe}] [${clr('options', 'yellow')}]
+  ${clr('web-server', 'bold')} [${usageCommand}] [${usageFolderToServe}] [${clr('options', 'yellow')}]
 
+  ${usageCommand}\t\tdev | test | on | off | monitor | info | logs | version
   ${usageFolderToServe}\tPath to the folder to serve (defaults to current folder).
 
   ${clr('Options:', 'underline')}
 
   ${usagePortOption}\t\tThe port to start the server on (defaults to 443).
+
+  ${clr('Commands:', 'underline')}
+
   ${usageVersionOption}\t\tDisplay the version and exit.
 
-  ${usageStagingOption}\t\tLaunch server as regular process with globally-trusted certificates.
-  ${usageLiveOption}\t\tLaunch server as startup daemon with globally-trusted certificates.
+  ${usageDevOption}\t\t\t(Default) Launch server as regular process with locally-trusted certificates.
+  ${usageTestOption}\t\tLaunch server as regular process with globally-trusted certificates.
+  ${usageOnOption}\t\t\tLaunch server as startup daemon with globally-trusted certificates.
 
   ${clr('With a running live server, you can also:', 'underline')}
 
   ${usageMonitorOption}\t\tMonitor the server.
   ${usageLogsOption}\t\tDisplay and tail the server logs.
   ${usageInfoOption}\t\tDisplay detailed information about the server.
-  ${usageOfflineOption}\t\tTake the server offline and remove it from startup items.
+  ${usageOffOption}\t\t\tTake the server offline and remove it from startup items.
   `.replace(/\n$/, '').replace(/^\n/, '')
 
   console.log(usage)
