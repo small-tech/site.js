@@ -37,7 +37,7 @@ if (!fs.existsSync(externalDirectory)) {
     //
     // fs.copyFileSync(internalZipFilePath, zipFilePath)
     //
-    const internalZipFilePath = path.join(secondPositionalArgumentdirname, '../web-server.zip')
+    const internalZipFilePath = path.join(__dirname, '../web-server.zip')
     const webServerZip = fs.readFileSync(internalZipFilePath, 'binary')
     fs.writeFileSync(zipFilePath, webServerZip, 'binary')
 
