@@ -77,10 +77,6 @@ command.isDev = (arguments.dev || firstPositionalArgument === 'dev' || !didMatch
 
 const firstPositionalArgumentDidMatchCommand = ['help', 'version', 'test', 'on', 'off', 'monitor', 'logs', 'info'].reduce((p, n) => p || (firstPositionalArgument === n), false)
 
-console.log('firstPositionalArgumentDidMatchCommand', firstPositionalArgumentDidMatchCommand)
-
-console.log(command)
-
 // Help / usage instructions.
 if (command.isHelp) {
   const usageCommand = `${clr('command', 'green')}`
