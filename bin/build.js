@@ -48,7 +48,8 @@ async function build () {
   await compile({
     input: 'bin/web-server.js',
     output: `${macOSVersionPath}/web-server`,
-    target: 'mac-x64-10.15.3'
+    target: 'mac-x64-10.15.3',
+    resources: ['package.json', 'bin/daemon.js', 'web-server.zip']
   })
 
   //
