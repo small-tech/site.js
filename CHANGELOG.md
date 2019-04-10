@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - Nothing yet.
 
-## [7.2.0] - TBR
+## [8.0.0] - TBR
 
 ## TODO
 
@@ -18,13 +18,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - Native binary releases.
 
+## Changed
+
+  - (Breaking) Simplified commandline vocabulary to use command syntax (not options syntax).
+  - Renamed `dist` folder to `dist-iws` so we can exclude it from the source code zip (used for the binaries) without also exclusing some of the node modules that have dist directories that are required for proper functioning.
+
 ## Fixed
 
   - Fix auto-restart after automatically obtaining privileged port binding privileges via setcap during first run on Linux.
-
-## Changed
-
-  - Renamed `dist` folder to `dist-iws` so we can exclude it from the source code zip (used for the binaries) without also exclusing some of the node modules that have dist directories that are required for proper functioning.
 
 ## [7.1.0] - 2019-04-01
 
