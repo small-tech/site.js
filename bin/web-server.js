@@ -9,19 +9,21 @@ const pm2 = require('pm2')
 const childProcess = require('child_process')
 const arguments = require('minimist')(process.argv.slice(2), {boolean: true})
 
+// This is the directory that will house a copy of the source code.
+// Scripts and other processes are launched from here so that they work
+// properly when Indie Web Server is wrapped into native binaries using Nexe.
 const externalDirectory = path.join(os.homedir(), '.indie-web-server')
-// if (!fs.existsSync(externalDirectory)) {
-//   try {
-//     fs.mkdirSync(externalDirectory, {recursive: true})
-//   } catch (error) {
-//     console.log(' 💥 Failed to create external directory.', error)
-//     process.exit(1)
-//   }
-// }
 
+// The path that we expect the PM2 process manager’s source code to reside
+// at in the external directory.
 const pm2Path = path.join(externalDirectory, 'node_modules/pm2/bin/pm2')
 
+// This is the directory that we will copy the source code to (as a single
+// zip file, before unzipping it into externalDirectory.)
 const zipFilePath = path.join(os.homedir(), 'web-server.zip')
+
+// If the external directory (and, thereby, the external copy of our
+// bundled source code) doesn’t exist, copy it over and unzip it.
 if (!fs.existsSync(externalDirectory)) {
   try {
     //
@@ -48,11 +50,14 @@ if (!fs.existsSync(externalDirectory)) {
     childProcess.execSync(`unzip ${zipFilePath} -d ${externalDirectory}`)
 
   } catch (error) {
-    console.log(' 💥 Failed to copy Indie Web Server source to external directory.', error)
+    console.log(' 💥 Failed to copy Indie Web Server source code to external directory.', error)
     process.exit(1)
   }
 }
 
+//
+// Display usage/help.
+//
 if (arguments._.length > 2 || arguments.help === true) {
 
   const usageFolderToServe = clr('folder-to-serve', 'green')
