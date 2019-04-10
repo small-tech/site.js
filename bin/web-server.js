@@ -63,45 +63,47 @@ if (arguments._.length > 2 || arguments.help === true) {
 
   const usageCommand = `${clr('command', 'green')}`
   const usageFolderToServe = clr('folder', 'cyan')
+  const usageOptions = clr('options', 'yellow')
   const usagePort = `${clr('--port', 'yellow')}=${clr('N', 'cyan')}`
-  const usageDev = `${clr('dev', 'yellow')}`
-  const usageTest = `${clr('test', 'yellow')}`
-  const usageOn = `${clr('on', 'yellow')}`
-  const usageOff = `${clr('off', 'yellow')}`
-  const usageMonitor = `${clr('monitor', 'yellow')}`
-  const usageLogs = `${clr('logs', 'yellow')}`
-  const usageInfo = `${clr('info', 'yellow')}`
-  const usageVersion = `${clr('version', 'yellow')}`
+  const usageDev = `${clr('dev', 'green')}`
+  const usageTest = `${clr('test', 'green')}`
+  const usageOn = `${clr('on', 'green')}`
+  const usageOff = `${clr('off', 'green')}`
+  const usageMonitor = `${clr('monitor', 'green')}`
+  const usageLogs = `${clr('logs', 'green')}`
+  const usageInfo = `${clr('info', 'green')}`
+  const usageVersion = `${clr('version', 'green')}`
 
   const usage = `
    ${webServer.version()}
   ${clr('Usage:', 'underline')}
 
-  ${clr('web-server', 'bold')} [${usageCommand}] [${usageFolderToServe}] [${clr('options', 'yellow')}]
+  ${clr('web-server', 'bold')} [${usageCommand}] [${usageFolderToServe}] [${usageOptions}]
 
   ${usageCommand}\t${usageVersion} | ${usageDev} | ${usageTest} | ${usageOn} | ${usageOff} | ${usageMonitor} | ${usageLogs} | ${usageInfo} (details below).
-  ${usageFolderToServe}\tPath to the folder to serve (defaults to current folder).
+  ${usageFolderToServe}\tPath to folder to serve (defaults to current folder).
+  ${usageOptions}\tSettings that alter server characteristics (details below).
 
   ${clr('Commands:', 'underline')}
 
-  ${usageVersion}\tDisplay the version and exit.
+  ${usageVersion}\tDisplay version and exit.
 
   ${usageDev}\t\tLaunch server as regular process with locally-trusted certificates.
   ${usageTest}\t\tLaunch server as regular process with globally-trusted certificates.
   ${usageOn}\t\tLaunch server as startup daemon with globally-trusted certificates.
 
-  When the server is on, you can also:
+  When server is on, you can also use:
 
-  ${usageOff}\t\tTake the server offline and remove it from startup items.
-  ${usageMonitor}\tMonitor the server.
-  ${usageLogs}\t\tDisplay and tail the server logs.
-  ${usageInfo}\t\tDisplay detailed information about the server.
+  ${usageOff}\t\tTake server offline and remove it from startup items.
+  ${usageMonitor}\tMonitor server state.
+  ${usageLogs}\t\tDisplay and tail server logs.
+  ${usageInfo}\t\tDisplay detailed server information.
 
-  If ${usageCommand} is omitted, behaviour will default to ${usageDev}.
+  If ${usageCommand} is omitted, behaviour defaults to ${usageDev}.
 
   ${clr('Options:', 'underline')}
 
-  ${usagePort}\t\tThe port to start the server on (defaults to 443).
+  ${usagePort}\tPort to start server on (defaults to 443).
   `.replace(/\n$/, '').replace(/^\n/, '')
 
   console.log(usage)
