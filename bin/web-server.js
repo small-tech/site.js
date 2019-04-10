@@ -37,7 +37,7 @@ if (!fs.existsSync(externalDirectory)) {
     //
     // fs.copyFileSync(internalZipFilePath, zipFilePath)
     //
-    const internalZipFilePath = path.join(__dirname, '../web-server.zip')
+    const internalZipFilePath = path.join(secondPositionalArgumentdirname, '../web-server.zip')
     const webServerZip = fs.readFileSync(internalZipFilePath, 'binary')
     fs.writeFileSync(zipFilePath, webServerZip, 'binary')
 
@@ -56,15 +56,38 @@ if (!fs.existsSync(externalDirectory)) {
   }
 }
 
-//
-// Display usage/help.
-//
-if (arguments._.length > 2 || arguments.help === true) {
 
+// Get the command
+const positionalArguments = arguments._
+const firstPositionalArgument = positionalArguments[0]
+const secondPositionalArgument = positionalArguments[1]
+const command = {
+  isHelp: (arguments.h || arguments.help || positionalArguments.length > 2 || firstPositionalArgument === 'help'),
+  isVersion: (arguments.version || arguments.v || firstPositionalArgument === 'version'),
+  isTest: (arguments.test || firstPositionalArgument === 'test'),
+  isOn: (arguments.on || firstPositionalArgument === 'on'),
+  isOff: (arguments.off || firstPositionalArgument === 'off'),
+  isMonitor: (arguments.monitor || firstPositionalArgument === 'monitor'),
+  isLogs: (arguments.logs || firstPositionalArgument === 'logs'),
+  isInfo: (arguments.info || firstPositionalArgument === 'info')
+}
+// If we didn’t match a command, we default to dev.
+const didMatchCommand = Object.values(command).reduce((p,n) => p || n)
+command.isDev = (arguments.dev || firstPositionalArgument === 'dev' || !didMatchCommand)
+
+const firstPositionalArgumentDidMatchCommand = ['help', 'version', 'test', 'on', 'off', 'monitor', 'logs', 'info'].reduce((p, n) => p || (firstPositionalArgument === n), false)
+
+console.log('firstPositionalArgumentDidMatchCommand', firstPositionalArgumentDidMatchCommand)
+
+console.log(command)
+
+// Help / usage instructions.
+if (command.isHelp) {
   const usageCommand = `${clr('command', 'green')}`
   const usageFolderToServe = clr('folder', 'cyan')
   const usageOptions = clr('options', 'yellow')
-  const usagePort = `${clr('--port', 'yellow')}=${clr('N', 'cyan')}`
+  const usageHelp = `${clr('help', 'green')}`
+  const usageVersion = `${clr('version', 'green')}`
   const usageDev = `${clr('dev', 'green')}`
   const usageTest = `${clr('test', 'green')}`
   const usageOn = `${clr('on', 'green')}`
@@ -72,7 +95,7 @@ if (arguments._.length > 2 || arguments.help === true) {
   const usageMonitor = `${clr('monitor', 'green')}`
   const usageLogs = `${clr('logs', 'green')}`
   const usageInfo = `${clr('info', 'green')}`
-  const usageVersion = `${clr('version', 'green')}`
+  const usagePort = `${clr('--port', 'yellow')}=${clr('N', 'cyan')}`
 
   const usage = `
    ${webServer.version()}
@@ -80,13 +103,14 @@ if (arguments._.length > 2 || arguments.help === true) {
 
   ${clr('web-server', 'bold')} [${usageCommand}] [${usageFolderToServe}] [${usageOptions}]
 
-  ${usageCommand}\t${usageVersion} | ${usageDev} | ${usageTest} | ${usageOn} | ${usageOff} | ${usageMonitor} | ${usageLogs} | ${usageInfo} (details below).
-  ${usageFolderToServe}\tPath to folder to serve (defaults to current folder).
-  ${usageOptions}\tSettings that alter server characteristics (details below).
+  ${usageCommand}\t${usageHelp} | ${usageVersion} | ${usageDev} | ${usageTest} | ${usageOn} | ${usageOff} | ${usageMonitor} | ${usageLogs} | ${usageInfo}
+  ${usageFolderToServe}\tPath of folder to serve (defaults to current folder).
+  ${usageOptions}\tSettings that alter server characteristics.
 
   ${clr('Commands:', 'underline')}
 
   ${usageVersion}\tDisplay version and exit.
+  ${usageHelp}\t\tDisplay this help screen and exit.
 
   ${usageDev}\t\tLaunch server as regular process with locally-trusted certificates.
   ${usageTest}\t\tLaunch server as regular process with globally-trusted certificates.
@@ -111,13 +135,13 @@ if (arguments._.length > 2 || arguments.help === true) {
 }
 
 // Version.
-if (arguments.version !== undefined) {
+if (command.isVersion) {
   console.log(webServer.version())
   process.exit()
 }
 
 // Monitor (pm2 proxy).
-if (arguments.monitor !== undefined) {
+if (command.isMonitor) {
   // Launch pm2 monit.
   const options = {
     env: process.env,
@@ -134,7 +158,7 @@ if (arguments.monitor !== undefined) {
 }
 
 // Logs (pm2 proxy).
-if (arguments.logs !== undefined) {
+if (command.isLogs) {
   // Launch pm2 logs.
   const options = {
     env: process.env,
@@ -151,7 +175,7 @@ if (arguments.logs !== undefined) {
 }
 
 // Info (pm2 proxy).
-if (arguments.info !== undefined) {
+if (command.isInfo) {
   // Launch pm2 logs.
   const options = {
     env: process.env,
@@ -168,7 +192,7 @@ if (arguments.info !== undefined) {
 }
 
 // Offline (pm2 proxy for unstartup + delete)
-if (arguments.offline !== undefined) {
+if (command.isOff) {
   const options = {
     env: process.env,
     stdio: 'pipe'   // Suppress output.
@@ -225,11 +249,19 @@ if (arguments.offline !== undefined) {
   success()
 }
 
-// If no path is passed, serve the current folder.
+// If no path is passed, serve the current folder (i.e., called with just web-server)
 // If there is a path, serve that.
 let pathToServe = '.'
-if (arguments._.length > 0) {
-  pathToServe = arguments._[0]
+
+if ((command.isDev || command.isTest || command.isOn) && positionalArguments.length === 2) {
+// e.g., web-server on path-to-serve
+pathToServe = secondPositionalArgument
+} else if (!firstPositionalArgumentDidMatchCommand && (command.isDev || command.isTest || command.isOn) && positionalArguments.length === 1) {
+  // e.g., web-server --on path-to-serve
+  pathToServe = firstPositionalArgument
+} else if (command.isDev && positionalArguments.lenght === 1) {
+  // i.e., web-server path-to-serve
+  pathToServe = firstPositionalArgument
 }
 
 // If a port is specified, use it. Otherwise use the default port (443).
@@ -238,9 +270,9 @@ if (arguments.port !== undefined) {
   port = parseInt(arguments.port)
 }
 
-// If staging is specified, use it.
+// If a test server is specified, use it.
 let global = false
-if (arguments.staging !== undefined) {
+if (command.isTest) {
   global = true
 }
 
@@ -249,9 +281,9 @@ if (!fs.existsSync(pathToServe)) {
   process.exit(1)
 }
 
-// If live mode is specified, run as a daemon using the pm2 process manager.
-// Otherwise, start it as a regular process.
-if (arguments.live !== undefined) {
+// If on is specified, run as a daemon using the pm2 process manager.
+// Otherwise, start the server as a regular process.
+if (command.isOn) {
 
   pm2.connect((error) => {
     if (error) {
@@ -269,7 +301,7 @@ if (arguments.live !== undefined) {
         throw error
       }
 
-      console.log(`${webServer.version()}\n 😈 Launched as daemon on https://${os.hostname()}\n`)
+      console.log(`${webServer.version()}\n 😈 Launched as daemon on https://${os.hostname()} serving ${pathToServe}\n`)
 
       //
       // Run the script that tells the process manager to add the server to launch at startup
