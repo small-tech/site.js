@@ -6,13 +6,10 @@ Indie Web Server is a secure and seamless [Small Tech](https://ar.al/2019/03/04/
 
   - Zero-configuration – It Just Works 🤞™.
 
-  - Develop and test with automatically-provisioned locally-trusted TLS thanks to [mkcert](https://github.com/FiloSottile/mkcert) via [Nodecert](https://source.ind.ie/hypha/tools/nodecert).
+  - Develop with automatically-provisioned locally-trusted TLS thanks to [mkcert](https://github.com/FiloSottile/mkcert) via [Nodecert](https://source.ind.ie/hypha/tools/nodecert).
 
-  - Stage and deploy with automatically-provisioned globally-trusted TLS thanks to [Let’s Encrypt](https://letsencrypt.org/) via [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) (with an A score on [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest)) and the seamlessly-integrated [pm2](https://pm2.io/runtime/) process manager.
+  - Test and deploy with automatically-provisioned globally-trusted TLS thanks to [Let’s Encrypt](https://letsencrypt.org/) via [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) (with an A score on [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest)) and the seamlessly-integrated [pm2](https://pm2.io/runtime/) process manager.
 
-[Watch a short 4-minute video](https://ar.al/2019/03/14/introducing-indie-web-server-video/) demonstrating how easy Indie Web Server is to install and use.
-
-(Note: the video is about two weeks old and so it does not demonstrate the new `--live` feature for seamless deployments or the native binary distributions. I will record a new one as soon as I find some time.)
 
 ## Install
 
@@ -46,12 +43,12 @@ Start serving the current directory at https://localhost using locally-trusted c
 $ web-server
 ```
 
-### Staging
+### Testing
 
 Start serving the _site_ directory at your _hostname_ as a regular process using globally-trusted Let’s Encrypt certificates:
 
 ```shell
-$ web-server --staging site
+$ web-server test site
 ```
 
 For example, use [ngrok](https://ngrok.com/) (Pro+) with a custom domain name that you set in your `hostname` file (e.g., in `/etc/hostname` or via `hostnamectl set-hostname <hostname>` or the equivalent for your platform). The first time you hit your staging server via your hosname it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
@@ -61,21 +58,21 @@ For example, use [ngrok](https://ngrok.com/) (Pro+) with a custom domain name th
 Start serving the _site_ directory at your _hostname_ as a daemon that is automatically run at system startup and restarted if it crashes:
 
 ```shell
-$ web-server --live site
+$ web-server on site
 ```
 
-The `--live` option sets up your server to (re)start automatically when your server (re)starts and/or crashes, etc. Requires superuser privileges on first run to set up the launch item.
+The `on` command sets up your server to (re)start automatically when your server (re)starts and/or crashes, etc. Requires superuser privileges on first run to set up the launch item.
 
 For example, if you run the command on a connected server that has the ar.al domain pointing to it and `ar.al` set in _/etc/hostname_ (on Unix/Linux/macOS), you will be able to access the site at https://ar.al. The first time you hit it, it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
 
-With a running live server, you can also use the following commands:
+When the server is on, you can also use:
 
-  - `--monitor`: Monitor the server.
-  - `--logs`: Display and tail the server logs.
-  - `--info`: Display detailed information about the server.
-  - `--offline`: Take the server offline and remove it from startup items.
+  - `off`: Turn server off and remove it from startup items.
+  - `monitor`: Monitor server state.
+  - `logs`: Display and tail server logs.
+  - `info`: Display detailed server information.
 
-The live server uses the [pm2](https://pm2.io/runtime/) process manager internally. Beyond the commands listed above that Indie Web Server supports natively (and proxies to pm2), you can make use of all pm2 functionality via the pm2 command directly should you need to.
+Indie Web Server uses the [pm2](https://pm2.io/runtime/) process manager internally to start and manage the daemon. Beyond the commands listed above that Indie Web Server supports natively (and proxies to pm2), you can make use of all pm2 functionality via the pm2 command directly should you need to.
 
 ## Build and test from source
 
@@ -111,40 +108,49 @@ npm run build
 
 # Serve the test site (visit https://localhost to view).
 # e.g., To run the version 7.2.0 Linux binary:
-dist/linux/7.2.0/web-server test/site
+dist-iws/linux/7.2.0/web-server test/site
 ```
 
 ## Syntax
 
 ```shell
-web-server [folder-to-serve] [options]
+web-server [command] [folder] [options]
 ```
 
-  * __folder-to-serve:__ Path to the folder to serve (defaults to current folder).
+  * `command`: version | help | dev | test | on | off | monitor | logs | info
+  * `folder`: Path of folder to serve (defaults to current folder).
+  * `options`: Settings that alter server characteristics.
+
+### Commands:
+
+  * `version`: Display version and exit.
+  * `help`: Display help screen and exit.
+
+  * `dev`: Launch server as regular process with locally-trusted certificates.
+  * `test`: Launch server as regular process with globally-trusted certificates.
+  * `on`: Launch server as startup daemon with globally-trusted certificates.
+
+When the server is on, you can also use:
+
+  * `off`: Take server offline and remove it from startup items.
+
+  * `monitor`: Monitor server state.
+
+  * `logs`: Display and tail server logs.
+
+  * `info`: Display detailed server information.
+
+If `command` is omitted, behaviour defaults to `dev`.
 
 ### Options:
 
-  * __--port=N:__ The port to start the server on (defaults to 443).
-  * __--version:__ Display the version and exit.
+  * `--port=N`: Port to start the server on (defaults to 443).
 
-  * __--staging:__ Launch server as regular process with globally-trusted certificates.
+All command-line arguments are optional. By default, Indie Web Server will serve your current working folder over port 443 with locally-trusted certificates.
 
-  * __--live:__ Launch server as startup daemon with globally-trusted certificates.
+If you want to serve a directory that has the same name as a command, you can speficy the command in _options_ format. e.g., `web-server --on logs` will start Indie Web Server as a startup daemon to serve the _logs_ folder.
 
-### With a running live server, you can also:
-
-  * __--monitor:__ Monitor the server.
-
-  * __--logs:__ Display and tail the server logs.
-
-  * __--info:__ Display detailed information about the server.
-
-  * __--offline:__ Take the server offline and remove it from startup items.
-
-
-All command-line arguments are optional. By default, Indie Web Server will serve your current working folder over port 433 with locally-trusted certificates.
-
-If you launch with the `--staging` or `--global` options, globally-trusted Let’s Encrypt TLS certificates are automatically provisioned for you using ACME TLS the first time you hit your hostname. The hostname for the certificates is automatically set from the hostname of your system (and the _www._ subdomain is also automatically provisioned).
+If you use the `test` or `on` commands, globally-trusted Let’s Encrypt TLS certificates are automatically provisioned for you using ACME TLS the first time you hit your hostname. The hostname for the certificates is automatically set from the hostname of your system (and the _www._ subdomain is also automatically provisioned).
 
 ## Native 404 → 302 support for an evergreen web
 
