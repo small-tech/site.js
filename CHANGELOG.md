@@ -12,7 +12,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## TODO
 
-  - Automate: `zip web-server.zip * -x \*.git\* \*dist-iws\* -r` to create the source code zip to bundle in the binary.
+  - [ ] Troubleshoot first-run command silent-failure exit on my-demo.site
+  - [ ] Test 8.0.0 on macOS
+  - [ ] Test 8.0.0 on clean/new VPS instances
 
 ## Added
 
