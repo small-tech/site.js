@@ -18,13 +18,13 @@ Copy and paste the following commands into your terminal:
 ### Linux
 
 ```
-wget https://ind.ie/web-server/linux/7.2.0.zip && unzip 7.2.0.zip && chmod +x web-server && sudo mv web-server /usr/local/bin/
+wget https://ind.ie/web-server/linux/8.0.0.zip && unzip 8.0.0.zip && chmod +x web-server && sudo mv web-server /usr/local/bin/
 ```
 
 ### macOS
 
 ```
-wget https://ind.ie/web-server/macos/7.2.0.zip && unzip 7.2.0.zip && chmod +x web-server && sudo mv web-server /usr/local/bin/
+wget https://ind.ie/web-server/macos/8.0.0.zip && unzip 8.0.0.zip && chmod +x web-server && sudo mv web-server /usr/local/bin/
 ```
 
 ### Node.js
@@ -108,7 +108,7 @@ npm run build
 
 # Serve the test site (visit https://localhost to view).
 # e.g., To run the version 7.2.0 Linux binary:
-dist-iws/linux/7.2.0/web-server test/site
+dist-iws/linux/8.0.0/web-server test/site
 ```
 
 ## Syntax
