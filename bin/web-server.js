@@ -208,8 +208,8 @@ switch (true) {
       console.log(error)
       process.exit(1)
     })
-    showInfoProcess.on('exit', event => {
-      if (event.code !== 0) {
+    showInfoProcess.on('exit', (code, signal) => {
+      if (code !== 0) {
         console.log(`\n 👿 Server is not running as a live daemon; nothing to take offline.\n`)
         process.exit(1)
       } else {
@@ -220,8 +220,8 @@ switch (true) {
           console.log(error)
           process.exit(1)
         })
-        showInfoProcess.on('exit', event => {
-          if (event.code !== 0) {
+        showInfoProcess.on('exit', (code, signal) => {
+          if (code !== 0) {
             console.log(`\n 👿 Could not remove server from startup items.\n`)
             process.exit(1)
           } else {
@@ -234,8 +234,8 @@ switch (true) {
               console.log(error)
               process.exit(1)
             })
-            showInfoProcess.on('exit', event => {
-              if (event.code !== 0) {
+            showInfoProcess.on('exit', (code, signal) => {
+              if (code !== 0) {
                 // Server is not running. This is what we want at this point.
                 success()
               } else {
@@ -247,8 +247,8 @@ switch (true) {
                   console.log(error)
                   process.exit(1)
                 })
-                deleteProcess.on('exit', event => {
-                  if (event.code !== 0) {
+                deleteProcess.on('exit', (code, signal) => {
+                  if (code !== 0) {
                     console.log(`\n 👿 Could not delete the server daemon.\n`)
                     process.exit(1)
                   } else {
@@ -338,8 +338,8 @@ switch (true) {
             pm2.disconnect()
             process.exit(1)
           })
-          startupProcess.on('exit', event => {
-            if (event.code !== 0) {
+          startupProcess.on('exit', (code, signal) => {
+            if (code !== 0) {
               console.log(` 👿 Failed to add server for auto-launch at startup.\n`)
               pm2.disconnect()
               process.exit(1)
