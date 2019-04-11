@@ -181,17 +181,11 @@ switch (true) {
 
   // Off (turn off the server daemon and remove it from startup items).
   case command.isOff:
+    ensureRoot('off')
+
     const options = {
       env: process.env,
       stdio: 'inherit'   // Show output OLD: 'pipe': Suppress output.
-    }
-
-    // First, check if we are running with superuser privileges. If not,
-    // respawn the process using sudo.
-    if (process.getuid() !== 0) {
-      console.log('Not running with superuser privileges. Relaunching.')
-      childProcess.spawn('sudo', ['node', 'bin/web-server.js', 'off'], options)
-      process.exit(0)
     }
 
     // Do some cleanup, display a success message and exit.
@@ -312,59 +306,66 @@ switch (true) {
     // Otherwise, start the server as a regular process.
     if (command.isOn) {
 
-      pm2.connect((error) => {
-        if (error) {
-          console.log(`\n 👿 Could not connect to pm2 god daemon.\n`)
-          console.log(error)
+      ensureRoot('on')
+
+      const options = {
+        env: process.env,
+        stdio: 'inherit'     // Suppress output.
+      }
+
+      // e.g., PM2_HOME=/home/www-data/.pm2 sudo pm2 start bin/daemon.js -n web-server -u www-data --hp /home/www-data -- test/site
+
+      // Drop privileges to create the daemon with the regular account’s privileges
+      // (the one that called sudo).
+      const regularAccountUID = parseInt(process.env.SUDO_UID)
+      console.log('regular account id', regularAccountUID)
+      if (!regularAccountUID) {
+        console.log(`\n 👿 Error: could not get regular account’s ID.\n`)
+        process.exit(1)
+      }
+      process.seteuid(regularAccountUID)
+
+      const startProcess = childProcess.fork(pm2Path, ['start', 'bin/daemon.js', '-n', 'web-server', '--', pathToServe], options)
+
+      startProcess.on('error', error => {
+        console.log(`\n 👿 Error: could not launch start process.\n`)
+        console.log(error)
+        process.exit(1)
+      })
+
+      startProcess.on('exit', (code, signal) => {
+        console.log('code', code)
+        if (code !== 0) {
+          console.log(`\n 👿 Could not start the server daemon.\n`)
           process.exit(1)
         }
 
-        // let daemonPath = 'bin/daemon.js'
-        // if (runtime.isBinary) {
-        //   daemonPath = 'daemon.js'
-        // }
+        // Process successfully started.
+        console.log(`${webServer.version()}\n 😈 Launched as daemon on https://${os.hostname()} serving ${pathToServe}\n`)
 
-        pm2.start({
-          script: path.join(sourceDirectory, 'bin/daemon.js'),
-          args: pathToServe,
-          name: 'web-server',
-          autorestart: true
-        }, (error, processObj) => {
-          if (error) {
+        //
+        // Run the script that tells the process manager to add the server to launch at startup
+        // as a separate process with sudo privileges.
+        //
+
+        // Escalate privileges.
+        process.seteuid(0)
+
+        const startupProcess = childProcess.fork(pm2Path, ['startup'], options)
+
+        startupProcess.on('error', error => {
+          console.log(` 👿 Failed to launch pm2 startup process.\n`)
+          console.log(error)
+          process.exit(1)
+        })
+
+        startupProcess.on('exit', (code, signal) => {
+          if (code !== 0) {
             console.log(`\n 👿 Could not start the web server daemon.\n`)
-            console.log(error)
             process.exit(1)
           }
 
-          console.log(`${webServer.version()}\n 😈 Launched as daemon on https://${os.hostname()} serving ${pathToServe}\n`)
-
-          //
-          // Run the script that tells the process manager to add the server to launch at startup
-          // as a separate process with sudo privileges.
-          //
-          const options = {
-            env: process.env,
-            stdio: 'pipe'     // Suppress output.
-          }
-
-          const startupProcess = childProcess.fork(pm2Path, ['startup'], options)
-          startupProcess.on('error', error => {
-            console.log(` 👿 Failed to launch pm2 startup process.\n`)
-            pm2.disconnect()
-            process.exit(1)
-          })
-          startupProcess.on('exit', (code, signal) => {
-            if (code !== 0) {
-              console.log(` 👿 Failed to add server for auto-launch at startup.\n`)
-              pm2.disconnect()
-              process.exit(1)
-            }
-
-            console.log(` 😈 Installed for auto-launch at startup.\n`)
-
-            // Disconnect from the pm2 daemon. This will also exit the script.
-            pm2.disconnect()
-          })
+          console.log(` 😈 Installed for auto-launch at startup.\n`)
         })
       })
     } else {
@@ -388,4 +389,14 @@ switch (true) {
 // Courtesy Bankai (https://github.com/choojs/bankai/blob/master/bin.js#L142)
 function clr (text, color) {
   return process.stdout.isTTY ? ansi.format(text, color) : text
+}
+
+// Ensure we have root privileges and exit if we don’t.
+function ensureRoot (commandName) {
+  if (process.getuid() !== 0) {
+    const nodeSyntax = `sudo node bin/webserver.js ${commandName}`
+    const binarySyntax = `sudo web-server ${commandName}`
+    console.log(`\n 👿 Error: Requires root. Please try again with ${runtime.isNode ? nodeSyntax : binarySyntax}\n`)
+    process.exit(1)
+  }
 }
