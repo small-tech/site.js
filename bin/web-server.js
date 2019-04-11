@@ -22,10 +22,10 @@ const arguments = require('minimist')(process.argv.slice(2), {boolean: true})
 // // https://github.com/nexe/nexe/issues/605
 // // https://github.com/nexe/nexe/issues/607
 // //
-// const runtime = {
-//   isNode: process.argv0 === 'node',
-//   isBinary: process.argv0 === 'web-server'
-// }
+const runtime = {
+  isNode: process.argv0 === 'node',
+  isBinary: process.argv0 === 'web-server'
+}
 
 let sourceDirectory = path.resolve(__dirname, '..')
 
@@ -318,6 +318,11 @@ switch (true) {
           console.log(error)
           process.exit(1)
         }
+
+        // let daemonPath = 'bin/daemon.js'
+        // if (runtime.isBinary) {
+        //   daemonPath = 'daemon.js'
+        // }
 
         pm2.start({
           script: path.join(sourceDirectory, 'bin/daemon.js'),
