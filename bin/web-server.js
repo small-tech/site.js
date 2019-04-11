@@ -9,53 +9,77 @@ const pm2 = require('pm2')
 const childProcess = require('child_process')
 const arguments = require('minimist')(process.argv.slice(2), {boolean: true})
 
-// This is the directory that will house a copy of the source code.
-// Scripts and other processes are launched from here so that they work
-// properly when Indie Web Server is wrapped into native binaries using Nexe.
-const externalDirectory = path.join(os.homedir(), '.indie-web-server')
+//
+// When run as a regular Node script, the source directory is our parent
+// directory (web-server.js resides in the <sourceDirectory>/bin directory).
+// However, when run as a standalone executable using Nexe, we currently have
+// to bundle the source code in the executable and copy it from the virtual
+// filesystem of the binary to the external file system in order to run the
+// pm2 process manager using execSync.
+//
+// For more information, please see the following issues in the Nexe repo:
+//
+// https://github.com/nexe/nexe/issues/605
+// https://github.com/nexe/nexe/issues/607
+//
+const runtime = {
+  isNode: process.argv0 === 'node',
+  isBinary: process.argv0 === 'web-server'
+}
 
-// The path that we expect the PM2 process manager’s source code to reside
-// at in the external directory.
-const pm2Path = path.join(externalDirectory, 'node_modules/pm2/bin/pm2')
+let sourceDirectory = path.resolve(__dirname, '..')
 
-// This is the directory that we will copy the source code to (as a single
-// zip file, before unzipping it into externalDirectory.)
-const zipFilePath = path.join(os.homedir(), 'web-server.zip')
+if (runtime.isBinary) {
+  // This is the directory that will house a copy of the source code.
+  // Scripts and other processes are launched from here so that they work
+  // properly when Indie Web Server is wrapped into native binaries using Nexe.
+  sourceDirectory = path.join(os.homedir(), '.indie-web-server')
 
-// If the external directory (and, thereby, the external copy of our
-// bundled source code) doesn’t exist, copy it over and unzip it.
-if (!fs.existsSync(externalDirectory)) {
-  try {
-    //
-    // Note: we are copying the node_modules.zip file using fs.readFileSync()
-    // ===== and fs.writeFileSync() instead of fs.copyFileSync() as the latter
-    //       does not work currently in binaries that are compiled with
-    //       Nexe (tested with version 3.1.0). See these issues for more details:
-    //
-    //       https://github.com/nexe/nexe/issues/605 (red herring)
-    //       https://github.com/nexe/nexe/issues/607 (actual issue)
-    //
-    // fs.copyFileSync(internalZipFilePath, zipFilePath)
-    //
-    const internalZipFilePath = path.join(__dirname, '../web-server.zip')
-    const webServerZip = fs.readFileSync(internalZipFilePath, 'binary')
-    fs.writeFileSync(zipFilePath, webServerZip, 'binary')
+  // This is the directory that we will copy the source code to (as a single
+  // zip file, before unzipping it into sourceDirectory.)
+  const zipFilePath = path.join(os.homedir(), 'web-server.zip')
 
-    // Unzip the node_modules
-    const options = {
-      env: process.env,
-      stdio: 'inherit'  // Display output.
+  // If the external directory (and, thereby, the external copy of our
+  // bundled source code) doesn’t exist, copy it over and unzip it.
+  if (!fs.existsSync(sourceDirectory)) {
+    try {
+      //
+      // Note: we are copying the node_modules.zip file using fs.readFileSync()
+      // ===== and fs.writeFileSync() instead of fs.copyFileSync() as the latter
+      //       does not work currently in binaries that are compiled with
+      //       Nexe (tested with version 3.1.0). See these issues for more details:
+      //
+      //       https://github.com/nexe/nexe/issues/605 (red herring)
+      //       https://github.com/nexe/nexe/issues/607 (actual issue)
+      //
+      // fs.copyFileSync(internalZipFilePath, zipFilePath)
+      //
+      const internalZipFilePath = path.join(__dirname, '../web-server.zip')
+      const webServerZip = fs.readFileSync(internalZipFilePath, 'binary')
+      fs.writeFileSync(zipFilePath, webServerZip, 'binary')
+
+      // Unzip the node_modules
+      const options = {
+        env: process.env,
+        stdio: 'inherit'  // Display output.
+      }
+
+      // Unzip the node_modules directory to the external directory.
+      childProcess.execSync(`unzip ${zipFilePath} -d ${sourceDirectory}`)
+
+    } catch (error) {
+      console.log(' 💥 Failed to copy Indie Web Server source code to external directory.', error)
+      process.exit(1)
     }
-
-    // Unzip the node_modules directory to the external directory.
-    childProcess.execSync(`unzip ${zipFilePath} -d ${externalDirectory}`)
-
-  } catch (error) {
-    console.log(' 💥 Failed to copy Indie Web Server source code to external directory.', error)
-    process.exit(1)
   }
 }
 
+// The path that we expect the PM2 process manager’s source code to reside
+// at in the external directory.
+const pm2Path = path.join(sourceDirectory, 'node_modules/pm2/bin/pm2')
+
+// At this point, regardless of whether we are running as a regular Node script or
+// as a standalone executable created with Nexe, all paths should be correctly set.
 
 // Get the command
 const positionalArguments = arguments._
@@ -288,7 +312,7 @@ if (command.isOn) {
     }
 
     pm2.start({
-      script: path.join(externalDirectory, 'bin/daemon.js'),
+      script: path.join(sourceDirectory, 'bin/daemon.js'),
       args: pathToServe,
       name: 'web-server',
       autorestart: true
