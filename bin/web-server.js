@@ -183,7 +183,15 @@ switch (true) {
   case command.isOff:
     const options = {
       env: process.env,
-      stdio: 'pipe'   // Suppress output.
+      stdio: 'inherit'   // Show output OLD: 'pipe': Suppress output.
+    }
+
+    // First, check if we are running with superuser privileges. If not,
+    // respawn the process using sudo.
+    if (process.getuid() !== 0) {
+      console.log('Not running with superuser privileges. Relaunching.')
+      childProcess.spawn('sudo', ['node', 'bin/web-server.js', 'off'], options)
+      process.exit(0)
     }
 
     // Do some cleanup, display a success message and exit.
@@ -220,7 +228,7 @@ switch (true) {
           console.log(error)
           process.exit(1)
         })
-        showInfoProcess.on('exit', (code, signal) => {
+        unstartupProcess.on('exit', (code, signal) => {
           if (code !== 0) {
             console.log(`\n 👿 Could not remove server from startup items.\n`)
             process.exit(1)
@@ -234,9 +242,10 @@ switch (true) {
               console.log(error)
               process.exit(1)
             })
-            showInfoProcess.on('exit', (code, signal) => {
+            showInfoProcess2.on('exit', (code, signal) => {
               if (code !== 0) {
                 // Server is not running. This is what we want at this point.
+                console.log('startup item removal also deleted process')
                 success()
               } else {
                 // The server is still on (it was not started as a startup item). Use
@@ -253,6 +262,7 @@ switch (true) {
                     process.exit(1)
                   } else {
                     // The web server process was deleted.
+                    console.log('process deleted')
                     success()
                   }
                 })
