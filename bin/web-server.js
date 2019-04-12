@@ -278,9 +278,28 @@ switch (true) {
       }
       process.seteuid(regularAccountUID)
 
+      // TODO
+      //
+      // If we are running from a binary, have PM2 launch the binary. e.g., equivalent of:
+      // pm2 start web-server -x -- /usr/local/bin/bin/web-server.js -- test test/site
+      //
+      // If we’re running under Node directly, run the daemon script.
+      //
       const daemonPath = path.join(sourceDirectory, 'bin/daemon.js')
+      const webserverPath = path.join(sourceDirectory, 'bin/web-server.js')
+      let startProcess
 
-      const startProcess = childProcess.fork(pm2Path, ['start', daemonPath, '--name', 'web-server', '--', pathToServe], options)
+      if (runtime.isNode) {
+        console.log('Starting daemon using external Node.')
+        startProcess = childProcess.fork(pm2Path, ['start', daemonPath, '--name', 'web-server', '--', pathToServe], options)
+      } else if (runtime.isBinary) {
+        console.log('Starting daemon using web-server binary.')
+        startProcess = childProcess.fork(pm2Path, ['start', 'web-server', '--execute-command', '--', webserverPath, '--', 'test', pathToServe], options)
+      } else {
+        // This should not happen.
+        console.log('\n 👿 Error: runtime is neither Node or Binary. This should not happen.\n')
+        process.exit(1)
+      }
 
       startProcess.on('error', error => {
         console.log(`\n 👿 Error: could not launch start process.\n`)
