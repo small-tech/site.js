@@ -126,6 +126,7 @@ switch (true) {
   case command.isDisable:
     try {
       childProcess.execSync('sudo systemctl disable web-server', {env: process.env})
+      childProcess.execSync('sudo systemctl stop web-server', {env: process.env})
     } catch (error) {
       console.error(error, '\n 👿 Error: Could not disable web server.\n')
       process.exit(1)
@@ -173,6 +174,8 @@ switch (true) {
       //
       // Launch as startup daemon.
       //
+
+      ensureRoot('enable')
 
       // Ensure systemd exists.
       try {
@@ -261,4 +264,14 @@ switch (true) {
 // Courtesy Bankai (https://github.com/choojs/bankai/blob/master/bin.js#L142)
 function clr (text, color) {
   return process.stdout.isTTY ? ansi.format(text, color) : text
+}
+
+// Ensure we have root privileges and exit if we don’t.
+function ensureRoot (commandName) {
+  if (process.getuid() !== 0) {
+    const nodeSyntax = `sudo node bin/webserver.js ${commandName}`
+    const binarySyntax = `sudo web-server ${commandName}`
+    console.log(`\n 👿 Error: Requires root. Please try again with ${runtime.isNode ? nodeSyntax : binarySyntax}\n`)
+    process.exit(1)
+  }
 }
