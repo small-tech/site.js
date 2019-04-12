@@ -187,7 +187,7 @@ switch (true) {
       //
       const binaryExecutable = '/usr/local/bin/web-server'
       const nodeExecutable = `node ${path.join(sourceDirectory, 'bin/web-server.js')}`
-      const executable = runtime.isBinary ? webserverBinaryPath : daemonScriptPath
+      const executable = runtime.isBinary ? binaryExecutable : nodeExecutable
 
       const absolutePathToServe = path.resolve(pathToServe)
 
@@ -216,7 +216,7 @@ switch (true) {
       StartLimitIntervalSec=0
       Restart=always
 
-      ExecStart=/usr/local/bin/web-server test ${absolutePathToServe}
+      ExecStart=${executable} test ${absolutePathToServe}
 
       [Install]
       WantedBy=multi-user.target
