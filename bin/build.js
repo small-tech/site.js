@@ -17,21 +17,13 @@ const childProcess = require('child_process')
 
 console.log(`\n ⚙ Indie Web Server: building native binaries for version ${version}`)
 
-const linuxVersionPath = `dist-iws/linux/${version}`
-const macOSVersionPath = `dist-iws/macos/${version}`
+const linuxVersionPath = `dist/linux/${version}`
+const macOSVersionPath = `dist/macos/${version}`
 
 fs.mkdirSync(linuxVersionPath, {recursive: true})
 fs.mkdirSync(macOSVersionPath, {recursive: true})
 
 async function build () {
-  //
-  // Zip the source.
-  //
-  console.log('   • Zipping up the source for inclusion in the binary…')
-
-  const mainSourceDirectory = path.join(__dirname, '..')
-  childProcess.execSync(String.raw`rm -f web-server.zip && zip web-server.zip * -x \*.git\* \*dist-iws\* -r`, {env: process.env, cwd: mainSourceDirectory})
-
   //
   // Build.
   //
@@ -40,7 +32,7 @@ async function build () {
     input: 'bin/web-server.js',
     output: `${linuxVersionPath}/web-server`,
     target: 'linux-x64-10.15.3',
-    resources: ['package.json', 'bin/daemon.js', 'web-server.zip']
+    resources: ['package.json', 'bin/daemon.js']
   })
 
   console.log('   • Building macOS version…')
@@ -49,7 +41,7 @@ async function build () {
     input: 'bin/web-server.js',
     output: `${macOSVersionPath}/web-server`,
     target: 'mac-x64-10.15.3',
-    resources: ['package.json', 'bin/daemon.js', 'web-server.zip']
+    resources: ['package.json', 'bin/daemon.js']
   })
 
   //
@@ -58,6 +50,7 @@ async function build () {
   console.log('   • Zipping binaries…')
 
   const zipFileName = `${version}.zip`
+  const mainSourceDirectory = path.join(__dirname, '..')
   const linuxVersionWorkingDirectory = path.join(mainSourceDirectory, linuxVersionPath)
   const macOSVersionWorkingDirectory = path.join(mainSourceDirectory, macOSVersionPath)
 
@@ -97,10 +90,6 @@ async function build () {
   } else {
     console.log('   • Skipped copy of binaries to Indie Web Site as could not find the local working copy.')
   }
-
-  console.log('   • Cleaning up…')
-
-  childProcess.execSync('rm -f web-server.zip', {env: process.env, cwd: mainSourceDirectory})
 
   console.log('\n 😁👍 Done!\n')
 }
