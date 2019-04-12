@@ -8,7 +8,7 @@
 const args = process.argv.slice(2)
 
 if (args.length !== 1) {
-  console.log('\n  💕😈💕 Indie Web Server Daemon\n\n  Please use via web-server --live instead.\n')
+  console.log('\n  💕😈💕 Indie Web Server Daemon\n\n  Please use via $ web-server on\n')
   process.exit(1)
 }
 
