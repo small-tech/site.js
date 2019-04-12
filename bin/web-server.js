@@ -212,6 +212,7 @@ switch (true) {
       Description=Indie Web Server
       Documentation=https://ind.ie/web-server/
       After=network.target
+      StartLimitIntervalSec=0
 
       [Service]
       Type=simple
@@ -219,7 +220,6 @@ switch (true) {
       Environment=PATH=/sbin:/usr/bin:/usr/local/bin
       Environment=NODE_ENV=production
       RestartSec=1
-      StartLimitIntervalSec=0
       Restart=always
 
       ExecStart=${executable} test ${absolutePathToServe}
@@ -227,8 +227,6 @@ switch (true) {
       [Install]
       WantedBy=multi-user.target
       `
-
-      console.log('systemd service unit', unit)
 
       // Save the systemd service unit.
       fs.writeFileSync('/etc/systemd/system/web-server.service', unit, 'utf-8')
