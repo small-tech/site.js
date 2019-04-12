@@ -43,32 +43,33 @@ const command = {
   isHelp: (arguments.h || arguments.help || positionalArguments.length > 2 || firstPositionalArgument === 'help'),
   isVersion: (arguments.version || arguments.v || firstPositionalArgument === 'version'),
   isTest: (arguments.test || firstPositionalArgument === 'test'),
-  isOn: (arguments.on || firstPositionalArgument === 'on'),
-  isOff: (arguments.off || firstPositionalArgument === 'off'),
-  isMonitor: (arguments.monitor || firstPositionalArgument === 'monitor'),
+  isEnable: (arguments.enable || firstPositionalArgument === 'enable'),
+  isDisable: (arguments.disable || firstPositionalArgument === 'disable'),
   isLogs: (arguments.logs || firstPositionalArgument === 'logs'),
-  isStatus: (arguments.status || firstPositionalArgument === 'status')
+  isStatus: (arguments.status || firstPositionalArgument === 'status'),
+//isDev: is handled below.
 }
 // If we didn’t match a command, we default to dev.
 const didMatchCommand = Object.values(command).reduce((p,n) => p || n)
 command.isDev = (arguments.dev || firstPositionalArgument === 'dev' || !didMatchCommand)
 
-const firstPositionalArgumentDidMatchCommand = ['version', 'help', 'test', 'on', 'off', 'monitor', 'logs', 'status'].reduce((p, n) => p || (firstPositionalArgument === n), false)
+const firstPositionalArgumentDidMatchCommand = ['version', 'help', 'test', 'enable', 'disable', 'logs', 'status'].reduce((p, n) => p || (firstPositionalArgument === n), false)
 
 // Help / usage instructions.
 if (command.isHelp) {
   const usageCommand = `${clr('command', 'green')}`
   const usageFolderToServe = clr('folder', 'cyan')
   const usageOptions = clr('options', 'yellow')
+
   const usageVersion = `${clr('version', 'green')}`
   const usageHelp = `${clr('help', 'green')}`
   const usageDev = `${clr('dev', 'green')}`
   const usageTest = `${clr('test', 'green')}`
-  const usageOn = `${clr('on', 'green')}`
-  const usageOff = `${clr('off', 'green')}`
-  const usageMonitor = `${clr('monitor', 'green')}`
+  const usageEnable = `${clr('enable', 'green')}`
+  const usageDisable = `${clr('disable', 'green')}`
   const usageLogs = `${clr('logs', 'green')}`
   const usageStatus = `${clr('status', 'green')}`
+
   const usagePort = `${clr('--port', 'yellow')}=${clr('N', 'cyan')}`
 
   const usage = `
@@ -77,7 +78,7 @@ if (command.isHelp) {
 
   ${clr('web-server', 'bold')} [${usageCommand}] [${usageFolderToServe}] [${usageOptions}]
 
-  ${usageCommand}\t${usageVersion} | ${usageHelp} | ${usageDev} | ${usageTest} | ${usageOn} | ${usageOff} | ${usageMonitor} | ${usageLogs} | ${usageStatus}
+  ${usageCommand}\t${usageVersion} | ${usageHelp} | ${usageDev} | ${usageTest} | ${usageEnable} | ${usageDisable} | ${usageLogs} | ${usageStatus}
   ${usageFolderToServe}\tPath of folder to serve (defaults to current folder).
   ${usageOptions}\tSettings that alter server characteristics.
 
@@ -86,16 +87,13 @@ if (command.isHelp) {
   ${usageVersion}\tDisplay version and exit.
   ${usageHelp}\t\tDisplay this help screen and exit.
 
-  ${usageDev}\t\tLaunch server as regular process with locally-trusted certificates.
-  ${usageTest}\t\tLaunch server as regular process with globally-trusted certificates.
-  ${usageOn}\t\tLaunch server as startup daemon with globally-trusted certificates.
+  ${usageDev}\t\tStart server as regular process with locally-trusted certificates.
+  ${usageTest}\t\tStart server as regular process with globally-trusted certificates.
 
-  When server is on, you can also use:
-
-  ${usageOff}\t\tTurn server off and remove it from startup items.
-  ${usageMonitor}\tMonitor server state.
+  ${usageEnable}\tStart server as daemon with globally-trusted certificates and add to startup.
+  ${usageDisable}\tStop server and remove from startup.
   ${usageLogs}\t\tDisplay and tail server logs.
-  ${usageStatus}\t\tDisplay detailed server information.
+  ${usageStatus}\tDisplay detailed server information (press ‘q’ to exit).
 
   If ${usageCommand} is omitted, behaviour defaults to ${usageDev}.
 
