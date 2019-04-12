@@ -28,10 +28,6 @@ const runtime = {
 
 let sourceDirectory = path.resolve(__dirname, '..')
 
-// The path that we expect the PM2 process manager’s source code to reside
-// at in the external directory.
-const pm2Path = path.join(sourceDirectory, 'node_modules/pm2/bin/pm2')
-
 // At this point, regardless of whether we are running as a regular Node script or
 // as a standalone executable created with Nexe, all paths should be correctly set.
 
@@ -116,11 +112,6 @@ switch (true) {
     process.exit()
   break
 
-  // Monitor (proxy: pm2 monit)
-  case command.isMonitor:
-    childProcess.fork(pm2Path, ['monit'], {env: process.env})
-  break
-
   // Logs (proxy: journalctl --follow --unit web-server)
   case command.isLogs:
     childProcess.spawn('journalctl', ['--follow', '--unit', 'web-server'], {env: process.env, stdio: 'inherit'})
@@ -132,92 +123,13 @@ switch (true) {
   break
 
   // Off (turn off the server daemon and remove it from startup items).
-  case command.isOff:
-    ensureRoot('off')
-
-    const options = {
-      env: process.env,
-      stdio: 'inherit'   // Show output OLD: 'pipe': Suppress output.
-    }
-
-    // Do some cleanup, display a success message and exit.
-    function success () {
-      // Try to reset permissions on pm2 so that future uses of pm2 proxies via web-server
-      // in this session will not require sudo.
-      try {
-        childProcess.execSync('sudo chown $(whoami):$(whoami) /home/$(whoami)/.pm2/rpc.sock /home/$(whoami)/.pm2/pub.sock', options)
-      } catch (error) {
-        console.log(`\n 👿 Warning: could not reset permissions on pm2.`)
-      }
-
-      // All’s good.
-      console.log(`\n 😈 Server is offline and removed from startup items.\n`)
-      process.exit(0)
-    }
-
-    // Is the server running?
-    const showInfoProcess = childProcess.fork(pm2Path, ['show', 'web-server'], options)
-    showInfoProcess.on('error', error => {
-      console.log(`\n 👿 Error: could not check if daemon is running.\n`)
-      console.log(error)
+  case command.isDisable:
+    try {
+      childProcess.execSync('sudo systemctl disable web-server', {env: process.env})
+    } catch (error) {
+      console.error(error, '\n 👿 Error: Could not disable web server.\n')
       process.exit(1)
-    })
-    showInfoProcess.on('exit', (code, signal) => {
-      if (code !== 0) {
-        console.log(`\n 👿 Server is not running as a live daemon; nothing to take offline.\n`)
-        process.exit(1)
-      } else {
-        // OK, server is running. Try to remove it from startup items.
-        const unstartupProcess = childProcess.fork(pm2Path, ['unstartup'], options)
-        unstartupProcess.on('error', error => {
-          console.log(`\n 👿 Error: could not run pm2 unstartup process.\n`)
-          console.log(error)
-          process.exit(1)
-        })
-        unstartupProcess.on('exit', (code, signal) => {
-          if (code !== 0) {
-            console.log(`\n 👿 Could not remove server from startup items.\n`)
-            process.exit(1)
-          } else {
-            // OK, server was removed from startup items.
-            // If the server was started as a startup item, unstartup will also
-            // kill the process. Check again to see if the server is running.
-            const showInfoProcess2 = childProcess.fork(pm2Path, ['show', 'web-server'], options)
-            showInfoProcess2.on('error', error => {
-              console.log(`\n 👿 Error: could not check if daemon is running (second check).\n`)
-              console.log(error)
-              process.exit(1)
-            })
-            showInfoProcess2.on('exit', (code, signal) => {
-              if (code !== 0) {
-                // Server is not running. This is what we want at this point.
-                console.log('startup item removal also deleted process')
-                success()
-              } else {
-                // The server is still on (it was not started as a startup item). Use
-                // pm2 delete to remove it.
-                const deleteProcess = childProcess.fork(pm2Path, ['delete', 'web-server'], options)
-                deleteProcess.on('error', error => {
-                  console.log(`\n 👿 Error: could not launch the delete web server process.\n`)
-                  console.log(error)
-                  process.exit(1)
-                })
-                deleteProcess.on('exit', (code, signal) => {
-                  if (code !== 0) {
-                    console.log(`\n 👿 Could not delete the server daemon.\n`)
-                    process.exit(1)
-                  } else {
-                    // The web server process was deleted.
-                    console.log('process deleted')
-                    success()
-                  }
-                })
-              }
-            })
-          }
-        })
-      }
-    })
+    }
   break
 
   // Default: run the server (either for development, testing (test), or production (on))
@@ -226,13 +138,13 @@ switch (true) {
     // If there is a path, serve that.
     let pathToServe = '.'
 
-    if ((command.isDev || command.isTest || command.isOn) && positionalArguments.length === 2) {
+    if ((command.isDev || command.isTest || command.isEnable) && positionalArguments.length === 2) {
       // e.g., web-server on path-to-serve
       pathToServe = secondPositionalArgument
-    } else if (!firstPositionalArgumentDidMatchCommand && (command.isDev || command.isTest || command.isOn) && positionalArguments.length === 1) {
+    } else if (!firstPositionalArgumentDidMatchCommand && (command.isDev || command.isTest || command.isEnable) && positionalArguments.length === 1) {
       // e.g., web-server --on path-to-serve
       pathToServe = firstPositionalArgument
-    } else if (command.isDev && positionalArguments.lenght === 1) {
+    } else if (command.isDev && positionalArguments.length === 1) {
       // i.e., web-server path-to-serve
       pathToServe = firstPositionalArgument
     }
@@ -254,90 +166,80 @@ switch (true) {
       process.exit(1)
     }
 
-    // If on is specified, run as a daemon using the pm2 process manager.
-    // Otherwise, start the server as a regular process.
-    if (command.isOn) {
-
-      ensureRoot('on')
-
-      const options = {
-        env: process.env,
-        stdio: 'inherit'     // Suppress output.
-      }
-
-      // Drop privileges to create the daemon with the regular account’s privileges
-      // (the one that called sudo).
-      const regularAccountUID = parseInt(process.env.SUDO_UID)
-      // console.log('regular account id', regularAccountUID)
-      if (!regularAccountUID) {
-        console.log(`\n 👿 Error: could not get regular account’s ID.\n`)
-        process.exit(1)
-      }
-      process.seteuid(regularAccountUID)
-
-      // TODO
+    //
+    // Launch as startup daemon or regular process?
+    //
+    if (command.isEnable) {
       //
-      // If we are running from a binary, have PM2 launch the binary. e.g., equivalent of:
-      // pm2 start web-server -x -- /usr/local/bin/bin/web-server.js -- test test/site
+      // Launch as startup daemon.
       //
-      // If we’re running under Node directly, run the daemon script.
-      //
-      const daemonPath = path.join(sourceDirectory, 'bin/daemon.js')
-      const webserverPath = path.join(sourceDirectory, 'bin/web-server.js')
-      let startProcess
 
-      if (runtime.isNode) {
-        console.log('Starting daemon using external Node.')
-        startProcess = childProcess.fork(pm2Path, ['start', daemonPath, '--name', 'web-server', '--', pathToServe], options)
-      } else if (runtime.isBinary) {
-        console.log('Starting daemon using web-server binary.')
-        startProcess = childProcess.fork(pm2Path, ['start', 'web-server', '--execute-command', '--', webserverPath, '--', 'test', pathToServe], options)
-      } else {
-        // This should not happen.
-        console.log('\n 👿 Error: runtime is neither Node or Binary. This should not happen.\n')
+      // Ensure systemd exists.
+      try {
+        childProcess.execSync('which systemctl', {env: process.env})
+      } catch (error) {
+        console.error(error, '\n 👿 Error: Could not find systemd, cannot create daemon.\n')
         process.exit(1)
       }
 
-      startProcess.on('error', error => {
-        console.log(`\n 👿 Error: could not launch start process.\n`)
-        console.log(error)
+      //
+      // Create the systemd service unit.
+      //
+      const binaryExecutable = '/usr/local/bin/web-server'
+      const nodeExecutable = `node ${path.join(sourceDirectory, 'bin/web-server.js')}`
+      const executable = runtime.isBinary ? webserverBinaryPath : daemonScriptPath
+
+      const absolutePathToServe = path.resolve(pathToServe)
+
+      // Get the current account name.
+      const currentAccountId = process.getuid()
+      let accountName
+      try {
+        // Courtesy: https://www.unix.com/302402784-post4.html
+        accountName = childProcess.execSync(`awk -v val=${currentAccountId} -F ":" '$3==val{print $1}' /etc/passwd`).toString()
+      } catch (error) {
+        console.error(error, '\n 👿 Error: could not get account name.\n')
         process.exit(1)
-      })
+      }
 
-      startProcess.on('exit', (code, signal) => {
-        if (code !== 0) {
-          console.log(`\n 👿 Could not start the server daemon.\n`)
-          process.exit(1)
-        }
+      const unit = `[Unit]
+      Description=Indie Web Server
+      Documentation=https://ind.ie/web-server/
+      After=network.target
 
-        // Process successfully started.
+      [Service]
+      Type=simple
+      User=${accountName}
+      Environment=PATH=/sbin:/usr/bin:/usr/local/bin
+      Environment=NODE_ENV=production
+      RestartSec=1
+      StartLimitIntervalSec=0
+      Restart=always
+
+      ExecStart=/usr/local/bin/web-server test ${absolutePathToServe}
+
+      [Install]
+      WantedBy=multi-user.target
+      `
+
+      console.log('systemd service unit', unit)
+
+      // Save the systemd service unit.
+      fs.writeFileSync('/etc/systemd/system/web-server.service', unit, 'utf-8')
+
+      // Enable and start the systemd service.
+      try {
+        // Enable.
+        childProcess.execSync('sudo systemctl enable web-server', {env: process.env})
+        console.log(` 😈 Installed for auto-launch at startup.\n`)
+
+        // Start.
+        childProcess.execSync('sudo systemctl start web-server', {env: process.env})
         console.log(`${webServer.version()}\n 😈 Launched as daemon on https://${os.hostname()} serving ${pathToServe}\n`)
-
-        //
-        // Run the script that tells the process manager to add the server to launch at startup
-        // as a separate process with sudo privileges.
-        //
-
-        // Escalate privileges.
-        process.seteuid(0)
-
-        const startupProcess = childProcess.fork(pm2Path, ['startup'], options)
-
-        startupProcess.on('error', error => {
-          console.log(` 👿 Failed to launch pm2 startup process.\n`)
-          console.log(error)
-          process.exit(1)
-        })
-
-        startupProcess.on('exit', (code, signal) => {
-          if (code !== 0) {
-            console.log(`\n 👿 Could not start the web server daemon.\n`)
-            process.exit(1)
-          }
-
-          console.log(` 😈 Installed for auto-launch at startup.\n`)
-        })
-      })
+      } catch (error) {
+        console.error(error, `\n 👿 Error: could not enable web server.\n`)
+        process.exit(1)
+      }
     } else {
       //
       // Start a regular server process.
@@ -359,14 +261,4 @@ switch (true) {
 // Courtesy Bankai (https://github.com/choojs/bankai/blob/master/bin.js#L142)
 function clr (text, color) {
   return process.stdout.isTTY ? ansi.format(text, color) : text
-}
-
-// Ensure we have root privileges and exit if we don’t.
-function ensureRoot (commandName) {
-  if (process.getuid() !== 0) {
-    const nodeSyntax = `sudo node bin/webserver.js ${commandName}`
-    const binarySyntax = `sudo web-server ${commandName}`
-    console.log(`\n 👿 Error: Requires root. Please try again with ${runtime.isNode ? nodeSyntax : binarySyntax}\n`)
-    process.exit(1)
-  }
 }
