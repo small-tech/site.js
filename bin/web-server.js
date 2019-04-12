@@ -114,16 +114,20 @@ switch (true) {
 
   // Logs (proxy: journalctl --follow --unit web-server)
   case command.isLogs:
+    ensureJournalctl()
     childProcess.spawn('journalctl', ['--follow', '--unit', 'web-server'], {env: process.env, stdio: 'inherit'})
   break
 
   // Status (proxy: systemctl status web-server)
   case command.isStatus:
+    ensureSystemctl()
     childProcess.spawn('systemctl', ['status', 'web-server'], {env: process.env, stdio: 'inherit'})
   break
 
   // Off (turn off the server daemon and remove it from startup items).
   case command.isDisable:
+    ensureRoot('disable')
+    ensureSystemctl()
     try {
       childProcess.execSync('sudo systemctl disable web-server', {env: process.env})
       childProcess.execSync('sudo systemctl stop web-server', {env: process.env})
@@ -176,14 +180,7 @@ switch (true) {
       //
 
       ensureRoot('enable')
-
-      // Ensure systemd exists.
-      try {
-        childProcess.execSync('which systemctl', {env: process.env})
-      } catch (error) {
-        console.error(error, '\n 👿 Error: Could not find systemd, cannot create daemon.\n')
-        process.exit(1)
-      }
+      ensureSystemctl()
 
       //
       // Create the systemd service unit.
@@ -194,12 +191,18 @@ switch (true) {
 
       const absolutePathToServe = path.resolve(pathToServe)
 
-      // Get the current account name.
-      const currentAccountId = process.getuid()
+      // Get the regular account name (i.e, the unprivileged account that is
+      // running the current process via sudo).
+      const accountUID = parseInt(process.env.SUDO_UID)
+      if (!accountUID) {
+        console.log(`\n 👿 Error: could not get account ID.\n`)
+        process.exit(1)
+      }
+
       let accountName
       try {
         // Courtesy: https://www.unix.com/302402784-post4.html
-        accountName = childProcess.execSync(`awk -v val=${currentAccountId} -F ":" '$3==val{print $1}' /etc/passwd`).toString()
+        accountName = childProcess.execSync(`awk -v val=${accountUID} -F ":" '$3==val{print $1}' /etc/passwd`).toString()
       } catch (error) {
         console.error(error, '\n 👿 Error: could not get account name.\n')
         process.exit(1)
@@ -272,6 +275,26 @@ function ensureRoot (commandName) {
     const nodeSyntax = `sudo node bin/webserver.js ${commandName}`
     const binarySyntax = `sudo web-server ${commandName}`
     console.log(`\n 👿 Error: Requires root. Please try again with ${runtime.isNode ? nodeSyntax : binarySyntax}\n`)
+    process.exit(1)
+  }
+}
+
+// Ensure systemctl exists.
+function ensureSystemctl () {
+  try {
+    childProcess.execSync('which systemctl', {env: process.env})
+  } catch (error) {
+    console.error(error, '\n 👿 Error: Could not find systemctl.\n')
+    process.exit(1)
+  }
+}
+
+// Ensure systemctl exists.
+function ensureJournalctl () {
+  try {
+    childProcess.execSync('which journalctl', {env: process.env})
+  } catch (error) {
+    console.error(error, '\n 👿 Error: Could not find journalctl.\n')
     process.exit(1)
   }
 }
