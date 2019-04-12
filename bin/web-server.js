@@ -29,51 +29,6 @@ const runtime = {
 
 let sourceDirectory = path.resolve(__dirname, '..')
 
-// if (runtime.isBinary) {
-//   // This is the directory that will house a copy of the source code.
-//   // Scripts and other processes are launched from here so that they work
-//   // properly when Indie Web Server is wrapped into native binaries using Nexe.
-//   sourceDirectory = path.join(os.homedir(), '.indie-web-server')
-
-//   // This is the directory that we will copy the source code to (as a single
-//   // zip file, before unzipping it into sourceDirectory.)
-//   const zipFilePath = path.join(os.homedir(), 'web-server.zip')
-
-//   // If the external directory (and, thereby, the external copy of our
-//   // bundled source code) doesn’t exist, copy it over and unzip it.
-//   if (!fs.existsSync(sourceDirectory)) {
-//     try {
-//       //
-//       // Note: we are copying the node_modules.zip file using fs.readFileSync()
-//       // ===== and fs.writeFileSync() instead of fs.copyFileSync() as the latter
-//       //       does not work currently in binaries that are compiled with
-//       //       Nexe (tested with version 3.1.0). See these issues for more details:
-//       //
-//       //       https://github.com/nexe/nexe/issues/605 (red herring)
-//       //       https://github.com/nexe/nexe/issues/607 (actual issue)
-//       //
-//       // fs.copyFileSync(internalZipFilePath, zipFilePath)
-//       //
-//       const internalZipFilePath = path.join(__dirname, '../web-server.zip')
-//       const webServerZip = fs.readFileSync(internalZipFilePath, 'binary')
-//       fs.writeFileSync(zipFilePath, webServerZip, 'binary')
-
-//       // Unzip the node_modules
-//       const options = {
-//         env: process.env,
-//         stdio: 'inherit'  // Display output.
-//       }
-
-//       // Unzip the node_modules directory to the external directory.
-//       childProcess.execSync(`unzip ${zipFilePath} -d ${sourceDirectory}`)
-
-//     } catch (error) {
-//       console.log(' 💥 Failed to copy Indie Web Server source code to external directory.', error)
-//       process.exit(1)
-//     }
-//   }
-// }
-
 // The path that we expect the PM2 process manager’s source code to reside
 // at in the external directory.
 const pm2Path = path.join(sourceDirectory, 'node_modules/pm2/bin/pm2')
@@ -313,19 +268,19 @@ switch (true) {
         stdio: 'inherit'     // Suppress output.
       }
 
-      // e.g., PM2_HOME=/home/www-data/.pm2 sudo pm2 start bin/daemon.js -n web-server -u www-data --hp /home/www-data -- test/site
-
       // Drop privileges to create the daemon with the regular account’s privileges
       // (the one that called sudo).
       const regularAccountUID = parseInt(process.env.SUDO_UID)
-      console.log('regular account id', regularAccountUID)
+      // console.log('regular account id', regularAccountUID)
       if (!regularAccountUID) {
         console.log(`\n 👿 Error: could not get regular account’s ID.\n`)
         process.exit(1)
       }
       process.seteuid(regularAccountUID)
 
-      const startProcess = childProcess.fork(pm2Path, ['start', 'bin/daemon.js', '-n', 'web-server', '--', pathToServe], options)
+      const daemonPath = path.join(sourceDirectory, 'bin/daemon.js')
+
+      const startProcess = childProcess.fork(pm2Path, ['start', daemonPath, '--name', 'web-server', '--', pathToServe], options)
 
       startProcess.on('error', error => {
         console.log(`\n 👿 Error: could not launch start process.\n`)
@@ -334,7 +289,6 @@ switch (true) {
       })
 
       startProcess.on('exit', (code, signal) => {
-        console.log('code', code)
         if (code !== 0) {
           console.log(`\n 👿 Could not start the server daemon.\n`)
           process.exit(1)
