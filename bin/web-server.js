@@ -5,7 +5,6 @@ const path = require('path')
 const ansi = require('ansi-escape-sequences')
 const webServer = require('../index.js')
 
-const pm2 = require('pm2')
 const childProcess = require('child_process')
 const arguments = require('minimist')(process.argv.slice(2), {boolean: true})
 
@@ -48,13 +47,13 @@ const command = {
   isOff: (arguments.off || firstPositionalArgument === 'off'),
   isMonitor: (arguments.monitor || firstPositionalArgument === 'monitor'),
   isLogs: (arguments.logs || firstPositionalArgument === 'logs'),
-  isInfo: (arguments.info || firstPositionalArgument === 'info')
+  isStatus: (arguments.status || firstPositionalArgument === 'status')
 }
 // If we didn’t match a command, we default to dev.
 const didMatchCommand = Object.values(command).reduce((p,n) => p || n)
 command.isDev = (arguments.dev || firstPositionalArgument === 'dev' || !didMatchCommand)
 
-const firstPositionalArgumentDidMatchCommand = ['version', 'help', 'test', 'on', 'off', 'monitor', 'logs', 'info'].reduce((p, n) => p || (firstPositionalArgument === n), false)
+const firstPositionalArgumentDidMatchCommand = ['version', 'help', 'test', 'on', 'off', 'monitor', 'logs', 'status'].reduce((p, n) => p || (firstPositionalArgument === n), false)
 
 // Help / usage instructions.
 if (command.isHelp) {
@@ -69,7 +68,7 @@ if (command.isHelp) {
   const usageOff = `${clr('off', 'green')}`
   const usageMonitor = `${clr('monitor', 'green')}`
   const usageLogs = `${clr('logs', 'green')}`
-  const usageInfo = `${clr('info', 'green')}`
+  const usageStatus = `${clr('status', 'green')}`
   const usagePort = `${clr('--port', 'yellow')}=${clr('N', 'cyan')}`
 
   const usage = `
@@ -78,7 +77,7 @@ if (command.isHelp) {
 
   ${clr('web-server', 'bold')} [${usageCommand}] [${usageFolderToServe}] [${usageOptions}]
 
-  ${usageCommand}\t${usageVersion} | ${usageHelp} | ${usageDev} | ${usageTest} | ${usageOn} | ${usageOff} | ${usageMonitor} | ${usageLogs} | ${usageInfo}
+  ${usageCommand}\t${usageVersion} | ${usageHelp} | ${usageDev} | ${usageTest} | ${usageOn} | ${usageOff} | ${usageMonitor} | ${usageLogs} | ${usageStatus}
   ${usageFolderToServe}\tPath of folder to serve (defaults to current folder).
   ${usageOptions}\tSettings that alter server characteristics.
 
@@ -96,7 +95,7 @@ if (command.isHelp) {
   ${usageOff}\t\tTurn server off and remove it from startup items.
   ${usageMonitor}\tMonitor server state.
   ${usageLogs}\t\tDisplay and tail server logs.
-  ${usageInfo}\t\tDisplay detailed server information.
+  ${usageStatus}\t\tDisplay detailed server information.
 
   If ${usageCommand} is omitted, behaviour defaults to ${usageDev}.
 
@@ -124,14 +123,14 @@ switch (true) {
     childProcess.fork(pm2Path, ['monit'], {env: process.env})
   break
 
-  // Logs (proxy: pm2 logs web-server)
+  // Logs (proxy: journalctl --follow --unit web-server)
   case command.isLogs:
-    childProcess.fork(pm2Path, ['logs', 'web-server'], {env: process.env})
+    childProcess.spawn('journalctl', ['--follow', '--unit', 'web-server'], {env: process.env, stdio: 'inherit'})
   break
 
-  // Info (proxy: pm2 show web-server)
-  case command.isInfo:
-    childProcess.fork(pm2Path, ['show', 'web-server'], {env: process.env})
+  // Status (proxy: systemctl status web-server)
+  case command.isStatus:
+    childProcess.spawn('systemctl', ['status', 'web-server'], {env: process.env, stdio: 'inherit'})
   break
 
   // Off (turn off the server daemon and remove it from startup items).
