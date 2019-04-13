@@ -2,7 +2,7 @@
 
 ![Screenshot of Indie Web Server in use](images/indie-web-server.jpeg)
 
-Indie Web Server is a secure and seamless [Small Tech](https://ar.al/2019/03/04/small-technology/) personal web server.
+__Indie Web Server is a secure and seamless [Small Tech](https://ar.al/2019/03/04/small-technology/) personal web server.__
 
   - Zero-configuration – It Just Works 🤞™.
 
