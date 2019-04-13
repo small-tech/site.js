@@ -1,6 +1,6 @@
 # Indie Web Server
 
-![Screenshot of Indie Web Server in use](images/indie-web-server.jpeg)
+![Screenshot of Indie Web Server in use](images/indie-web-server-8.0.0.jpeg)
 
 __Indie Web Server is a secure and seamless [Small Tech](https://ar.al/2019/03/04/small-technology/) personal web server.__
 
