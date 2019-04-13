@@ -10,7 +10,7 @@ __Indie Web Server is a secure and seamless [Small Tech](https://ar.al/2019/03/0
 
   - Test and deploy with automatically-provisioned globally-trusted TLS courtesy of [Let’s Encrypt](https://letsencrypt.org/) seamlessly integrated via [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) and [systemd](https://freedesktop.org/wiki/Software/systemd/). Your server will score an A on the [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest).
 
-  <u>Note:</u> Live deployments via startup daemons are only supported on Linux distributions with systemd.
+  <ins>Note:</ins> Live deployments via startup daemons are only supported on Linux distributions with systemd.
 
 ## Install
 
