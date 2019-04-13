@@ -61,7 +61,7 @@ When started using the `global` command, your server will run as a regular proce
 
 ### Global (persistent)
 
-__Available on platforms with systemd (most Linux distributions, but [not these ones](https://sysdfree.wordpress.com/2019/03/09/135/) or on macOS/Windows).__
+__Available on Linux distributions with systemd (most Linux distributions, but [not these ones](https://sysdfree.wordpress.com/2019/03/09/135/) or on macOS/Windows).__
 
 Start serving the _site_ directory at your _hostname_ as a daemon that is automatically run at system startup and restarted if it crashes:
 
@@ -143,12 +143,12 @@ web-server [command] [folder] [options]
   * `local`: Start server as regular process with locally-trusted certificates.
   * `global`: Start server as regular process with globally-trusted certificates.
 
-On platforms with systemd, you can also use:
+On Linux distributions with systemd, you can also use:
 
   * `enable`: Start server as daemon with globally-trusted certificates and add to startup.
   * `disable`: Stop server daemon and remove from startup.
   * `logs`: Display and tail server logs.
-  * `status`: Display detailed server information (press ‘q’ to exit).
+  * `status`: Display detailed server information.
 
 If `command` is omitted, behaviour defaults to `local`.
 
