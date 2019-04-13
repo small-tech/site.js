@@ -98,6 +98,8 @@ if (command.isHelp) {
   ${clr('Options:', 'underline')}
 
   ${usagePort}\tPort to start server on (defaults to 443).
+
+  ${clr('For further information, please see https://ind.ie/web-server', 'italic')}
   `.replace(/\n$/, '').replace(/^\n/, '')
 
   console.log(usage)
