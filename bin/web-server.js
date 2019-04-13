@@ -271,10 +271,14 @@ function clr (text, color) {
 // Ensure we have root privileges and exit if we don’t.
 function ensureRoot (commandName) {
   if (process.getuid() !== 0) {
-    const nodeSyntax = `sudo node bin/webserver.js ${commandName}`
-    const binarySyntax = `sudo web-server ${commandName}`
-    console.log(`\n 👿 Error: Requires root. Please try again with ${runtime.isNode ? nodeSyntax : binarySyntax}\n`)
-    process.exit(1)
+    // Requires root but wasn’t run with sudo. Automatically restart using sudo.
+    const options = {env: process.env, stdio: 'inherit'}
+    if (runtime.isNode) {
+      childProcess.execSync(`sudo node ${path.join(__dirname, 'web-server.js')} ${process.argv.slice(2).join(' ')}`, options)
+    } else {
+      childProcess.execSync(`sudo web-server ${process.argv.slice(2).join(' ')}`, options)
+    }
+    process.exit(0)
   }
 }
 
