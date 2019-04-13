@@ -115,13 +115,38 @@ switch (true) {
   // Logs (proxy: journalctl --follow --unit web-server)
   case command.isLogs:
     ensureJournalctl()
+
+    console.log(`\n 📜 Tailing logs (press Ctrl+C to exit).\n`)
+
     childProcess.spawn('journalctl', ['--follow', '--unit', 'web-server'], {env: process.env, stdio: 'inherit'})
   break
 
   // Status (proxy: systemctl status web-server)
   case command.isStatus:
     ensureSystemctl()
-    childProcess.spawn('systemctl', ['status', 'web-server'], {env: process.env, stdio: 'inherit'})
+
+    let isActive
+    try {
+      childProcess.execSync('systemctl is-active web-server', {env: process.env, stdio: 'pipe'})
+      isActive = true
+    } catch (error) {
+      isActive = false
+    }
+
+    let isEnabled
+    try {
+      childProcess.execSync('systemctl is-enabled web-server', {env: process.env, stdio: 'pipe'})
+      isEnabled = true
+    } catch (error) {
+      isEnabled = false
+    }
+
+    const activeState = isActive ? clr('active', 'green') : clr('inactive', 'red')
+    const enabledState = isEnabled ? clr('enabled', 'green') : clr('disabled', 'red')
+
+    const stateEmoji = (isActive && isEnabled) ? '✔' : '❌'
+
+    console.log(`\n ${stateEmoji} Indie Web Server is ${activeState} and ${enabledState}.\n`)
   break
 
   // Off (turn off the server daemon and remove it from startup items).
@@ -129,8 +154,9 @@ switch (true) {
     ensureRoot('disable')
     ensureSystemctl()
     try {
-      childProcess.execSync('sudo systemctl disable web-server', {env: process.env})
-      childProcess.execSync('sudo systemctl stop web-server', {env: process.env})
+      childProcess.execSync('sudo systemctl disable web-server', {env: process.env, stdio: 'pipe'})
+      childProcess.execSync('sudo systemctl stop web-server', {env: process.env, stdio: 'pipe'})
+      console.log('\n 🎈 Server stopped and removed from startup.\n')
     } catch (error) {
       console.error(error, '\n 👿 Error: Could not disable web server.\n')
       process.exit(1)
@@ -203,7 +229,7 @@ switch (true) {
       let accountName
       try {
         // Courtesy: https://www.unix.com/302402784-post4.html
-        accountName = childProcess.execSync(`awk -v val=${accountUID} -F ":" '$3==val{print $1}' /etc/passwd`).toString()
+        accountName = childProcess.execSync(`awk -v val=${accountUID} -F ":" '$3==val{print $1}' /etc/passwd`, {env: process.env, stdio: 'pipe'}).toString()
       } catch (error) {
         console.error(error, '\n 👿 Error: could not get account name.\n')
         process.exit(1)
@@ -232,15 +258,17 @@ switch (true) {
       // Save the systemd service unit.
       fs.writeFileSync('/etc/systemd/system/web-server.service', unit, 'utf-8')
 
-      // Enable and start the systemd service.
+      //
+      // Enable and start systemd service.
+      //
       try {
-        // Enable.
-        childProcess.execSync('sudo systemctl enable web-server', {env: process.env})
-        console.log(` 😈 Installed for auto-launch at startup.\n`)
-
         // Start.
-        childProcess.execSync('sudo systemctl start web-server', {env: process.env})
-        console.log(`${webServer.version()}\n 😈 Launched as daemon on https://${os.hostname()} serving ${pathToServe}\n`)
+        childProcess.execSync('sudo systemctl start web-server', {env: process.env, stdio: 'pipe'})
+        console.log(`${webServer.version()}\n 😈 Launched as daemon on ${clr(`https://${os.hostname()}`, 'green')} serving ${clr(pathToServe, 'cyan')}\n`)
+
+        // Enable.
+        childProcess.execSync('sudo systemctl enable web-server', {env: process.env, stdio: 'pipe'})
+        console.log(` 😈 Installed for auto-launch at startup.\n`)
       } catch (error) {
         console.error(error, `\n 👿 Error: could not enable web server.\n`)
         process.exit(1)

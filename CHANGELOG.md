@@ -21,9 +21,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Changed
 
-  - (Breaking) Simplified commandline vocabulary to use command syntax (not options syntax).
-  - Renamed `dist` folder to `dist-iws` so we can exclude it from the source code zip (used for the binaries) without also exclusing some of the node modules that have dist directories that are required for proper functioning.
-  - Production use is only supported on platforms with systemd.
+  - (Breaking) Simplified commandline vocabulary; now using command syntax (not options syntax).
+  - Running as daemon is only supported on platforms with systemd.
 
 ## Fixed
 

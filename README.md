@@ -8,7 +8,7 @@ Indie Web Server is a secure and seamless [Small Tech](https://ar.al/2019/03/04/
 
   - Develop with automatically-provisioned locally-trusted TLS thanks to [mkcert](https://github.com/FiloSottile/mkcert) via [Nodecert](https://source.ind.ie/hypha/tools/nodecert).
 
-  - Test and deploy with automatically-provisioned globally-trusted TLS thanks to [Let’s Encrypt](https://letsencrypt.org/) via [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) (with an A score on [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest)) and the seamlessly-integrated [pm2](https://pm2.io/runtime/) process manager.
+  - Test and deploy with automatically-provisioned globally-trusted TLS thanks to [Let’s Encrypt](https://letsencrypt.org/) via [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) (with an A score on [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest)) and integrated systemd support.
 
 
 ## Install
@@ -97,6 +97,14 @@ npm test
 
 # Serve the test site (visit https://localhost to view).
 web-server test/site
+```
+
+__Note:__ for commands that require root privileges (i.e., `enable` and `disable`), Indie Web Server will automatically restart itself using sudo and Node must be available for the root account. If you’re using [nvm](https://github.com/creationix/nvm), you can enable this via:
+
+```shell
+# Replace v10.15.3 with the version of node you want to make available globally.
+sudo ln -s "$NVM_DIR/versions/node/v10.15.3/bin/node" "/usr/local/bin/node"
+sudo ln -s "$NVM_DIR/versions/node/v10.15.3/bin/npm" "/usr/local/bin/npm"
 ```
 
 ### Native binaries

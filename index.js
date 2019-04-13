@@ -5,6 +5,8 @@ const path = require('path')
 const os = require('os')
 const childProcess = require('child_process')
 
+const ansi = require('ansi-escape-sequences')
+
 const express = require('express')
 const helmet = require('helmet')
 const morgan = require('morgan')
@@ -29,7 +31,7 @@ class WebServer {
   // the version set in the package.json file. (Synchronous.)
   version () {
     const version = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json'), 'utf-8')).version
-    return `\n 💖 Indie Web Server v${version} running on Node ${process.version}\n`
+    return `\n 💖 Indie Web Server v${version} ${clr(`(running on Node ${process.version})`, 'italic')}\n`
   }
 
   // Returns an https server instance – the same as you’d get with
@@ -78,7 +80,7 @@ class WebServer {
         portSuffix = `:${serverPort}`
       }
       const location = global ? os.hostname() : `localhost${portSuffix}`
-      console.log(`\n 🎉 Serving ${pathToServe} on https://${location}\n`)
+      console.log(`\n 🎉 Serving ${clr(pathToServe, 'cyan')} on ${clr(`https://${location}`, 'green')}\n`)
     }
 
     // Check if a 4042302 (404 → 302) redirect has been requested.
@@ -91,10 +93,10 @@ class WebServer {
     const _4042302Path = path.join(pathToServe, '4042302')
 
     // TODO: We should really be checking that this is a file, not that it
-    // ===== exists, on the off-chance that somone might have a directory
+    // ===== exists, on the off-chance that someone might have a directory
     //       with that name in their web root (that someone was me when I
     //       erroneously ran web-server on the directory that I had the
-    //       actualy 4042302 project folder in).
+    //       actually 4042302 project folder in).
     const has4042302 = fs.existsSync(_4042302Path)
     let _4042302 = null
     if (has4042302) {
@@ -315,3 +317,13 @@ class WebServer {
 }
 
 module.exports = new WebServer()
+
+//
+// Helpers.
+//
+
+// Format ansi strings.
+// Courtesy Bankai (https://github.com/choojs/bankai/blob/master/bin.js#L142)
+function clr (text, color) {
+  return process.stdout.isTTY ? ansi.format(text, color) : text
+}
