@@ -129,8 +129,9 @@ switch (true) {
     ensureRoot('disable')
     ensureSystemctl()
     try {
-      childProcess.execSync('sudo systemctl disable web-server', {env: process.env})
-      childProcess.execSync('sudo systemctl stop web-server', {env: process.env})
+      childProcess.execSync('sudo systemctl disable web-server', {env: process.env, stdio: 'pipe'})
+      childProcess.execSync('sudo systemctl stop web-server', {env: process.env, stdio: 'pipe'})
+      console.log('\n 🎈 Server stopped and removed from startup.\n')
     } catch (error) {
       console.error(error, '\n 👿 Error: Could not disable web server.\n')
       process.exit(1)
