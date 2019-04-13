@@ -21,7 +21,7 @@
   "license": "AGPL-3.0-or-later",
   "dependencies": {
     "@ind.ie/acme-tls": "^2.1.2",
-    "@ind.ie/nodecert": "^2.1.0",
+    "@ind.ie/nodecert": "^3.0.0",
     "ansi-escape-sequences": "^4.1.0",
     "copy-concurrently": "^1.0.5",
     "express": "^4.16.4",
