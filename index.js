@@ -91,10 +91,10 @@ class WebServer {
     const _4042302Path = path.join(pathToServe, '4042302')
 
     // TODO: We should really be checking that this is a file, not that it
-    // ===== exists, on the off-chance that somone might have a directory
+    // ===== exists, on the off-chance that someone might have a directory
     //       with that name in their web root (that someone was me when I
     //       erroneously ran web-server on the directory that I had the
-    //       actualy 4042302 project folder in).
+    //       actually 4042302 project folder in).
     const has4042302 = fs.existsSync(_4042302Path)
     let _4042302 = null
     if (has4042302) {
