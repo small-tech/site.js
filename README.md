@@ -35,44 +35,51 @@ npm i -g @ind.ie/web-server
 
 ## Use
 
-### Develop
+### Local
 
-Start serving the current directory at https://localhost using locally-trusted certificates:
+Start serving the current directory at https://localhost as a regular process using locally-trusted certificates:
 
 ```shell
 $ web-server
 ```
 
-### Test
+### Global (ephemeral)
+
+__Available on Linux and macOS only*__
 
 Start serving the _site_ directory at your _hostname_ as a regular process using globally-trusted Let’s Encrypt certificates:
 
 ```shell
-$ web-server test site
+$ web-server global site
 ```
 
-For example, use [ngrok](https://ngrok.com/) (Pro+) with a custom domain name that you set in your `hostname` file (e.g., in `/etc/hostname` or via `hostnamectl set-hostname <hostname>` or the equivalent for your platform). The first time you hit your test server via your hosname it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
+For example, use [ngrok](https://ngrok.com/) (Pro+) with a custom domain name that you set in your `hostname` file (e.g., in `/etc/hostname` or via `hostnamectl set-hostname <hostname>` or the equivalent for your platform). The first time you hit your server via your hosname it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
 
-### Go live
+When started using the `global` command, your server will run as a regular process and will not be restarted if it crashes or if you exit the process or restart the computer.
+
+\* Automatic hostname detection has not been implemented for Windows and so globally-trusted certificates will fail on that platform.
+
+### Global (persistent)
+
+__Available on platforms with systemd (most Linux distributions, but [not these ones](https://sysdfree.wordpress.com/2019/03/09/135/) or on macOS/Windows).__
 
 Start serving the _site_ directory at your _hostname_ as a daemon that is automatically run at system startup and restarted if it crashes:
 
 ```shell
-$ web-server on site
+$ sudo web-server enable site
 ```
 
-The `on` command sets up your server to (re)start automatically when your server (re)starts and/or crashes, etc. Requires superuser privileges on first run to set up the launch item.
+The `enable` command sets up your server to start automatically when your server starts and restart automatically if it crashes. Requires superuser privileges on first run to set up the launch item.
 
-For example, if you run the command on a connected server that has the ar.al domain pointing to it and `ar.al` set in _/etc/hostname_ (on Unix/Linux/macOS), you will be able to access the site at https://ar.al. The first time you hit it, it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
+For example, if you run the command on a connected server that has the ar.al domain pointing to it and `ar.al` set in _/etc/hostname_, you will be able to access the site at https://ar.al. The first time you hit it, it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
 
-When the server is on, you can also use:
+When the server is enabled, you can also use:
 
-  - `off`: Turn server off and remove it from startup items.
-  - `monitor`: Monitor server state.
+  - `disable`: Stop server and remove from startup.
   - `logs`: Display and tail server logs.
-  - `info`: Display detailed server information.
+  - `status`: Display detailed server information (press ‘q’ to exit).
 
-Indie Web Server uses the [pm2](https://pm2.io/runtime/) process manager internally to start and manage the daemon. Beyond the commands listed above that Indie Web Server supports natively (and proxies to pm2), you can make use of all pm2 functionality via the pm2 command directly should you need to.
+Indie Web Server uses the [systemd](https://freedesktop.org/wiki/Software/systemd/) to start and manage the daemon. Beyond the commands listed above that Indie Web Server supports natively (and proxies to systemd), you can make use of all systemd functionality via the `systemctl` and `journalctl` commands.
 
 ## Build and test from source
 
@@ -107,8 +114,8 @@ npm test
 npm run build
 
 # Serve the test site (visit https://localhost to view).
-# e.g., To run the version 7.2.0 Linux binary:
-dist-iws/linux/8.0.0/web-server test/site
+# e.g., To run the version 8.0.0 Linux binary:
+dist/linux/8.0.0/web-server test/site
 ```
 
 ## Syntax
@@ -117,7 +124,7 @@ dist-iws/linux/8.0.0/web-server test/site
 web-server [command] [folder] [options]
 ```
 
-  * `command`: version | help | dev | test | on | off | monitor | logs | info
+  * `command`: version | help | dev | test | enable | disable | logs | status
   * `folder`: Path of folder to serve (defaults to current folder).
   * `options`: Settings that alter server characteristics.
 
@@ -125,22 +132,17 @@ web-server [command] [folder] [options]
 
   * `version`: Display version and exit.
   * `help`: Display help screen and exit.
+  * `local`: Start server as regular process with locally-trusted certificates.
+  * `global`: Start server as regular process with globally-trusted certificates.
 
-  * `dev`: Launch server as regular process with locally-trusted certificates.
-  * `test`: Launch server as regular process with globally-trusted certificates.
-  * `on`: Launch server as startup daemon with globally-trusted certificates.
+On platforms with systemd, you can also use:
 
-When the server is on, you can also use:
-
-  * `off`: Take server offline and remove it from startup items.
-
-  * `monitor`: Monitor server state.
-
+  * `enable`: Start server as daemon with globally-trusted certificates and add to startup.
+  * `disable`: Stop server daemon and remove from startup.
   * `logs`: Display and tail server logs.
+  * `status`: Display detailed server information (press ‘q’ to exit).
 
-  * `info`: Display detailed server information.
-
-If `command` is omitted, behaviour defaults to `dev`.
+If `command` is omitted, behaviour defaults to `local`.
 
 ### Options:
 
@@ -148,9 +150,9 @@ If `command` is omitted, behaviour defaults to `dev`.
 
 All command-line arguments are optional. By default, Indie Web Server will serve your current working folder over port 443 with locally-trusted certificates.
 
-If you want to serve a directory that has the same name as a command, you can speficy the command in _options_ format. e.g., `web-server --on logs` will start Indie Web Server as a startup daemon to serve the _logs_ folder.
+If you want to serve a directory that has the same name as a command, you can specify the command in _options_ format. e.g., `web-server --enable logs` will start Indie Web Server as a startup daemon to serve the _logs_ folder.
 
-If you use the `test` or `on` commands, globally-trusted Let’s Encrypt TLS certificates are automatically provisioned for you using ACME TLS the first time you hit your hostname. The hostname for the certificates is automatically set from the hostname of your system (and the _www._ subdomain is also automatically provisioned).
+When you use the `global` or `enable` commands, globally-trusted Let’s Encrypt TLS certificates are automatically provisioned for you using ACME TLS the first time you hit your hostname. The hostname for the certificates is automatically set from the hostname of your system (and the _www._ subdomain is also automatically provisioned).
 
 ## Native 404 → 302 support for an evergreen web
 
@@ -254,9 +256,6 @@ I can use your help to test Indie Web Server on the following platform/package m
   - macOS with MacPorts
 
 Please [let me know how/if it works](https://github.com/indie-mirror/web-server/issues). Thank you!
-
-Also, automatic hostname detection has not been implemented for Windows and so globally-trusted certificates will fail on that platform. If you get to it before I do, [I would appreciate a pull request](https://github.com/indie-mirror/web-server/pulls).
-
 
 ## Thanks
 
