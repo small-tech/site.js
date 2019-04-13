@@ -38,18 +38,18 @@ const secondPositionalArgument = positionalArguments[1]
 const command = {
   isHelp: (arguments.h || arguments.help || positionalArguments.length > 2 || firstPositionalArgument === 'help'),
   isVersion: (arguments.version || arguments.v || firstPositionalArgument === 'version'),
-  isTest: (arguments.test || firstPositionalArgument === 'test'),
+  isGlobal: (arguments.global || firstPositionalArgument === 'global'),
   isEnable: (arguments.enable || firstPositionalArgument === 'enable'),
   isDisable: (arguments.disable || firstPositionalArgument === 'disable'),
   isLogs: (arguments.logs || firstPositionalArgument === 'logs'),
   isStatus: (arguments.status || firstPositionalArgument === 'status'),
-//isDev: is handled below.
+//isLocal: is handled below.
 }
-// If we didn’t match a command, we default to dev.
+// If we didn’t match a command, we default to local.
 const didMatchCommand = Object.values(command).reduce((p,n) => p || n)
-command.isDev = (arguments.dev || firstPositionalArgument === 'dev' || !didMatchCommand)
+command.isLocal = (arguments.local || firstPositionalArgument === 'local' || !didMatchCommand)
 
-const firstPositionalArgumentDidMatchCommand = ['version', 'help', 'test', 'enable', 'disable', 'logs', 'status'].reduce((p, n) => p || (firstPositionalArgument === n), false)
+const firstPositionalArgumentDidMatchCommand = ['version', 'help', 'global', 'enable', 'disable', 'logs', 'status'].reduce((p, n) => p || (firstPositionalArgument === n), false)
 
 // Help / usage instructions.
 if (command.isHelp) {
@@ -59,8 +59,8 @@ if (command.isHelp) {
 
   const usageVersion = `${clr('version', 'green')}`
   const usageHelp = `${clr('help', 'green')}`
-  const usageDev = `${clr('dev', 'green')}`
-  const usageTest = `${clr('test', 'green')}`
+  const usageLocal = `${clr('local', 'green')}`
+  const usageGlobal = `${clr('global', 'green')}`
   const usageEnable = `${clr('enable', 'green')}`
   const usageDisable = `${clr('disable', 'green')}`
   const usageLogs = `${clr('logs', 'green')}`
@@ -74,7 +74,7 @@ if (command.isHelp) {
 
   ${clr('web-server', 'bold')} [${usageCommand}] [${usageFolderToServe}] [${usageOptions}]
 
-  ${usageCommand}\t${usageVersion} | ${usageHelp} | ${usageDev} | ${usageTest} | ${usageEnable} | ${usageDisable} | ${usageLogs} | ${usageStatus}
+  ${usageCommand}\t${usageVersion} | ${usageHelp} | ${usageLocal} | ${usageGlobal} | ${usageEnable} | ${usageDisable} | ${usageLogs} | ${usageStatus}
   ${usageFolderToServe}\tPath of folder to serve (defaults to current folder).
   ${usageOptions}\tSettings that alter server characteristics.
 
@@ -83,15 +83,15 @@ if (command.isHelp) {
   ${usageVersion}\tDisplay version and exit.
   ${usageHelp}\t\tDisplay this help screen and exit.
 
-  ${usageDev}\t\tStart server as regular process with locally-trusted certificates.
-  ${usageTest}\t\tStart server as regular process with globally-trusted certificates.
+  ${usageLocal}\t\tStart server as regular process with locally-trusted certificates.
+  ${usageGlobal}\tStart server as regular process with globally-trusted certificates.
 
   ${usageEnable}\tStart server as daemon with globally-trusted certificates and add to startup.
-  ${usageDisable}\tStop server and remove from startup.
+  ${usageDisable}\tStop server daemon and remove from startup.
   ${usageLogs}\t\tDisplay and tail server logs.
   ${usageStatus}\tDisplay detailed server information (press ‘q’ to exit).
 
-  If ${usageCommand} is omitted, behaviour defaults to ${usageDev}.
+  If ${usageCommand} is omitted, behaviour defaults to ${usageLocal}.
 
   ${clr('Options:', 'underline')}
 
@@ -137,19 +137,20 @@ switch (true) {
     }
   break
 
-  // Default: run the server (either for development, testing (test), or production (on))
+  // Default: start the server.
   default:
-    // If no path is passed, serve the current folder (i.e., called with just web-server)
-    // If there is a path, serve that.
+    // If no path is passed, serve the current folder. If there is a path, we’ll serve that.
     let pathToServe = '.'
 
-    if ((command.isDev || command.isTest || command.isEnable) && positionalArguments.length === 2) {
-      // e.g., web-server on path-to-serve
+    const isServerCommand = command.isLocal || command.isGlobal || command.isEnable
+
+    if (isServerCommand && positionalArguments.length === 2) {
+      // e.g., web-server enable path-to-serve
       pathToServe = secondPositionalArgument
-    } else if (!firstPositionalArgumentDidMatchCommand && (command.isDev || command.isTest || command.isEnable) && positionalArguments.length === 1) {
+    } else if (!firstPositionalArgumentDidMatchCommand && isServerCommand && positionalArguments.length === 1) {
       // e.g., web-server --on path-to-serve
       pathToServe = firstPositionalArgument
-    } else if (command.isDev && positionalArguments.length === 1) {
+    } else if (command.isLocal && positionalArguments.length === 1) {
       // i.e., web-server path-to-serve
       pathToServe = firstPositionalArgument
     }
@@ -162,12 +163,12 @@ switch (true) {
 
     // If a test server is specified, use it.
     let global = false
-    if (command.isTest) {
+    if (command.isGlobal) {
       global = true
     }
 
     if (!fs.existsSync(pathToServe)) {
-      console.log(` 🤔 Error: could not find path ${pathToServe}\n`)
+      console.log(`\n 🤔 Error: could not find path ${pathToServe}\n`)
       process.exit(1)
     }
 
@@ -222,7 +223,7 @@ switch (true) {
       RestartSec=1
       Restart=always
 
-      ExecStart=${executable} test ${absolutePathToServe}
+      ExecStart=${executable} global ${absolutePathToServe}
 
       [Install]
       WantedBy=multi-user.target
