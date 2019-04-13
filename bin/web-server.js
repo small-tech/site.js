@@ -203,7 +203,7 @@ switch (true) {
       let accountName
       try {
         // Courtesy: https://www.unix.com/302402784-post4.html
-        accountName = childProcess.execSync(`awk -v val=${accountUID} -F ":" '$3==val{print $1}' /etc/passwd`).toString()
+        accountName = childProcess.execSync(`awk -v val=${accountUID} -F ":" '$3==val{print $1}' /etc/passwd`, {env: process.env, stdio: 'pipe'}).toString()
       } catch (error) {
         console.error(error, '\n 👿 Error: could not get account name.\n')
         process.exit(1)
@@ -232,15 +232,17 @@ switch (true) {
       // Save the systemd service unit.
       fs.writeFileSync('/etc/systemd/system/web-server.service', unit, 'utf-8')
 
-      // Enable and start the systemd service.
+      //
+      // Enable and start systemd service.
+      //
       try {
-        // Enable.
-        childProcess.execSync('sudo systemctl enable web-server', {env: process.env})
-        console.log(` 😈 Installed for auto-launch at startup.\n`)
-
         // Start.
-        childProcess.execSync('sudo systemctl start web-server', {env: process.env})
+        childProcess.execSync('sudo systemctl start web-server', {env: process.env, stdio: 'pipe'})
         console.log(`${webServer.version()}\n 😈 Launched as daemon on https://${os.hostname()} serving ${pathToServe}\n`)
+
+        // Enable.
+        childProcess.execSync('sudo systemctl enable web-server', {env: process.env, stdio: 'pipe'})
+        console.log(` 😈 Installed for auto-launch at startup.\n`)
       } catch (error) {
         console.error(error, `\n 👿 Error: could not enable web server.\n`)
         process.exit(1)
