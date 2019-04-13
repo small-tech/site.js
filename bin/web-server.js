@@ -86,10 +86,12 @@ if (command.isHelp) {
   ${usageLocal}\t\tStart server as regular process with locally-trusted certificates.
   ${usageGlobal}\tStart server as regular process with globally-trusted certificates.
 
+  On Linux distributions with systemd, you can also use:
+
   ${usageEnable}\tStart server as daemon with globally-trusted certificates and add to startup.
   ${usageDisable}\tStop server daemon and remove from startup.
   ${usageLogs}\t\tDisplay and tail server logs.
-  ${usageStatus}\tDisplay detailed server information (press ‘q’ to exit).
+  ${usageStatus}\tDisplay detailed server information.
 
   If ${usageCommand} is omitted, behaviour defaults to ${usageLocal}.
 
@@ -151,14 +153,14 @@ switch (true) {
 
   // Off (turn off the server daemon and remove it from startup items).
   case command.isDisable:
-    ensureRoot('disable')
     ensureSystemctl()
+    ensureRoot('disable')
     try {
       childProcess.execSync('sudo systemctl disable web-server', {env: process.env, stdio: 'pipe'})
       childProcess.execSync('sudo systemctl stop web-server', {env: process.env, stdio: 'pipe'})
       console.log('\n 🎈 Server stopped and removed from startup.\n')
     } catch (error) {
-      console.error(error, '\n 👿 Error: Could not disable web server.\n')
+      console.error(`\n 👿 Error: Could not disable web server.\n ${error}`)
       process.exit(1)
     }
   break
@@ -194,7 +196,7 @@ switch (true) {
     }
 
     if (!fs.existsSync(pathToServe)) {
-      console.log(`\n 🤔 Error: could not find path ${pathToServe}\n`)
+      console.error(`\n 🤔 Error: could not find path ${pathToServe}\n`)
       process.exit(1)
     }
 
@@ -206,8 +208,8 @@ switch (true) {
       // Launch as startup daemon.
       //
 
-      ensureRoot('enable')
       ensureSystemctl()
+      ensureRoot('enable')
 
       //
       // Create the systemd service unit.
@@ -222,7 +224,7 @@ switch (true) {
       // running the current process via sudo).
       const accountUID = parseInt(process.env.SUDO_UID)
       if (!accountUID) {
-        console.log(`\n 👿 Error: could not get account ID.\n`)
+        console.error(`\n 👿 Error: could not get account ID.\n`)
         process.exit(1)
       }
 
@@ -231,7 +233,7 @@ switch (true) {
         // Courtesy: https://www.unix.com/302402784-post4.html
         accountName = childProcess.execSync(`awk -v val=${accountUID} -F ":" '$3==val{print $1}' /etc/passwd`, {env: process.env, stdio: 'pipe'}).toString()
       } catch (error) {
-        console.error(error, '\n 👿 Error: could not get account name.\n')
+        console.error(`\n 👿 Error: could not get account name \n${error}.`)
         process.exit(1)
       }
 
@@ -315,7 +317,7 @@ function ensureSystemctl () {
   try {
     childProcess.execSync('which systemctl', {env: process.env})
   } catch (error) {
-    console.error(error, '\n 👿 Error: Could not find systemctl.\n')
+    console.error('\n 👿 Sorry, daemons are only supported on Linux systems with systemd (systemctl required).\n')
     process.exit(1)
   }
 }
@@ -325,7 +327,7 @@ function ensureJournalctl () {
   try {
     childProcess.execSync('which journalctl', {env: process.env})
   } catch (error) {
-    console.error(error, '\n 👿 Error: Could not find journalctl.\n')
+    console.error('\n 👿 Sorry, daemons are only supported on Linux systems with systemd (journalctl required).\n')
     process.exit(1)
   }
 }
