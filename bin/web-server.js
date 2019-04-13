@@ -115,6 +115,9 @@ switch (true) {
   // Logs (proxy: journalctl --follow --unit web-server)
   case command.isLogs:
     ensureJournalctl()
+
+    console.log(`\n 📜 Tailing logs (press Ctrl+C to exit).\n`)
+
     childProcess.spawn('journalctl', ['--follow', '--unit', 'web-server'], {env: process.env, stdio: 'inherit'})
   break
 
