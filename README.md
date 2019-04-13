@@ -8,7 +8,7 @@ Indie Web Server is a secure and seamless [Small Tech](https://ar.al/2019/03/04/
 
   - Develop with automatically-provisioned locally-trusted TLS courtesy of [mkcert](https://github.com/FiloSottile/mkcert) seamlessly integrated via [Nodecert](https://source.ind.ie/hypha/tools/nodecert).
 
-  - Test and deploy* with automatically-provisioned globally-trusted TLS courtesy of [Let’s Encrypt](https://letsencrypt.org/) seamlessly integrated via [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) and [systemd](https://freedesktop.org/wiki/Software/systemd/). Your server will score an A on the [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest)).
+  - Test and deploy with automatically-provisioned globally-trusted TLS courtesy of [Let’s Encrypt](https://letsencrypt.org/) seamlessly integrated via [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) and [systemd](https://freedesktop.org/wiki/Software/systemd/). Live deployments via startup daemons are only supported on Linux distributions with systemd. Your server will score an A on the [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest).
 
 \* Live deployments via startup daemons are only supported on Linux distributions with systemd.
 
