@@ -99,6 +99,14 @@ npm test
 web-server test/site
 ```
 
+__Note:__ for commands that require root privileges (i.e., `enable` and `disable`), Indie Web Server will automatically restart itself using sudo and Node must be available for the root account. If you’re using [nvm](https://github.com/creationix/nvm), you can enable this via:
+
+```shell
+# Replace v10.15.3 with the version of node you want to make available globally.
+sudo ln -s "$NVM_DIR/versions/node/v10.15.3/bin/node" "/usr/local/bin/node"
+sudo ln -s "$NVM_DIR/versions/node/v10.15.3/bin/npm" "/usr/local/bin/npm"
+```
+
 ### Native binaries
 
 ```shell
