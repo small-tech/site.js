@@ -6,10 +6,11 @@ Indie Web Server is a secure and seamless [Small Tech](https://ar.al/2019/03/04/
 
   - Zero-configuration – It Just Works 🤞™.
 
-  - Develop with automatically-provisioned locally-trusted TLS thanks to [mkcert](https://github.com/FiloSottile/mkcert) via [Nodecert](https://source.ind.ie/hypha/tools/nodecert).
+  - Develop with automatically-provisioned locally-trusted TLS courtesy of [mkcert](https://github.com/FiloSottile/mkcert) seamlessly integrated via [Nodecert](https://source.ind.ie/hypha/tools/nodecert).
 
-  - Test and deploy with automatically-provisioned globally-trusted TLS thanks to [Let’s Encrypt](https://letsencrypt.org/) via [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) (with an A score on [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest)) and integrated systemd support.
+  - Test and deploy* with automatically-provisioned globally-trusted TLS courtesy of [Let’s Encrypt](https://letsencrypt.org/) seamlessly integrated via [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) and [systemd](https://freedesktop.org/wiki/Software/systemd/). Your server will score an A on the [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest)).
 
+\* Live deployments via startup daemons are only supported on Linux distributions with systemd.
 
 ## Install
 
@@ -53,9 +54,9 @@ Start serving the _site_ directory at your _hostname_ as a regular process using
 $ web-server global site
 ```
 
-For example, use [ngrok](https://ngrok.com/) (Pro+) with a custom domain name that you set in your `hostname` file (e.g., in `/etc/hostname` or via `hostnamectl set-hostname <hostname>` or the equivalent for your platform). The first time you hit your server via your hosname it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
+For example, use [ngrok](https://ngrok.com/) (Pro+) with a custom domain name that you set in your `hostname` file (e.g., in `/etc/hostname` or via `hostnamectl set-hostname <hostname>` or the equivalent for your platform). The first time you hit your server via your hostname it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
 
-When started using the `global` command, your server will run as a regular process and will not be restarted if it crashes or if you exit the process or restart the computer.
+When you start your server using the `global` command, it will run as a regular process. It will not be restarted if it crashes or if you exit the foreground process or restart the computer.
 
 \* Automatic hostname detection has not been implemented for Windows and so globally-trusted certificates will fail on that platform.
 
