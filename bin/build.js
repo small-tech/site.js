@@ -49,13 +49,16 @@ async function build () {
   //
   console.log('   • Zipping binaries…')
 
-  const zipFileName = `${version}.zip`
+  // We use tar and gzip here instead of zip as unzip is not a standard
+  // part of Linux distributions whereas tar and gzip are. We do not use
+  // gzip directly as that does not maintain the executable flag on the binary.
+  const zipFileName = `${version}.tar.gz`
   const mainSourceDirectory = path.join(__dirname, '..')
   const linuxVersionWorkingDirectory = path.join(mainSourceDirectory, linuxVersionPath)
   const macOSVersionWorkingDirectory = path.join(mainSourceDirectory, macOSVersionPath)
 
-  childProcess.execSync(`zip ${zipFileName} web-server`, {env: process.env, cwd: linuxVersionWorkingDirectory})
-  childProcess.execSync(`zip ${zipFileName} web-server`, {env: process.env, cwd: macOSVersionWorkingDirectory})
+  childProcess.execSync(`tar -cvzf ${zipFileName} web-server`, {env: process.env, cwd: linuxVersionWorkingDirectory})
+  childProcess.execSync(`tar -cvzf ${zipFileName} web-server`, {env: process.env, cwd: macOSVersionWorkingDirectory})
 
   //
   // Copy to web site.
