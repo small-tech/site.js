@@ -44,7 +44,7 @@ Start serving the current directory at https://localhost as a regular process us
 $ web-server
 ```
 
-You can also use Indie Web Server as a development-time reverse proxy for HTTP and WebSocket connections. For example, if you use [Hugo](https://gohugo.io/) and you’re running `hugo server` on the default HTTP port 1313. You can run a HTTPS reverse proxy at https://localhost [with LiveReload support]() with:
+You can also use Indie Web Server as a development-time reverse proxy for HTTP and WebSocket connections. For example, if you use [Hugo](https://gohugo.io/) and you’re running `hugo server` on the default HTTP port 1313. You can run a HTTPS reverse proxy at https://localhost [with LiveReload support](https://source.ind.ie/hypha/tools/web-server/blob/master/bin/web-server.js#L237) using:
 
 ```shell
 $ web-server http://localhost:1313
