@@ -221,17 +221,27 @@ switch (true) {
       console.log(webServer.version())
 
       const server = webServer.createServer({}, app).listen(port, () => {
-        console.log(`\n 🚚 Proxying: HTTPS/WSS on localhost:${port} ←→ HTTP/WS on ${pathToServe.replace('http://', '')}\n`)
+        console.log(`\n 🚚 [Indie Web Server] Proxying: HTTPS/WSS on localhost:${port} ←→ HTTP/WS on ${pathToServe.replace('http://', '')}\n`)
+
+      function prettyLog (message) {
+        console.log(` 🔁 ${message}`)
+      }
+
+      const logProvider = function(provider) {
+        return { log: prettyLog, debug: prettyLog, info: prettyLog, warn: prettyLog, error: prettyLog }
+      }
 
       const webSocketProxy = proxy(pathToServe.replace('http://', 'ws://'), {
         ws: true,
         changeOrigin:false,
+        logProvider,
         logLevel: 'info'
       })
 
       const httpsProxy = proxy({
         target: pathToServe,
         changeOrigin: true,
+        logProvider,
         logLevel: 'info',
 
         //
@@ -254,7 +264,7 @@ switch (true) {
           response.write = function (data) {
             let output = data.toString('utf-8')
             if (output.match(/livereload.js\?port=1313/) !== null) {
-              console.log('Rewriting Hugo LiveReload URL')
+              console.log(' 📝 [Indie Web Server] Rewriting Hugo LiveReload URL to use WebSocket proxy.')
               output = output.replace('livereload.js?port=1313', `livereload.js?port=${port}`)
               _write.call(response, output)
             } else {
