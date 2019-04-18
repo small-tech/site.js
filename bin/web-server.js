@@ -191,6 +191,13 @@ switch (true) {
       port = parseInt(arguments.port)
     }
 
+    // Check for a valid port range
+    // (port above 49,151 are ephemeral ports. See https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic,_private_or_ephemeral_ports)
+    if (port < 0 || port > 49151) {
+      console.error('\n 🤯 Error: specified port must be between 0 and 49,151 inclusive.\n')
+      process.exit(1)
+    }
+
     // If a test server is specified, use it.
     let global = false
     if (command.isGlobal) {
@@ -219,6 +226,8 @@ switch (true) {
       const app = express()
 
       console.log(webServer.version())
+
+      webServer.ensureWeCanBindToPort(port)
 
       const server = webServer.createServer({}, app).listen(port, () => {
         console.log(`\n 🚚 [Indie Web Server] Proxying: HTTPS/WSS on localhost:${port} ←→ HTTP/WS on ${pathToServe.replace('http://', '')}\n`)

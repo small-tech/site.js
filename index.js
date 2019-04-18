@@ -129,7 +129,7 @@ class WebServer {
     // ports (<1,024). This is meaningless security theatre unless you’re living in 1968
     // and using a mainframe and hopefully Linux will join the rest of the modern world
     // in dropping this requirement soon (macOS just did in Mojave).
-    this._ensureWeCanBindToPort(port, pathToServe)
+    this.ensureWeCanBindToPort(port)
 
     // Create an express server to serve the path using Morgan for logging.
     const app = express()
@@ -290,7 +290,7 @@ class WebServer {
   // ===== current app is in index.js and that it can be forked. This might be an issue if a
   //       process manager is already being used, etc. Worth keeping an eye on and possibly
   //       making this method an optional part of server startup.
-  _ensureWeCanBindToPort (port, pathToServe) {
+  ensureWeCanBindToPort (port) {
     if (port < 1024 && os.platform() === 'linux') {
       const options = {env: process.env}
       try {
