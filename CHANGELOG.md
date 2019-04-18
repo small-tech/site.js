@@ -8,12 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - Nothing yet.
 
-## [8.0.0] - TBR
+## [8.1.0] - 2019-04-18
 
-## TODO
+## Added
 
-  - [ ] Test 8.0.0 on macOS
-  - [ ] Test 8.0.0 on clean/new VPS instances
+  - HTTP → HTTPS and WS → WSS reverse proxy (for local mode only).
+
+## [8.0.0] - 2019-04-16
 
 ## Added
 
