@@ -16,16 +16,14 @@ __Indie Web Server is a secure and seamless [Small Tech](https://ar.al/2019/03/0
 
 Copy and paste the following commands into your terminal:
 
-### Linux
+### Linux and macOS
+
+Install the native binaries:
+
+__Before you pipe any script into your computer, always [view the source code](https://ind.ie/web-server/install.sh) and make sure you understand what it does.__
 
 ```
-wget https://ind.ie/web-server/linux/8.0.0.zip && unzip 8.0.0.zip && chmod +x web-server && sudo mv web-server /usr/local/bin/
-```
-
-### macOS
-
-```
-wget https://ind.ie/web-server/macos/8.0.0.zip && unzip 8.0.0.zip && chmod +x web-server && sudo mv web-server /usr/local/bin/
+wget -qO- https://ind.ie/web-server/install.sh | bash
 ```
 
 ### Node.js
@@ -33,6 +31,8 @@ wget https://ind.ie/web-server/macos/8.0.0.zip && unzip 8.0.0.zip && chmod +x we
 ```sh
 npm i -g @ind.ie/web-server
 ```
+
+There is currently no native binary support for Windows. Please use the npm installation method on that platform.
 
 ## Use
 
@@ -43,6 +43,14 @@ Start serving the current directory at https://localhost as a regular process us
 ```shell
 $ web-server
 ```
+
+You can also use Indie Web Server as a development-time reverse proxy for HTTP and WebSocket connections. For example, if you use [Hugo](https://gohugo.io/) and you’re running `hugo server` on the default HTTP port 1313. You can run a HTTPS reverse proxy at https://localhost [with LiveReload support]() with:
+
+```shell
+$ web-server http://localhost:1313
+```
+
+The reverse proxy feature is currently not available for use with the `global` or `enable` features.
 
 ### Global (ephemeral)
 
