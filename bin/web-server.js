@@ -54,7 +54,7 @@ const firstPositionalArgumentDidMatchCommand = ['version', 'help', 'global', 'en
 // Help / usage instructions.
 if (command.isHelp) {
   const usageCommand = `${clr('command', 'green')}`
-  const usageFolderToServe = clr('folder', 'cyan')
+  const usageFolderToServe = `${clr('folder', 'cyan')}${clr('|url', 'darkgrey')}`
   const usageOptions = clr('options', 'yellow')
 
   const usageVersion = `${clr('version', 'green')}`
@@ -75,7 +75,7 @@ if (command.isHelp) {
   ${clr('web-server', 'bold')} [${usageCommand}] [${usageFolderToServe}] [${usageOptions}]
 
   ${usageCommand}\t${usageVersion} | ${usageHelp} | ${usageLocal} | ${usageGlobal} | ${usageEnable} | ${usageDisable} | ${usageLogs} | ${usageStatus}
-  ${usageFolderToServe}\tPath of folder to serve (defaults to current folder).
+  ${usageFolderToServe}\tPath of folder to serve (defaults to current folder) or HTTP URL to reverse proxy.
   ${usageOptions}\tSettings that alter server characteristics.
 
   ${clr('Commands:', 'underline')}
@@ -208,31 +208,42 @@ switch (true) {
     }
 
     //
-    // Launch as startup daemon or regular process?
+    // Launch as a reverse proxy (local mode), startup daemon, or regular process?
     //
     if (isProxy) {
+      //
+      // Proxy HTTP → HTTPS and WS → WSS.
+      //
       const proxy = require('http-proxy-middleware')
       const express = require('express')
       const app = express()
 
+      console.log(webServer.version())
+
+      const server = webServer.createServer({}, app).listen(port, () => {
+        console.log(`\n 🚚 Proxying: HTTPS/WSS on localhost:${port} ←→ HTTP/WS on ${pathToServe.replace('http://', '')}\n`)
+
       const webSocketProxy = proxy(pathToServe.replace('http://', 'ws://'), {
         ws: true,
         changeOrigin:false,
-        //logLevel: 'debug'
+        logLevel: 'info'
       })
 
       const httpsProxy = proxy({
         target: pathToServe,
         changeOrigin: true,
-        //logLevel: 'debug',
+        logLevel: 'info',
 
         //
         // Special handling of LiveReload implementation bug in Hugo
-        // to workaround the port being hardcoded to the Hugo server
+        // (https://github.com/gohugoio/hugo/issues/2205#issuecomment-484443057)
+        // to work around the port being hardcoded to the Hugo server
         // port (instead of the port that the page is being served from).
         //
         // This enables you to use Indie Web Server as a reverse proxy
         // for Hugo during development time and test your site from https://localhost
+        //
+        // All other content is left as-is.
         //
         onProxyRes: (proxyResponse, request, response) => {
           const _write = response.write
@@ -256,8 +267,6 @@ switch (true) {
       app.use(httpsProxy)
       app.use(webSocketProxy)
 
-      const server = webServer.createServer({}, app).listen(port, () => {
-        console.log(`Proxying: ${pathToServe}`)
 
       // As we’re using a custom server, manually listen for the http upgrade event
       // and upgrade the web socket proxy also.
