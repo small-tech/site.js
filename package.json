@@ -26,6 +26,7 @@
     "copy-concurrently": "^1.0.5",
     "express": "^4.16.4",
     "helmet": "^3.16.0",
+    "http-proxy-middleware": "^0.19.1",
     "minimist": "^1.2.0",
     "morgan": "^1.9.1",
     "recursive-copy": "^2.0.10",

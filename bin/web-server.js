@@ -197,15 +197,66 @@ switch (true) {
       global = true
     }
 
-    if (!fs.existsSync(pathToServe)) {
-      console.error(`\n 🤔 Error: could not find path ${pathToServe}\n`)
-      process.exit(1)
+    let isProxy = false
+    if (pathToServe.startsWith('http://')) {
+      isProxy = true
+    } else {
+      if (!fs.existsSync(pathToServe)) {
+        console.error(`\n 🤔 Error: could not find path ${pathToServe}\n`)
+        process.exit(1)
+      }
     }
 
     //
     // Launch as startup daemon or regular process?
     //
-    if (command.isEnable) {
+    if (isProxy) {
+      const proxy = require('http-proxy-middleware')
+      const express = require('express')
+      const app = express()
+
+      const webSocketProxy = proxy(pathToServe.replace('http://', 'ws://'), {
+        ws: true,
+        changeOrigin:false,
+        //logLevel: 'debug'
+      })
+
+      const httpsProxy = proxy({
+        target: pathToServe,
+        changeOrigin: true,
+        //logLevel: 'debug',
+        onProxyRes: (proxyResponse, request, response) => {
+          const _write = response.write
+
+          // As we’re going to change it.
+          delete proxyResponse.headers['content-length']
+
+          response.write = function (data) {
+            let output = data.toString('utf-8')
+            if (output.match(/livereload.js\?port=1313/) !== null) {
+              console.log('Rewriting Hugo LiveReload URL')
+              output = output.replace('livereload.js?port=1313', `livereload.js?port=${port}`)
+              _write.call(response, output)
+            } else {
+              _write.call(response, data)
+            }
+          }
+        }
+      })
+
+      app.use(httpsProxy)
+      app.use(webSocketProxy)
+
+      const server = webServer.createServer({}, app).listen(port, () => {
+        console.log(`Proxying: ${pathToServe}`)
+
+      // As we’re using a custom server, manually listen for the http upgrade event
+      // and upgrade the web socket proxy also.
+      // (See https://github.com/chimurai/http-proxy-middleware#external-websocket-upgrade)
+      server.on('upgrade', webSocketProxy.upgrade)
+      })
+
+    } else if (command.isEnable) {
       //
       // Launch as startup daemon.
       //
