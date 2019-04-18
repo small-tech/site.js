@@ -225,6 +225,15 @@ switch (true) {
         target: pathToServe,
         changeOrigin: true,
         //logLevel: 'debug',
+
+        //
+        // Special handling of LiveReload implementation bug in Hugo
+        // to workaround the port being hardcoded to the Hugo server
+        // port (instead of the port that the page is being served from).
+        //
+        // This enables you to use Indie Web Server as a reverse proxy
+        // for Hugo during development time and test your site from https://localhost
+        //
         onProxyRes: (proxyResponse, request, response) => {
           const _write = response.write
 
