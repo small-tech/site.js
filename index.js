@@ -145,20 +145,16 @@ class WebServer {
     const archiveCascade = []
     const absolutePathToServe = path.resolve(pathToServe)
     const pathName = absolutePathToServe.match(/.*\/(.*?)$/)[1]
-    console.log(`> Debug: path name = ${pathName}`)
     if (pathName !== '') {
       let archiveLevel = 0
       do {
         archiveLevel++
         const archiveDirectory = path.resolve(absolutePathToServe, '..', `${pathName}-archive-${archiveLevel}`)
-        console.log(`> Debug: testing if archive directory ${archiveDirectory} exists…`)
         if (fs.existsSync(archiveDirectory)) {
           // Archive exists, add it to the archive cascade.
-          console.log('> It does!')
           archiveCascade.push(archiveDirectory)
         } else {
           // Archive does not exist.
-          console.log('> It does not :(')
           break
         }
       } while (true)
@@ -167,8 +163,6 @@ class WebServer {
       // lowest, with latter versions overriding earlier ones), so reverse the list.
       archiveCascade.reverse()
     }
-
-    console.log('> Debug: Archive cascade:', archiveCascade)
 
     // Check for a valid port range
     // (port above 49,151 are ephemeral ports. See https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic,_private_or_ephemeral_ports)
@@ -197,6 +191,14 @@ class WebServer {
     })
 
     app.use(express.static(pathToServe))
+
+    // Serve the archive cascade (if there is one).
+    let archiveNumber = 0
+    archiveCascade.forEach(archivePath => {
+      archiveNumber++
+      console.log(` 🌱 [Indie Web Server] Evergreen web: serving archive #${archiveNumber}`)
+      app.use(express.static(archivePath))
+    })
 
     // 404 (Not Found) support.
     app.use((request, response, next) => {
