@@ -99,6 +99,7 @@ test('archival cascade', t => {
       t.equal(responseUnique2.body, archive2UniqueContent, 'archive 2 unique content loads')
       t.equal(responseOverride.body, archive2OverrideContent, 'archive 2 content overrides archive 1 content')
 
+      server.close()
       t.end()
 
       // Clean up
