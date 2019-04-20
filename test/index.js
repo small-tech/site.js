@@ -41,6 +41,8 @@ test('createServer method', t => {
 })
 
 test('archival cascade', t => {
+  t.plan(8)
+
   const archive1 = path.join(__dirname, 'site-archive-1')
   const archive2 = path.join(__dirname, 'site-archive-2')
   fs.mkdirSync(archive1)
@@ -73,36 +75,43 @@ test('archival cascade', t => {
   const unique2URL = `https://localhost/unique-2.html`
   const overrideURL = `https://localhost/override.html`
 
-  const server = webServer.serve({path: 'test/site', callback: async () => {
-    let responseIndex, responseUnique1, responseUnique2, responseOverride
-    try {
-      responseIndex = await secureGet(indexURL)
-      responseUnique1 = await secureGet(unique1URL)
-      responseUnique2 = await secureGet(unique2URL)
-      responseOverride = await secureGet(overrideURL)
-    } catch (error) {
-      console.log(error)
-      process.exit(1)
+  const server = webServer.serve({
+    path: 'test/site',
+    callback: async () => {
+      let responseIndex, responseUnique1, responseUnique2, responseOverride
+      try {
+        responseIndex = await secureGet(indexURL)
+        responseUnique1 = await secureGet(unique1URL)
+        responseUnique2 = await secureGet(unique2URL)
+        responseOverride = await secureGet(overrideURL)
+      } catch (error) {
+        console.log(error)
+        process.exit(1)
+      }
+
+      t.equal(responseIndex.statusCode, 200, 'requestIndex succeeds')
+      t.equal(responseUnique1.statusCode, 200, 'requestUnique1 succeeds')
+      t.equal(responseUnique2.statusCode, 200, 'requestUnique2 succeeds')
+      t.equal(responseOverride.statusCode, 200, 'requestOverride succeeds')
+
+      t.equal(responseIndex.body.replace(/\s/g, ''), fs.readFileSync(path.join(__dirname, 'site', 'index.html'), 'utf-8').replace(/\s/g, ''), 'site index overrides archive indices')
+      t.equal(responseUnique1.body, archive1UniqueContent, 'archive 1 unique content loads')
+      t.equal(responseUnique2.body, archive2UniqueContent, 'archive 2 unique content loads')
+      t.equal(responseOverride.body, archive2OverrideContent, 'archive 2 content overrides archive 1 content')
+
+      t.end()
+
+      // Clean up
+      fs.unlinkSync(archive1Index)
+      fs.unlinkSync(archive1Unique)
+      fs.unlinkSync(archive1Override)
+      fs.unlinkSync(archive2Index)
+      fs.unlinkSync(archive2Unique)
+      fs.unlinkSync(archive2Override)
+      fs.rmdirSync(archive1)
+      fs.rmdirSync(archive2)
     }
-  }})
-
-  t.equal(responseIndex.statusCode, 200, 'requestIndex succeeds')
-  t.equal(responseUnique1.statusCode, 200, 'requestUnique1 succeeds')
-  t.equal(responseUnique2.statusCode, 200, 'requestUnique2 succeeds')
-  t.equal(responseOverride.statusCode, 200, 'requestOverride succeeds')
-
-  t.equal(responseIndex.body.replace(/\s/g, ''), fs.readFileSync(path.join(__dirname, 'site', 'index.html'), 'utf-8').replace(/\s/g, ''), 'site index overrides archive indices')
-  t.equal(responseUnique1.body, archive1UniqueContent, 'archive 1 unique content loads')
-  t.equal(responseUnique2.body, archive2UniqueContent, 'archive 2 unique content loads')
-  t.equal(responseOverride.body, archive2OverrideContent, 'archive 2 content overrides archive 1 content')
-
-  // Clean up
-  fs.unlinkSync(archive1Index)
-  fs.unlinkSync(archive1Unique)
-  fs.unlinkSync(archive1Override)
-  fs.unlinkSync(archive2Index)
-  fs.unlinkSync(archive2Unique)
-  fs.unlinkSync(archive2Override)
+  })
 })
 
 
