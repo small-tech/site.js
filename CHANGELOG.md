@@ -8,91 +8,97 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - Nothing yet.
 
+## [8.2.0] - 2019-04-20
+
+### Added
+
+  - Automatic cascading archive support for an evergreen web. Just add previous static backups of your site into specially-named folders and they will be served as fallbacks for links that no longer exist on the latest version of your site.
+
 ## [8.1.1] - 2019-04-18
 
-## Fixed
+### Fixed
 
   - Automatic privilege escalation for binary now also works when using the reverse proxy.
 
 ## [8.1.0] - 2019-04-18
 
-## Added
+### Added
 
   - HTTP → HTTPS and WS → WSS reverse proxy (for local mode only).
 
 ## [8.0.0] - 2019-04-16
 
-## Added
+### Added
 
   - Native binaries.
 
-## Changed
+### Changed
 
   - (Breaking) Simplified commandline vocabulary; now using command syntax (not options syntax).
   - Running as daemon is only supported on platforms with systemd.
 
-## Fixed
+### Fixed
 
   - Fix auto-restart after automatically obtaining privileged port binding privileges via setcap during first run on Linux.
 
 ## [7.1.0] - 2019-04-01
 
-## Added
+### Added
 
   - `--offline` command to take a running live server offline (remove it from startup items and delete it from the process manager if necessary).
 
-## Changed
+### Changed
 
   - Simplified the `--help` display.
 
 ## [7.0.1] - 2019-04-01
 
-## Fixed
+### Fixed
 
   - No longer using a custom directory for pm2 files (fixes directory not found issue).
 
 ## [7.0.0] - 2019-03-31
 
-## Added
+### Added
 
   - `--live` flag to run as daemon and handle crashes/restarts via integrated pm2 process manager.
   - `--monitor` command to monitor an already-running live server daemon process.
   - `--logs` command to display and tail the web server logs for an already-running live server daemon process.
   - `--info` command to display detailed information for an already-running live server daemon process.
 
-## Changed
+### Changed
 
   - (Breaking) Options that are not boolean flags now require an equals sign. This means that boolean flags like --live and --global can now be used before or after the path to be served whereas previously the path would not be registered if a boolean flag was used before it.
   - (Breaking) The `--global` flag is now called `--staging`.
 
 ## [6.4.0] - 2019-03-31
 
-## Added
+### Added
 
   - Native [404 to 302](https://4042302.org/) support.
   - Programmatic access to the default 404 and 500 error page content.
 
 ## [6.3.0] - 2019-03-30
 
-## Added
+### Added
 
   - You can now create custom error pages for 404 and 500 errors.
 
 ## [6.2.0] - 2019-03-12
 
-## Changed
+### Changed
 
   - Uses latest ACME TLS that disables all Greenlock-related telemetry from submodules (such as acme, acme-v2, and rsa-compat) and accepts hostnames as valid local identifiers in place of the artificial and privacy-eroding email address requirement imposed earlier by Greenlock.js).
 
 ## [6.0.0] – 2019-03-09
 
-## Changed
+### Changed
 
   - __Name:__ HTTPS Server is now called Indie Web Server.
   - __NPM module:__ @ind.ie/https-server is now @ind.ie/web-server.
   - __Source code repository:__ Now located at https://source.ind.ie/hypha/tools/web-server/.
 
-## Added
+### Added
 
   - [Helmet](https://helmetjs.github.io/) for securing the Express app further.
 

@@ -171,9 +171,30 @@ If you want to serve a directory that has the same name as a command, you can sp
 
 When you use the `global` or `enable` commands, globally-trusted Let’s Encrypt TLS certificates are automatically provisioned for you using ACME TLS the first time you hit your hostname. The hostname for the certificates is automatically set from the hostname of your system (and the _www._ subdomain is also automatically provisioned).
 
-## Native 404 → 302 support for an evergreen web
+## Native support for an Evergreen Web
 
-What if links never died? What if we never broke the Web? What if it didn’t involve any extra work? It’s possible. And easy. Just make your 404s into 302s.
+What if links never died? What if we never broke the Web? What if it didn’t involve any extra work? It’s possible. And, with Indie Web Server, it’s easy.
+
+### Native archive cascade support
+
+If you have a static archive of the previous version of your site, you can have Indie Web Server automatically serve it for you. For example, if your site is being served from the `my-site` folder, just put the archive of your site into a folder named `my-site-archive-1`:
+
+```
+|- my-site
+|- my-site-archive-1
+```
+
+If a path cannot be found in `my-site`, it will be served from `my-site-archive-1`.
+
+And you’re not limited to a single archive (and hence the “cascade” bit in the name of the feature). As you have multiple older versions of your site, just add them to new folders and increment the archive index in the name. e.g., `my-site-archive-2`, `my-site-archive-3`, etc.
+
+Paths in `my-site` will override those in `my-site-archive-3` and those in `my-site-archive-3` will, similarly, override those in `my-site-archive-2` and so on.
+
+What this means that your old links will never die but if you do replace them with never content in never versions, those will take precedence.
+
+### Native 404 → 302 support
+
+But what if the previous version of your site is a dynamic site and you either don’t want to lose the dynamic functionality or you simply cannot take a static backup. No worries. Just move it to a different subdomain or domain and make your 404s into 302s.
 
 Indie Web Server has native support for [the 404 to 302 technique](https://4042302.org) to ensure an evergreen web. Just serve the old version of your site (e.g., your WordPress site, etc.) from a different subdomain and tell Indie Web Server to forward any unknown requests on your new static site to that subdomain so that all your existing links magically work.
 
