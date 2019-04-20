@@ -119,6 +119,57 @@ class WebServer {
       custom500 = fs.readFileSync(custom500Path, 'utf-8')
     }
 
+    //
+    // Check if we should implement an archive cascade.
+    // e.g., given the following folder structure:
+    //
+    // |-site
+    // |- site-archive-2
+    // |- site-archive-1
+    //
+    // If we are asked to serve site, we would try and serve any 404s
+    // first from site-archive-2 and then from site-archive-1. The idea
+    // is that site-archive-\d+ are static archives of older versions of
+    // the site and they are being served in order to maintain an
+    // evergreen web where we try not to break existing links. If site
+    // has a path, it will override site-archive-2 and site-archive-1. If
+    // site-archive-2 has a path, it will override site-archive-1 and so
+    // on. In terms of latest version to oldest version, the order is
+    // site, site-archive-2, site-archive-1.
+    //
+    // The archive cascade is automatically created by naming and location
+    // convention. If the folder that is being served is called
+    // my-lovely-site, then the archive folders we would look for are
+    // my-lovely-site-archive-1, etc.
+    //
+    const archiveCascade = []
+    const absolutePathToServe = path.resolve(pathToServe)
+    const pathName = absolutePathToServe.match(/.*\/(.*?)$/)[1]
+    console.log(`> Debug: path name = ${pathName}`)
+    if (pathName !== '') {
+      let archiveLevel = 0
+      do {
+        archiveLevel++
+        const archiveDirectory = path.resolve(absolutePathToServe, '..', `${pathName}-archive-${archiveLevel}`)
+        console.log(`> Debug: testing if archive directory ${archiveDirectory} exists…`)
+        if (fs.existsSync(archiveDirectory)) {
+          // Archive exists, add it to the archive cascade.
+          console.log('> It does!')
+          archiveCascade.push(archiveDirectory)
+        } else {
+          // Archive does not exist.
+          console.log('> It does not :(')
+          break
+        }
+      } while (true)
+
+      // We will implement the cascade in reverse (from highest archive number to the
+      // lowest, with latter versions overriding earlier ones), so reverse the list.
+      archiveCascade.reverse()
+    }
+
+    console.log('> Debug: Archive cascade:', archiveCascade)
+
     // Check for a valid port range
     // (port above 49,151 are ephemeral ports. See https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic,_private_or_ephemeral_ports)
     if (port < 0 || port > 49151) {
