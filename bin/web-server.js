@@ -112,8 +112,7 @@ if (command.isHelp) {
 switch (true) {
   // Version
   case command.isVersion:
-    console.log(webServer.version())
-    process.exit()
+    require('./commands/version')
   break
 
   // Logs (proxy: journalctl --follow --unit web-server)
