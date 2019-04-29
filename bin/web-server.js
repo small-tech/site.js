@@ -178,7 +178,7 @@ switch (true) {
       // e.g., web-server enable path-to-serve
       pathToServe = secondPositionalArgument
     } else if (!firstPositionalArgumentDidMatchCommand && isServerCommand && positionalArguments.length === 1) {
-      // e.g., web-server --on path-to-serve
+      // e.g., web-server --enable path-to-serve
       pathToServe = firstPositionalArgument
     } else if (command.isLocal && positionalArguments.length === 1) {
       // i.e., web-server path-to-serve
