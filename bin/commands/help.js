@@ -31,23 +31,23 @@ function help () {
 
   ${clr('web-server', 'bold')} [${usageCommand}] [${usageFolderToServe}] [${usageOptions}]
 
-  ${usageCommand}\t\t${usageVersion} | ${usageHelp} | ${usageLocal} | ${usageGlobal} | ${usageEnable} | ${usageDisable} | ${usageLogs} | ${usageStatus}
+  ${usageCommand}\t${usageVersion} | ${usageHelp} | ${usageLocal} | ${usageGlobal} | ${usageEnable} | ${usageDisable} | ${usageLogs} | ${usageStatus}
   ${usageFolderToServe}\tPath of folder to serve (defaults to current folder) or HTTP URL to reverse proxy.
-  ${usageOptions}\t\tSettings that alter server characteristics.
+  ${usageOptions}\tSettings that alter server characteristics.
 
   ${clr('Commands:', 'underline')}
 
   ${usageVersion}\tDisplay version and exit.
-  ${usageHelp}\tDisplay this help screen and exit.
+  ${usageHelp}\t\tDisplay this help screen and exit.
 
-  ${usageLocal}\tStart server as regular process with locally-trusted certificates.
+  ${usageLocal}\t\tStart server as regular process with locally-trusted certificates.
   ${usageGlobal}\tStart server as regular process with globally-trusted certificates.
 
   On Linux distributions with systemd, you can also use:
 
   ${usageEnable}\tStart server as daemon with globally-trusted certificates and add to startup.
   ${usageDisable}\tStop server daemon and remove from startup.
-  ${usageLogs}\tDisplay and tail server logs.
+  ${usageLogs}\t\tDisplay and tail server logs.
   ${usageStatus}\tDisplay detailed server information.
 
   If ${usageCommand} is omitted, behaviour defaults to ${usageLocal}.

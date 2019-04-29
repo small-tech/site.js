@@ -175,7 +175,7 @@ When you use the `global` or `enable` commands, globally-trusted Let’s Encrypt
 
 What if links never died? What if we never broke the Web? What if it didn’t involve any extra work? It’s possible. And, with Indie Web Server, it’s easy.
 
-### Native archive cascade support
+### Native cascading archives support
 
 If you have a static archive of the previous version of your site, you can have Indie Web Server automatically serve it for you. For example, if your site is being served from the `my-site` folder, just put the archive of your site into a folder named `my-site-archive-1`:
 
