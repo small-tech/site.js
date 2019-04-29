@@ -42,54 +42,78 @@ Object.assign(options, proxyPaths())
 // Execute requested command.
 //
 
-switch (true) {
-  // Help
-  case command.isHelp:
-    require('./commands/help')
-  break
+let requirement = null
+Object.entries(command).some(theCommand => {
+  if (theCommand[1] === true) {
+    const commandName = theCommand[0].slice(2).toLowerCase()
+    requirement = `./commands/${commandName}`
+    return true
+  }
+})
 
-  // Version
-  case command.isVersion:
-    require('./commands/version')
-  break
-
-  // Logs
-  case command.isLogs:
-    require('./commands/logs')
-  break
-
-  // Status
-  case command.isStatus:
-    require('./commands/status')
-  break
-
-  // Enable (start the server daemon and add it to startup items).
-  case command.isEnable:
-    require('./commands/enable')(options)
-  break
-
-  // Disable (stop the server daemon and remove it from startup items).
-  case command.isDisable:
-    require('./commands/disable')
-  break
-
-  case command.isLocal:
-    require('./commands/local')(options)
-  break
-
-  case command.isGlobal:
-    require('./commands/global')(options)
-  break
-
-  case command.isProxy:
-    require('./commands/proxy')(options)
-  break
-
-  // Default: unsupported state; display help.
-  default:
-    require('./commands/help')
-  break
+if (requirement === null) {
+  // No commands matched; display help.
+  require ('./commands/help')
+} else {
+  // Load and run the command.
+  require(requirement)(options)
 }
+
+//
+// Leaving this in for now as I don’t know how Nexe will handle the dynamic require, above.
+//
+// If it’s too much trouble, I might revert.
+//
+
+// switch (true) {
+//   // Help
+//   case command.isHelp:
+//     require('./commands/help')
+//   break
+
+//   // Version
+//   case command.isVersion:
+//     require('./commands/version')
+//   break
+
+//   // Logs
+//   case command.isLogs:
+//     require('./commands/logs')
+//   break
+
+//   // Status
+//   case command.isStatus:
+//     require('./commands/status')
+//   break
+
+//   // Enable (start the server daemon and add it to startup items).
+//   case command.isEnable:
+//     require('./commands/enable')(options)
+//   break
+
+//   // Disable (stop the server daemon and remove it from startup items).
+//   case command.isDisable:
+//     require('./commands/disable')
+//   break
+
+//   case command.isLocal:
+//     require('./commands/local')(options)
+//   break
+
+//   case command.isGlobal:
+//     require('./commands/global')(options)
+//   break
+
+//   case command.isProxy:
+//     require('./commands/proxy')(options)
+//   break
+
+//   // Default: unsupported state; display help.
+//   default:
+//     require('./commands/help')
+//   break
+
+// }
 
 
 //

@@ -6,5 +6,9 @@
 
 const webServer = require('../../index.js')
 
-console.log(webServer.version())
-process.exit()
+function version () {
+  console.log(webServer.version())
+  process.exit()
+}
+
+module.exports = version
