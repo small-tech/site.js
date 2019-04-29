@@ -2,7 +2,7 @@
 //
 // Command: logs
 //
-// Displays the web server logs.
+// Displays the web server daemon logs.
 //
 // Proxies: journalctl --follow --unit web-server
 //

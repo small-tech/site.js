@@ -2,7 +2,6 @@
 const os = require('os')
 const fs = require('fs')
 const path = require('path')
-const ansi = require('ansi-escape-sequences')
 const webServer = require('../index.js')
 
 const childProcess = require('child_process')
@@ -10,6 +9,8 @@ const arguments = require('minimist')(process.argv.slice(2), {boolean: true})
 
 const runtime = require('./utilities/runtime')
 const ensure = require('./utilities/ensure.js')
+
+const clr = require('./utilities/cli').clr
 
 let sourceDirectory = path.resolve(__dirname, '..')
 
@@ -105,32 +106,9 @@ switch (true) {
     require('./commands/logs')
   break
 
-  // Status (proxy: systemctl status web-server)
+  // Status
   case command.isStatus:
-    ensure.systemctl()
-
-    let isActive
-    try {
-      childProcess.execSync('systemctl is-active web-server', {env: process.env, stdio: 'pipe'})
-      isActive = true
-    } catch (error) {
-      isActive = false
-    }
-
-    let isEnabled
-    try {
-      childProcess.execSync('systemctl is-enabled web-server', {env: process.env, stdio: 'pipe'})
-      isEnabled = true
-    } catch (error) {
-      isEnabled = false
-    }
-
-    const activeState = isActive ? clr('active', 'green') : clr('inactive', 'red')
-    const enabledState = isEnabled ? clr('enabled', 'green') : clr('disabled', 'red')
-
-    const stateEmoji = (isActive && isEnabled) ? '✔' : '❌'
-
-    console.log(`\n ${stateEmoji} Indie Web Server is ${activeState} and ${enabledState}.\n`)
+    require('./commands/status')
   break
 
   // Off (turn off the server daemon and remove it from startup items).
@@ -358,13 +336,4 @@ switch (true) {
   break
 }
 
-//
-// Helpers.
-//
-
-// Format ansi strings.
-// Courtesy Bankai (https://github.com/choojs/bankai/blob/master/bin.js#L142)
-function clr (text, color) {
-  return process.stdout.isTTY ? ansi.format(text, color) : text
-}
 
