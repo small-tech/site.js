@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 const fs = require('fs')
-const webServer = require('../index.js')
 const arguments = require('minimist')(process.argv.slice(2), {boolean: true})
-const clr = require('./utilities/cli').clr
 
 // At this point, regardless of whether we are running as a regular Node script or
 // as a standalone executable created with Nexe, all paths should be correctly set.
