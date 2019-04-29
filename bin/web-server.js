@@ -100,13 +100,9 @@ switch (true) {
     require('./commands/version')
   break
 
-  // Logs (proxy: journalctl --follow --unit web-server)
+  // Logs
   case command.isLogs:
-    ensure.journalctl()
-
-    console.log(`\n 📜 Tailing logs (press Ctrl+C to exit).\n`)
-
-    childProcess.spawn('journalctl', ['--follow', '--unit', 'web-server'], {env: process.env, stdio: 'inherit'})
+    require('./commands/logs')
   break
 
   // Status (proxy: systemctl status web-server)
