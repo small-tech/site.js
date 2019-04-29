@@ -91,7 +91,6 @@ function proxy (options) {
     }
     throw error
   })
-
 }
 
 module.exports = proxy
