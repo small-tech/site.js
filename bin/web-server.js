@@ -2,10 +2,13 @@
 const fs = require('fs')
 const arguments = require('minimist')(process.argv.slice(2), {boolean: true})
 
-// Get the command
+//
+// Get the command.
+//
 const positionalArguments = arguments._
 const firstPositionalArgument = positionalArguments[0]
 const secondPositionalArgument = positionalArguments[1]
+
 const command = {
   isHelp: (arguments.h || arguments.help || positionalArguments.length > 2 || firstPositionalArgument === 'help'),
   isVersion: (arguments.version || arguments.v || firstPositionalArgument === 'version'),
@@ -16,6 +19,7 @@ const command = {
   isStatus: (arguments.status || firstPositionalArgument === 'status'),
 //isLocal: is handled below.
 }
+
 // If we didn’t match a command, we default to local.
 const didMatchCommand = Object.values(command).reduce((p,n) => p || n)
 command.isLocal = (arguments.local || firstPositionalArgument === 'local' || !didMatchCommand)
