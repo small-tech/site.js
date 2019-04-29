@@ -2,7 +2,7 @@
 
 ![Screenshot of Indie Web Server in use](images/indie-web-server-8.0.0.jpeg)
 
-__Indie Web Server is a secure and seamless [Small Tech](https://ar.al/2019/03/04/small-technology/) personal web server.__
+__Indie Web Server is a secure and seamless [Small Tech](https://ar.al/2019/03/04/small-technology/) personal web server for Linux and Linux-like* operating systems.__
 
   - Zero-configuration – It Just Works 🤞™.
 
@@ -12,13 +12,13 @@ __Indie Web Server is a secure and seamless [Small Tech](https://ar.al/2019/03/0
 
   <ins>Note:</ins> Live deployments via startup daemons are only supported on Linux distributions with systemd.
 
+  \* Works with Linux, macOS, and Windows Subsystem for Linux.
+
 ## Install
 
 Copy and paste the following commands into your terminal:
 
-### Linux and macOS
-
-Install the native binaries:
+### Native binaries
 
 __Before you pipe any script into your computer, always [view the source code](https://ind.ie/web-server/install.sh) and make sure you understand what it does.__
 
@@ -32,8 +32,6 @@ wget -qO- https://ind.ie/web-server/install.sh | bash
 npm i -g @ind.ie/web-server
 ```
 
-There is currently no native binary support for Windows. Please use the npm installation method on that platform.
-
 ## Use
 
 ### Local
@@ -44,17 +42,20 @@ Start serving the current directory at https://localhost as a regular process us
 $ web-server
 ```
 
+### Proxy server (local)
+
 You can also use Indie Web Server as a development-time reverse proxy for HTTP and WebSocket connections. For example, if you use [Hugo](https://gohugo.io/) and you’re running `hugo server` on the default HTTP port 1313. You can run a HTTPS reverse proxy at https://localhost [with LiveReload support](https://source.ind.ie/hypha/tools/web-server/blob/master/bin/web-server.js#L237) using:
 
 ```shell
-$ web-server http://localhost:1313
+$ web-server proxy localhost:1313
 ```
 
-The reverse proxy feature is currently not available for use with the `global` or `enable` features.
+This will create and serve the following proxies:
+
+  * http://localhost:1313 → https://localhost
+  * ws://localhost:1313 → wss://localhost
 
 ### Global (ephemeral)
-
-__Available on Linux and macOS only*__
 
 Start serving the _site_ directory at your _hostname_ as a regular process using globally-trusted Let’s Encrypt certificates:
 
@@ -62,20 +63,18 @@ Start serving the _site_ directory at your _hostname_ as a regular process using
 $ web-server global site
 ```
 
-For example, use [ngrok](https://ngrok.com/) (Pro+) with a custom domain name that you set in your `hostname` file (e.g., in `/etc/hostname` or via `hostnamectl set-hostname <hostname>` or the equivalent for your platform). The first time you hit your server via your hostname it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
+Then use, for example, [ngrok](https://ngrok.com/) (Pro+) to point a custom domain name to your temporary staging server. Make sure you set your `hostname` file (e.g., in `/etc/hostname` or via `hostnamectl set-hostname <hostname>` or the equivalent for your platform) to match your domain name. The first time you hit your server via your hostname it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
 
 When you start your server using the `global` command, it will run as a regular process. It will not be restarted if it crashes or if you exit the foreground process or restart the computer.
 
-\* Automatic hostname detection has not been implemented for Windows and so globally-trusted certificates will fail on that platform.
-
 ### Global (persistent)
 
-__Available on Linux distributions with systemd (most Linux distributions, but [not these ones](https://sysdfree.wordpress.com/2019/03/09/135/) or on macOS/Windows).__
+__Available on Linux distributions with systemd (most Linux distributions, but [not these ones](https://sysdfree.wordpress.com/2019/03/09/135/) or on macOS).__
 
 Start serving the _site_ directory at your _hostname_ as a daemon that is automatically run at system startup and restarted if it crashes:
 
 ```shell
-$ sudo web-server enable site
+$ web-server enable site
 ```
 
 The `enable` command sets up your server to start automatically when your server starts and restart automatically if it crashes. Requires superuser privileges on first run to set up the launch item.
@@ -131,14 +130,14 @@ npm test
 npm run build
 
 # Serve the test site (visit https://localhost to view).
-# e.g., To run the version 8.0.0 Linux binary:
-dist/linux/8.0.0/web-server test/site
+# e.g., To run the version 9.0.0 Linux binary:
+dist/linux/9.0.0/web-server test/site
 ```
 
 ## Syntax
 
 ```shell
-web-server [command] [folder] [options]
+web-server [command] [folder|url] [options]
 ```
 
   * `command`: version | help | dev | test | enable | disable | logs | status
@@ -175,7 +174,7 @@ When you use the `global` or `enable` commands, globally-trusted Let’s Encrypt
 
 What if links never died? What if we never broke the Web? What if it didn’t involve any extra work? It’s possible. And, with Indie Web Server, it’s easy.
 
-### Native archive cascade support
+### Native cascading archives support
 
 If you have a static archive of the previous version of your site, you can have Indie Web Server automatically serve it for you. For example, if your site is being served from the `my-site` folder, just put the archive of your site into a folder named `my-site-archive-1`:
 
@@ -299,6 +298,6 @@ Please [let me know how/if it works](https://github.com/indie-mirror/web-server/
 
   * [thagoat](https://github.com/thagoat) for confirming that [installation works on Arch Linux with Pacman](https://github.com/indie-mirror/https-server/issues/1).
 
-  * [Tim Knip](https://github.com/timknip) for confirming that [the module works with 64-bit Windows](https://github.com/indie-mirror/https-server/issues/2) with the following behaviour: “Install pops up a windows dialog to allow adding the cert.”
+  * [Tim Knip](https://github.com/timknip) for confirming that [the module works with 64-bit Windows](https://github.com/indie-mirror/https-server/issues/2) with the following behaviour: “Install pops up a windows dialog to allow adding the cert.” __Note: Indie Web Server is not supported on Windows. Please use Windows Subsystem for Linux.__
 
-  * [Run Rabbit Run](https://hackers.town/@nobody) for [the following information](https://hackers.town/@nobody/101670447262172957) on 64-bit Windows: “Win64: works with the windows cert install popup on server launch. Chrome and ie are ok with the site then. FF 65 still throws the cert warning even after restarting.”
+  * [Run Rabbit Run](https://hackers.town/@nobody) for [the following information](https://hackers.town/@nobody/101670447262172957) on 64-bit Windows: “Win64: works with the windows cert install popup on server launch. Chrome and ie are ok with the site then. FF 65 still throws the cert warning even after restarting.” __Note: Indie Web Server is not supported on Windows. Please use Windows Subsystem for Linux.__

@@ -246,13 +246,15 @@ class WebServer {
     })
 
     // Create the server and start listening on the requested port.
-    let server
-    try {
-      server = this.createServer({global}, app).listen(port, callback)
-    } catch (error) {
-      console.log('\nError: could not start server', error)
+    let server = this.createServer({global}, app).listen(port, callback)
+
+    server.on('error', error => {
+      console.log('\n 🤯 Error: could not start server.\n')
+      if (error.code === 'EADDRINUSE') {
+        console.log(` 💥 Port ${port} is already in use.\n`)
+      }
       throw error
-    }
+    })
 
     return server
   }
@@ -276,6 +278,7 @@ class WebServer {
 
     Object.assign(options, defaultOptions)
 
+    // Note: calling method will add the error handler.
     return https.createServer(options, requestListener)
   }
 
@@ -320,7 +323,17 @@ class WebServer {
 
     // Create an HTTP server to handle redirects for the Let’s Encrypt ACME HTTP-01 challenge method that we use.
     const httpsRedirectionMiddleware = redirectHTTPS()
+
     const httpServer = http.createServer(acmeTLS.middleware(httpsRedirectionMiddleware))
+
+    httpServer.on('error', error => {
+      console.log('\n 🤯 Error: could not start HTTP server for ACME TLS.\n')
+      if (error.code === 'EADDRINUSE') {
+        console.log(` 💥 Port 80 is already in use.\n`)
+      }
+      throw error
+    })
+
     httpServer.listen(80, () => {
       console.log(' 👉 [Indie Web Server] HTTP → HTTPS redirection active.')
     })
@@ -329,6 +342,7 @@ class WebServer {
     Object.assign(options, acmeTLS.tlsOptions)
 
     // Create and return the HTTPS server.
+    // Note: calling method will add the error handler.
     return https.createServer(options, requestListener)
   }
 
