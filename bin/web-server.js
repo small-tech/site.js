@@ -155,23 +155,17 @@ switch (true) {
     }
 
     //
-    // Launch as a reverse proxy (local mode), startup daemon, or regular process?
+    // What kind of server should we start?
     //
     if (isProxy) {
+      // Start a local proxy.
       require('./commands/proxy')(pathToServe, port)
     } else if (command.isEnable) {
+      // Enable server as startup launch daemon.
       require('./commands/enable')(pathToServe)
     } else {
-      //
       // Start a regular server process.
-      //
-      webServer.serve({
-        path: pathToServe,
-        port,
-        global
-      })
+      require('./commands/serve')(pathToServe, port, global)
     }
   break
 }
-
-
