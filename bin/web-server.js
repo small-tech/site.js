@@ -1,33 +1,32 @@
 #!/usr/bin/env node
 const fs = require('fs')
-const arguments = require('minimist')(process.argv.slice(2), {boolean: true})
+const commandLineOptions = require('minimist')(process.argv.slice(2), {boolean: true})
 
 //
 // Get the command.
 //
-const positionalArguments = arguments._
-const firstPositionalArgument = positionalArguments[0]
-const secondPositionalArgument = positionalArguments[1]
+const positionalArguments = commandLineOptions._
+const positionalCommand = positionalArguments[0]
 
 const command = {
-  isHelp: (arguments.h || arguments.help || positionalArguments.length > 2 || firstPositionalArgument === 'help'),
-  isVersion: (arguments.version || arguments.v || firstPositionalArgument === 'version'),
-  isGlobal: (arguments.global || firstPositionalArgument === 'global'),
-  isProxy: (arguments.proxy || firstPositionalArgument === 'proxy'),
-  isEnable: (arguments.enable || firstPositionalArgument === 'enable'),
-  isDisable: (arguments.disable || firstPositionalArgument === 'disable'),
-  isLogs: (arguments.logs || firstPositionalArgument === 'logs'),
-  isStatus: (arguments.status || firstPositionalArgument === 'status'),
+  isHelp: (commandLineOptions.h || commandLineOptions.help || positionalArguments.length > 2 || positionalCommand === 'help'),
+  isVersion: (commandLineOptions.version || commandLineOptions.v || positionalCommand === 'version'),
+  isGlobal: (commandLineOptions.global || positionalCommand === 'global'),
+  isProxy: (commandLineOptions.proxy || positionalCommand === 'proxy'),
+  isEnable: (commandLineOptions.enable || positionalCommand === 'enable'),
+  isDisable: (commandLineOptions.disable || positionalCommand === 'disable'),
+  isLogs: (commandLineOptions.logs || positionalCommand === 'logs'),
+  isStatus: (commandLineOptions.status || positionalCommand === 'status'),
 //isLocal: is handled below.
 }
 
 // If we didn’t match a command, we default to local.
 const didMatchCommand = Object.values(command).reduce((p,n) => p || n)
-command.isLocal = (arguments.local || firstPositionalArgument === 'local' || !didMatchCommand)
+command.isLocal = (commandLineOptions.local || positionalCommand === 'local' || !didMatchCommand)
 
-const firstPositionalArgumentDidMatchCommand = ['version', 'help', 'global', 'proxy', 'enable', 'disable', 'logs', 'status'].reduce((p, n) => p || (firstPositionalArgument === n), false)
+const positionalCommandDidMatchCommand = ['version', 'help', 'local', 'global', 'proxy', 'enable', 'disable', 'logs', 'status'].reduce((p, n) => p || (positionalCommand === n), false)
 
-const webServerArguments = firstPositionalArgumentDidMatchCommand ? arguments._.slice(1) : arguments._
+const webServerArguments = positionalCommandDidMatchCommand ? commandLineOptions._.slice(1) : commandLineOptions._
 
 //
 // Populate options object.
@@ -97,6 +96,13 @@ switch (true) {
 // Helpers
 //
 
+// Display a syntax error.
+function syntaxError() {
+  console.log('\n 🤯 Syntax error. Displaying help…')
+  require('./commands/help')
+}
+
+
 // Return the path to serve (for server commands) or exit the app if it doesn’t exist.
 function pathToServe () {
   const isServerCommand = command.isLocal || command.isGlobal || command.isEnable
@@ -104,6 +110,11 @@ function pathToServe () {
   // Only relevant for server commands.
   if (!isServerCommand) {
     return null
+  }
+
+  if (webServerArguments.length > 1) {
+    // Syntax error.
+    syntaxError()
   }
 
   // If no path is passed, we serve the current folder.
@@ -129,8 +140,8 @@ function pathToServe () {
 function port () {
   // If a port is specified, use it. Otherwise use the default port (443).
   let port = 443
-  if (arguments.port !== undefined) {
-    port = parseInt(arguments.port)
+  if (commandLineOptions.port !== undefined) {
+    port = parseInt(commandLineOptions.port)
   }
 
   // Check for a valid port range
@@ -149,10 +160,14 @@ function proxyPaths () {
   const proxyPaths = {httpProxyPath: null, webSocketProxyPath: null}
 
   if (command.isProxy) {
-    if (webServerArguments.length !== 1) {
+    if (webServerArguments.length < 1) {
       // A proxy path must be included.
       console.log('\n 🤯  Error: you must supply a URL to proxy. e.g., web-server proxy http://localhost:1313\n')
       process.exit(1)
+    }
+    if (webServerArguments.length > 1) {
+      // Syntax error.
+      syntaxError()
     }
     proxyPaths.httpProxyPath = webServerArguments[0]
 
