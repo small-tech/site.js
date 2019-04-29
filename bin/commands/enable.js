@@ -17,7 +17,7 @@ const clr = require('../utilities/cli').clr
 
 const webServer = require('../../index')
 
-function enable (pathToServe) {
+function enable (options) {
   //
   // Sanity checks.
   //
@@ -27,6 +27,7 @@ function enable (pathToServe) {
   //
   // Create the systemd service unit.
   //
+  const pathToServe = options.pathToServe
   const binaryExecutable = '/usr/local/bin/web-server'
   const sourceDirectory = path.resolve(__dirname, '..', '..')
   const nodeExecutable = `node ${path.join(sourceDirectory, 'bin/web-server.js')}`

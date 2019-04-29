@@ -1,21 +1,22 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Command: serve
+// Command: local
 //
-// Starts web server as a regular process.
+// Starts web server with locally-trusted TLS certificates
+// as a regular process.
 //
 //////////////////////////////////////////////////////////////////////
 
 const webServer = require('../../index')
 
-function serve (pathToServe, port, global) {
+function serve (options) {
   //
   // Start a regular server process.
   //
   webServer.serve({
-    path: pathToServe,
-    port,
-    global
+    path: options.pathToServe,
+    port: options.port,
+    global: false
   })
 }
 
