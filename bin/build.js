@@ -32,7 +32,7 @@ async function build () {
     input: 'bin/web-server.js',
     output: `${linuxVersionPath}/web-server`,
     target: 'linux-x64-10.15.3',
-    resources: ['package.json', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.3.0-linux-amd64', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.3.0-linux-arm']
+    resources: ['package.json', 'bin/commands/*', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.3.0-linux-amd64', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.3.0-linux-arm']
   })
 
   console.log('   • Building macOS version…')
@@ -41,7 +41,7 @@ async function build () {
     input: 'bin/web-server.js',
     output: `${macOSVersionPath}/web-server`,
     target: 'mac-x64-10.15.3',
-    resources: ['package.json', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.3.0-darwin-amd64']
+    resources: ['package.json', 'bin/commands/*', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.3.0-darwin-amd64']
   })
 
   //
