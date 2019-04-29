@@ -2,9 +2,6 @@
 const fs = require('fs')
 const arguments = require('minimist')(process.argv.slice(2), {boolean: true})
 
-// At this point, regardless of whether we are running as a regular Node script or
-// as a standalone executable created with Nexe, all paths should be correctly set.
-
 // Get the command
 const positionalArguments = arguments._
 const firstPositionalArgument = positionalArguments[0]

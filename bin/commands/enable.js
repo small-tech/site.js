@@ -34,6 +34,10 @@ function enable (pathToServe) {
 
   const absolutePathToServe = path.resolve(pathToServe)
 
+  // Expectation: At this point, regardless of whether we are running as a regular
+  // Node script or as a standalone executable created with Nexe, all paths should
+  // be set correctly.
+
   // Get the regular account name (i.e, the unprivileged account that is
   // running the current process via sudo).
   const accountUID = parseInt(process.env.SUDO_UID)
