@@ -162,7 +162,7 @@ function proxyPaths () {
   if (command.isProxy) {
     if (webServerArguments.length < 1) {
       // A proxy path must be included.
-      console.log('\n 🤯  Error: you must supply a URL to proxy. e.g., web-server proxy http://localhost:1313\n')
+      console.log('\n 🤯 Error: you must supply a URL to proxy. e.g., web-server proxy http://localhost:1313\n')
       process.exit(1)
     }
     if (webServerArguments.length > 1) {
@@ -173,7 +173,7 @@ function proxyPaths () {
 
     if (proxyPaths.httpProxyPath.startsWith('https://')) {
       // Cannot proxy HTTPS.
-      console.log('\n 🤯  Error: cannot proxy HTTPS.\n')
+      console.log('\n 🤯 Error: cannot proxy HTTPS.\n')
       process.exit(1)
     }
 

@@ -83,6 +83,15 @@ function proxy (options) {
     // (See https://github.com/chimurai/http-proxy-middleware#external-websocket-upgrade)
     server.on('upgrade', webSocketProxy.upgrade)
   })
+
+  server.on('error', error => {
+    console.log('\n 🤯 Error: could not start proxy server.\n')
+    if (error.code === 'EADDRINUSE') {
+      console.log(` 💥 Port ${port} is already in use.\n`)
+    }
+    throw error
+  })
+
 }
 
 module.exports = proxy
