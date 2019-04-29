@@ -18,6 +18,7 @@ function help () {
   const usageHelp = `${clr('help', 'green')}`
   const usageLocal = `${clr('local', 'green')}`
   const usageGlobal = `${clr('global', 'green')}`
+  const usageProxy = `${clr('proxy', 'green')}`
   const usageEnable = `${clr('enable', 'green')}`
   const usageDisable = `${clr('disable', 'green')}`
   const usageLogs = `${clr('logs', 'green')}`
@@ -31,7 +32,7 @@ function help () {
 
   ${clr('web-server', 'bold')} [${usageCommand}] [${usageFolderToServe}] [${usageOptions}]
 
-  ${usageCommand}\t${usageVersion} | ${usageHelp} | ${usageLocal} | ${usageGlobal} | ${usageEnable} | ${usageDisable} | ${usageLogs} | ${usageStatus}
+  ${usageCommand}\t${usageVersion} | ${usageHelp} | ${usageLocal} | ${usageGlobal} | ${usageProxy} | ${usageEnable} | ${usageDisable} | ${usageLogs} | ${usageStatus}
   ${usageFolderToServe}\tPath of folder to serve (defaults to current folder) or HTTP URL to reverse proxy.
   ${usageOptions}\tSettings that alter server characteristics.
 
@@ -42,6 +43,7 @@ function help () {
 
   ${usageLocal}\t\tStart server as regular process with locally-trusted certificates.
   ${usageGlobal}\tStart server as regular process with globally-trusted certificates.
+  ${usageProxy}\t\tStart server to proxy provided HTTP URL via HTTPS. Also proxies WebSockets.
 
   On Linux distributions with systemd, you can also use:
 

@@ -44,13 +44,18 @@ Start serving the current directory at https://localhost as a regular process us
 $ web-server
 ```
 
+### Proxy server (local)
+
 You can also use Indie Web Server as a development-time reverse proxy for HTTP and WebSocket connections. For example, if you use [Hugo](https://gohugo.io/) and you’re running `hugo server` on the default HTTP port 1313. You can run a HTTPS reverse proxy at https://localhost [with LiveReload support](https://source.ind.ie/hypha/tools/web-server/blob/master/bin/web-server.js#L237) using:
 
 ```shell
-$ web-server http://localhost:1313
+$ web-server proxy localhost:1313
 ```
 
-The reverse proxy feature is currently not available for use with the `global` or `enable` features.
+This will create and serve the following proxies:
+
+  * http://localhost:1313 → https://localhost
+  * ws://localhost:1313 → wss://localhost
 
 ### Global (ephemeral)
 
@@ -62,7 +67,7 @@ Start serving the _site_ directory at your _hostname_ as a regular process using
 $ web-server global site
 ```
 
-For example, use [ngrok](https://ngrok.com/) (Pro+) with a custom domain name that you set in your `hostname` file (e.g., in `/etc/hostname` or via `hostnamectl set-hostname <hostname>` or the equivalent for your platform). The first time you hit your server via your hostname it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
+Then use, for example, [ngrok](https://ngrok.com/) (Pro+) to point a custom domain name to your temporary staging server. Make sure you set your `hostname` file (e.g., in `/etc/hostname` or via `hostnamectl set-hostname <hostname>` or the equivalent for your platform) to match your domain name. The first time you hit your server via your hostname it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
 
 When you start your server using the `global` command, it will run as a regular process. It will not be restarted if it crashes or if you exit the foreground process or restart the computer.
 
@@ -75,7 +80,7 @@ __Available on Linux distributions with systemd (most Linux distributions, but [
 Start serving the _site_ directory at your _hostname_ as a daemon that is automatically run at system startup and restarted if it crashes:
 
 ```shell
-$ sudo web-server enable site
+$ web-server enable site
 ```
 
 The `enable` command sets up your server to start automatically when your server starts and restart automatically if it crashes. Requires superuser privileges on first run to set up the launch item.
@@ -131,14 +136,14 @@ npm test
 npm run build
 
 # Serve the test site (visit https://localhost to view).
-# e.g., To run the version 8.0.0 Linux binary:
-dist/linux/8.0.0/web-server test/site
+# e.g., To run the version 9.0.0 Linux binary:
+dist/linux/9.0.0/web-server test/site
 ```
 
 ## Syntax
 
 ```shell
-web-server [command] [folder] [options]
+web-server [command] [folder|url] [options]
 ```
 
   * `command`: version | help | dev | test | enable | disable | logs | status

@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - Nothing yet.
 
+## [9.0.0] - 2019-04-29
+
+### Changed
+
+  - You must specify the proxy command explicitly (breaking change). Will no longer automatically start in proxy mode when a http URL is provided instead of a path to serve.
+  - Refactored the command-line app to aid in maintainability (internal change).
+
 ## [8.2.0] - 2019-04-20
 
 ### Added
