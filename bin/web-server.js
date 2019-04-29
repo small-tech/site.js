@@ -8,23 +8,8 @@ const webServer = require('../index.js')
 const childProcess = require('child_process')
 const arguments = require('minimist')(process.argv.slice(2), {boolean: true})
 
-// //
-// // When run as a regular Node script, the source directory is our parent
-// // directory (web-server.js resides in the <sourceDirectory>/bin directory).
-// // However, when run as a standalone executable using Nexe, we currently have
-// // to bundle the source code in the executable and copy it from the virtual
-// // filesystem of the binary to the external file system in order to run the
-// // pm2 process manager using execSync.
-// //
-// // For more information, please see the following issues in the Nexe repo:
-// //
-// // https://github.com/nexe/nexe/issues/605
-// // https://github.com/nexe/nexe/issues/607
-// //
-const runtime = {
-  isNode: process.argv0 === 'node',
-  isBinary: process.argv0 === 'web-server'
-}
+const runtime = require('./utilities/runtime')
+const ensure = require('./utilities/ensure.js')
 
 let sourceDirectory = path.resolve(__dirname, '..')
 
@@ -117,7 +102,7 @@ switch (true) {
 
   // Logs (proxy: journalctl --follow --unit web-server)
   case command.isLogs:
-    ensureJournalctl()
+    ensure.journalctl()
 
     console.log(`\n 📜 Tailing logs (press Ctrl+C to exit).\n`)
 
@@ -126,7 +111,7 @@ switch (true) {
 
   // Status (proxy: systemctl status web-server)
   case command.isStatus:
-    ensureSystemctl()
+    ensure.systemctl()
 
     let isActive
     try {
@@ -154,8 +139,8 @@ switch (true) {
 
   // Off (turn off the server daemon and remove it from startup items).
   case command.isDisable:
-    ensureSystemctl()
-    ensureRoot('disable')
+    ensure.systemctl()
+    ensure.root('disable')
     try {
       childProcess.execSync('sudo systemctl disable web-server', {env: process.env, stdio: 'pipe'})
       childProcess.execSync('sudo systemctl stop web-server', {env: process.env, stdio: 'pipe'})
@@ -297,8 +282,8 @@ switch (true) {
       // Launch as startup daemon.
       //
 
-      ensureSystemctl()
-      ensureRoot('enable')
+      ensure.systemctl()
+      ensure.root('enable')
 
       //
       // Create the systemd service unit.
@@ -387,36 +372,3 @@ function clr (text, color) {
   return process.stdout.isTTY ? ansi.format(text, color) : text
 }
 
-// Ensure we have root privileges and exit if we don’t.
-function ensureRoot (commandName) {
-  if (process.getuid() !== 0) {
-    // Requires root but wasn’t run with sudo. Automatically restart using sudo.
-    const options = {env: process.env, stdio: 'inherit'}
-    if (runtime.isNode) {
-      childProcess.execSync(`sudo node ${path.join(__dirname, 'web-server.js')} ${process.argv.slice(2).join(' ')}`, options)
-    } else {
-      childProcess.execSync(`sudo web-server ${process.argv.slice(2).join(' ')}`, options)
-    }
-    process.exit(0)
-  }
-}
-
-// Ensure systemctl exists.
-function ensureSystemctl () {
-  try {
-    childProcess.execSync('which systemctl', {env: process.env})
-  } catch (error) {
-    console.error('\n 👿 Sorry, daemons are only supported on Linux systems with systemd (systemctl required).\n')
-    process.exit(1)
-  }
-}
-
-// Ensure systemctl exists.
-function ensureJournalctl () {
-  try {
-    childProcess.execSync('which journalctl', {env: process.env})
-  } catch (error) {
-    console.error('\n 👿 Sorry, daemons are only supported on Linux systems with systemd (journalctl required).\n')
-    process.exit(1)
-  }
-}
