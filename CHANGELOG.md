@@ -15,6 +15,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - You must specify the proxy command explicitly (breaking change). Will no longer automatically start in proxy mode when a http URL is provided instead of a path to serve.
   - Refactored the command-line app to aid in maintainability (internal change).
 
+### Removed
+
+  - Support for use under Windows. If you’re running Windows, please use Windows Subsystem for Linux to run Indie Web Server.
+
 ## [8.2.0] - 2019-04-20
 
 ### Added

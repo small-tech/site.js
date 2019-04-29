@@ -2,7 +2,7 @@
 
 ![Screenshot of Indie Web Server in use](images/indie-web-server-8.0.0.jpeg)
 
-__Indie Web Server is a secure and seamless [Small Tech](https://ar.al/2019/03/04/small-technology/) personal web server.__
+__Indie Web Server is a secure and seamless [Small Tech](https://ar.al/2019/03/04/small-technology/) personal web server for Linux and Linux-like* operating systems.__
 
   - Zero-configuration – It Just Works 🤞™.
 
@@ -12,13 +12,13 @@ __Indie Web Server is a secure and seamless [Small Tech](https://ar.al/2019/03/0
 
   <ins>Note:</ins> Live deployments via startup daemons are only supported on Linux distributions with systemd.
 
+  \* Works with Linux, macOS, and Windows Subsystem for Linux.
+
 ## Install
 
 Copy and paste the following commands into your terminal:
 
-### Linux and macOS
-
-Install the native binaries:
+### Native binaries
 
 __Before you pipe any script into your computer, always [view the source code](https://ind.ie/web-server/install.sh) and make sure you understand what it does.__
 
@@ -31,8 +31,6 @@ wget -qO- https://ind.ie/web-server/install.sh | bash
 ```sh
 npm i -g @ind.ie/web-server
 ```
-
-There is currently no native binary support for Windows. Please use the npm installation method on that platform.
 
 ## Use
 
@@ -59,8 +57,6 @@ This will create and serve the following proxies:
 
 ### Global (ephemeral)
 
-__Available on Linux and macOS only*__
-
 Start serving the _site_ directory at your _hostname_ as a regular process using globally-trusted Let’s Encrypt certificates:
 
 ```shell
@@ -71,11 +67,9 @@ Then use, for example, [ngrok](https://ngrok.com/) (Pro+) to point a custom doma
 
 When you start your server using the `global` command, it will run as a regular process. It will not be restarted if it crashes or if you exit the foreground process or restart the computer.
 
-\* Automatic hostname detection has not been implemented for Windows and so globally-trusted certificates will fail on that platform.
-
 ### Global (persistent)
 
-__Available on Linux distributions with systemd (most Linux distributions, but [not these ones](https://sysdfree.wordpress.com/2019/03/09/135/) or on macOS/Windows).__
+__Available on Linux distributions with systemd (most Linux distributions, but [not these ones](https://sysdfree.wordpress.com/2019/03/09/135/) or on macOS).__
 
 Start serving the _site_ directory at your _hostname_ as a daemon that is automatically run at system startup and restarted if it crashes:
 
@@ -304,6 +298,6 @@ Please [let me know how/if it works](https://github.com/indie-mirror/web-server/
 
   * [thagoat](https://github.com/thagoat) for confirming that [installation works on Arch Linux with Pacman](https://github.com/indie-mirror/https-server/issues/1).
 
-  * [Tim Knip](https://github.com/timknip) for confirming that [the module works with 64-bit Windows](https://github.com/indie-mirror/https-server/issues/2) with the following behaviour: “Install pops up a windows dialog to allow adding the cert.”
+  * [Tim Knip](https://github.com/timknip) for confirming that [the module works with 64-bit Windows](https://github.com/indie-mirror/https-server/issues/2) with the following behaviour: “Install pops up a windows dialog to allow adding the cert.” __Note: Indie Web Server is not supported on Windows. Please use Windows Subsystem for Linux.__
 
-  * [Run Rabbit Run](https://hackers.town/@nobody) for [the following information](https://hackers.town/@nobody/101670447262172957) on 64-bit Windows: “Win64: works with the windows cert install popup on server launch. Chrome and ie are ok with the site then. FF 65 still throws the cert warning even after restarting.”
+  * [Run Rabbit Run](https://hackers.town/@nobody) for [the following information](https://hackers.town/@nobody/101670447262172957) on 64-bit Windows: “Win64: works with the windows cert install popup on server launch. Chrome and ie are ok with the site then. FF 65 still throws the cert warning even after restarting.” __Note: Indie Web Server is not supported on Windows. Please use Windows Subsystem for Linux.__
