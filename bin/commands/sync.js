@@ -20,6 +20,8 @@
 const localServer = require('./local')
 const daemon = require('./enable')
 
+const RsyncWatcher = require('../lib/RsyncWatcher')
+
 function sync (options) {
   if (options.syncIsServer) {
     //
@@ -31,10 +33,42 @@ function sync (options) {
     // Sync client.
     //
 
+    //
     // Start rsync watcher.
-    // Launch local server.
+    //
     options.pathToServe = (options.syncFolder === null) ? '.' : options.syncFolder
     console.log(`Starting rsync watcher. Folder: ${options.pathToServe} ←→ domain: ${options.syncDomain} [TODO]`)
+
+    let fromPath = options.pathToServe
+    if (!fromPath.endsWith('/')) {fromPath = `${fromPath}/`}
+
+    console.log('fromPath', fromPath)
+
+    // TODO: Remove: Hardcoded config.
+    const rsyncOptions = {
+      "live.ar.al": {
+        "from": fromPath,
+        "to": "ubuntu@ar.al:/home/ubuntu/site",
+        "exclude": [
+          ".DS_Store",
+          ".dat/*"
+        ],
+        "rsyncOptions": {
+          "archive": null,
+          "chmod": "755",
+          "verbose": null,
+          "human-readable": null,
+          "delete": null,
+          "partial": null,
+          "progress": null
+        }
+      }
+    }
+
+    // Create the rsync watcher.
+    new RsyncWatcher(rsyncOptions)
+
+    // Launch local server.
     localServer(options)
   }
 }
