@@ -253,7 +253,7 @@ class WebServer {
       if (error.code === 'EADDRINUSE') {
         console.log(` 💥 Port ${port} is already in use.\n`)
       }
-      throw error
+      server.emit('indie-web-server-address-already-in-use')
     })
 
     return server
@@ -331,7 +331,11 @@ class WebServer {
       if (error.code === 'EADDRINUSE') {
         console.log(` 💥 Port 80 is already in use.\n`)
       }
-      throw error
+      // We emit this on the httpsServer that is returned so that the calling
+      // party can listen for the event on the returned server instance. (We do
+      // not return the httpServer instance and hence there is no purpose in
+      // emitting the event on that server.)
+      httpsServer.emit('indie-web-server-address-already-in-use')
     })
 
     httpServer.listen(80, () => {
@@ -343,7 +347,8 @@ class WebServer {
 
     // Create and return the HTTPS server.
     // Note: calling method will add the error handler.
-    return https.createServer(options, requestListener)
+    const httpsServer = https.createServer(options, requestListener)
+    return httpsServer
   }
 
 

@@ -13,10 +13,16 @@ function serve (options) {
   //
   // Start a regular server process.
   //
-  webServer.serve({
+  const server = webServer.serve({
     path: options.pathToServe,
     port: options.port,
     global: true
+  })
+
+  // Exit on known errors as we have already logged them to console.
+  // (Otherwise, the stack trace will be output for debugging purposes.)
+  server.on('indie-web-server-address-already-in-use', () => {
+    process.exit(1)
   })
 }
 
