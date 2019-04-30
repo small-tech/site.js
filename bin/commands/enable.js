@@ -22,7 +22,8 @@ function enable (options) {
   // Sanity checks.
   //
   ensure.systemctl()
-  ensure.root('enable')
+  ensure.serverDaemonNotActive()
+  ensure.root()
 
   //
   // Create the systemd service unit.

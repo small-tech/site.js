@@ -8,10 +8,13 @@
 const childProcess = require('child_process')
 const path = require('path')
 const runtime = require('./runtime')
+const getStatus = require('./status')
+
+const clr = require('../lib/cli').clr
 
 class Ensure {
   // Ensure we have root privileges and exit if we don’t.
-  root (commandName) {
+  root () {
     if (process.getuid() !== 0) {
       // Requires root but wasn’t run with sudo. Automatically restart using sudo.
       const options = {env: process.env, stdio: 'inherit'}
@@ -40,6 +43,20 @@ class Ensure {
       childProcess.execSync('which journalctl', {env: process.env})
     } catch (error) {
       console.error('\n 👿 Sorry, daemons are only supported on Linux systems with systemd (journalctl required).\n')
+      process.exit(1)
+    }
+  }
+
+  // Ensures that the server daemon is not currently active.
+  serverDaemonNotActive () {
+    // Ensure systemctl exists as it is required for getStatus().
+    // We cannot check in the function itself as it would create
+    // a circular dependency.
+    this.systemctl()
+    const { isActive } = getStatus()
+
+    if (isActive) {
+      console.error(`\n 👿 Indie Web Server Daemon is already running.\n\n    ${clr('Please stop it first with the command:', 'yellow')} web-server ${clr('disable', 'green')}\n`)
       process.exit(1)
     }
   }

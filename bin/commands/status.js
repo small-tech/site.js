@@ -10,8 +10,13 @@
 
 const getStatus = require('../lib/status')
 const clr = require('../lib/cli').clr
+const ensure = require('../lib/ensure')
 
 function status () {
+  // Ensure systemctl exists as it is required for getStatus().
+  // We cannot check in the function itself as it would create
+  // a circular dependency.
+  ensure.systemctl()
   const { isActive, isEnabled } = getStatus()
 
   const activeState = isActive ? clr('active', 'green') : clr('inactive', 'red')

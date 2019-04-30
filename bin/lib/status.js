@@ -9,10 +9,8 @@
 //////////////////////////////////////////////////////////////////////
 
 const childProcess = require('child_process')
-const ensure = require('./ensure')
 
 function status () {
-  ensure.systemctl()
 
   let isActive
   try {
