@@ -6,7 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
-  - Nothing yet.
+### Changed
+
+  - Do not throw after handling a port conflict error when creating a proxy server.
 
 ## [9.1.0] - 2019-04-30
 
