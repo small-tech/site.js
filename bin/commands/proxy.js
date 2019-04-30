@@ -88,7 +88,9 @@ function proxy (options) {
     console.log('\n 🤯 Error: could not start proxy server.\n')
     if (error.code === 'EADDRINUSE') {
       console.log(` 💥 Port ${port} is already in use.\n`)
+      process.exit(1)
     }
+    // Unexpected error, throw it.
     throw error
   })
 }
