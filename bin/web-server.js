@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const fs = require('fs')
+const path = require('path')
 const commandLineOptions = require('minimist')(process.argv.slice(2), {boolean: true})
 
 //
@@ -9,10 +10,11 @@ const positionalArguments = commandLineOptions._
 const positionalCommand = positionalArguments[0]
 
 const command = {
-  isHelp: (commandLineOptions.h || commandLineOptions.help || positionalArguments.length > 2 || positionalCommand === 'help'),
+  isHelp: (commandLineOptions.h || commandLineOptions.help || positionalCommand === 'help'),
   isVersion: (commandLineOptions.version || commandLineOptions.v || positionalCommand === 'version'),
   isGlobal: (commandLineOptions.global || positionalCommand === 'global'),
   isProxy: (commandLineOptions.proxy || positionalCommand === 'proxy'),
+  isSync: (commandLineOptions.sync || positionalCommand === 'sync'),
   isEnable: (commandLineOptions.enable || positionalCommand === 'enable'),
   isDisable: (commandLineOptions.disable || positionalCommand === 'disable'),
   isLogs: (commandLineOptions.logs || positionalCommand === 'logs'),
@@ -24,7 +26,7 @@ const command = {
 const didMatchCommand = Object.values(command).reduce((p,n) => p || n)
 command.isLocal = (commandLineOptions.local || positionalCommand === 'local' || !didMatchCommand)
 
-const positionalCommandDidMatchCommand = ['version', 'help', 'local', 'global', 'proxy', 'enable', 'disable', 'logs', 'status'].reduce((p, n) => p || (positionalCommand === n), false)
+const positionalCommandDidMatchCommand = ['version', 'help', 'local', 'global', 'proxy', 'sync', 'enable', 'disable', 'logs', 'status'].reduce((p, n) => p || (positionalCommand === n), false)
 
 const webServerArguments = positionalCommandDidMatchCommand ? commandLineOptions._.slice(1) : commandLineOptions._
 
@@ -36,7 +38,8 @@ const options = {
   pathToServe: pathToServe(),
   port: port()
 }
-Object.assign(options, proxyPaths())
+Object.assign(options, proxyOptions())
+Object.assign(options, syncOptions())
 
 //
 // Execute requested command.
@@ -65,9 +68,10 @@ if (requirement === null) {
 //
 
 // Display a syntax error.
-function syntaxError() {
-  console.log('\n 🤯 Syntax error. Displaying help…')
-  require('./commands/help')
+function syntaxError(message = null) {
+  const additionalMessage = message === null ? '' : ` (${message})`
+  console.log(`\n 🤯 Syntax error${additionalMessage}. Displaying help…`)
+  require('./commands/help')()
 }
 
 
@@ -124,8 +128,8 @@ function port () {
 
 
 // If the server type is proxy, return the proxy URL (and exit with an error if one is not provided).
-function proxyPaths () {
-  const proxyPaths = {httpProxyPath: null, webSocketProxyPath: null}
+function proxyOptions () {
+  const proxyOptions = {proxyHttpURL: null, proxyWebSocketURL: null}
 
   if (command.isProxy) {
     if (webServerArguments.length < 1) {
@@ -137,20 +141,79 @@ function proxyPaths () {
       // Syntax error.
       syntaxError()
     }
-    proxyPaths.httpProxyPath = webServerArguments[0]
+    proxyOptions.proxyHttpURL = webServerArguments[0]
 
-    if (proxyPaths.httpProxyPath.startsWith('https://')) {
+    if (proxyOptions.proxyHttpURL.startsWith('https://')) {
       // Cannot proxy HTTPS.
       console.log('\n 🤯 Error: cannot proxy HTTPS.\n')
       process.exit(1)
     }
 
-    if (!proxyPaths.httpProxyPath.startsWith('http://')) {
-      proxyPaths.httpProxyPath = `http://${proxyPaths.httpProxyPath}`
+    if (!proxyOptions.proxyHttpURL.startsWith('http://')) {
+      proxyOptions.proxyHttpURL = `http://${proxyOptions.proxyHttpURL}`
     }
 
-    proxyPaths.webSocketProxyPath = proxyPaths.httpProxyPath.replace('http://', 'ws://')
+    proxyOptions.proxyWebSocketURL = proxyOptions.proxyHttpURL.replace('http://', 'ws://')
   }
 
-  return proxyPaths
+  return proxyOptions
+}
+
+// Return the sync options object (if relevant).
+function syncOptions () {
+  const syncOptions = { syncDomain: null, syncFolder: null, syncIsServer: null }
+
+  //
+  // Syntax:
+  //
+  //  1. web-server sync
+  //  2. web-server sync [folder|domain]
+  //  3. web-server sync [folder] [domain]
+  //
+
+  console.log('webServerArguments', webServerArguments)
+
+  if (command.isSync) {
+
+    if (webServerArguments.length === 0) {
+      //
+      // 1. No arguments provided (i.e., called as web-server sync).
+      // Meaning: start a web server daemon with sync on the current folder.
+      //
+      syncOptions.syncIsServer = true
+    } else if (webServerArguments.length === 1) {
+      //
+      // 2. One argument is provided: it could be a folder or a domain.
+      //
+      const folderOrDomain = webServerArguments[0]
+
+      if (fs.existsSync(folderOrDomain)) {
+        //
+        // 2-a. This is a valid path, we interpret it as the folder to serve and
+        //      flag that we should start a web server daemon with sync.
+        //
+        syncOptions.syncIsServer = true
+        syncOptions.syncFolder = folderOrDomain
+      } else {
+        //
+        // 2-b. This isn’t a valid path, we interpret it as a domain and flag that
+        // we should start a local web server process with sync.
+        //
+        syncOptions.syncIsServer = false
+        syncOptions.syncDomain = folderOrDomain
+      }
+    } else if (webServerArguments.length === 2) {
+      // 3. Two arguments provided. We interpret the first as the path of the
+      // folder to serve and the second as the domain and flag that we should
+      // start a local web server process with sync.
+      syncOptions.syncIsServer = false
+      syncOptions.syncFolder = webServerArguments[0]
+      syncOptions.syncDomain = webServerArguments[1]
+    } else {
+      // Syntax error: too many arguments.
+      syntaxError('too many arguments')
+    }
+  }
+
+  return syncOptions
 }

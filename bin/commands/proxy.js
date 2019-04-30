@@ -12,7 +12,7 @@ const webServer = require('../../index')
 
 function proxy (options) {
 
-  const {httpProxyPath, webSocketProxyPath, port} = options
+  const {proxyHttpURL, proxyWebSocketURL, port} = options
 
   const app = express()
 
@@ -21,7 +21,7 @@ function proxy (options) {
   webServer.ensureWeCanBindToPort(port)
 
   const server = webServer.createServer({}, app).listen(port, () => {
-    console.log(`\n 🚚 [Indie Web Server] Proxying: HTTPS/WSS on localhost:${port} ←→ HTTP/WS on ${httpProxyPath.replace('http://', '')}\n`)
+    console.log(`\n 🚚 [Indie Web Server] Proxying: HTTPS/WSS on localhost:${port} ←→ HTTP/WS on ${proxyHttpURL.replace('http://', '')}\n`)
 
     function prettyLog (message) {
       console.log(` 🔁 ${message}`)
@@ -32,7 +32,7 @@ function proxy (options) {
     }
 
     const webSocketProxy = httpProxyMiddleware({
-      target: webSocketProxyPath,
+      target: proxyWebSocketURL,
       ws: true,
       changeOrigin:false,
       logProvider,
@@ -40,7 +40,7 @@ function proxy (options) {
     })
 
     const httpsProxy = httpProxyMiddleware({
-      target: httpProxyPath,
+      target: proxyHttpURL,
       changeOrigin: true,
       logProvider,
       logLevel: 'info',
