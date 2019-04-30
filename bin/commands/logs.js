@@ -9,7 +9,7 @@
 //////////////////////////////////////////////////////////////////////
 
 const childProcess = require('child_process')
-const ensure = require('../utilities/ensure')
+const ensure = require('../lib/ensure')
 
 function logs () {
   ensure.journalctl()

@@ -5,7 +5,7 @@ const path = require('path')
 const os = require('os')
 const childProcess = require('child_process')
 
-const ansi = require('ansi-escape-sequences')
+const clr = require('./bin/lib/cli').clr
 
 const express = require('express')
 const helmet = require('helmet')
@@ -253,7 +253,7 @@ class WebServer {
       if (error.code === 'EADDRINUSE') {
         console.log(` 💥 Port ${port} is already in use.\n`)
       }
-      throw error
+      server.emit('indie-web-server-address-already-in-use')
     })
 
     return server
@@ -331,7 +331,11 @@ class WebServer {
       if (error.code === 'EADDRINUSE') {
         console.log(` 💥 Port 80 is already in use.\n`)
       }
-      throw error
+      // We emit this on the httpsServer that is returned so that the calling
+      // party can listen for the event on the returned server instance. (We do
+      // not return the httpServer instance and hence there is no purpose in
+      // emitting the event on that server.)
+      httpsServer.emit('indie-web-server-address-already-in-use')
     })
 
     httpServer.listen(80, () => {
@@ -343,7 +347,8 @@ class WebServer {
 
     // Create and return the HTTPS server.
     // Note: calling method will add the error handler.
-    return https.createServer(options, requestListener)
+    const httpsServer = https.createServer(options, requestListener)
+    return httpsServer
   }
 
 
@@ -385,12 +390,3 @@ class WebServer {
 
 module.exports = new WebServer()
 
-//
-// Helpers.
-//
-
-// Format ansi strings.
-// Courtesy Bankai (https://github.com/choojs/bankai/blob/master/bin.js#L142)
-function clr (text, color) {
-  return process.stdout.isTTY ? ansi.format(text, color) : text
-}
