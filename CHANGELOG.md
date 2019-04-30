@@ -8,11 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - Nothing yet.
 
-## [9.0.1] - 2019-04-30
+## [9.1.0] - 2019-04-30
 
-### Fixed
+### Added
 
-  - Detects already enabled and running server and alerts you instead of silently appearing to have succeeded while continuing to serve the existing site.
+  - Better error handling.
 
 ## [9.0.0] - 2019-04-29
 
