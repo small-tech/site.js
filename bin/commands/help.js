@@ -9,56 +9,90 @@
 const webServer = require('../../index')
 const clr = require('../lib/cli').clr
 
+const GREEN = 'green'
+const YELLOW = 'yellow'
+const CYAN = 'cyan'
+
+function command(name) { return clr(name, 'green') }
+function argument(name) { return clr(name, CYAN) }
+function option(name) { return clr(name, YELLOW) }
+function heading(title) { return clr(title, 'underline') }
+function emphasised(text) { return clr(text, 'italic') }
+
 function help () {
-  const usageCommand = `${clr('command', 'green')}`
-  const usageFolderToServe = `${clr('folder', 'cyan')}${clr('|url', 'darkgrey')}`
-  const usageOptions = clr('options', 'yellow')
+  const usageCommand = command('command')
+  const usageFolderOrHost = `${argument('folder')}${clr('|host', 'darkgrey')}`
+  const usageHost = argument('host')
+  const usageOptions = option('options')
 
-  const usageVersion = `${clr('version', 'green')}`
-  const usageHelp = `${clr('help', 'green')}`
-  const usageLocal = `${clr('local', 'green')}`
-  const usageGlobal = `${clr('global', 'green')}`
-  const usageProxy = `${clr('proxy', 'green')}`
-  const usageEnable = `${clr('enable', 'green')}`
-  const usageDisable = `${clr('disable', 'green')}`
-  const usageLogs = `${clr('logs', 'green')}`
-  const usageStatus = `${clr('status', 'green')}`
+  const commandVersion = command('version')
+  const commandHelp = command('help')
+  const commandLocal = command('local')
+  const commandGlobal = command('global')
+  const commandProxy = command('proxy')
+  const commandSync = command('sync')
+  const commandEnable = command('enable')
+  const commandDisable = command('disable')
+  const commandLogs = command('logs')
+  const commandStatus = command('status')
 
-  const usagePort = `${clr('--port', 'yellow')}=${clr('N', 'cyan')}`
+  const optionPort = `${option('--port')}=${argument('N')}`
+
+  const prompt = clr('⯈', 'yellow')
 
   const usage = `
    ${webServer.version()}
-  ${clr('Usage:', 'underline')}
+    ${heading('Usage:')}
 
-  ${clr('web-server', 'bold')} [${usageCommand}] [${usageFolderToServe}] [${usageOptions}]
+    ${clr('web-server', 'bold')} [${usageCommand}] [${usageFolderOrHost}] [${usageHost}] [${usageOptions}]
 
-  ${usageCommand}\t${usageVersion} | ${usageHelp} | ${usageLocal} | ${usageGlobal} | ${usageProxy} | ${usageEnable} | ${usageDisable} | ${usageLogs} | ${usageStatus}
-  ${usageFolderToServe}\tPath of folder to serve (defaults to current folder) or HTTP URL to reverse proxy.
-  ${usageOptions}\tSettings that alter server characteristics.
+    ${usageCommand}\t${commandVersion} | ${commandHelp} | ${commandLocal} | ${commandGlobal} | ${commandProxy} | ${commandSync} | ${commandEnable} | ${commandDisable} | ${commandLogs} | ${commandStatus}
+    ${usageFolderOrHost}\tPath of folder to serve (defaults to current folder) or host to proxy or sync.
+    ${usageHost}\tHost to sync.
+    ${usageOptions}\tSettings that alter server characteristics.
 
-  ${clr('Commands:', 'underline')}
+    ${heading('Commands:')}
 
-  ${usageVersion}\tDisplay version and exit.
-  ${usageHelp}\t\tDisplay this help screen and exit.
+    ${commandVersion}\tDisplay version and exit.
+    ${commandHelp}\tDisplay this help screen and exit.
 
-  ${usageLocal}\t\tStart server as regular process with locally-trusted certificates.
-  ${usageGlobal}\tStart server as regular process with globally-trusted certificates.
-  ${usageProxy}\t\tStart server to proxy provided HTTP URL via HTTPS. Also proxies WebSockets.
+    ${commandLocal}\tStart server as regular process with locally-trusted certificates.
+    ${commandGlobal}\tStart server as regular process with globally-trusted certificates.
+    ${commandProxy}\tStart server to proxy provided HTTP URL via HTTPS. Also proxies WebSockets.
 
-  On Linux distributions with systemd, you can also use:
+    On Linux distributions with systemd, you can also use:
 
-  ${usageEnable}\tStart server as daemon with globally-trusted certificates and add to startup.
-  ${usageDisable}\tStop server daemon and remove from startup.
-  ${usageLogs}\t\tDisplay and tail server logs.
-  ${usageStatus}\tDisplay detailed server information.
+    ${commandEnable}\tStart server as daemon with globally-trusted certificates and add to startup.
+    ${commandDisable}\tStop server daemon and remove from startup.
+    ${commandLogs}\tDisplay and tail server logs.
+    ${commandStatus}\tDisplay detailed server information.
 
-  If ${usageCommand} is omitted, behaviour defaults to ${usageLocal}.
+    If ${usageCommand} is omitted, behaviour defaults to ${commandLocal}.
 
-  ${clr('Options:', 'underline')}
+    ${heading('Options:')}
 
-  ${usagePort}\tPort to start server on (defaults to 443).
+    ${optionPort}\tPort to start server on (defaults to 443).
 
-  ${clr('For further information, please see https://ind.ie/web-server', 'italic')}
+    ${heading('Examples:')}
+
+    • Local server on current folder ${emphasised('(shorthand)')}\t${prompt} web-server
+    • Local server on folder ${argument('site')} ${emphasised('(shorthand)')}\t\t${prompt} web-server ${argument('site')}
+    • Local server on current folder\t\t\t${prompt} web-server ${commandLocal}
+    • Local server on folder ${argument('site')}\t\t\t${prompt} web-server ${commandLocal} ${argument('site')}
+
+    • Global server on current folder\t\t\t${prompt} web-server ${commandGlobal}
+    • Proxy ${argument('localhost:1313')} at https://localhost\t\t${prompt} web-server ${commandProxy} ${argument('localhost:1313')}
+
+    • Local server on current folder & sync to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('my.site')}
+    • Local server on ${argument('site')} folder & sync to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('site')} ${argument('my.site')}
+    • Start web+sync daemon (e.g., on my.site)\t\t${prompt} web-server ${commandSync}
+    • Start web+sync daemon on ${argument('site')} folder (on my.site)\t${prompt} web-server ${commandSync} ${argument('site')}
+
+    • Serve current folder as daemon\t\t\t${prompt} web-server ${commandEnable}
+    • Get the status of the current deamon\t\t${prompt} web-server ${commandStatus}
+    • Stop the current daemon\t\t\t\t${prompt} web-server ${commandDisable}
+
+    ${clr('For further information, please see https://ind.ie/web-server', 'italic')}
   `.replace(/^\n/, '')
 
   console.log(usage)
