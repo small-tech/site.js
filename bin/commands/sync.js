@@ -17,9 +17,26 @@
 //
 //////////////////////////////////////////////////////////////////////
 
+const localServer = require('./local')
+const daemon = require('./enable')
+
 function sync (options) {
-  console.log('Sync: unimplemented')
-  console.log(options)
+  if (options.syncIsServer) {
+    //
+    // Sync server.
+    //
+    console.log('Sync: is server. [UNIMPLEMENTED]')
+  } else {
+    //
+    // Sync client.
+    //
+
+    // Start rsync watcher.
+    // Launch local server.
+    options.pathToServe = (options.syncFolder === null) ? '.' : options.syncFolder
+    console.log(`Starting rsync watcher. Folder: ${options.pathToServe} ←→ domain: ${options.syncDomain} [TODO]`)
+    localServer(options)
+  }
 }
 
 module.exports = sync

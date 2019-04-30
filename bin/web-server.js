@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 const fs = require('fs')
-const path = require('path')
 const commandLineOptions = require('minimist')(process.argv.slice(2), {boolean: true})
+
+const clr = require('./lib/cli').clr
 
 //
 // Get the command.
@@ -171,8 +172,6 @@ function syncOptions () {
   //  3. web-server sync [folder] [domain]
   //
 
-  console.log('webServerArguments', webServerArguments)
-
   if (command.isSync) {
 
     if (webServerArguments.length === 0) {
@@ -209,6 +208,12 @@ function syncOptions () {
       syncOptions.syncIsServer = false
       syncOptions.syncFolder = webServerArguments[0]
       syncOptions.syncDomain = webServerArguments[1]
+
+      if (!fs.existsSync(syncOptions.syncFolder)) {
+        console.log(`\n 🤯 Error: Folder not found (${clr(syncOptions.syncFolder, 'cyan')}).\n\n    Syntax:\tweb-server ${clr('sync', 'green')} ${clr('folder', 'cyan')} ${clr('domain', 'yellow')}\n    Command:\tweb-server ${clr('sync', 'green')} ${clr(syncOptions.syncFolder, 'cyan')} ${clr(syncOptions.syncDomain, 'yellow')}\n`)
+        process.exit(1)
+      }
+
     } else {
       // Syntax error: too many arguments.
       syntaxError('too many arguments')
