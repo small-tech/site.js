@@ -11,9 +11,9 @@ const fs = require('fs')
 const path = require('path')
 const childProcess = require('child_process')
 
-const runtime = require('../utilities/runtime')
-const ensure = require('../utilities/ensure')
-const clr = require('../utilities/cli').clr
+const runtime = require('../lib/runtime')
+const ensure = require('../lib/ensure')
+const clr = require('../lib/cli').clr
 
 const webServer = require('../../index')
 

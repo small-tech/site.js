@@ -5,7 +5,7 @@ const path = require('path')
 const os = require('os')
 const childProcess = require('child_process')
 
-const ansi = require('ansi-escape-sequences')
+const clr = require('./bin/lib/cli').clr
 
 const express = require('express')
 const helmet = require('helmet')
@@ -385,12 +385,3 @@ class WebServer {
 
 module.exports = new WebServer()
 
-//
-// Helpers.
-//
-
-// Format ansi strings.
-// Courtesy Bankai (https://github.com/choojs/bankai/blob/master/bin.js#L142)
-function clr (text, color) {
-  return process.stdout.isTTY ? ansi.format(text, color) : text
-}

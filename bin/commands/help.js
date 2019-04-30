@@ -7,7 +7,7 @@
 //////////////////////////////////////////////////////////////////////
 
 const webServer = require('../../index')
-const clr = require('../utilities/cli').clr
+const clr = require('../lib/cli').clr
 
 function help () {
   const usageCommand = `${clr('command', 'green')}`
