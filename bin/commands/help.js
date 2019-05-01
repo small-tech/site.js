@@ -38,6 +38,10 @@ function help () {
 
   const optionPort = `${option('--port')}=${argument('N')}`
 
+  const optionHost = `${option('--host')}=${argument('my.site')}`
+  const optionAccount = `${option('--account')}=${argument('me')}`
+  const optionFolder = `${option('--folder')}=${argument('www')}`
+
   const prompt = clr('⯈', 'blue')
 
   const usage = `
@@ -74,26 +78,34 @@ function help () {
 
     ${optionPort}\tPort to start server on (defaults to 443).
 
+    For the ${commandSync} command:
+
+    ${optionHost}\tThe remote host to sync to (e.g., my-demo.site)
+    ${optionAccount}\tThe ssh account to use on remote server (defaults to same as on current session)
+    ${optionFolder}\tThe subfolder of home folder to sync to on remote machine (defaults to name of served folder)
+
     ${heading('Examples:')}
 
-      Development using locally-trusted certificates:
+      Develop using locally-trusted certificates:
 
     • Serve current folder ${emphasised('(shorthand)')}\t\t${prompt} web-server
     • Serve folder ${argument('site')} ${emphasised('(shorthand)')}\t\t${prompt} web-server ${argument('site')}
     • Serve current folder\t\t\t${prompt} web-server ${commandLocal}
     • Serve folder ${argument('site')}\t\t\t\t${prompt} web-server ${commandLocal} ${argument('site')}
+    • Serve folder ${argument('site')} at port 666\t\t${prompt} web-server ${commandLocal} ${argument('site')} ${option('--port')}=${argument('666')}
 
     • Proxy ${argument('localhost:1313')}🡘 https://localhost\t${prompt} web-server ${commandProxy} ${argument('localhost:1313')}
 
-    • Serve current folder & sync to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('my.site')}
-    • Serve ${argument('site')} folder & sync to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('site')} ${argument('my.site')}
+    • Serve current folder & sync it to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('my.site')}
+    • Serve ${argument('site')} folder & sync it to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('site')} ${argument('my.site')}
     • Ditto, but using the ${option('--host')} option\t${prompt} web-server ${commandSync} ${argument('site')} ${option('--host=')}${argument('my.site')}
-    • Ditto, but use account ${argument('ubuntu')} on ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('site')} ${option('--host=')}${argument('my.site')} ${option('--account=')}${argument('ubuntu')}
-    • Ditto, but sync to remote folder ${argument('www')}\t${prompt} web-server ${commandSync} ${argument('site')} ${option('--host=')}${argument('my.site')} ${option('--account=')}${argument('ubuntu')} ${option('--folder=')}${argument('www')}
-    • Ditto, but using the ${option('--to')} option\t\t${prompt} web-server ${commandSync} ${argument('site')} ${option('--to=')}${argument('ubuntu@my-site:/home/ubuntu/www')}
-    • Ensure server can sync\t\t\t${prompt} web-server ${commandSync}
+    • Ditto, but use account ${argument('me')} on ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('site')} ${option('--host=')}${argument('my.site')} ${option('--account=')}${argument('me')}
+    • Ditto, but sync to remote folder ${argument('www')}\t${prompt} web-server ${commandSync} ${argument('site')} ${option('--host=')}${argument('my.site')} ${option('--account=')}${argument('me')} ${option('--folder=')}${argument('www')}
+    • Ditto, but using the ${option('--to')} option\t\t${prompt} web-server ${commandSync} ${argument('site')} ${option('--to=')}${argument('me@my-site:/home/me/www')}
 
-      Staging/deployment using globally-trusted Let’s Encrypt certificates:
+    • Ensure remote server can sync ${emphasised('(run there)')}\t${prompt} web-server ${commandSync}
+
+      Stage and deploy using globally-trusted Let’s Encrypt certificates:
 
     • Serve current folder\t\t\t${prompt} web-server ${commandGlobal}
     • Serve folder ${argument('site')}\t\t\t\t${prompt} web-server ${commandGlobal} ${argument('site')}
