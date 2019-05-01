@@ -38,7 +38,7 @@ function help () {
 
   const optionPort = `${option('--port')}=${argument('N')}`
 
-  const prompt = clr('⯈', 'yellow')
+  const prompt = clr('⯈', 'blue')
 
   const usage = `
    ${webServer.version()}
