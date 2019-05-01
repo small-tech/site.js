@@ -59,6 +59,7 @@ function help () {
     ${commandLocal}\tStart server as regular process with locally-trusted certificates.
     ${commandGlobal}\tStart server as regular process with globally-trusted certificates.
     ${commandProxy}\tStart server to proxy provided HTTP URL via HTTPS. Also proxies WebSockets.
+    ${commandSync}\tStart server as regular process with locally-trusted certificates and ${emphasised('rsync')} ${argument('folder')} to ${argument('host')}.
 
     On Linux distributions with systemd, you can also use:
 
