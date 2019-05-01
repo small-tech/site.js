@@ -48,10 +48,11 @@ function sync (options) {
     const rsyncOptions = {
       "live.ar.al": {
         "from": fromPath,
-        "to": "ubuntu@ar.al:/home/ubuntu/site",
+        "to": "aral@my-demo.site:/home/aral/site",
         "exclude": [
           ".DS_Store",
-          ".dat/*"
+          ".dat/*",
+          ".git/*"
         ],
         "rsyncOptions": {
           "archive": null,
