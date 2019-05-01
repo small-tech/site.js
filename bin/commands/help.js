@@ -36,11 +36,11 @@ function help () {
   const commandLogs = command('logs')
   const commandStatus = command('status')
 
-  const optionPort = `${option('--port')}=${argument('N')}`
+  const optionPort = option('--port')
 
-  const optionHost = `${option('--host')}=${argument('my.site')}`
-  const optionAccount = `${option('--account')}=${argument('me')}`
-  const optionFolder = `${option('--folder')}=${argument('www')}`
+  const optionHost = option('--host')
+  const optionAccount = option('--account')
+  const optionFolder = option('--folder')
 
   const prompt = clr('⯈', 'blue')
 
