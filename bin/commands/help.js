@@ -75,27 +75,32 @@ function help () {
 
     ${heading('Examples:')}
 
-    • Local server on current folder ${emphasised('(shorthand)')}\t${prompt} web-server
-    • Local server on folder ${argument('site')} ${emphasised('(shorthand)')}\t\t${prompt} web-server ${argument('site')}
-    • Local server on current folder\t\t\t${prompt} web-server ${commandLocal}
-    • Local server on folder ${argument('site')}\t\t\t${prompt} web-server ${commandLocal} ${argument('site')}
+      Development using locally-trusted certificates:
 
-    • Global server on current folder\t\t\t${prompt} web-server ${commandGlobal}
-    • Global server on folder ${argument('site')}\t\t\t${prompt} web-server ${commandGlobal} ${argument('site')}
+    • Serve current folder ${emphasised('(shorthand)')}\t\t${prompt} web-server
+    • Serve folder ${argument('site')} ${emphasised('(shorthand)')}\t\t${prompt} web-server ${argument('site')}
+    • Serve current folder\t\t\t${prompt} web-server ${commandLocal}
+    • Serve folder ${argument('site')}\t\t\t\t${prompt} web-server ${commandLocal} ${argument('site')}
 
-    • Proxy ${argument('localhost:1313')} at https://localhost\t\t${prompt} web-server ${commandProxy} ${argument('localhost:1313')}
+    • Proxy ${argument('localhost:1313')}🡘 https://localhost\t${prompt} web-server ${commandProxy} ${argument('localhost:1313')}
 
-    • Local server on current folder & sync to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('my.site')}
-    • Local server on ${argument('site')} folder & sync to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('site')} ${argument('my.site')}
-    • Same as above, but use account ${argument('ubuntu')} on ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('site')} ${argument('my.site')} ${option('--account=')}${argument('ubuntu')}
-    • Same as above, but sync to remote folder ${argument('www')}\t${prompt} web-server ${commandSync} ${argument('site')} ${argument('my.site')} ${option('--account=')}${argument('ubuntu')} ${option('--remoteFolder=')}${argument('www')}
-    • Same as above, but using the ${option('--to')} option\t\t${prompt} web-server ${commandSync} ${argument('site')} ${option('--to=')}${argument('ubuntu@my-site:/home/ubuntu/www')}
-    • Start web+sync daemon (e.g., on my.site)\t\t${prompt} web-server ${commandSync}
-    • Start web+sync daemon on ${argument('site')} folder (on my.site)\t${prompt} web-server ${commandSync} ${argument('site')}
+    • Serve current folder & sync to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('my.site')}
+    • Serve ${argument('site')} folder & sync to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('site')} ${argument('my.site')}
+    • Ditto, but using the ${option('--host')} option\t${prompt} web-server ${commandSync} ${argument('site')} ${option('--host=')}${argument('my.site')}
+    • Ditto, but use account ${argument('ubuntu')} on ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('site')} ${option('--host=')}${argument('my.site')} ${option('--account=')}${argument('ubuntu')}
+    • Ditto, but sync to remote folder ${argument('www')}\t${prompt} web-server ${commandSync} ${argument('site')} ${option('--host=')}${argument('my.site')} ${option('--account=')}${argument('ubuntu')} ${option('--folder=')}${argument('www')}
+    • Ditto, but using the ${option('--to')} option\t\t${prompt} web-server ${commandSync} ${argument('site')} ${option('--to=')}${argument('ubuntu@my-site:/home/ubuntu/www')}
+    • Ensure server can sync\t\t\t${prompt} web-server ${commandSync}
 
-    • Serve current folder as daemon\t\t\t${prompt} web-server ${commandEnable}
-    • Get the status of the current deamon\t\t${prompt} web-server ${commandStatus}
-    • Stop the current daemon\t\t\t\t${prompt} web-server ${commandDisable}
+      Staging/deployment using globally-trusted Let’s Encrypt certificates:
+
+    • Serve current folder\t\t\t${prompt} web-server ${commandGlobal}
+    • Serve folder ${argument('site')}\t\t\t\t${prompt} web-server ${commandGlobal} ${argument('site')}
+
+    • Serve current folder as daemon\t\t${prompt} web-server ${commandEnable}
+    • Get status of deamon\t\t\t${prompt} web-server ${commandStatus}
+    • Display server logs\t\t\t${prompt} web-server ${commandLogs}
+    • Stop current daemon\t\t\t${prompt} web-server ${commandDisable}
 
     ${clr('For further information, please see https://ind.ie/web-server', 'italic')}
   `.replace(/^\n/, '')
