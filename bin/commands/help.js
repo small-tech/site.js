@@ -15,7 +15,7 @@ const CYAN = 'cyan'
 
 function command(name) { return clr(name, 'green') }
 function argument(name) { return clr(name, CYAN) }
-function option(name) { return clr(name, YELLOW) }
+function option(name) { name = `--${name}`; return `${clr(name, YELLOW)}` }
 function heading(title) { return clr(title, 'underline') }
 function emphasised(text) { return clr(text, 'italic') }
 
@@ -36,11 +36,12 @@ function help () {
   const commandLogs = command('logs')
   const commandStatus = command('status')
 
-  const optionPort = option('--port')
+  const optionPort = option('port')
 
-  const optionHost = option('--host')
-  const optionAccount = option('--account')
-  const optionFolder = option('--folder')
+  const optionHost = option('host')
+  const optionAccount = option('account')
+  const optionFolder = option('folder')
+  const optionProxy = option('proxy')
 
   const prompt = clr('⯈', 'blue')
 
@@ -80,9 +81,10 @@ function help () {
 
     For the ${commandSync} command:
 
-    ${optionHost}\tThe remote host to sync to (e.g., my-demo.site)
-    ${optionAccount}\tThe ssh account to use on remote server (defaults to same as on current session)
-    ${optionFolder}\tThe subfolder of home folder to sync to on remote machine (defaults to name of served folder)
+    ${optionHost}\tThe remote host to sync to (e.g., my-demo.site).
+    ${optionAccount}\tThe ssh account to use on remote server (defaults to same as on current session).
+    ${optionFolder}\tThe subfolder of home folder to sync to on remote machine (defaults to name of served folder).
+    ${optionProxy}\tProxy the specified host and port instead of starting a regular local server.
 
     ${heading('Examples:')}
 
@@ -92,17 +94,17 @@ function help () {
     • Serve folder ${argument('site')} ${emphasised('(shorthand)')}\t\t${prompt} web-server ${argument('site')}
     • Serve current folder\t\t\t${prompt} web-server ${commandLocal}
     • Serve folder ${argument('site')}\t\t\t\t${prompt} web-server ${commandLocal} ${argument('site')}
-    • Serve folder ${argument('site')} at port 666\t\t${prompt} web-server ${commandLocal} ${argument('site')} ${option('--port')}=${argument('666')}
+    • Serve folder ${argument('site')} at port 666\t\t${prompt} web-server ${commandLocal} ${argument('site')} ${option('port')}=${argument('666')}
 
     • Proxy ${argument('localhost:1313')}🡘 https://localhost\t${prompt} web-server ${commandProxy} ${argument('localhost:1313')}
 
     • Serve current folder, sync it to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('my.site')}
     • Serve ${argument('site')} folder, sync it to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('site')} ${argument('my.site')}
-    • Ditto, but using the ${option('--host')} option\t${prompt} web-server ${commandSync} ${argument('site')} ${option('--host=')}${argument('my.site')}
-    • Ditto, but use account ${argument('me')} on ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('site')} ${option('--host=')}${argument('my.site')} ${option('--account=')}${argument('me')}
-    • Ditto, but sync to remote folder ${argument('www')}\t${prompt} web-server ${commandSync} ${argument('site')} ${option('--host=')}${argument('my.site')} ${option('--account=')}${argument('me')} ${option('--folder=')}${argument('www')}
-    • Ditto, but using the ${option('--to')} option\t\t${prompt} web-server ${commandSync} ${argument('site')} ${option('--to=')}${argument('me@my-site:/home/me/www')}
-    • Sync current folder, proxy ${argument('localhost:1313')}\t${prompt} web-server ${commandSync} ${argument('my.site')} ${option('--proxy=')}${argument('localhost:1313')}
+    • Ditto, but using the ${option('host')} option\t${prompt} web-server ${commandSync} ${argument('site')} ${option('host=')}${argument('my.site')}
+    • Ditto, but use account ${argument('me')} on ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('site')} ${option('host=')}${argument('my.site')} ${option('account=')}${argument('me')}
+    • Ditto, but sync to remote folder ${argument('www')}\t${prompt} web-server ${commandSync} ${argument('site')} ${option('host=')}${argument('my.site')} ${option('account=')}${argument('me')} ${option('folder=')}${argument('www')}
+    • Ditto, but using the ${option('to')} option\t\t${prompt} web-server ${commandSync} ${argument('site')} ${option('to=')}${argument('me@my-site:/home/me/www')}
+    • Sync current folder, proxy ${argument('localhost:1313')}\t${prompt} web-server ${commandSync} ${argument('my.site')} ${option('proxy=')}${argument('localhost:1313')}
 
     • Ensure remote server can sync ${emphasised('(run there)')}\t${prompt} web-server ${commandSync}
 
