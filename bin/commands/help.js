@@ -96,12 +96,13 @@ function help () {
 
     • Proxy ${argument('localhost:1313')}🡘 https://localhost\t${prompt} web-server ${commandProxy} ${argument('localhost:1313')}
 
-    • Serve current folder & sync it to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('my.site')}
-    • Serve ${argument('site')} folder & sync it to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('site')} ${argument('my.site')}
+    • Serve current folder, sync it to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('my.site')}
+    • Serve ${argument('site')} folder, sync it to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('site')} ${argument('my.site')}
     • Ditto, but using the ${option('--host')} option\t${prompt} web-server ${commandSync} ${argument('site')} ${option('--host=')}${argument('my.site')}
     • Ditto, but use account ${argument('me')} on ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('site')} ${option('--host=')}${argument('my.site')} ${option('--account=')}${argument('me')}
     • Ditto, but sync to remote folder ${argument('www')}\t${prompt} web-server ${commandSync} ${argument('site')} ${option('--host=')}${argument('my.site')} ${option('--account=')}${argument('me')} ${option('--folder=')}${argument('www')}
     • Ditto, but using the ${option('--to')} option\t\t${prompt} web-server ${commandSync} ${argument('site')} ${option('--to=')}${argument('me@my-site:/home/me/www')}
+    • Sync current folder, proxy ${argument('localhost:1313')}\t${prompt} web-server ${commandSync} ${argument('my.site')} ${option('--proxy=')}${argument('localhost:1313')}
 
     • Ensure remote server can sync ${emphasised('(run there)')}\t${prompt} web-server ${commandSync}
 
