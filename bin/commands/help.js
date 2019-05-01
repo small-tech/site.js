@@ -81,10 +81,15 @@ function help () {
     • Local server on folder ${argument('site')}\t\t\t${prompt} web-server ${commandLocal} ${argument('site')}
 
     • Global server on current folder\t\t\t${prompt} web-server ${commandGlobal}
+    • Global server on folder ${argument('site')}\t\t\t${prompt} web-server ${commandGlobal} ${argument('site')}
+
     • Proxy ${argument('localhost:1313')} at https://localhost\t\t${prompt} web-server ${commandProxy} ${argument('localhost:1313')}
 
     • Local server on current folder & sync to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('my.site')}
     • Local server on ${argument('site')} folder & sync to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('site')} ${argument('my.site')}
+    • Same as above, but use account ${argument('ubuntu')} on ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('site')} ${argument('my.site')} ${option('--account=')}${argument('ubuntu')}
+    • Same as above, but sync to remote folder ${argument('www')}\t${prompt} web-server ${commandSync} ${argument('site')} ${argument('my.site')} ${option('--account=')}${argument('ubuntu')} ${option('--remoteFolder=')}${argument('www')}
+    • Same as above, but using the ${option('--to')} option\t\t${prompt} web-server ${commandSync} ${argument('site')} ${option('--to=')}${argument('ubuntu@my-site:/home/ubuntu/www')}
     • Start web+sync daemon (e.g., on my.site)\t\t${prompt} web-server ${commandSync}
     • Start web+sync daemon on ${argument('site')} folder (on my.site)\t${prompt} web-server ${commandSync} ${argument('site')}
 
