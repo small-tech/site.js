@@ -162,7 +162,7 @@ function proxyOptions () {
 
 // Return the sync options object (if relevant).
 function syncOptions () {
-  const syncOptions = { syncDomain: null, syncFolder: null, syncIsServer: null }
+  const syncOptions = { syncDomain: null, syncFolder: null, syncIsServer: null, syncAccount: null, syncRemoteFolder: null }
 
   //
   // Syntax:
@@ -174,12 +174,20 @@ function syncOptions () {
 
   if (command.isSync) {
 
+    // Adds remote server --<option>s, if any, to the syncOptions object.
+    function addRemoteServerOptions () {
+      if (typeof commandLineOptions.account === 'String') {
+        console.log('Account exists and is a string!')
+      }
+    }
+
     if (webServerArguments.length === 0) {
       //
       // 1. No arguments provided (i.e., called as web-server sync).
       // Meaning: start a web server daemon with sync on the current folder.
       //
       syncOptions.syncIsServer = true
+      syncOptions.syncFolder = '.'
     } else if (webServerArguments.length === 1) {
       //
       // 2. One argument is provided: it could be a folder or a domain.
@@ -200,6 +208,7 @@ function syncOptions () {
         //
         syncOptions.syncIsServer = false
         syncOptions.syncDomain = folderOrDomain
+        addRemoteServerOptions()
       }
     } else if (webServerArguments.length === 2) {
       // 3. Two arguments provided. We interpret the first as the path of the
@@ -213,7 +222,7 @@ function syncOptions () {
         console.log(`\n 🤯 Error: Folder not found (${clr(syncOptions.syncFolder, 'cyan')}).\n\n    Syntax:\tweb-server ${clr('sync', 'green')} ${clr('folder', 'cyan')} ${clr('domain', 'yellow')}\n    Command:\tweb-server ${clr('sync', 'green')} ${clr(syncOptions.syncFolder, 'cyan')} ${clr(syncOptions.syncDomain, 'yellow')}\n`)
         process.exit(1)
       }
-
+      addRemoteServerOptions()
     } else {
       // Syntax error: too many arguments.
       syntaxError('too many arguments')
