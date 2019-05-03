@@ -42,6 +42,7 @@ function help () {
   const optionAccount = option('account')
   const optionFolder = option('folder')
   const optionProxy = option('proxy')
+  const optionSync = option('sync')
 
   const prompt = clr('⯈', 'blue')
 
@@ -106,14 +107,13 @@ function help () {
     • Ditto, but using the ${option('to')} option\t\t${prompt} web-server ${commandSync} ${argument('site')} ${option('to=')}${argument('me@my-site:/home/me/www')}
     • Sync current folder, proxy ${argument('localhost:1313')}\t${prompt} web-server ${commandSync} ${argument('my.site')} ${option('proxy=')}${argument('localhost:1313')}
 
-    • Ensure remote server can sync ${emphasised('(run there)')}\t${prompt} web-server ${commandSync}
-
       Stage and deploy using globally-trusted Let’s Encrypt certificates:
 
     • Serve current folder\t\t\t${prompt} web-server ${commandGlobal}
     • Serve folder ${argument('site')}\t\t\t\t${prompt} web-server ${commandGlobal} ${argument('site')}
 
     • Serve current folder as daemon\t\t${prompt} web-server ${commandEnable}
+    • Ditto & also ensure it can rsync via ssh\t${prompt} web-server ${commandEnable} ${optionSync}
     • Get status of deamon\t\t\t${prompt} web-server ${commandStatus}
     • Display server logs\t\t\t${prompt} web-server ${commandLogs}
     • Stop current daemon\t\t\t${prompt} web-server ${commandDisable}
