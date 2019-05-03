@@ -80,6 +80,10 @@ function help () {
 
     ${optionPort}\tPort to start server on (defaults to 443).
 
+    For the ${commandEnable} command:
+
+    ${optionSync}\tEnsure the server can also rsync via ssh (so you can sync your site to it from your local machine).
+
     For the ${commandSync} command:
 
     ${optionHost}\tThe remote host to sync to (e.g., my-demo.site).
