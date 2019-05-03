@@ -49,9 +49,20 @@ class RSyncWatcher {
 
     for (let project in this.options) {
       this.sync(project).then(() => {
-          this.watch(project)
+        const syncHandler = this.options[project].sync
+        if (typeof syncHandler === 'function') {
+          syncHandler()
+        }
+        this.watch(project)
       }).catch(error => {
+        const errorHandler = this.options[project].error
+        if (typeof errorHandler === 'function') {
+          // Error handler callback.
+          errorHandler.apply(null, [error])
+        } else {
+          // Generic error handler.
           consoleTimestamp.error(`[${project} | sync error] `, error)
+        }
       })
     }
   }
@@ -67,7 +78,7 @@ class RSyncWatcher {
       rsync.set(optionKey, this.options[project].rsyncOptions[optionKey]);
     }
 
-    consoleTimestamp.log(`[sync start] ${project}`)
+    console.log(` 💞 [Sync] Starting…`)
 
     return new Promise((resolve, reject) => {
       const rsyncProcess = rsync.execute((error, code, command) => {
@@ -76,10 +87,31 @@ class RSyncWatcher {
           return
         }
 
-        consoleTimestamp.log(`[sync finish] ${project} | ${command}`)
+        console.log(` 💞 [Sync] Complete.`)
         resolve(rsyncProcess.pid)
       }, (data) => {
-        process.stdout.write(`[sync] ${data.toString('ascii')}`)
+        const message = data.toString('ascii')
+        // console.log(`>${message}<`)
+
+        // These can arrive as one line or as two lines due to the streaming nature of the output
+        // so we will display them as two lines always to ensure we catch them.
+        const statisticsLine1 = message.match(/sent (\d+) bytes\s*received (\d+) bytes\s*([\d\.]+) bytes\/sec/)
+        const statisticsLine2 = message.match(/total size is ([\d\.]+)K/)
+
+        if (message === 'sending incremental file list\n') {
+          console.log(` 💞 [Sync] Calculating changes…`)
+        } else if (statisticsLine1 || statisticsLine2) {
+          if (statisticsLine1) {
+            console.log(` 💞 [Sync] ↑ ${statisticsLine1[1]} bytes ↓ ${statisticsLine1[2]} bytes (${statisticsLine1[3]} bytes/sec)`)
+          }
+          if (statisticsLine2) {
+            console.log(` 💞 [Sync] ${statisticsLine2[1]} KB synced.`)
+          }
+
+
+        } else {
+          process.stdout.write(` 💞 [Sync] ${data.toString('ascii')}`)
+        }
       })
 
       rsyncProcess.on('close', () => {
@@ -107,15 +139,25 @@ class RSyncWatcher {
     }, 500)
 
     watcher
-    .on('ready', function() {
-        consoleTimestamp.log(`[watch] ${project}`);
+    .on('ready', () => {
+        const watchHandler = this.options[project].watch
+        if (typeof watchHandler === 'function') {
+          watchHandler()
+        } else {
+          consoleTimestamp.log(`[watch] ${project}`)
+        }
     })
-    .on('all', function(event, path) {
-        consoleTimestamp.log(`[watch | ${event}] ${path}`);
+    .on('all', (event, path) => {
+        const watchEventHandler = this.options[project].watchEvent
+        if (typeof watchEventHandler === 'function') {
+          watchEventHandler(event, path)
+        } else {
+          consoleTimestamp.log(`[watch | ${event}] ${path}`)
+        }
         syncDebounced();
     })
-    .on('error', function(error) {
-        consoleTimestamp.error(`[${project} | watch error] `, error);
+    .on('error', (error) => {
+        consoleTimestamp.error(`[${project} | watch error] `, error)
     })
   }
 }

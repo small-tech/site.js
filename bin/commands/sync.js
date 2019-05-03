@@ -18,26 +18,25 @@
 //////////////////////////////////////////////////////////////////////
 
 const localServer = require('./local')
-
 const RsyncWatcher = require('../lib/RsyncWatcher')
+const clr = require('../lib/cli').clr
 
 function sync (options) {
   //
   // Start rsync watcher.
   //
   options.pathToServe = (options.syncFolder === null) ? '.' : options.syncFolder
-  console.log(`Starting rsync watcher. Folder: ${options.pathToServe} ←→ domain: ${options.syncDomain} [TODO]`)
 
-  let fromPath = options.pathToServe
+  console.log(` 💞 [Sync] Will sync folder ${clr(options.syncFolder, 'cyan')} to host ${clr(options.syncHost, 'cyan')}`)
+
+  let fromPath = options.syncFolder
   if (!fromPath.endsWith('/')) {fromPath = `${fromPath}/`}
-
-  console.log('fromPath', fromPath)
 
   // TODO: Remove: Hardcoded config.
   const rsyncOptions = {
     "live.ar.al": {
       "from": fromPath,
-      "to": "aral@my-demo.site:/home/aral/site",
+      "to": `aral@${options.syncHost}:/home/aral/site`,
       "exclude": [
         ".DS_Store",
         ".dat/*",
@@ -51,9 +50,37 @@ function sync (options) {
         "delete": null,
         "partial": null,
         "progress": null
+      },
+      "error": function (error) {
+        //
+        // Rsync error; try to handle gracefully.
+        //
+        // Supported errors:
+        //
+        // 255: Proxied SSH error (“Could not resolve hostname”)
+        //
+        if (error.toString().match('rsync exited with code 255')) {
+          console.log(` 🤯 Sync error: could not resolve hostname ${clr(options.syncHost, 'cyan')}\n`)
+          process.exit(1)
+        }
+      },
+      "sync": function () {
+        // Sync succeeded.
+        console.log(`\n 💞 [Sync] Local folder ${clr(fromPath, 'cyan')} synced to ${clr(options.syncHost, 'cyan')}`)
+      },
+      "watch": function () {
+        // Watch succeeded.
+        console.log(`\n 🔎 Watching ${fromPath} for changes to sync to ${options.syncHost}\n`)
+      },
+      "watchEvent": function (event, path) {
+        // A watch event occured.
+        console.log(` 🔎 Sync ${event} ${path}`)
       }
     }
   }
+
+  // Debug
+  // console.log('rsyncOptions', rsyncOptions)
 
   // Create the rsync watcher.
   new RsyncWatcher(rsyncOptions)

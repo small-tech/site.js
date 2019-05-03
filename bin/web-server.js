@@ -160,22 +160,26 @@ function proxyOptions () {
   return proxyOptions
 }
 
-// Return the sync options object (if relevant).
+// Populate (if relevant) and return the sync options object.
 function syncOptions () {
-  const syncOptions = { syncDomain: null, syncFolder: null, syncIsServer: null, syncAccount: null, syncRemoteFolder: null }
-
   //
   // Syntax:
   //
-  //  1. web-server sync
-  //  2. web-server sync [folder|domain]
-  //  3. web-server sync [folder] [domain]
+  //  1. web-server sync --host=<host> [--folder=<folder>] [--account=<account>] [--proxy=<proxy-host>]
+  //  2. web-server sync <host>
+  //  3. web-server sync <folder> <host>
+  //  4. web-server sync --to=<account>@<host>:/home/<account>/<folder> [--proxy=<proxy-host>]
   //
+  // Key: […] = optional, <…> = value placeholder.
+  //
+
+  const syncOptions = { syncHost: null, syncFolder: null, syncAccount: null, syncRemoteFolder: null }
 
   if (command.isSync) {
 
     // Adds remote server --<option>s, if any, to the syncOptions object.
     function addRemoteServerOptions () {
+      console.log('Adding remote options')
       if (typeof commandLineOptions.account === 'String') {
         console.log('Account exists and is a string!')
       }
@@ -183,51 +187,40 @@ function syncOptions () {
 
     if (webServerArguments.length === 0) {
       //
-      // 1. No arguments provided (i.e., called as web-server sync).
-      // Meaning: start a web server daemon with sync on the current folder.
+      // 1. No positional arguments. Must at least specify the host as a named argument.
       //
-      syncOptions.syncIsServer = true
-      syncOptions.syncFolder = '.'
-    } else if (webServerArguments.length === 1) {
-      //
-      // 2. One argument is provided: it could be a folder or a domain.
-      //
-      const folderOrDomain = webServerArguments[0]
-
-      if (fs.existsSync(folderOrDomain)) {
-        //
-        // 2-a. This is a valid path, we interpret it as the folder to serve and
-        //      flag that we should start a web server daemon with sync.
-        //
-        syncOptions.syncIsServer = true
-        syncOptions.syncFolder = folderOrDomain
-      } else {
-        //
-        // 2-b. This isn’t a valid path, we interpret it as a domain and flag that
-        // we should start a local web server process with sync.
-        //
-        syncOptions.syncIsServer = false
-        syncOptions.syncDomain = folderOrDomain
-        addRemoteServerOptions()
+      console.log("Syntax 1")
+      if (commandLineOptions.host === undefined) {
+        syntaxError('must specify host to sync to')
       }
+    } else if (webServerArguments.length === 1) {
+      console.log("Syntax 2")
+      //
+      // 2. One argument is provided: it is the host. The folder to sync is the current folder.
+      //
+      syncOptions.syncHost = webServerArguments[0]
+      syncOptions.syncFolder = '.'
     } else if (webServerArguments.length === 2) {
+      console.log("Syntax 3")
+      //
       // 3. Two arguments provided. We interpret the first as the path of the
-      // folder to serve and the second as the domain and flag that we should
-      // start a local web server process with sync.
-      syncOptions.syncIsServer = false
+      // folder to serve and the second as the host.
+      //
       syncOptions.syncFolder = webServerArguments[0]
-      syncOptions.syncDomain = webServerArguments[1]
+      syncOptions.syncHost = webServerArguments[1]
 
       if (!fs.existsSync(syncOptions.syncFolder)) {
         console.log(`\n 🤯 Error: Folder not found (${clr(syncOptions.syncFolder, 'cyan')}).\n\n    Syntax:\tweb-server ${clr('sync', 'green')} ${clr('folder', 'cyan')} ${clr('domain', 'yellow')}\n    Command:\tweb-server ${clr('sync', 'green')} ${clr(syncOptions.syncFolder, 'cyan')} ${clr(syncOptions.syncDomain, 'yellow')}\n`)
         process.exit(1)
       }
-      addRemoteServerOptions()
     } else {
-      // Syntax error: too many arguments.
+      // Syntax error: we can have at most two positional arguments.
       syntaxError('too many arguments')
     }
   }
+
+  // Add any --<option>s that may exist to the syncOptions object.
+  addRemoteServerOptions()
 
   return syncOptions
 }
