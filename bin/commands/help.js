@@ -13,7 +13,7 @@ const GREEN = 'green'
 const YELLOW = 'yellow'
 const CYAN = 'cyan'
 
-function command(name) { return clr(name, 'green') }
+function command(name) { return clr(name, GREEN) }
 function argument(name) { return clr(name, CYAN) }
 function option(name) { name = `--${name}`; return `${clr(name, YELLOW)}` }
 function heading(title) { return clr(title, 'underline') }
@@ -21,7 +21,7 @@ function emphasised(text) { return clr(text, 'italic') }
 
 function help () {
   const usageCommand = command('command')
-  const usageFolderOrHost = `${argument('folder')}${clr('|host', 'darkgrey')}`
+  const usageFolderOrHost = `${argument('folder')}|host`
   const usageHost = argument('host')
   const usageOptions = option('options')
 
