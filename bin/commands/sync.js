@@ -66,7 +66,7 @@ function sync (options) {
       },
       "sync": function () {
         // Sync succeeded.
-        console.log(`\n 💞 [Sync] Local folder ${clr(fromPath, 'cyan')} synced to ${clr(options.syncHost, 'cyan')}`)
+        console.log(` 💞 [Sync] Local folder ${clr(fromPath, 'cyan')} synced to ${clr(options.syncHost, 'cyan')}`)
       },
       "watch": function () {
         // Watch succeeded.

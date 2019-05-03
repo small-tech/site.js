@@ -78,7 +78,7 @@ class RSyncWatcher {
       rsync.set(optionKey, this.options[project].rsyncOptions[optionKey]);
     }
 
-    console.log(` 💞 [Sync] Starting…`)
+    console.log(`\n 💞 [Sync] Starting…`)
 
     return new Promise((resolve, reject) => {
       const rsyncProcess = rsync.execute((error, code, command) => {
@@ -87,11 +87,14 @@ class RSyncWatcher {
           return
         }
 
-        console.log(` 💞 [Sync] Complete.`)
+        console.log(` 💞 [Sync] Complete.\n`)
         resolve(rsyncProcess.pid)
       }, (data) => {
         const message = data.toString('ascii')
-        // console.log(`>${message}<`)
+
+        // Debug
+        // console.log(`\n>${message}<\n`)
+        // console.log(message.match(''))
 
         // These can arrive as one line or as two lines due to the streaming nature of the output
         // so we will display them as two lines always to ensure we catch them.
@@ -107,10 +110,9 @@ class RSyncWatcher {
           if (statisticsLine2) {
             console.log(` 💞 [Sync] ${statisticsLine2[1]} KB synced.`)
           }
-
-
         } else {
-          process.stdout.write(` 💞 [Sync] ${data.toString('ascii')}`)
+          const lines = message.split('\n')
+          lines.filter(value => value !== '' && !value.startsWith('\r')).forEach(line => console.log(` 💞 [Sync] ${line}`))
         }
       })
 
