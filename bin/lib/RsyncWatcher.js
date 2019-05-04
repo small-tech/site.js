@@ -28,18 +28,20 @@ class RSyncWatcher {
     this.watchers = []
 
     const quit = () => {
-      consoleTimestamp.log(`\n[stopping]`)
+      console.log(`\n 💞 [Sync] Exit request detected.`)
 
       for (let entry of this.synchronisers) {
           let synchroniser = entry[1]
-          consoleTimestamp.log(`[sync stop] ${synchroniser.project}`)
+          console.log(` 💞 [Sync] Stopping sync process.`)
           synchroniser.process.kill()
       }
 
       for (let watcher of this.watchers) {
-          consoleTimestamp.log(`[watch stop] ${watcher.project}`)
+          console.log(` 🔎 [Watch] Removing watcher.`)
           watcher.watcher.close()
       }
+
+      console.log('\n 💖 Goodbye!\n')
 
       process.exit()
     }
