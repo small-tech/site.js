@@ -138,7 +138,7 @@ class RSyncWatcher {
     const syncDebounced = debounce(() => {
       this.sync(project)
       .catch(error => {
-          consoleTimestamp.error(`[${project} | sync error] `, error)
+          console.log(` 💞 [Sync] Error: ${error}`)
       })
     }, 500)
 
@@ -161,7 +161,12 @@ class RSyncWatcher {
         syncDebounced();
     })
     .on('error', (error) => {
-        consoleTimestamp.error(`[${project} | watch error] `, error)
+        const watchErrorHandler = this.options[project].watchError
+        if (typeof watchErrorHandler === 'function') {
+          watchErrorHandler(error)
+        } else {
+          consoleTimestamp.error(`[${project} | watch error] `, error)
+        }
     })
   }
 }

@@ -34,24 +34,24 @@ function sync (options) {
 
   // TODO: Remove: Hardcoded config.
   const rsyncOptions = {
-    "live.ar.al": {
-      "from": fromPath,
-      "to": `aral@${options.syncHost}:/home/aral/site`,
-      "exclude": [
-        ".DS_Store",
-        ".dat/*",
-        ".git/*"
+    'sync': {
+      'from': fromPath,
+      'to': `aral@${options.syncHost}:/home/aral/site`,
+      'exclude': [
+        '.DS_Store',
+        '.dat/*',
+        '.git/*'
       ],
-      "rsyncOptions": {
-        "archive": null,
-        "chmod": "755",
-        "verbose": null,
-        "human-readable": null,
-        "delete": null,
-        "partial": null,
-        "progress": null
+      'rsyncOptions': {
+        'archive': null,
+        'chmod': '755',
+        'verbose': null,
+        'human-readable': null,
+        'delete': null,
+        'partial': null,
+        'progress': null
       },
-      "error": function (error) {
+      'error': function (error) {
         //
         // Rsync error; try to handle gracefully.
         //
@@ -97,20 +97,24 @@ function sync (options) {
         console.log(` 🤯 [Sync] Unknown error: ${error}`)
         process.exit(1)
       },
-      "sync": function () {
+      'sync': function () {
         // Sync succeeded.
         console.log(` 💞 [Sync] Local folder ${clr(fromPath, 'cyan')} synced to ${clr(options.syncHost, 'cyan')}`)
       },
-      "watch": function () {
+      'watch': function () {
         // Watch succeeded.
         console.log(`\n 🔎 [Watch] Watching ${clr(fromPath, 'cyan')} for changes to sync to ${clr(options.syncHost, 'cyan')}…\n`)
       },
-      "watchEvent": function (event, path) {
-        // A watch event occured.
-
+      'watchEvent': function (event, path) {
+        // A watch event occurred.
         // Capitalise the first letter of the event name (verb).
         event = `${event[0].toUpperCase()}${event.slice(1)}`
         console.log(` 🔎 [Watch] ${event} ${path}`)
+      },
+      'watchError': function (error) {
+        // A watch error occurred.
+        console.log(`\n 🔎 [Watch] Error: ${error}\n`)
+        process.exit(1)
       }
     }
   }
