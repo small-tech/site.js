@@ -70,11 +70,14 @@ function sync (options) {
       },
       "watch": function () {
         // Watch succeeded.
-        console.log(`\n 🔎 Watching ${fromPath} for changes to sync to ${options.syncHost}\n`)
+        console.log(`\n 🔎 [Watch] Watching ${clr(fromPath, 'cyan')} for changes to sync to ${clr(options.syncHost, 'cyan')}…\n`)
       },
       "watchEvent": function (event, path) {
         // A watch event occured.
-        console.log(` 🔎 Sync ${event} ${path}`)
+
+        // Capitalise the first letter of the event name (verb).
+        event = `${event[0].toUpperCase()}${event.slice(1)}`
+        console.log(` 🔎 [Watch] ${event} ${path}`)
       }
     }
   }
