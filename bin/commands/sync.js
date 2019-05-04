@@ -94,7 +94,7 @@ function sync (options) {
           }
         }
 
-        console.log(` 🤯 Unknown sync error: ${error}`)
+        console.log(` 🤯 [Sync] Unknown error: ${error}`)
         process.exit(1)
       },
       "sync": function () {
