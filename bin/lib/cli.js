@@ -11,7 +11,7 @@ const clr = require('../../lib/clr')
 
 class CommandLineInterface {
 
-  // Initialise the commandline interface.
+  // Initialise the command-line interface.
   initialise () {
     const commandLineOptions = require('minimist')(process.argv.slice(2), {boolean: true})
     const command = this.command(commandLineOptions)
@@ -19,7 +19,7 @@ class CommandLineInterface {
   }
 
 
-  // Return the command given a command line options object.
+  // Return the command given a command-line options object.
   command (commandLineOptions) {
     const positionalArguments = commandLineOptions._
     const positionalCommand = positionalArguments[0]

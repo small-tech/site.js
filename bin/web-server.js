@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const CommandLineInterface = require('./lib/cli')
+const cli = require('./lib/cli')
 
 function exitElegantly () {
   console.log('\n 💖 Goodbye!\n')
@@ -9,4 +9,4 @@ function exitElegantly () {
 process.on('SIGINT', exitElegantly) // run signal handler on CTRL-C
 process.on('SIGTERM', exitElegantly) // run signal handler on SIGTERM
 
-CommandLineInterface.initialise()
+cli.initialise()
