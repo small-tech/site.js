@@ -217,10 +217,10 @@ function syncOptions () {
       // Syntax error: we can have at most two positional arguments.
       syntaxError('too many arguments')
     }
-  }
 
-  // Add any --<option>s that may exist to the syncOptions object.
-  addRemoteServerOptions()
+    // Add any --<option>s that may exist to the syncOptions object.
+    addRemoteServerOptions()
+  }
 
   return syncOptions
 }
