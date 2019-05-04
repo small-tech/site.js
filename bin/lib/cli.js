@@ -179,8 +179,9 @@ class CommandLineInterface {
     if (command.isProxy) {
       if (command.positionalArguments.length < 1) {
         // A proxy path must be included.
-        console.log('\n 🤯 Error: you must supply a URL to proxy. e.g., web-server proxy http://localhost:1313\n')
-        process.exit(1)
+        const errorMessage = 'Error: you must supply a URL to proxy. e.g., web-server proxy http://localhost:1313'
+        console.log(`\n 🤯 ${errorMessage}\n`)
+        throw new Error(errorMessage)
       }
       if (command.positionalArguments.length > 1) {
         // Syntax error.

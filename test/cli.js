@@ -13,7 +13,7 @@ function verifyCommand(command, expectedName) {
 }
 
 test('command parsing', t => {
-  t.plan(4)
+  t.plan(9)
 
   let command
 
@@ -23,20 +23,46 @@ test('command parsing', t => {
 
   const expectedLocalCommands = []
 
-  // No arguments – shorthand (e.g., web-server)
+  // No arguments – shorthand (i.e., web-server)
   expectedLocalCommands.push(cli.command({_:[]}))
 
   // One positional argument; folder ­– shorthand (e.g., web-server test/site)
   expectedLocalCommands.push(cli.command({_:['test/site']}))
 
-  // One positional argument; explicit command name.
+  // One positional argument; explicit command name (i.e., web-server local)
   expectedLocalCommands.push(cli.command({_:['local']}))
 
-  // Two positional arguments; explicit command name and folder
+  // Two positional arguments; explicit command name and folder (e.g., web-server local test/site).
   expectedLocalCommands.push(cli.command({_:['local', 'test/site']}))
+
+  // No positional arguments, explicit named argument (i.e., web-server --local).
+  expectedLocalCommands.push(cli.command({_:[], local: true}))
+
+  // One positional argument; folder + explicit named argument (e.g., web-server test/site --local).
+  expectedLocalCommands.push(cli.command({_:['test/site'], local: true}))
 
   // Test all commands we expect to be local.
   expectedLocalCommands.forEach(command => t.true(verifyCommand(command, 'isLocal'), 'command is local'))
+
+  //
+  // Command: isProxy
+  //
+
+  // e.g., web-server proxy localhost:1313
+  const proxyCommandWithCorrectPositionalSyntax = cli.command({_:['proxy', 'localhost:1313']})
+  t.true(verifyCommand(proxyCommandWithCorrectPositionalSyntax, 'isProxy'), 'command is proxy')
+
+  // e.g. web-server --proxy localhost:1313
+  const proxyCommandWithCorrectMixedSyntax = cli.command({_:['localhost:1313'], proxy: true})
+  t.true(verifyCommand(proxyCommandWithCorrectMixedSyntax, 'isProxy'), 'command is proxy')
+
+  // Missing argument (host)
+  const proxyCommandMissingHost = cli.command({_:['proxy']})
+  try {
+    cli.options(proxyCommandMissingHost)
+  } catch (error) {
+    t.ok(error, 'proxy command must have the host as the second positional argument')
+  }
 
   t.end()
 })

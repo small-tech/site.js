@@ -9,4 +9,8 @@ function exitElegantly () {
 process.on('SIGINT', exitElegantly) // run signal handler on CTRL-C
 process.on('SIGTERM', exitElegantly) // run signal handler on SIGTERM
 
-cli.initialise()
+try {
+  cli.initialise()
+} catch (error) {
+  process.exit(1)
+}
