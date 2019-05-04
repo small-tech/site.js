@@ -18,7 +18,19 @@ test('command parsing', t => {
   let command
 
   //
-  // Command: isLocal
+  // Command: version TODO
+  //
+
+
+
+  //
+  // Command: help TODO
+  //
+
+
+
+  //
+  // Command: local
   //
 
   const expectedLocalCommands = []
@@ -45,7 +57,13 @@ test('command parsing', t => {
   expectedLocalCommands.forEach(command => t.true(verifyCommand(command, 'isLocal'), 'command is local'))
 
   //
-  // Command: isProxy
+  // Command: global TODO
+  //
+
+
+
+  //
+  // Command: proxy
   //
 
   // e.g., web-server proxy localhost:1313
@@ -63,6 +81,34 @@ test('command parsing', t => {
   } catch (error) {
     t.ok(error, 'proxy command must have the host as the second positional argument')
   }
+
+  //
+  // Command: sync TODO
+  //
+
+
+
+  //
+  // Command: enable TODO
+  //
+
+
+
+  //
+  // Command: disable TODO
+  //
+
+
+
+  //
+  // Command: logs TODO
+  //
+
+
+
+  //
+  // Command: status TODO
+  //
 
   t.end()
 })
