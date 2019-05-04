@@ -55,14 +55,47 @@ function sync (options) {
         //
         // Rsync error; try to handle gracefully.
         //
-        // Supported errors:
+        // (Errors list courtesy of https://lxadm.com/Rsync_exit_codes).
         //
-        // 255: Proxied SSH error (“Could not resolve hostname”)
-        //
-        if (error.toString().match('rsync exited with code 255')) {
-          console.log(` 🤯 Sync error: could not resolve hostname ${clr(options.syncHost, 'cyan')}\n`)
-          process.exit(1)
+        const _ = []
+        _[0] = 'Success'
+        _[1] = 'Syntax or usage error'
+        _[2] = 'Protocol incompatibility'
+        _[3] = 'Errors selecting input/output files, dirs'
+        _[4] = 'Requested action not supported: an attempt was made to manipulate 64-bit files on a platform that cannot support them; or an option was specified that is supported by the client and not by the server.'
+        _[5] = 'Error starting client-server protocol'
+        _[6] = 'Daemon unable to append to log-file'
+        _[10] = 'Error in socket I/O'
+        _[11] = 'Error in file I/O'
+        _[12] = 'Error in rsync protocol data stream'
+        _[13] = 'Errors with program diagnostics'
+        _[14] = 'Error in IPC code'
+        _[20] = 'Received SIGUSR1 or SIGINT'
+        _[21] = 'Some error returned by waitpid()'
+        _[22] = 'Error allocating core memory buffers'
+        _[23] = 'Partial transfer due to error'
+        _[24] = 'Partial transfer due to vanished source files'
+        _[25] = 'The --max-delete limit stopped deletions'
+        _[30] = 'Timeout in data send/receive'
+        _[35] = 'Timeout waiting for daemon connection'
+        _[127] = 'Rsync not found; please run web-server enable --sync'
+        _[255] = `Could not resolve hostname ${clr(options.syncHost, 'cyan')}`
+
+        // Scrape the error code from the error string (not ideal but it’s all
+        // we have to work with).
+        const errorMatch = error.toString().match(/rsync exited with code (\d+)/)
+
+        if (errorMatch !== null) {
+          const errorCode = errorMatch[1]
+          const errorMessage = _[errorCode]
+          if (typeof errorMessage !== 'undefined') {
+            console.log(` 🤯 [Sync] Error ${errorCode}: ${errorMessage}\n`)
+            process.exit(1)
+          }
         }
+
+        console.log(` 🤯 Unknown sync error: ${error}`)
+        process.exit(1)
       },
       "sync": function () {
         // Sync succeeded.

@@ -4,6 +4,15 @@ const commandLineOptions = require('minimist')(process.argv.slice(2), {boolean: 
 
 const clr = require('./lib/cli').clr
 
+function exitElegantly () {
+  console.log('\n 💖 Goodbye!\n')
+  process.exit()
+}
+
+process.on('SIGINT', exitElegantly) // run signal handler on CTRL-C
+process.on('SIGTERM', exitElegantly) // run signal handler on SIGTERM
+
+
 //
 // Get the command.
 //
