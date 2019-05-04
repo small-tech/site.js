@@ -15,7 +15,7 @@ const tcpPortUsed = require('tcp-port-used')
 
 const runtime = require('../lib/runtime')
 const ensure = require('../lib/ensure')
-const clr = require('../lib/cli').clr
+const clr = require('../../lib/clr')
 
 const webServer = require('../../index')
 

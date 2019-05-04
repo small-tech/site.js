@@ -7,7 +7,7 @@
 //////////////////////////////////////////////////////////////////////
 
 const webServer = require('../../index')
-const clr = require('../lib/cli').clr
+const clr = require('../../lib/clr')
 
 const GREEN = 'green'
 const YELLOW = 'yellow'

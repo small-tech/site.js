@@ -5,7 +5,7 @@ const path = require('path')
 const os = require('os')
 const childProcess = require('child_process')
 
-const clr = require('./bin/lib/cli').clr
+const clr = require('./lib/clr')
 
 const express = require('express')
 const helmet = require('helmet')

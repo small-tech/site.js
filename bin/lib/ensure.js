@@ -10,7 +10,7 @@ const path = require('path')
 const runtime = require('./runtime')
 const getStatus = require('./status')
 
-const clr = require('../lib/cli').clr
+const clr = require('../../lib/clr')
 
 class Ensure {
   // Ensure we have root privileges and exit if we don’t.

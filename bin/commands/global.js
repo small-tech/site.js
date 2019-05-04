@@ -9,7 +9,7 @@
 
 const webServer = require('../../index')
 const tcpPortUsed = require('tcp-port-used')
-const clr = require('../lib/cli').clr
+const clr = require('../../lib/clr')
 
 function serve (options) {
 

@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node index.js",
     "build": "bin/build.js",
-    "test": "tape test/index.js"
+    "test": "tape test/*.js"
   },
   "repository": {
     "type": "git",

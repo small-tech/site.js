@@ -20,7 +20,7 @@
 const localServer = require('./local')
 const proxyServer = require('./proxy')
 const RsyncWatcher = require('../lib/RsyncWatcher')
-const clr = require('../lib/cli').clr
+const clr = require('../../lib/clr')
 
 function sync (options) {
   //
