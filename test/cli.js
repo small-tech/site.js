@@ -13,7 +13,7 @@ function verifyCommand(command, expectedName) {
 }
 
 test('command parsing', t => {
-  t.plan(2)
+  t.plan(4)
 
   let command
 
@@ -23,11 +23,17 @@ test('command parsing', t => {
 
   const expectedLocalCommands = []
 
-  // No arguments; shorthand (e.g., web-server)
+  // No arguments – shorthand (e.g., web-server)
   expectedLocalCommands.push(cli.command({_:[]}))
 
-  // One positional argument, explicit command-name.
+  // One positional argument; folder ­– shorthand (e.g., web-server test/site)
+  expectedLocalCommands.push(cli.command({_:['test/site']}))
+
+  // One positional argument; explicit command name.
   expectedLocalCommands.push(cli.command({_:['local']}))
+
+  // Two positional arguments; explicit command name and folder
+  expectedLocalCommands.push(cli.command({_:['local', 'test/site']}))
 
   // Test all commands we expect to be local.
   expectedLocalCommands.forEach(command => t.true(verifyCommand(command, 'isLocal'), 'command is local'))
