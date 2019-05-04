@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 const fs = require('fs')
+const path = require('path')
+
 const commandLineOptions = require('minimist')(process.argv.slice(2), {boolean: true})
 
 const clr = require('./lib/cli').clr
@@ -11,7 +13,6 @@ function exitElegantly () {
 
 process.on('SIGINT', exitElegantly) // run signal handler on CTRL-C
 process.on('SIGTERM', exitElegantly) // run signal handler on SIGTERM
-
 
 //
 // Get the command.
@@ -176,59 +177,171 @@ function syncOptions () {
   //
   //  1. web-server sync --host=<host> [--folder=<folder>] [--account=<account>] [--proxy=<proxy-host>]
   //  2. web-server sync <host>
-  //  3. web-server sync <folder> <host>
-  //  4. web-server sync --to=<account>@<host>:/home/<account>/<folder> [--proxy=<proxy-host>]
+  //  3. web-server sync <folder> --host=<host>
+  //  4. web-server sync <folder> <host>
+  //  5. web-server sync --to=<account>@<host>:/home/<account>/<folder> [--proxy=<proxy-host>]
+  //  6. web-server sync <folder> --to=<account>@<host>:/home/<account>/<folder> [--proxy=<proxy-host>]
   //
   // Key: […] = optional, <…> = value placeholder.
   //
 
-  const syncOptions = { syncHost: null, syncFolder: null, syncAccount: null, syncRemoteFolder: null }
+  const syncOptionsDerivedFromPositionalArguments = { syncLocalFolder: null, syncRemoteHost: null }
+
+  const syncOptions = { syncRemoteConnectionString: null, syncLocalFolder: null, syncStartProxyServer: null, syncRemoteHost: null }
 
   if (command.isSync) {
 
     // Adds remote server --<option>s, if any, to the syncOptions object.
-    function addRemoteServerOptions () {
-      console.log('Adding remote options')
-      if (typeof commandLineOptions.account === 'String') {
-        console.log('Account exists and is a string!')
+    function addNamedArguments () {
+      console.log('Sync: adding named arguments.')
+
+      function stringOptionExists(optionName) {
+        return typeof commandLineOptions[optionName] === 'string'
       }
+
+      // Check for conflicts between positional arguments and named arguments
+      // and fail if there are any.
+      if (stringOptionExists('to')) {
+        if (syncOptionsDerivedFromPositionalArguments.syncRemoteHost !== null) {
+          // Conflict: remote host specified as both a positional argument and within the --to option.
+          syntaxError(`ambiguous sync options: please provide ${clr('either', 'italics')} the ${clr('to', 'cyan')} option or provide the remote host as a positional argument, but not both.`)
+        } else if (stringOptionExists('account') || stringOptionExists('host') || stringOptionExists('folder')) {
+          // Conflict: --to option used alongside the --account, --host, or --folder arguments.
+          syntaxError(`ambiguous sync options: please provide ${clr('either', 'italics')} the ${clr('to', 'cyan')} option or use ${clr('account', 'cyan')}/${clr('host', 'cyan')}/${clr('folder', 'cyan')} options but not both.`)
+        } else {
+          // Check that the passed string has correct syntax.
+          remoteConnectionStringSyntaxMatch = commandLineOptions.to.match(/(.*?)@(.*?):(.*?)$/)
+          if (remoteConnectionStringSyntaxMatch === null) {
+            syntaxError(`could not parse rsync connection string in ${clr('--to', 'yellow')} option (${clr(commandLineOptions.to, 'cyan')}). It should be in the form ${clr('account@host:/path/to/folder', 'cyan')}`)
+          }
+
+        // Helper: redundant but useful so we don’t have to parse the remote connection string again.
+        syncOptions.syncRemoteHost = remoteConnectionStringSyntaxMatch[2]
+
+          // No conflicts or syntax issues: set the remote connection string to the one provided.
+          syncOptions.syncRemoteConnectionString = commandLineOptions.to
+        }
+      } else {
+        // Construct the remote connection string.
+        if (syncOptionsDerivedFromPositionalArguments.syncRemoteHost !== null && stringOptionExists('host')) {
+          syntaxError(`ambiguous sync options: please provide ${clr('either', 'italics')} the ${clr('host', 'cyan')} option or provide the remote host as a positional argument, but not both.`)
+        }
+
+        // The account to use is either what is set explicitly using the --account option
+        // or defaults to the same account as the person has on their local machine.
+        const _account = stringOptionExists('account') ? commandLineOptions.account : process.env.USER
+        const _host = stringOptionExists('host') ? commandLineOptions.host : syncOptionsDerivedFromPositionalArguments.syncRemoteHost
+
+        if (_host === null) {
+          // This should not happen.
+          syntaxError(`remote ${clr('host', 'cyan')} not provided either using the ${clr('--host', 'yellow')} option or via a positional argument. This should not happen.`)
+        }
+
+        // Helper: redundant but useful so we don’t have to parse the remote connection string again.
+        syncOptions.syncRemoteHost = _host
+
+        // We expect the remote folder to be at /home/<account>/<folder> where <folder> either defaults
+        // to the name of the current folder on the local machine or is overriden using the --folder option.
+        // If you want to specify any arbitrary folder on the remote machine, provide the full rsync
+        // connection string using the --to option.
+        const remoteFolderPrefix = `/home/${_account}`
+        console.log('poo', process.cwd())
+        console.log('moo', syncOptions.syncLocalFolder)
+        const localFolderPath = path.resolve(path.join(process.cwd(), syncOptionsDerivedFromPositionalArguments.syncLocalFolder))
+        const localFolderFragments = localFolderPath.split(path.sep)
+        const currentLocalFolderName = localFolderFragments[localFolderFragments.length-1]
+
+        const _folder = stringOptionExists('folder') ? `${remoteFolderPrefix}/${commandLineOptions.folder}` : `${remoteFolderPrefix}/${currentLocalFolderName}`
+
+        syncOptions.syncRemoteConnectionString = `${_account}@${_host}:${_folder}`
+
+        console.log('>>> Constructed remote connection string', syncOptions.syncRemoteConnectionString)
+      }
+
+      // Add the local folder to sync. This should have been set before we reach this point.
+      // Sanity check:
+      if (syncOptionsDerivedFromPositionalArguments.syncLocalFolder === null) {
+        throw new Error('Sanity check failed: syncOptionsDerivedFromPositionalArguments.syncLocalFolder should not be null.')
+      }
+      syncOptions.syncLocalFolder = syncOptionsDerivedFromPositionalArguments.syncLocalFolder
+
+      // Add a trailing slash to the local folder if one doesn’t already exist.
+      if (!syncOptions.syncLocalFolder.endsWith('/')) {syncOptions.syncLocalFolder = `${syncOptions.syncLocalFolder}/`}
+
+      // Ensure that the local folder exists.
+      if (!fs.existsSync(syncOptions.syncLocalFolder)) {
+        console.log(`\n 🤯 Error: Folder not found (${clr(syncOptions.syncFolder, 'cyan')}).\n\n    Syntax:\tweb-server ${clr('sync', 'green')} ${clr('folder', 'cyan')} ${clr('domain', 'yellow')}\n    Command:\tweb-server ${clr('sync', 'green')} ${clr(syncOptions.syncFolder, 'cyan')} ${clr(syncOptions.syncDomain, 'yellow')}\n`)
+        process.exit(1)
+      }
+
+      //
+      // Add any remaining sync options that have been provided.
+      //
+      if (stringOptionExists('proxy')) {
+        syncOptions.syncStartProxyServer = commandLineOptions.proxy
+      }
+
+      // Debug. (That’s it, this is the syncOptions object we’ll be returning).
+      console.log('syncOptions', syncOptions)
     }
 
     if (webServerArguments.length === 0) {
       //
-      // 1. No positional arguments. Must at least specify the host as a named argument.
+      // No positional arguments. Must at least specify either:
       //
-      console.log("Syntax 1")
-      if (commandLineOptions.host === undefined) {
-        syntaxError('must specify host to sync to')
+      //  Syntax 1. host as a named argument (--host), or
+      //  Syntax 4. the full rsync connection string using the --to named argument.
+      //
+      // Note: If the --to option is specified, it will override the host, folder,
+      // ===== and account arguments (whether named or positional).
+      //
+      console.log("Syntax 1 or 5")
+
+      if (typeof commandLineOptions.to === 'string') {
+        console.log("Syntax 5")
+        syncOptionsDerivedFromPositionalArguments.syncLocalFolder = '.'
+      } else if (typeof commandLineOptions.host === 'string') {
+        console.log("Syntax 1")
+        syncOptionsDerivedFromPositionalArguments.syncLocalFolder = '.'
+      } else if (typeof commandLineOptions.to === 'string') {
+        // Syntax error.
+        syntaxError(`must specify either ${clr('host', 'cyan')} to sync to or provide full rsync connection string using ${clr('to', 'cyan')} option`)
       }
     } else if (webServerArguments.length === 1) {
-      console.log("Syntax 2")
+      console.log("Syntax 2, 3, or 6")
       //
-      // 2. One argument is provided: it is the host. The folder to sync is the current folder.
+      // One argument is provided, if:
       //
-      syncOptions.syncHost = webServerArguments[0]
-      syncOptions.syncFolder = '.'
+      // Syntax 2: it is the local folder if --host is set
+      // Syntax 6: it is the local folder if --to is set
+      // Syntax 3: it is the host if --host is not set. The folder to sync is the current folder.
+      //
+      if (typeof commandLineOptions.host === 'string') {
+        console.log('Syntax 2')
+        syncOptionsDerivedFromPositionalArguments.syncLocalFolder = webServerArguments[0]
+      } else if (typeof commandLineOptions.to === 'string') {
+        console.log('Syntax 6')
+        syncOptionsDerivedFromPositionalArguments.syncLocalFolder = webServerArguments[0]
+      } else {
+        console.log('Syntax 3')
+        syncOptionsDerivedFromPositionalArguments.syncRemoteHost = webServerArguments[0]
+        syncOptionsDerivedFromPositionalArguments.syncLocalFolder = '.'
+      }
     } else if (webServerArguments.length === 2) {
-      console.log("Syntax 3")
+      console.log("Syntax 4")
       //
-      // 3. Two arguments provided. We interpret the first as the path of the
+      // Syntax 4: Two arguments provided. We interpret the first as the path of the
       // folder to serve and the second as the host.
       //
-      syncOptions.syncFolder = webServerArguments[0]
-      syncOptions.syncHost = webServerArguments[1]
-
-      if (!fs.existsSync(syncOptions.syncFolder)) {
-        console.log(`\n 🤯 Error: Folder not found (${clr(syncOptions.syncFolder, 'cyan')}).\n\n    Syntax:\tweb-server ${clr('sync', 'green')} ${clr('folder', 'cyan')} ${clr('domain', 'yellow')}\n    Command:\tweb-server ${clr('sync', 'green')} ${clr(syncOptions.syncFolder, 'cyan')} ${clr(syncOptions.syncDomain, 'yellow')}\n`)
-        process.exit(1)
-      }
+      syncOptionsDerivedFromPositionalArguments.syncLocalFolder = webServerArguments[0]
+      syncOptionsDerivedFromPositionalArguments.syncRemoteHost = webServerArguments[1]
     } else {
       // Syntax error: we can have at most two positional arguments.
       syntaxError('too many arguments')
     }
 
-    // Add any --<option>s that may exist to the syncOptions object.
-    addRemoteServerOptions()
+    // Add any named arguments (--<option>) that may exist to the syncOptions object.
+    addNamedArguments()
   }
 
   return syncOptions

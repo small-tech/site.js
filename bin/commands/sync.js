@@ -25,18 +25,15 @@ function sync (options) {
   //
   // Start rsync watcher.
   //
-  options.pathToServe = (options.syncFolder === null) ? '.' : options.syncFolder
+  console.log(` 💞 [Sync] Will sync folder ${clr(options.syncLocalFolder, 'cyan')} to host ${clr(options.syncRemoteHost, 'cyan')}`)
 
-  console.log(` 💞 [Sync] Will sync folder ${clr(options.syncFolder, 'cyan')} to host ${clr(options.syncHost, 'cyan')}`)
+  console.log('Debug: remote server connection string', options.syncRemoteConnectionString)
 
-  let fromPath = options.syncFolder
-  if (!fromPath.endsWith('/')) {fromPath = `${fromPath}/`}
-
-  // TODO: Remove: Hardcoded config.
   const rsyncOptions = {
     'sync': {
-      'from': fromPath,
-      'to': `aral@${options.syncHost}:/home/aral/site`,
+      'from': options.syncLocalFolder,
+      'to': `${options.syncRemoteConnectionString}`,
+      // TODO: allow override of these.
       'exclude': [
         '.DS_Store',
         '.dat/*',
@@ -79,7 +76,7 @@ function sync (options) {
         _[30] = 'Timeout in data send/receive'
         _[35] = 'Timeout waiting for daemon connection'
         _[127] = 'Rsync not found; please run web-server enable --sync'
-        _[255] = `Could not resolve hostname ${clr(options.syncHost, 'cyan')}`
+        _[255] = `SSH error while connecting to ${clr(options.syncRemoteHost, 'cyan')} (is this hostname/SSH certificates correct?)`
 
         // Scrape the error code from the error string (not ideal but it’s all
         // we have to work with).
@@ -90,6 +87,7 @@ function sync (options) {
           const errorMessage = _[errorCode]
           if (typeof errorMessage !== 'undefined') {
             console.log(` 🤯 [Sync] Error ${errorCode}: ${errorMessage}\n`)
+            console.log(error)
             process.exit(1)
           }
         }
@@ -99,11 +97,11 @@ function sync (options) {
       },
       'sync': function () {
         // Sync succeeded.
-        console.log(` 💞 [Sync] Local folder ${clr(fromPath, 'cyan')} synced to ${clr(options.syncHost, 'cyan')}`)
+        console.log(` 💞 [Sync] Local folder ${clr(options.syncLocalFolder, 'cyan')} synced to ${clr(options.syncRemoteHost, 'cyan')}`)
       },
       'watch': function () {
         // Watch succeeded.
-        console.log(`\n 🔎 [Watch] Watching ${clr(fromPath, 'cyan')} for changes to sync to ${clr(options.syncHost, 'cyan')}…\n`)
+        console.log(`\n 🔎 [Watch] Watching ${clr(options.syncLocalFolder, 'cyan')} for changes to sync to ${clr(options.syncRemoteHost, 'cyan')}…\n`)
       },
       'watchEvent': function (event, path) {
         // A watch event occurred.
@@ -124,6 +122,9 @@ function sync (options) {
 
   // Create the rsync watcher.
   new RsyncWatcher(rsyncOptions)
+
+  // Set the path to serve for the local server.
+  options.pathToServe = options.syncLocalFolder
 
   // Launch local server.
   localServer(options)
