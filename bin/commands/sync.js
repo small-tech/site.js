@@ -18,6 +18,7 @@
 //////////////////////////////////////////////////////////////////////
 
 const localServer = require('./local')
+const proxyServer = require('./proxy')
 const RsyncWatcher = require('../lib/RsyncWatcher')
 const clr = require('../lib/cli').clr
 
@@ -118,16 +119,27 @@ function sync (options) {
   }
 
   // Debug
-  // console.log('rsyncOptions', rsyncOptions)
+  console.log('rsyncOptions', rsyncOptions)
 
   // Create the rsync watcher.
   new RsyncWatcher(rsyncOptions)
 
-  // Set the path to serve for the local server.
-  options.pathToServe = options.syncLocalFolder
+  if (options.syncStartProxyServer === true) {
+    //
+    // Start a proxy server.
+    //
+    proxyServer(options)
+  } else {
+    //
+    // Start a regular local server.
+    //
 
-  // Launch local server.
-  localServer(options)
+    // Set the path to serve for the local server.
+    options.pathToServe = options.syncLocalFolder
+
+    // Launch local server.
+    localServer(options)
+  }
 }
 
 module.exports = sync

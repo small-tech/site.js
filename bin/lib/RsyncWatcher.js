@@ -69,11 +69,16 @@ class RSyncWatcher {
     }
   }
 
-
   sync(project) {
+
+    let folderToSync = this.options[project].from
+    if (!path.isAbsolute(folderToSync)) {
+      folderToSync = path.resolve(path.join(process.cwd(), folderToSync))
+    }
+
     const rsync = new Rsync()
     .exclude(this.options[project].exclude || [])
-    .source(path.join(process.cwd(), this.options[project].from))
+    .source(folderToSync)
     .destination(this.options[project].to)
 
     for (let optionKey in (this.options[project].rsyncOptions || {})) {
@@ -127,10 +132,16 @@ class RSyncWatcher {
   }
 
   watch(project) {
-    const watcher = chokidar.watch(path.join(process.cwd(), this.options[project].from), {
+
+    let folderToWatch = this.options[project].from
+    if (!path.isAbsolute(folderToWatch)) {
+      folderToWatch = path.resolve(path.join(process.cwd(), folderToWatch))
+    }
+
+    const watcher = chokidar.watch(folderToWatch, {
       ignoreInitial: true,
       ignored: this.options[project].exclude || null,
-      cwd: path.join(process.cwd(), this.options[project].from),
+      cwd: folderToWatch,
     })
 
     this.watchers.push({project, watcher})

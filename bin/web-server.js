@@ -137,10 +137,30 @@ function port () {
   return port
 }
 
+// Returns the proxy urls (http and ws) for the given host string.
+function proxyUrls (host) {
+  const proxyOptions = {}
+  proxyOptions.proxyHttpURL = host
+
+  if (proxyOptions.proxyHttpURL.startsWith('https://')) {
+    // Cannot proxy HTTPS.
+    console.log('\n 🤯 Error: cannot proxy HTTPS.\n')
+    process.exit(1)
+  }
+
+  if (!proxyOptions.proxyHttpURL.startsWith('http://')) {
+    proxyOptions.proxyHttpURL = `http://${proxyOptions.proxyHttpURL}`
+  }
+
+  proxyOptions.proxyWebSocketURL = proxyOptions.proxyHttpURL.replace('http://', 'ws://')
+
+  return proxyOptions
+}
+
 
 // If the server type is proxy, return the proxy URL (and exit with an error if one is not provided).
 function proxyOptions () {
-  const proxyOptions = {proxyHttpURL: null, proxyWebSocketURL: null}
+  let proxyOptions = {proxyHttpURL: null, proxyWebSocketURL: null}
 
   if (command.isProxy) {
     if (webServerArguments.length < 1) {
@@ -152,19 +172,7 @@ function proxyOptions () {
       // Syntax error.
       syntaxError()
     }
-    proxyOptions.proxyHttpURL = webServerArguments[0]
-
-    if (proxyOptions.proxyHttpURL.startsWith('https://')) {
-      // Cannot proxy HTTPS.
-      console.log('\n 🤯 Error: cannot proxy HTTPS.\n')
-      process.exit(1)
-    }
-
-    if (!proxyOptions.proxyHttpURL.startsWith('http://')) {
-      proxyOptions.proxyHttpURL = `http://${proxyOptions.proxyHttpURL}`
-    }
-
-    proxyOptions.proxyWebSocketURL = proxyOptions.proxyHttpURL.replace('http://', 'ws://')
+    proxyOptions = proxyUrls(webServerArguments[0])
   }
 
   return proxyOptions
@@ -245,9 +253,7 @@ function syncOptions () {
         // If you want to specify any arbitrary folder on the remote machine, provide the full rsync
         // connection string using the --to option.
         const remoteFolderPrefix = `/home/${_account}`
-        console.log('poo', process.cwd())
-        console.log('moo', syncOptions.syncLocalFolder)
-        const localFolderPath = path.resolve(path.join(process.cwd(), syncOptionsDerivedFromPositionalArguments.syncLocalFolder))
+        const localFolderPath = path.normalize(syncOptionsDerivedFromPositionalArguments.syncLocalFolder)
         const localFolderFragments = localFolderPath.split(path.sep)
         const currentLocalFolderName = localFolderFragments[localFolderFragments.length-1]
 
@@ -278,7 +284,9 @@ function syncOptions () {
       // Add any remaining sync options that have been provided.
       //
       if (stringOptionExists('proxy')) {
-        syncOptions.syncStartProxyServer = commandLineOptions.proxy
+        syncOptions.syncStartProxyServer = true
+        const proxyOptions = proxyUrls(commandLineOptions.proxy)
+        Object.assign(syncOptions, proxyOptions)
       }
 
       // Debug. (That’s it, this is the syncOptions object we’ll be returning).
