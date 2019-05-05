@@ -12,7 +12,7 @@ function verifyCommand(command, expectedName) {
   }, true)
 }
 
-test('command parsing', t => {
+test('[Command-Line Interface] command parsing', t => {
   t.plan(17)
 
   let command
