@@ -13,19 +13,21 @@ function verifyCommand(command, expectedName) {
 }
 
 test('command parsing', t => {
-  t.plan(10)
+  t.plan(13)
 
   let command
 
   //
-  // Command: version TODO
+  // Command: version
   //
-  t.ok(verifyCommand(cli.command({_:['version']}), 'isVersion'), 'version command is detected')
-
+  t.ok(verifyCommand(cli.command({_:['version']}), 'isVersion'), 'version command is detected (positional)')
+  t.ok(verifyCommand(cli.command({_:[], version: true}), 'isVersion'), 'version command is detected (named)')
 
   //
   // Command: help TODO
   //
+  t.ok(verifyCommand(cli.command({_:['help']}), 'isHelp'), 'help is detected (positional)')
+  t.ok(verifyCommand(cli.command({_:[], help: true}), 'isHelp'), 'help is detected (named)')
 
 
 
