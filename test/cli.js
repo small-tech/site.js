@@ -20,7 +20,7 @@ function verifyCommand(command, expectedName) {
 }
 
 test('[Command-Line Interface] command parsing', t => {
-  t.plan(41)
+  t.plan(46)
 
   let command
   let options
@@ -117,9 +117,6 @@ test('[Command-Line Interface] command parsing', t => {
 
     const options = cli.options(command)
 
-    console.log('command', command)
-    console.log('options', options)
-
     let expectedHost
     if (command.namedArguments.to !== undefined) {
       expectedHost = command.namedArguments.to.match(/.+?\@(.+?)\:/)[1]
@@ -130,8 +127,6 @@ test('[Command-Line Interface] command parsing', t => {
     } else if (command.positionalArguments.length === 2) {
       expectedHost = command.positionalArguments[1]
     }
-
-    console.log('>>>> EXPECTED HOST', expectedHost)
 
     t.equals(options.syncRemoteHost, expectedHost)
 
@@ -179,14 +174,27 @@ test('[Command-Line Interface] command parsing', t => {
   // (e.g., web-server sync --to=me@my.site:/home/me/my-remote-site-folder)
   verifySyncCommand(cli.command({_:['sync'], to: 'me@my.site:/home/me/my-remote-site-folder'}))
 
+  // Two positional arguments; command name and local folder and named argument for the remote connection string
+  // (e.g., web-server sync test/site --to=me@my.site:/home/me/my-remote-site-folder)
+  verifySyncCommand(cli.command({_:['sync', 'test/site'], to: 'me@my.site:/home/me/my-remote-site-folder'}))
+
   // Two positional arguments; command name and the host (e.g., web-server sync my.site)
   verifySyncCommand(cli.command({_:['sync', 'my.site']}))
 
-  // Three positional arguments; command name, folder, and host (e.g., web-server sync folder my.site)
+  // Three positional arguments; command name, folder, and host (e.g., web-server sync test/site my.site)
   verifySyncCommand(cli.command({_:['sync', 'test/site', 'my.site']}))
 
-  // Two positional arguments; command name and the host (e.g., web-server sync my.site)
-  // verifySyncCommand(cli.command({_:['sync', 'my.site']}))
+  // Two positional arguments; command name and the host (e.g., web-server sync my.site --host=some-other-side)
+  // Conflit: this should throw as my.site will be interpreted as a local folder and does not exist(in our test anyway).
+  t.throws(function() { cli.options(cli.command({_:['sync', 'my.site'], host: 'some-other.site'})) }, 'host conflict between positional and named arguments should throw')
+
+  // // One positional argument; command name and named argument for host & account
+  // // (e.g., web-server sync --host=my.site --account=me)
+  // verifySyncCommand(cli.command({_:['sync'], host: 'my.site', account: 'me'}))
+
+  // // One positional argument; command name and named argument for host, account, & remote folder
+  // // (e.g., web-server sync --host=my.site --account=me)
+  // verifySyncCommand(cli.command({_:['sync'], host: 'my.site', account: 'me', folder: 'www'}))
 
 
   //
