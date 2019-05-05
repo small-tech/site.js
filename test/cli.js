@@ -13,26 +13,26 @@ function verifyCommand(command, expectedName) {
 }
 
 test('command parsing', t => {
-  t.plan(13)
+  t.plan(17)
 
   let command
 
   //
-  // Command: version
+  // Command: version.
   //
+
   t.ok(verifyCommand(cli.command({_:['version']}), 'isVersion'), 'version command is detected (positional)')
   t.ok(verifyCommand(cli.command({_:[], version: true}), 'isVersion'), 'version command is detected (named)')
 
   //
-  // Command: help TODO
+  // Command: help.
   //
+
   t.ok(verifyCommand(cli.command({_:['help']}), 'isHelp'), 'help is detected (positional)')
   t.ok(verifyCommand(cli.command({_:[], help: true}), 'isHelp'), 'help is detected (named)')
 
-
-
   //
-  // Command: local
+  // Command: local.
   //
 
   const expectedLocalCommands = []
@@ -62,6 +62,22 @@ test('command parsing', t => {
   // Command: global TODO
   //
 
+  const expectedGlobalCommands = []
+
+  // One positional argument; explicit command name (i.e., web-server global)
+  expectedGlobalCommands.push(cli.command({_:['global']}))
+
+  // Two positional arguments; explicit command name and folder (e.g., web-server local test/site).
+  expectedGlobalCommands.push(cli.command({_:['global', 'test/site']}))
+
+  // No positional arguments, explicit named argument (i.e., web-server --local).
+  expectedGlobalCommands.push(cli.command({_:[], global: true}))
+
+  // One positional argument; folder + explicit named argument (e.g., web-server test/site --local).
+  expectedGlobalCommands.push(cli.command({_:['test/site'], global: true}))
+
+  // Test all commands we expect to be local.
+  expectedGlobalCommands.forEach(command => t.true(verifyCommand(command, 'isGlobal'), 'command is global'))
 
 
   //
