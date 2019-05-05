@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+
+  - New rsync-based sync command for deploying changes to a live server.
+  - Unit tests for command-line interface.
+  - Code coverage and better tape reporting via tap-spec.
+
 ### Changed
 
   - Do not throw after handling a port conflict error when creating a proxy server.
