@@ -59,7 +59,7 @@ test('command parsing', t => {
   expectedLocalCommands.forEach(command => t.true(verifyCommand(command, 'isLocal'), 'command is local'))
 
   //
-  // Command: global TODO
+  // Command: global
   //
 
   const expectedGlobalCommands = []
@@ -67,18 +67,17 @@ test('command parsing', t => {
   // One positional argument; explicit command name (i.e., web-server global)
   expectedGlobalCommands.push(cli.command({_:['global']}))
 
-  // Two positional arguments; explicit command name and folder (e.g., web-server local test/site).
+  // Two positional arguments; explicit command name and folder (e.g., web-server global test/site).
   expectedGlobalCommands.push(cli.command({_:['global', 'test/site']}))
 
-  // No positional arguments, explicit named argument (i.e., web-server --local).
+  // No positional arguments, explicit named argument (i.e., web-server --global).
   expectedGlobalCommands.push(cli.command({_:[], global: true}))
 
-  // One positional argument; folder + explicit named argument (e.g., web-server test/site --local).
+  // One positional argument; folder + explicit named argument (e.g., web-server test/site --global).
   expectedGlobalCommands.push(cli.command({_:['test/site'], global: true}))
 
   // Test all commands we expect to be local.
   expectedGlobalCommands.forEach(command => t.true(verifyCommand(command, 'isGlobal'), 'command is global'))
-
 
   //
   // Command: proxy
@@ -101,7 +100,7 @@ test('command parsing', t => {
   }
 
   //
-  // Command: sync TODO
+  // Command: sync.
   //
 
 
