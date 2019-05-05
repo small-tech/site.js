@@ -234,7 +234,7 @@ class CommandLineInterface {
             this.syntaxError(`ambiguous sync options: please provide ${clr('either', 'italics')} the ${clr('to', 'cyan')} option or use ${clr('account', 'cyan')}/${clr('host', 'cyan')}/${clr('folder', 'cyan')} options but not both.`)
           } else {
             // Check that the passed string has correct syntax.
-            remoteConnectionStringSyntaxMatch = command.namedArguments.to.match(/(.*?)@(.*?):(.*?)$/)
+            const remoteConnectionStringSyntaxMatch = command.namedArguments.to.match(/(.*?)@(.*?):(.*?)$/)
             if (remoteConnectionStringSyntaxMatch === null) {
               this.syntaxError(`could not parse rsync connection string in ${clr('--to', 'yellow')} option (${clr(command.namedArguments.to, 'cyan')}). It should be in the form ${clr('account@host:/path/to/folder', 'cyan')}`)
             }
@@ -290,10 +290,13 @@ class CommandLineInterface {
         // Add a trailing slash to the local folder if one doesn’t already exist.
         if (!syncOptions.syncLocalFolder.endsWith('/')) {syncOptions.syncLocalFolder = `${syncOptions.syncLocalFolder}/`}
 
+        console.log('...', syncOptions)
+
         // Ensure that the local folder exists.
         if (!fs.existsSync(syncOptions.syncLocalFolder)) {
-          console.log(`\n 🤯 Error: Folder not found (${clr(syncOptions.syncFolder, 'cyan')}).\n\n    Syntax:\tweb-server ${clr('sync', 'green')} ${clr('folder', 'cyan')} ${clr('domain', 'yellow')}\n    Command:\tweb-server ${clr('sync', 'green')} ${clr(syncOptions.syncFolder, 'cyan')} ${clr(syncOptions.syncDomain, 'yellow')}\n`)
-          process.exit(1)
+          const errorMessage = `Error: Folder not found (${clr(syncOptions.syncFolder, 'cyan')}).\n\n    Syntax:\tweb-server ${clr('sync', 'green')} ${clr('folder', 'cyan')} ${clr('domain', 'yellow')}\n    Command:web-server ${clr('sync', 'green')} ${clr(syncOptions.syncFolder, 'cyan')} ${clr(syncOptions.syncDomain, 'yellow')}`
+          console.log(`\n 🤯 ${errorMessage}\n`)
+          throw new Error(errorMessage)
         }
 
         //
@@ -314,7 +317,7 @@ class CommandLineInterface {
         // No positional arguments. Must at least specify either:
         //
         //  Syntax 1. host as a named argument (--host), or
-        //  Syntax 4. the full rsync connection string using the --to named argument.
+        //  Syntax 5. the full rsync connection string using the --to named argument.
         //
         // Note: If the --to option is specified, it will override the host, folder,
         // ===== and account arguments (whether named or positional).

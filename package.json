@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node index.js",
     "build": "bin/build.js",
-    "test": "nyc tape test/*.js | tap-spec"
+    "test": "tape test/*.js | tap-spec",
+    "coverage": "nyc tape test/*.js | tap-spec"
   },
   "repository": {
     "type": "git",
