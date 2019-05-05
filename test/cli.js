@@ -140,7 +140,7 @@ test('[Command-Line Interface] command parsing', t => {
       const localFolder = command.positionalArguments.length === 2 ? command.positionalArguments[0] : '.'
 
       // We expect the remote folder to be at /home/<account>/<folder> where <folder> either defaults
-      // to the name of the current folder on the local machine or is overriden using the --folder option.
+      // to the name of the current folder on the local machine or is overridden using the --folder option.
       // If you want to specify any arbitrary folder on the remote machine, provide the full rsync
       // connection string using the --to option.
       const remoteFolderPrefix = `/home/${account}`
