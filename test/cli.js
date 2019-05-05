@@ -5,17 +5,23 @@ const cli = require('../bin/lib/cli')
 // that it is true for the command name we expect and false
 // for all others.
 function verifyCommand(command, expectedName) {
+  const positionalArguments = command.positionalArguments
+  const namedArguments = command.namedArguments
   delete command.positionalArguments
   delete command.namedArguments
-  return Object.keys(command).reduce((verified, commandName) => {
+  const result = Object.keys(command).reduce((verified, commandName) => {
     return verified && (command[commandName] === (commandName === expectedName))
   }, true)
+  command.positionalArguments = positionalArguments
+  command.namedArguments = namedArguments
+  return result
 }
 
 test('[Command-Line Interface] command parsing', t => {
-  t.plan(23)
+  t.plan(24)
 
   let command
+  let options
 
   //
   // Command: version.
@@ -106,7 +112,10 @@ test('[Command-Line Interface] command parsing', t => {
   const expectedSyncCommands = []
 
   // One positional argument; command name and named argument for the host (e.g., web-server sync --host=my.site)
-  expectedSyncCommands.push(cli.command({_:['sync'], host: 'my.site'}))
+  command = cli.command({_:['sync'], host: 'my.site'})
+  t.true(verifyCommand(command, 'isSync'))
+  options = null
+  t.doesNotThrow(() => { options = cli.options(command) }, 'command does not throw')
 
   // One positional argument; command name and named argument for host & account
   // (e.g., web-server sync --host=my.site --account=me)
