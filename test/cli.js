@@ -13,14 +13,14 @@ function verifyCommand(command, expectedName) {
 }
 
 test('command parsing', t => {
-  t.plan(9)
+  t.plan(10)
 
   let command
 
   //
   // Command: version TODO
   //
-
+  t.ok(verifyCommand(cli.command({_:['version']}), 'isVersion'), 'version command is detected')
 
 
   //
