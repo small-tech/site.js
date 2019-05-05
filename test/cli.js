@@ -20,7 +20,7 @@ function verifyCommand(command, expectedName) {
 }
 
 test('[Command-Line Interface] command parsing', t => {
-  t.plan(46)
+  t.plan(47)
 
   let command
   let options
@@ -185,8 +185,16 @@ test('[Command-Line Interface] command parsing', t => {
   verifySyncCommand(cli.command({_:['sync', 'test/site', 'my.site']}))
 
   // Two positional arguments; command name and the host (e.g., web-server sync my.site --host=some-other-side)
-  // Conflit: this should throw as my.site will be interpreted as a local folder and does not exist(in our test anyway).
+  // Conflict: this should throw as my.site will be interpreted as a local folder and does not exist(in our test anyway).
   t.throws(function() { cli.options(cli.command({_:['sync', 'my.site'], host: 'some-other.site'})) }, 'host conflict between positional and named arguments should throw')
+
+  // Syntax conflict: providing two positional arguments as well as the remote connection string creates a potential
+  // conflict between the host specified in the positional argument and the one specified in the remote
+  // connection string.
+  t.throws(function() { cli.options(cli.command({_:['sync', 'test/site', 'my.site'], to: 'me@potentially.some.other.site:/home/me/my-remote-site-folder'})) }, 'host conflict between positional and named arguments should throw')
+
+
+  // TODO: Add --proxy test
 
   // // One positional argument; command name and named argument for host & account
   // // (e.g., web-server sync --host=my.site --account=me)

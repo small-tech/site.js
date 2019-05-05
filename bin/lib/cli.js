@@ -94,8 +94,9 @@ class CommandLineInterface {
   // Display a syntax error.
   syntaxError(message = null) {
     const additionalMessage = message === null ? '' : ` (${message})`
-    console.log(`\n 🤯 Syntax error${additionalMessage}. Displaying help…`)
-    require('../commands/help')()
+    const errorMessage = `Syntax error${additionalMessage}`
+    console.log(`\n 🤯 ${errorMessage}\n`)
+    throw new Error(errorMessage)
   }
 
 
