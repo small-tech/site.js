@@ -13,7 +13,7 @@ function verifyCommand(command, expectedName) {
 }
 
 test('[Command-Line Interface] command parsing', t => {
-  t.plan(17)
+  t.plan(23)
 
   let command
 
@@ -96,13 +96,41 @@ test('[Command-Line Interface] command parsing', t => {
   try {
     cli.options(proxyCommandMissingHost)
   } catch (error) {
-    t.ok(error, 'proxy command must have the host as the second positional argument')
+    t.ok(error, 'error expected: proxy command must have the host as the second positional argument')
   }
 
   //
   // Command: sync.
   //
 
+  const expectedSyncCommands = []
+
+  // One positional argument; command name and named argument for the host (e.g., web-server sync --host=my.site)
+  expectedSyncCommands.push(cli.command({_:['sync'], host: 'my.site'}))
+
+  // One positional argument; command name and named argument for host & account
+  // (e.g., web-server sync --host=my.site --account=me)
+  expectedSyncCommands.push(cli.command({_:['sync'], host: 'my.site', account: 'me'}))
+
+  // One positional argument; command name and named argument for host, account, & remote folder
+  // (e.g., web-server sync --host=my.site --account=me)
+  expectedSyncCommands.push(cli.command({_:['sync'], host: 'my.site', account: 'me', folder: 'www'}))
+
+  // One positional argument; command name and named argument for the remote connection string
+  // (e.g., web-server sync --to=me@my.site:/home/me/my-remote-site-folder)
+  expectedSyncCommands.push(cli.command({_:['sync'], to: 'me@my.site:/home/me/my-remote-site-folder'}))
+
+  // Two positional arguments; command name and the host (e.g., web-server sync my.site)
+  expectedSyncCommands.push(cli.command({_:['sync', 'my.site']}))
+
+  // Three positional arguments; command name, folder, and host (e.g., web-server sync folder my.site)
+  expectedSyncCommands.push(cli.command({_:['sync', 'folder', 'my.site']}))
+
+  // Two positional arguments; command name and the host (e.g., web-server sync my.site)
+  // expectedSyncCommands.push(cli.command({_:['sync', 'my.site']}))
+
+  // Test all commands we expect to be sync.
+  expectedSyncCommands.forEach(command => t.true(verifyCommand(command, 'isSync'), 'command is sync'))
 
 
   //
