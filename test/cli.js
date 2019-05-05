@@ -104,7 +104,7 @@ test('[Command-Line Interface] command parsing', t => {
   try {
     cli.options(proxyCommandMissingHost)
   } catch (error) {
-    t.ok(error, 'error expected: proxy command must have the host as the second positional argument')
+    t.ok(error, 'error expected: proxy command must have host as the second positional argument')
   }
 
   //
