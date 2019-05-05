@@ -45,46 +45,56 @@ test('[Command-Line Interface] command parsing', t => {
 
   const expectedLocalCommands = []
 
-  // No arguments – shorthand (i.e., web-server)
+  // Implicit command, no arguments – shorthand.
+  // i.e., web-server
   expectedLocalCommands.push(cli.command({_:[]}))
 
-  // One positional argument; folder ­– shorthand (e.g., web-server test/site)
+  // Implicit command, one argument; local folder ­– shorthand.
+  // e.g., web-server test/site
   expectedLocalCommands.push(cli.command({_:['test/site']}))
 
-  // One positional argument; explicit command name (i.e., web-server local)
+  // Explicit command, no positional arguments.
+  // i.e., web-server local
   expectedLocalCommands.push(cli.command({_:['local']}))
 
-  // Two positional arguments; explicit command name and folder (e.g., web-server local test/site).
+  // Explicit command, one positional argument (local folder).
+  // e.g., web-server local test/site
   expectedLocalCommands.push(cli.command({_:['local', 'test/site']}))
 
-  // No positional arguments, explicit named argument (i.e., web-server --local).
+  // Explicit command via named argument, no positional arguments.
+  // i.e., web-server --local
   expectedLocalCommands.push(cli.command({_:[], local: true}))
 
-  // One positional argument; folder + explicit named argument (e.g., web-server test/site --local).
+  // Explicit command via named argument, one positional argument (local folder).
+  // e.g., web-server test/site --local
   expectedLocalCommands.push(cli.command({_:['test/site'], local: true}))
 
   // Test all commands we expect to be local.
   expectedLocalCommands.forEach(command => t.true(verifyCommand(command, 'isLocal'), 'command is local'))
 
   //
-  // Command: global
+  // Command: global.
   //
 
   const expectedGlobalCommands = []
 
-  // One positional argument; explicit command name (i.e., web-server global)
+  // No positional arguments.
+  // i.e., web-server global
   expectedGlobalCommands.push(cli.command({_:['global']}))
 
-  // Two positional arguments; explicit command name and folder (e.g., web-server global test/site).
+  // One positional argument (local folder).
+  // e.g., web-server global test/site
   expectedGlobalCommands.push(cli.command({_:['global', 'test/site']}))
 
-  // No positional arguments, explicit named argument (i.e., web-server --global).
+  // Command specified via named argument, no positional arguments.
+  // i.e., web-server --global
   expectedGlobalCommands.push(cli.command({_:[], global: true}))
 
-  // One positional argument; folder + explicit named argument (e.g., web-server test/site --global).
+  // Command specified via named argument and one positional argument (local folder).
+  // e.g., web-server test/site --global
   expectedGlobalCommands.push(cli.command({_:['test/site'], global: true}))
 
-  // Test all commands we expect to be local.
+  // Test all commands we expect to be global.
   expectedGlobalCommands.forEach(command => t.true(verifyCommand(command, 'isGlobal'), 'command is global'))
 
   //
@@ -159,33 +169,34 @@ test('[Command-Line Interface] command parsing', t => {
 
   const expectedSyncCommands = []
 
-  // One positional argument; command name and named argument for the host (e.g., web-server sync --host=my.site)
+  // No positional arguments and named argument for the host (e.g., web-server sync --host=my.site)
   verifySyncCommand(cli.command({_:['sync'], host: 'my.site'}))
 
-  // One positional argument; command name and named argument for host & account
+  // No positional arguments and named arguments for host & account
   // (e.g., web-server sync --host=my.site --account=me)
   verifySyncCommand(cli.command({_:['sync'], host: 'my.site', account: 'me'}))
 
-  // One positional argument; command name and named argument for host, account, & remote folder
-  // (e.g., web-server sync --host=my.site --account=me)
+  // No positional arguments and named arguments for host, account, & remote folder
+  // (e.g., web-server sync --host=my.site --account=me --folder=www)
   verifySyncCommand(cli.command({_:['sync'], host: 'my.site', account: 'me', folder: 'www'}))
 
-  // One positional argument; command name and named argument for the remote connection string
+  // No positional arguments and named argument for the remote connection string
   // (e.g., web-server sync --to=me@my.site:/home/me/my-remote-site-folder)
   verifySyncCommand(cli.command({_:['sync'], to: 'me@my.site:/home/me/my-remote-site-folder'}))
 
-  // Two positional arguments; command name and local folder and named argument for the remote connection string
+  // One positional argument (local folder) and named argument for the remote connection string.
   // (e.g., web-server sync test/site --to=me@my.site:/home/me/my-remote-site-folder)
   verifySyncCommand(cli.command({_:['sync', 'test/site'], to: 'me@my.site:/home/me/my-remote-site-folder'}))
 
-  // Two positional arguments; command name and the host (e.g., web-server sync my.site)
+  // One positional argument (the host) (e.g., web-server sync my.site)
   verifySyncCommand(cli.command({_:['sync', 'my.site']}))
 
-  // Three positional arguments; command name, folder, and host (e.g., web-server sync test/site my.site)
+  // Two positional arguments (local folder and host) (e.g., web-server sync test/site my.site)
   verifySyncCommand(cli.command({_:['sync', 'test/site', 'my.site']}))
 
-  // Two positional arguments; command name and the host (e.g., web-server sync my.site --host=some-other-side)
-  // Conflict: this should throw as my.site will be interpreted as a local folder and does not exist(in our test anyway).
+  // Syntax conflict: one positional argument (the host) and the host also defined via named argument
+  // (e.g., web-server sync my.site --host=some-other-side)
+  // This should throw as my.site will be interpreted as a local folder and does not exist(in our test anyway).
   t.throws(function() { cli.options(cli.command({_:['sync', 'my.site'], host: 'some-other.site'})) }, 'host conflict between positional and named arguments should throw')
 
   // Syntax conflict: providing two positional arguments as well as the remote connection string creates a potential
