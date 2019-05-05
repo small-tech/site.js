@@ -269,7 +269,7 @@ class CommandLineInterface {
           // If you want to specify any arbitrary folder on the remote machine, provide the full rsync
           // connection string using the --to option.
           const remoteFolderPrefix = `/home/${_account}`
-          const localFolderPath = path.normalize(syncOptionsDerivedFromPositionalArguments.syncLocalFolder)
+          const localFolderPath = path.resolve(syncOptionsDerivedFromPositionalArguments.syncLocalFolder)
           const localFolderFragments = localFolderPath.split(path.sep)
           const currentLocalFolderName = localFolderFragments[localFolderFragments.length-1]
 

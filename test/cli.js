@@ -1,6 +1,8 @@
 const test = require('tape')
 const cli = require('../bin/lib/cli')
 
+const path = require('path')
+
 // Verify that the command is what we expect it to be. i.e.,
 // that it is true for the command name we expect and false
 // for all others.
@@ -18,7 +20,7 @@ function verifyCommand(command, expectedName) {
 }
 
 test('[Command-Line Interface] command parsing', t => {
-  t.plan(24)
+  t.plan(26)
 
   let command
   let options
@@ -108,14 +110,43 @@ test('[Command-Line Interface] command parsing', t => {
   //
   // Command: sync.
   //
+  const verifySyncRemoteConnectionStringForCommand = (command) => {
+
+    console.log('--> command', command)
+
+    const options = cli.options(command)
+
+    console.log('--> options', options)
+
+    const account = command.namedArguments.account || process.env.USER
+    const host = command.namedArguments.host || command.positionalArguments[0]
+    let localFolder = command.positionalArguments.length === 2 ? command.positionalArguments[1] : '.'
+
+    // We expect the remote folder to be at /home/<account>/<folder> where <folder> either defaults
+    // to the name of the current folder on the local machine or is overriden using the --folder option.
+    // If you want to specify any arbitrary folder on the remote machine, provide the full rsync
+    // connection string using the --to option.
+    const remoteFolderPrefix = `/home/${account}`
+    const localFolderPath = path.resolve(localFolder)
+    const localFolderFragments = localFolderPath.split(path.sep)
+    const currentLocalFolderName = localFolderFragments[localFolderFragments.length-1]
+
+    const remoteFolder = command.namedArguments.folder !== undefined ? `${remoteFolderPrefix}/${command.namedArguments.folder}` : `${remoteFolderPrefix}/${currentLocalFolderName}`
+
+    const expectedRemoteConnectionString = `${account}@${host}:${remoteFolder}`
+    const actualRemoteConnectionString = options.syncRemoteConnectionString
+
+    return expectedRemoteConnectionString === actualRemoteConnectionString
+  }
 
   const expectedSyncCommands = []
 
   // One positional argument; command name and named argument for the host (e.g., web-server sync --host=my.site)
   command = cli.command({_:['sync'], host: 'my.site'})
   t.true(verifyCommand(command, 'isSync'))
-  options = null
-  t.doesNotThrow(() => { options = cli.options(command) }, 'command does not throw')
+  t.doesNotThrow(() => { options = cli.options(command) }, 'parsing command options does not throw')
+  t.equals(options.syncRemoteHost, 'my.site')
+  t.ok(verifySyncRemoteConnectionStringForCommand(command), 'the remote connection string is as expected')
 
   // One positional argument; command name and named argument for host & account
   // (e.g., web-server sync --host=my.site --account=me)
