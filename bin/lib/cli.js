@@ -46,8 +46,6 @@ class CommandLineInterface {
     command.isLocal = (commandLineOptions.local || positionalCommand === 'local' || (positionalArguments.length <= 2 && !didMatchCommand))
     didMatchCommand = didMatchCommand || command.isLocal
 
-    console.log('command', command)
-
     // Check if we matched a command and throw an error if we didn’t.
     if (!didMatchCommand) {
       this.throwError('Unknown command.')
@@ -111,9 +109,7 @@ class CommandLineInterface {
   // Display a syntax error.
   syntaxError(message = null) {
     const additionalMessage = message === null ? '' : ` (${message})`
-    const errorMessage = `Syntax error${additionalMessage}`
-    console.log(`\n 🤯 ${errorMessage}\n`)
-    throw new Error(errorMessage)
+    this.throwError(`Syntax error${additionalMessage}`)
   }
 
 
@@ -197,9 +193,7 @@ class CommandLineInterface {
     if (command.isProxy) {
       if (command.positionalArguments.length < 1) {
         // A proxy path must be included.
-        const errorMessage = 'Error: you must supply a URL to proxy. e.g., web-server proxy http://localhost:1313'
-        console.log(`\n 🤯 ${errorMessage}\n`)
-        throw new Error(errorMessage)
+        this.throwError('Error: you must supply a URL to proxy. e.g., web-server proxy http://localhost:1313')
       }
       if (command.positionalArguments.length > 1) {
         // Syntax error.
@@ -312,9 +306,7 @@ class CommandLineInterface {
 
         // Ensure that the local folder exists.
         if (!fs.existsSync(syncOptions.syncLocalFolder)) {
-          const errorMessage = `Error: Folder not found (${clr(syncOptions.syncFolder, 'cyan')}).\n\n    Syntax:\tweb-server ${clr('sync', 'green')} ${clr('folder', 'cyan')} ${clr('domain', 'yellow')}\n    Command:web-server ${clr('sync', 'green')} ${clr(syncOptions.syncFolder, 'cyan')} ${clr(syncOptions.syncDomain, 'yellow')}`
-          console.log(`\n 🤯 ${errorMessage}\n`)
-          throw new Error(errorMessage)
+          this.throwError(`Error: Folder not found (${clr(syncOptions.syncFolder, 'cyan')}).\n\n    Syntax:\tweb-server ${clr('sync', 'green')} ${clr('folder', 'cyan')} ${clr('domain', 'yellow')}\n    Command:web-server ${clr('sync', 'green')} ${clr(syncOptions.syncFolder, 'cyan')} ${clr(syncOptions.syncDomain, 'yellow')}`)
         }
 
         //
