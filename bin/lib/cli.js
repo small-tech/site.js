@@ -18,6 +18,10 @@ class CommandLineInterface {
     this.execute(command)
   }
 
+  throwError(errorMessage) {
+    console.log(`\n 🤯 ${errorMessage}\n`)
+    throw new Error(errorMessage)
+  }
 
   // Return the command given a command-line options object.
   command (commandLineOptions) {
@@ -38,8 +42,16 @@ class CommandLineInterface {
     }
 
     // If we didn’t match a command, we default to local.
-    const didMatchCommand = Object.values(command).reduce((p,n) => p || n)
-    command.isLocal = (commandLineOptions.local || positionalCommand === 'local' || !didMatchCommand)
+    let didMatchCommand = Object.values(command).reduce((p,n) => p || n)
+    command.isLocal = (commandLineOptions.local || positionalCommand === 'local' || (positionalArguments.length <= 2 && !didMatchCommand))
+    didMatchCommand = didMatchCommand || command.isLocal
+
+    console.log('command', command)
+
+    // Check if we matched a command and throw an error if we didn’t.
+    if (!didMatchCommand) {
+      this.throwError('Unknown command.')
+    }
 
     const positionalCommandDidMatchCommand = ['version', 'help', 'local', 'global', 'proxy', 'sync', 'enable', 'disable', 'logs', 'status'].reduce((p, n) => p || (positionalCommand === n), false)
 

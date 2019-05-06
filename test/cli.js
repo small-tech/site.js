@@ -20,10 +20,14 @@ function verifyCommand(command, expectedName) {
 }
 
 test('[CLI] command and option parsing', t => {
-  t.plan(61)
+  t.plan(62)
 
   let command
   let options
+
+  // Unknown command.
+  t.throws(() => { cli.command({_:['unknown-command', 'argument-1', 'argument-2']}) }, 'unknown command should throw')
+
 
   //
   // Command: version.
@@ -263,6 +267,8 @@ test('[CLI] command and option parsing', t => {
 
 test('[CLI] requirement()', t => {
   t.plan(10)
+
+  // Test successful commands.
   const commandNames = ['version', 'help', 'local', 'global', 'proxy', 'sync', 'enable', 'disable', 'logs', 'status']
   commandNames.forEach(commandName => {
     let command = (() => {
@@ -273,5 +279,6 @@ test('[CLI] requirement()', t => {
 
     t.equal(cli.requirement(command), `../commands/${commandName}`, 'command require statement is correct')
   })
+
   t.end()
 })
