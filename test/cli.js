@@ -357,13 +357,20 @@ test('[CLI] proxyOptions()', t => {
 
 test('[CLI] syncOptions()', t => {
   // This method is thoroughly tested via the sync command tests. These are just a few method-specific tests.
-  t.plan(4)
+  t.plan(6)
 
   // Non-sync command should return sync options object will all nulls.
   const syncOptions = cli.syncOptions(cli.command({_:[]}))
   Object.values(syncOptions).forEach(value => {
     t.strictEquals(value, null, 'when command is not sync all sync options values should be null')
   })
+
+  // Sync option syntax error (no positional arguments and neither --host nor --to specified).
+  t.throws(() => { cli.syncOptions(cli.command({_:['sync']})) }, 'syntax error should throw')
+
+  // Too many arguments.
+  t.throws(() => { cli.syncOptions(cli.command({_:['sync', 'test/site', 'my.site', 'extraneous-argument']}))}, 'too many arguments should throw')
+
   t.end()
 })
 
