@@ -19,8 +19,8 @@ function verifyCommand(command, expectedName) {
   return result
 }
 
-test('[Command-Line Interface] command parsing', t => {
-  t.plan(57)
+test('[Command-Line Interface] command and option parsing', t => {
+  t.plan(61)
 
   let command
   let options
@@ -235,24 +235,28 @@ test('[Command-Line Interface] command parsing', t => {
   expectedEnableCommands.push(cli.command({_:['test/site'], enable: true}))
 
   // Test all commands we expect to be global.
-  expectedEnableCommands.forEach(command => t.true(verifyCommand(command, 'isEnable'), 'command is Enable'))
+  expectedEnableCommands.forEach(command => t.true(verifyCommand(command, 'isEnable'), 'command is enable'))
 
   //
   // Command: disable.
   //
 
-  t.true(verifyCommand(cli.command({_:['disable']}), 'isDisable'), 'command is Disable')
-  t.true(verifyCommand(cli.command({_:[], disable: true}), 'isDisable'), 'command is Disable')
+  t.true(verifyCommand(cli.command({_:['disable']}), 'isDisable'), 'command is disable')
+  t.true(verifyCommand(cli.command({_:[], disable: true}), 'isDisable'), 'command is disable')
 
   //
-  // Command: logs TODO
+  // Command: logs.
   //
 
-
+  t.true(verifyCommand(cli.command({_:['logs']}), 'isLogs'), 'command is logs')
+  t.true(verifyCommand(cli.command({_:[], logs: true}), 'isLogs'), 'command is logs')
 
   //
-  // Command: status TODO
+  // Command: status.
   //
+
+  t.true(verifyCommand(cli.command({_:['status']}), 'isStatus'), 'command is status')
+  t.true(verifyCommand(cli.command({_:[], status: true}), 'isStatus'), 'command is status')
 
   t.end()
 })
