@@ -294,3 +294,17 @@ test('[CLI] pathToServe()', t => {
   t.strictEquals( cli.pathToServe(cli.command({ _:[] })), '.', 'default path is correctly set')
   t.end()
 })
+
+test('[CLI] port()', t => {
+  // Invalid ports should throw.
+  t.throws(() => { cli.port(cli.command( { _:[''], port:-1})) })
+  t.throws(() => { cli.port(cli.command( { _:[''], port:49592})) })
+
+  // A valid port should not throw.
+  t.doesNotThrow(() => { cli.port(cli.command( { _:[''], port: 443 })) })
+
+  // Non-numerical port inputs should throw.
+  t.throws(() => { cli.port(cli.command( { _:[''], port: 'rabbits are cute' })) })
+
+  t.end()
+})

@@ -153,10 +153,17 @@ class CommandLineInterface {
       port = parseInt(command.namedArguments.port)
     }
 
+    const inTheValidPortRange = 'between 0 and 49,151 inclusive'
+
+    // Invalid port.
+    if (isNaN(port)) {
+      this.throwError(`Error: “${port}” is not a valid port. Try a number ${inTheValidPortRange}.`)
+    }
+
     // Check for a valid port range
     // (port above 49,151 are ephemeral ports. See https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic,_private_or_ephemeral_ports)
     if (port < 0 || port > 49151) {
-      this.throwError('Error: specified port must be between 0 and 49,151 inclusive.')
+      this.throwError(`Error: specified port must be ${inTheValidPortRange}.`)
     }
 
     return port
@@ -226,8 +233,6 @@ class CommandLineInterface {
 
       // Adds remote server --<option>s, if any, to the syncOptions object.
       const addNamedArguments = () => {
-        console.log('Sync: adding named arguments.')
-
         function namedArgumentExists(namedArgument) {
           return typeof command.namedArguments[namedArgument] === 'string'
         }
@@ -285,8 +290,6 @@ class CommandLineInterface {
           const _folder = namedArgumentExists('folder') ? `${remoteFolderPrefix}/${command.namedArguments.folder}` : `${remoteFolderPrefix}/${currentLocalFolderName}`
 
           syncOptions.syncRemoteConnectionString = `${_account}@${_host}:${_folder}`
-
-          console.log('>>> Constructed remote connection string', syncOptions.syncRemoteConnectionString)
         }
 
         // Add the local folder to sync. This should have been set before we reach this point.
@@ -298,8 +301,6 @@ class CommandLineInterface {
 
         // Add a trailing slash to the local folder if one doesn’t already exist.
         if (!syncOptions.syncLocalFolder.endsWith('/')) {syncOptions.syncLocalFolder = `${syncOptions.syncLocalFolder}/`}
-
-        console.log('...', syncOptions)
 
         // Ensure that the local folder exists.
         if (!fs.existsSync(syncOptions.syncLocalFolder)) {
@@ -316,7 +317,7 @@ class CommandLineInterface {
         }
 
         // Debug. (That’s it, this is the syncOptions object we’ll be returning).
-        console.log('syncOptions', syncOptions)
+        // console.log('syncOptions', syncOptions)
       }
 
       if (command.positionalArguments.length === 0) {
@@ -329,40 +330,48 @@ class CommandLineInterface {
         // Note: If the --to option is specified, it will override the host, folder,
         // ===== and account arguments (whether named or positional).
         //
-        console.log("Syntax 1 or 5")
-
         if (typeof command.namedArguments.to === 'string') {
-          console.log("Syntax 5")
+          //
+          // Syntax 5.
+          //
           syncOptionsDerivedFromPositionalArguments.syncLocalFolder = '.'
         } else if (typeof command.namedArguments.host === 'string') {
-          console.log("Syntax 1")
+          //
+          // Syntax 1.
+          //
           syncOptionsDerivedFromPositionalArguments.syncLocalFolder = '.'
         } else if (typeof command.namedArguments.to === 'string') {
+          //
           // Syntax error.
+          //
           this.syntaxError(`must specify either ${clr('host', 'cyan')} to sync to or provide full rsync connection string using ${clr('to', 'cyan')} option`)
         }
       } else if (command.positionalArguments.length === 1) {
-        console.log("Syntax 2, 3, or 6")
         //
         // One argument is provided, if:
         //
-        // Syntax 2: it is the local folder if --host is set
-        // Syntax 6: it is the local folder if --to is set
+        // Syntax 2: it is the local folder if --host is set.
+        // Syntax 6: it is the local folder if --to is set.
         // Syntax 3: it is the host if --host is not set. The folder to sync is the current folder.
         //
         if (typeof command.namedArguments.host === 'string') {
-          console.log('Syntax 2')
+          //
+          // Syntax 2.
+          //
           syncOptionsDerivedFromPositionalArguments.syncLocalFolder = command.positionalArguments[0]
         } else if (typeof command.namedArguments.to === 'string') {
-          console.log('Syntax 6')
+          //
+          // Syntax 6.
+          //
           syncOptionsDerivedFromPositionalArguments.syncLocalFolder = command.positionalArguments[0]
         } else {
-          console.log('Syntax 3')
+          //
+          // Syntax 3.
+          //
           syncOptionsDerivedFromPositionalArguments.syncRemoteHost = command.positionalArguments[0]
           syncOptionsDerivedFromPositionalArguments.syncLocalFolder = '.'
         }
       } else if (command.positionalArguments.length === 2) {
-        console.log("Syntax 4")
         //
         // Syntax 4: Two arguments provided. We interpret the first as the path of the
         // folder to serve and the second as the host.
@@ -370,7 +379,9 @@ class CommandLineInterface {
         syncOptionsDerivedFromPositionalArguments.syncLocalFolder = command.positionalArguments[0]
         syncOptionsDerivedFromPositionalArguments.syncRemoteHost = command.positionalArguments[1]
       } else {
+        //
         // Syntax error: we can have at most two positional arguments.
+        //
         this.syntaxError('too many arguments')
       }
 
