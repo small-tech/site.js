@@ -20,7 +20,7 @@ function verifyCommand(command, expectedName) {
 }
 
 test('[Command-Line Interface] command parsing', t => {
-  t.plan(47)
+  t.plan(51)
 
   let command
   let options
@@ -204,17 +204,13 @@ test('[Command-Line Interface] command parsing', t => {
   // connection string.
   t.throws(function() { cli.options(cli.command({_:['sync', 'test/site', 'my.site'], to: 'me@potentially.some.other.site:/home/me/my-remote-site-folder'})) }, 'host conflict between positional and named arguments should throw')
 
-
-  // TODO: Add --proxy test
-
-  // // One positional argument; command name and named argument for host & account
-  // // (e.g., web-server sync --host=my.site --account=me)
-  // verifySyncCommand(cli.command({_:['sync'], host: 'my.site', account: 'me'}))
-
-  // // One positional argument; command name and named argument for host, account, & remote folder
-  // // (e.g., web-server sync --host=my.site --account=me)
-  // verifySyncCommand(cli.command({_:['sync'], host: 'my.site', account: 'me', folder: 'www'}))
-
+  // Sync but start a proxy server instead of a regular local server.
+  const syncProxyCommand = cli.command({_:['sync', 'my.site'], proxy: 'localhost:1313'})
+  t.doesNotThrow(function () { cli.options(syncProxyCommand) })
+  const syncProxyOptions = cli.options(syncProxyCommand)
+  t.true(syncProxyOptions.syncStartProxyServer, 'start proxy server flag should be true')
+  t.equal(syncProxyOptions.proxyHttpURL, 'http://localhost:1313', 'proxy http url is correct')
+  t.equal(syncProxyOptions.proxyWebSocketURL, 'ws://localhost:1313', 'proxy web socket url is correct')
 
   //
   // Command: enable TODO
