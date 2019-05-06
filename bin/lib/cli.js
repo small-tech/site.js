@@ -138,8 +138,7 @@ class CommandLineInterface {
 
     // Ensure the path actually exists.
     if (!fs.existsSync(pathToServe)) {
-      console.error(`\n 🤔 Error: could not find path ${pathToServe}\n`)
-      process.exit(1)
+      this.throwError(`Error: could not find path ${pathToServe}`)
     }
 
     return pathToServe
@@ -157,8 +156,7 @@ class CommandLineInterface {
     // Check for a valid port range
     // (port above 49,151 are ephemeral ports. See https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic,_private_or_ephemeral_ports)
     if (port < 0 || port > 49151) {
-      console.error('\n 🤯 Error: specified port must be between 0 and 49,151 inclusive.\n')
-      process.exit(1)
+      this.throwError('Error: specified port must be between 0 and 49,151 inclusive.')
     }
 
     return port
@@ -172,8 +170,7 @@ class CommandLineInterface {
 
     if (proxyOptions.proxyHttpURL.startsWith('https://')) {
       // Cannot proxy HTTPS.
-      console.log('\n 🤯 Error: cannot proxy HTTPS.\n')
-      process.exit(1)
+      this.throwError('Error: cannot proxy HTTPS.')
     }
 
     if (!proxyOptions.proxyHttpURL.startsWith('http://')) {
