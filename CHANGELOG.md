@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [9.2.0] - TBA
+
 ### Added
 
   - New rsync-based sync command for deploying live changes to a server.
