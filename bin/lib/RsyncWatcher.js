@@ -72,8 +72,19 @@ class RSyncWatcher {
   sync(project) {
 
     let folderToSync = this.options[project].from
+
+    // It’s important for rsync whether or not the folder to sync ends with a slash or not: if it does, it means
+    // “copy the contents of this folder but not the folder itself”. If it doesn’t end with a slash, it means
+    // ”copy the folder and its contents.”
+    const folderToSyncEndsWithASlash = folderToSync.endsWith('/')
+
     if (!path.isAbsolute(folderToSync)) {
       folderToSync = path.resolve(path.join(process.cwd(), folderToSync))
+
+      // Add the slash back, if there was one, as it is being stripped out due to the path methods.
+      if (folderToSyncEndsWithASlash) {
+        folderToSync = `${folderToSync}/`
+      }
     }
 
     const rsync = new Rsync()
