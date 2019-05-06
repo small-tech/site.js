@@ -20,7 +20,7 @@ function verifyCommand(command, expectedName) {
 }
 
 test('[Command-Line Interface] command parsing', t => {
-  t.plan(51)
+  t.plan(55)
 
   let command
   let options
@@ -213,9 +213,29 @@ test('[Command-Line Interface] command parsing', t => {
   t.equal(syncProxyOptions.proxyWebSocketURL, 'ws://localhost:1313', 'proxy web socket url is correct')
 
   //
-  // Command: enable TODO
+  // Command: enable.
   //
 
+  const expectedEnableCommands = []
+
+  // No positional arguments.
+  // i.e., web-server enable
+  expectedEnableCommands.push(cli.command({_:['enable']}))
+
+  // One positional argument (local folder).
+  // e.g., web-server enable test/site
+  expectedEnableCommands.push(cli.command({_:['enable', 'test/site']}))
+
+  // Command specified via named argument, no positional arguments.
+  // i.e., web-server --enable
+  expectedEnableCommands.push(cli.command({_:[], enable: true}))
+
+  // Command specified via named argument and one positional argument (local folder).
+  // e.g., web-server test/site --enable
+  expectedEnableCommands.push(cli.command({_:['test/site'], enable: true}))
+
+  // Test all commands we expect to be global.
+  expectedEnableCommands.forEach(command => t.true(verifyCommand(command, 'isEnable'), 'command is Enable'))
 
 
   //
