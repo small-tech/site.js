@@ -329,3 +329,30 @@ test('[CLI] proxyUrls()', t => {
 
   t.end()
 })
+
+test('[CLI] proxyOptions()', t => {
+  t.plan(8)
+
+  // Valid proxy url (host).
+  var { proxyHttpURL, proxyWebSocketURL } = cli.proxyOptions(cli.command({_:['proxy', 'localhost']}))
+  t.strictEquals(proxyHttpURL, 'http://localhost', 'http proxy url is correct')
+  t.strictEquals(proxyWebSocketURL, 'ws://localhost', 'ws proxy url is correct')
+
+  // Valid proxy url with http suffix.
+  var { proxyHttpURL, proxyWebSocketURL } = cli.proxyOptions(cli.command({_:['proxy', 'http://localhost:1313']}))
+  t.strictEquals(proxyHttpURL, 'http://localhost:1313', 'http proxy url is correct')
+  t.strictEquals(proxyWebSocketURL, 'ws://localhost:1313', 'ws proxy url is correct')
+
+  // Missing proxy URL should throw.
+  t.throws( () => { cli.proxyOptions(cli.command({_:['proxy']})) }, 'missing proxy URL should throw')
+
+  // More than one positional argument in the provided proxy command should throw.
+  t.throws( () => { cli.proxyOptions(cli.command({_:['proxy', 'localhost:1313', 'extraneous-argument']})) }, 'more than one positional argument in proxy command should throw')
+
+  // If command is not proxy, null should be returned.
+  var { proxyHttpURL, proxyWebSocketURL } = cli.proxyOptions(cli.command({_:[]}))
+  t.strictEquals(proxyHttpURL, null, 'non proxy command should result in null urls')
+  t.strictEquals(proxyWebSocketURL, null, 'non proxy command should result in null urls')
+
+  t.end()
+})
