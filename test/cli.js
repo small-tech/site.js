@@ -366,3 +366,9 @@ test('[CLI] syncOptions()', t => {
   })
   t.end()
 })
+
+test('[CLI] throwError()', t => {
+  t.plan(1)
+  t.throws(() => { cli.throwError('an error') }, 'an error')
+  t.end()
+})
