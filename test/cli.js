@@ -19,7 +19,7 @@ function verifyCommand(command, expectedName) {
   return result
 }
 
-test('[Command-Line Interface] command and option parsing', t => {
+test('[CLI] command and option parsing', t => {
   t.plan(61)
 
   let command
@@ -258,5 +258,20 @@ test('[Command-Line Interface] command and option parsing', t => {
   t.true(verifyCommand(cli.command({_:['status']}), 'isStatus'), 'command is status')
   t.true(verifyCommand(cli.command({_:[], status: true}), 'isStatus'), 'command is status')
 
+  t.end()
+})
+
+test('[CLI] requirement()', t => {
+  t.plan(10)
+  const commandNames = ['version', 'help', 'local', 'global', 'proxy', 'sync', 'enable', 'disable', 'logs', 'status']
+  commandNames.forEach(commandName => {
+    let command = (() => {
+      if (commandName === 'proxy') { return cli.command({ _:['proxy', 'localhost:1313'] }) }
+      else if (commandName === 'sync') { return cli.command({ _:['sync', 'my.site'] }) }
+      else { return cli.command({_:[commandName]}) }
+    })()
+
+    t.equal(cli.requirement(command), `../commands/${commandName}`, 'command require statement is correct')
+  })
   t.end()
 })

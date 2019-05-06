@@ -54,9 +54,8 @@ class CommandLineInterface {
     return command
   }
 
-
-  // Execute the requested command.
-  execute (command) {
+  // Returns the file to be required for the passed command.
+  requirement (command) {
     let requirement = null
     Object.entries(command).some(theCommand => {
       if (theCommand[1] === true) {
@@ -65,7 +64,13 @@ class CommandLineInterface {
         return true
       }
     })
+    return requirement
+  }
 
+  // Execute the requested command.
+  execute (command) {
+
+    const requirement = this.requirement(command)
     const options = this.options(command)
 
     if (requirement === null) {
