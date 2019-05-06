@@ -26,6 +26,8 @@ test('[CLI] command and option parsing', t => {
   let options
 
   // Unknown command.
+  // (With one or two positional arguments, we fallback on the shorthand of launching a local server but if we
+  // have three positional arguments we can check for command validity.)
   t.throws(() => { cli.command({_:['unknown-command', 'argument-1', 'argument-2']}) }, 'unknown command should throw')
 
 
