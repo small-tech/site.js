@@ -296,6 +296,7 @@ test('[CLI] pathToServe()', t => {
 })
 
 test('[CLI] port()', t => {
+  t.plan(4)
   // Invalid ports should throw.
   t.throws(() => { cli.port(cli.command( { _:[''], port:-1})) })
   t.throws(() => { cli.port(cli.command( { _:[''], port:49592})) })
@@ -305,6 +306,26 @@ test('[CLI] port()', t => {
 
   // Non-numerical port inputs should throw.
   t.throws(() => { cli.port(cli.command( { _:[''], port: 'rabbits are cute' })) })
+
+  t.end()
+})
+
+test('[CLI] proxyUrls()', t => {
+  t.plan(5)
+
+  // Valid proxy url (host + port only).
+  var { proxyHttpURL, proxyWebSocketURL } = cli.proxyUrls('localhost:1313')
+  t.strictEquals(proxyHttpURL, 'http://localhost:1313', 'http proxy url is correct')
+  t.strictEquals(proxyWebSocketURL, 'ws://localhost:1313', 'ws proxy url is correct')
+
+  // Valid proxy url with http suffix.
+  var { proxyHttpURL, proxyWebSocketURL } = cli.proxyUrls('http://localhost')
+  t.strictEquals(proxyHttpURL, 'http://localhost', 'http proxy url is correct')
+  t.strictEquals(proxyWebSocketURL, 'ws://localhost', 'ws proxy url is correct')
+
+  // Invalid proxy url (https) should throw
+
+  t.throws(() => { cli.proxyUrls('https://localhost') }, 'invalid proxy url (https) should throw')
 
   t.end()
 })
