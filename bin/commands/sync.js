@@ -34,9 +34,10 @@ function sync (options) {
     'sync': {
       'from': options.syncLocalFolder,
       'to': `${options.syncRemoteConnectionString}`,
-      // TODO: allow override of these.
+      // TODO: allow overrides of these.
       'exclude': [
         '.DS_Store',
+        '.gitignore',
         '.dat/*',
         '.git/*'
       ],
