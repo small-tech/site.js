@@ -170,8 +170,6 @@ test('[CLI] command and option parsing', t => {
     }
   }
 
-  const expectedSyncCommands = []
-
   // No positional arguments and named argument for the host (e.g., web-server sync --host=my.site)
   verifySyncCommand(cli.command({_:['sync'], host: 'my.site'}))
 
@@ -354,5 +352,17 @@ test('[CLI] proxyOptions()', t => {
   t.strictEquals(proxyHttpURL, null, 'non proxy command should result in null urls')
   t.strictEquals(proxyWebSocketURL, null, 'non proxy command should result in null urls')
 
+  t.end()
+})
+
+test('[CLI] syncOptions()', t => {
+  // This method is thoroughly tested via the sync command tests. These are just a few method-specific tests.
+  t.plan(4)
+
+  // Non-sync command should return sync options object will all nulls.
+  const syncOptions = cli.syncOptions(cli.command({_:[]}))
+  Object.values(syncOptions).forEach(value => {
+    t.strictEquals(value, null, 'when command is not sync all sync options values should be null')
+  })
   t.end()
 })
