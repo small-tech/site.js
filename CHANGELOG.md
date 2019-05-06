@@ -8,9 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-  - New rsync-based sync command for deploying changes to a live server.
+  - New rsync-based sync command for deploying live changes to a server.
   - Unit tests for command-line interface.
-  - Code coverage and better tape reporting via tap-spec.
+  - Code coverage via nyc and better tape reporting via tap-spec.
 
 ### Changed
 
