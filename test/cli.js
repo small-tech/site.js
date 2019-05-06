@@ -173,19 +173,19 @@ test('[Command-Line Interface] command parsing', t => {
   verifySyncCommand(cli.command({_:['sync'], host: 'my.site'}))
 
   // No positional arguments and named arguments for host & account
-  // (e.g., web-server sync --host=my.site --account=me)
+  // e.g., web-server sync --host=my.site --account=me
   verifySyncCommand(cli.command({_:['sync'], host: 'my.site', account: 'me'}))
 
   // No positional arguments and named arguments for host, account, & remote folder
-  // (e.g., web-server sync --host=my.site --account=me --folder=www)
+  // e.g., web-server sync --host=my.site --account=me --folder=www
   verifySyncCommand(cli.command({_:['sync'], host: 'my.site', account: 'me', folder: 'www'}))
 
   // No positional arguments and named argument for the remote connection string
-  // (e.g., web-server sync --to=me@my.site:/home/me/my-remote-site-folder)
+  // e.g., web-server sync --to=me@my.site:/home/me/my-remote-site-folder
   verifySyncCommand(cli.command({_:['sync'], to: 'me@my.site:/home/me/my-remote-site-folder'}))
 
   // One positional argument (local folder) and named argument for the remote connection string.
-  // (e.g., web-server sync test/site --to=me@my.site:/home/me/my-remote-site-folder)
+  // e.g., web-server sync test/site --to=me@my.site:/home/me/my-remote-site-folder
   verifySyncCommand(cli.command({_:['sync', 'test/site'], to: 'me@my.site:/home/me/my-remote-site-folder'}))
 
   // One positional argument (the host) (e.g., web-server sync my.site)
