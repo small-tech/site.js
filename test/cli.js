@@ -20,7 +20,7 @@ function verifyCommand(command, expectedName) {
 }
 
 test('[CLI] command and option parsing', t => {
-  t.plan(62)
+  t.plan(66)
 
   // Unknown command.
   // (We interpret one command-line argument as shorthand for launching a local server with the argument
@@ -170,18 +170,18 @@ test('[CLI] command and option parsing', t => {
     }
   }
 
-  // No positional arguments and named argument for the host (e.g., web-server sync --host=my.site)
+  // No positional arguments and named argument for the host (e.g., web-server sync --host=my.site).
   verifySyncCommand(cli.command({_:['sync'], host: 'my.site'}))
 
-  // No positional arguments and named arguments for host & account
+  // No positional arguments and named arguments for host & account.
   // e.g., web-server sync --host=my.site --account=me
   verifySyncCommand(cli.command({_:['sync'], host: 'my.site', account: 'me'}))
 
-  // No positional arguments and named arguments for host, account, & remote folder
+  // No positional arguments and named arguments for host, account, & remote folder.
   // e.g., web-server sync --host=my.site --account=me --folder=www
   verifySyncCommand(cli.command({_:['sync'], host: 'my.site', account: 'me', folder: 'www'}))
 
-  // No positional arguments and named argument for the remote connection string
+  // No positional arguments and named argument for the remote connection string.
   // e.g., web-server sync --to=me@my.site:/home/me/my-remote-site-folder
   verifySyncCommand(cli.command({_:['sync'], to: 'me@my.site:/home/me/my-remote-site-folder'}))
 
@@ -192,8 +192,12 @@ test('[CLI] command and option parsing', t => {
   // One positional argument (the host) (e.g., web-server sync my.site)
   verifySyncCommand(cli.command({_:['sync', 'my.site']}))
 
-  // Two positional arguments (local folder and host) (e.g., web-server sync test/site my.site)
+  // Two positional arguments (local folder and host) (e.g., web-server sync test/site my.site).
   verifySyncCommand(cli.command({_:['sync', 'test/site', 'my.site']}))
+
+  // Proxy.
+  verifySyncCommand(cli.command({_:['sync', 'test/site', 'my.site'], proxy: 'localhost:1313'}))
+
 
   // Syntax conflict: one positional argument (the host) and the host also defined via named argument
   // (e.g., web-server sync my.site --host=some-other-side)

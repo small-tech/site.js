@@ -28,16 +28,20 @@ class CommandLineInterface {
     const positionalArguments = commandLineOptions._
     const positionalCommand = positionalArguments[0]
 
+    // Note: important that we check for strict equality here since a command flag and a
+    // ===== a named argument for some other command may have the same name. (e.g., web-server … --proxy flags
+    //       a proxy command but web-server sync … --proxy=localhost:1313 specifies the proxy host to use
+    //       for a sync command).
     const command = {
-      isHelp: (commandLineOptions.h || commandLineOptions.help || positionalCommand === 'help'),
-      isVersion: (commandLineOptions.version || commandLineOptions.v || positionalCommand === 'version'),
-      isGlobal: (commandLineOptions.global || positionalCommand === 'global'),
-      isProxy: (commandLineOptions.proxy || positionalCommand === 'proxy'),
-      isSync: (commandLineOptions.sync || positionalCommand === 'sync'),
-      isEnable: (commandLineOptions.enable || positionalCommand === 'enable'),
-      isDisable: (commandLineOptions.disable || positionalCommand === 'disable'),
-      isLogs: (commandLineOptions.logs || positionalCommand === 'logs'),
-      isStatus: (commandLineOptions.status || positionalCommand === 'status'),
+      isHelp: (commandLineOptions.h === true || commandLineOptions.help === true || positionalCommand === 'help'),
+      isVersion: (commandLineOptions.version === true || commandLineOptions.v === true || positionalCommand === 'version'),
+      isGlobal: (commandLineOptions.global === true || positionalCommand === 'global'),
+      isProxy: (commandLineOptions.proxy === true || positionalCommand === 'proxy'),
+      isSync: (commandLineOptions.sync === true || positionalCommand === 'sync'),
+      isEnable: (commandLineOptions.enable === true || positionalCommand === 'enable'),
+      isDisable: (commandLineOptions.disable === true || positionalCommand === 'disable'),
+      isLogs: (commandLineOptions.logs === true || positionalCommand === 'logs'),
+      isStatus: (commandLineOptions.status === true || positionalCommand === 'status'),
     //isLocal: is handled below.
     }
 
@@ -201,7 +205,7 @@ class CommandLineInterface {
       }
       if (command.positionalArguments.length > 1) {
         // Syntax error.
-        this.syntaxError()
+        this.syntaxError('Error: cannot have more than one positional argument in a proxy command.')
       }
       proxyOptions = this.proxyUrls(command.positionalArguments[0])
     }
