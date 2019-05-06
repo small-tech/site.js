@@ -20,7 +20,7 @@ function verifyCommand(command, expectedName) {
 }
 
 test('[Command-Line Interface] command parsing', t => {
-  t.plan(55)
+  t.plan(57)
 
   let command
   let options
@@ -237,12 +237,12 @@ test('[Command-Line Interface] command parsing', t => {
   // Test all commands we expect to be global.
   expectedEnableCommands.forEach(command => t.true(verifyCommand(command, 'isEnable'), 'command is Enable'))
 
-
   //
-  // Command: disable TODO
+  // Command: disable.
   //
 
-
+  t.true(verifyCommand(cli.command({_:['disable']}), 'isDisable'), 'command is Disable')
+  t.true(verifyCommand(cli.command({_:[], disable: true}), 'isDisable'), 'command is Disable')
 
   //
   // Command: logs TODO
