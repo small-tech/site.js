@@ -43,7 +43,7 @@ class CommandLineInterface {
 
     // If we didn’t match a command, we default to local.
     let didMatchCommand = Object.values(command).reduce((p,n) => p || n)
-    command.isLocal = (commandLineOptions.local || positionalCommand === 'local' || (positionalArguments.length <= 2 && !didMatchCommand))
+    command.isLocal = (commandLineOptions.local || positionalCommand === 'local' || (positionalArguments.length <= 1 && !didMatchCommand))
     didMatchCommand = didMatchCommand || command.isLocal
 
     // Check if we matched a command and throw an error if we didn’t.

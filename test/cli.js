@@ -22,14 +22,11 @@ function verifyCommand(command, expectedName) {
 test('[CLI] command and option parsing', t => {
   t.plan(62)
 
-  let command
-  let options
-
   // Unknown command.
-  // (With one or two positional arguments, we fallback on the shorthand of launching a local server but if we
-  // have three positional arguments we can check for command validity.)
-  t.throws(() => { cli.command({_:['unknown-command', 'argument-1', 'argument-2']}) }, 'unknown command should throw')
-
+  // (We interpret one command-line argument as shorthand for launching a local server with the argument
+  // taken as the local folder to serve. However, if we have two or more command-line arguments
+  // we check for command validity.)
+  t.throws(() => { cli.command({_:['unknown-command', 'argument-1']}) }, 'unknown command should throw')
 
   //
   // Command: version.
@@ -282,5 +279,18 @@ test('[CLI] requirement()', t => {
     t.equal(cli.requirement(command), `../commands/${commandName}`, 'command require statement is correct')
   })
 
+  t.end()
+})
+
+test('[CLI] pathToServe()', t => {
+  t.plan(3)
+  // Non-existent path.
+  t.throws(() => { cli.pathToServe(cli.command({ _:['this-path-does-not-exist']})) }, 'non-existent path throws')
+
+  // Syntax error: more than one positional argument for a server command.
+  t.throws(() => { cli.pathToServe(cli.command({ _:['test/site', 'extraneous-argument'] })) }, 'extraneous arguments should throw')
+
+  // Default path
+  t.strictEquals( cli.pathToServe(cli.command({ _:[] })), '.', 'default path is correctly set')
   t.end()
 })
