@@ -138,6 +138,10 @@ function commandExists (command) {
       return false
     }
   }
+// Write to stdout without a newline
+function print(str) {
+  process.stdout.write(str)
+}
 
 
 function ensureRsyncExists() {
@@ -147,9 +151,10 @@ function ensureRsyncExists() {
   let options = {env: process.env}
   try {
     if (commandExists('apt')) {
-      print('using apt… \n')
+      print(' using apt… \n')
       options.env.DEBIAN_FRONTEND = 'noninteractive'
       childProcess.execSync('sudo apt-get install -y -q rsync', options)
+      console.log(' 🎉 [Indie Web Server] Rsync installed using apt.\n')
     } else if (commandExists('yum')) {
       // Untested: if you test this, please let me know https://github.com/indie-mirror/https-server/issues
       console.log('\n 🤪  [Indie Web Server] Attempting to install required dependency using yum. This is currently untested. If it works (or blows up) for you, I’d appreciate it if you could open an issue at https://github.com/indie-mirror/https-server/issues and let me know. Thanks! – Aral\n')

@@ -39,7 +39,8 @@ class CommandLineInterface {
       isVersion: (commandLineOptions.version === true || commandLineOptions.v === true || positionalCommand === 'version'),
       isGlobal: (commandLineOptions.global === true || positionalCommand === 'global'),
       isProxy: (commandLineOptions.proxy === true || positionalCommand === 'proxy'),
-      isSync: (commandLineOptions.sync === true || positionalCommand === 'sync'),
+      // Note: --sync is a valid flag for the enable command.
+      isSync: (positionalCommand !== 'enable' && (commandLineOptions.sync === true || positionalCommand === 'sync')),
       isEnable: (commandLineOptions.enable === true || positionalCommand === 'enable'),
       isDisable: (commandLineOptions.disable === true || positionalCommand === 'disable'),
       isLogs: (commandLineOptions.logs === true || positionalCommand === 'logs'),
