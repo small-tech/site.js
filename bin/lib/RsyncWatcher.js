@@ -29,7 +29,7 @@ class RSyncWatcher {
     this.watchers = []
 
     // Exit gracefully.
-    Graceful.on('exit', () => {
+    const goodbye = (done) => {
       console.log(`\n 💞 [Sync] Exit request detected.`)
 
       for (let entry of this.synchronisers) {
@@ -42,11 +42,11 @@ class RSyncWatcher {
           console.log(` 🔎 [Watch] Removing watcher.`)
           watcher.watcher.close()
       }
-
-      console.log('\n 💖 Goodbye!\n')
-
-      process.exit()
-    })
+      done()
+    }
+    Graceful.timeout = 3000
+    Graceful.on('SIGINT', goodbye)
+    Graceful.on('SIGTERM', goodbye)
 
     for (let project in this.options) {
       this.sync(project).then(() => {
