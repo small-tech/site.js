@@ -277,7 +277,7 @@ class WebServer {
         console.log('\n 💖 Goodbye!\n')
 
         // Ensure that the parent process is dead.
-        // Filicide is never fun but, in this case necessary.
+        // Patricide is never fun but, in this case necessary.
         // Oh, the comments you never thought you’d write…
         if (this.father !== null) {
           process.kill(this.father, 9)
