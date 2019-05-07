@@ -26,7 +26,7 @@ function sync (options) {
   //
   // Start rsync watcher.
   //
-  console.log(` 💞 [Sync] Will sync folder ${clr(options.syncLocalFolder, 'cyan')} to host ${clr(options.syncRemoteHost, 'cyan')}`)
+  console.log(`\n 💞 [Sync] Will sync folder ${clr(options.syncLocalFolder, 'cyan')} to host ${clr(options.syncRemoteHost, 'cyan')}`)
 
   const rsyncOptions = {
     'sync': {
