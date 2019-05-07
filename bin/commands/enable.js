@@ -117,24 +117,26 @@ function enable (options) {
         process.exit(1)
       }
 
-      //
-      // If the sync option is specified, ensure that Rsync exists on the system.
-      // (This will install it automatically if a supported package manager exists.)
-      //
+      // When enable command is run with the --sync option, ensure that the current environment
+      // is set up to accept remote rsync over ssh and also provide some useful information
+      // for setting up the client-side development server.
       if (options.enableSync) {
+
+        // If the sync option is specified, ensure that Rsync exists on the system.
+        // (This will install it automatically if a supported package manager exists.)
         ensureRsyncExists()
 
+        // Disable rsync daemon on host to plug that security hole in case it was on. (All
+        // our rsync calls will take place via ssh as they should.)
         try {
-          // Disable rsync daemon on host to plug that security hole in case it was on. (All
-          // our rsync calls will take place via ssh as they should.)
-          childProcess.execSync('sudo systemctl stop rsync', {env: process.env, stdio: 'pipe'})
-          childProcess.execSync('sudo systemctl disable rsync', {env: process.env, stdio: 'pipe'})
-          childProcess.execSync('sudo systemctl mask rsync', {env: process.env, stdio: 'pipe'})
-          console.log(` 💞 [Sync] Rsync set up to only allow secure access via ssh.\n`)
-        } catch (error) {
-          console.error(error, `\n 👿 Error: could not disable insecure rsync daemon.\n`)
-          process.exit(1)
-        }
+        childProcess.execSync('sudo systemctl stop rsync', {env: process.env, stdio: 'pipe'})
+        childProcess.execSync('sudo systemctl disable rsync', {env: process.env, stdio: 'pipe'})
+        childProcess.execSync('sudo systemctl mask rsync', {env: process.env, stdio: 'pipe'})
+        console.log(` 💞 [Sync] Rsync set up to only allow secure access via ssh.\n`)
+      } catch (error) {
+        console.error(error, `\n 👿 Error: could not disable insecure rsync daemon.\n`)
+        process.exit(1)
+      }
       }
     }
   })
