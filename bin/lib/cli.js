@@ -18,10 +18,12 @@ class CommandLineInterface {
     this.execute(command)
   }
 
+
   throwError(errorMessage) {
     console.log(`\n 🤯 ${errorMessage}\n`)
     throw new Error(errorMessage)
   }
+
 
   // Return the command given a command-line options object.
   command (commandLineOptions) {
@@ -68,6 +70,7 @@ class CommandLineInterface {
     return command
   }
 
+
   // Returns the file to be required for the passed command.
   requirement (command) {
     let requirement = null
@@ -81,9 +84,9 @@ class CommandLineInterface {
     return requirement
   }
 
+
   // Execute the requested command.
   execute (command) {
-
     const requirement = this.requirement(command)
     const options = this.options(command)
 
@@ -105,6 +108,7 @@ class CommandLineInterface {
     }
     Object.assign(options, this.proxyOptions(command))
     Object.assign(options, this.syncOptions(command))
+    Object.assign(options, this.enableOptions(command))
 
     return options
   }
@@ -191,6 +195,20 @@ class CommandLineInterface {
     proxyOptions.proxyWebSocketURL = proxyOptions.proxyHttpURL.replace('http://', 'ws://')
 
     return proxyOptions
+  }
+
+
+  // If the command is enable, populate its options.
+  enableOptions (command) {
+    let enableOptions = { enableSync: null }
+
+    if (command.isEnable) {
+      if (command.namedArguments.sync === true) {
+        enableOptions.enableSync = true
+      }
+    }
+
+    return enableOptions
   }
 
 

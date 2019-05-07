@@ -378,6 +378,13 @@ test('[CLI] syncOptions()', t => {
   t.end()
 })
 
+test('[CLI] enableOptions()', t => {
+  t.plan(1)
+  const enableOptions = cli.enableOptions(cli.command({_:['enable'], sync: true}))
+  t.true(enableOptions.enableSync, 'enable sync option should be true')
+  t.end()
+})
+
 test('[CLI] throwError()', t => {
   t.plan(1)
   t.throws(() => { cli.throwError('an error') }, 'an error')

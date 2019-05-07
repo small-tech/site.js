@@ -116,8 +116,57 @@ function enable (options) {
         console.error(error, `\n 👿 Error: could not enable web server.\n`)
         process.exit(1)
       }
+
+      //
+      // If the sync option is specified, ensure that Rsync exists on the system.
+      // (This will install it automatically if a supported package manager exists.)
+      //
+      if (options.enableSync) {
+        ensureRsyncExists()
+      }
     }
   })
 }
+
+
+// Does the passed command exist? Returns: bool.
+function commandExists (command) {
+    try {
+      childProcess.execFileSync('which', [command], {env: process.env})
+      return true
+    } catch (error) {
+      return false
+    }
+  }
+
+
+function ensureRsyncExists() {
+  if (commandExists('rsync')) return // Already installed
+
+  print(' 🌠 [Indie Web Server] Installing Rsync dependency')
+  let options = {env: process.env}
+  try {
+    if (commandExists('apt')) {
+      print('using apt… \n')
+      options.env.DEBIAN_FRONTEND = 'noninteractive'
+      childProcess.execSync('sudo apt-get install -y -q rsync', options)
+    } else if (commandExists('yum')) {
+      // Untested: if you test this, please let me know https://github.com/indie-mirror/https-server/issues
+      console.log('\n 🤪  [Indie Web Server] Attempting to install required dependency using yum. This is currently untested. If it works (or blows up) for you, I’d appreciate it if you could open an issue at https://github.com/indie-mirror/https-server/issues and let me know. Thanks! – Aral\n')
+      childProcess.execSync('sudo yum install rsync', options)
+      console.log(' 🎉 [Indie Web Server] Rsync installed using yum.')
+    } else if (commandExists('pacman')) {
+      childProcess.execSync('sudo pacman -S rsync', options)
+      console.log(' 🎉 [Indie Web Server] Rsync installed using pacman.')
+    } else {
+    // No supported package managers installed. Warn the person.
+    console.log('\n ⚠️  [Indie Web Server] Linux: No supported package manager found for installing Rsync on Linux (tried apt, yum, and pacman). Please install Rsync manually and run Indie Web Server again.\n')
+    }
+  } catch (error) {
+    // There was an error and we couldn’t install the dependency. Warn the person.
+    console.log('\n ⚠️  [Indie Web Server] Linux: Failed to install Rsync. Please install it manually and run Indie Web Server again.\n', error)
+  }
+}
+
 
 module.exports = enable

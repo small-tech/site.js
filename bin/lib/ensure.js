@@ -13,6 +13,18 @@ const getStatus = require('./status')
 const clr = require('../../lib/clr')
 
 class Ensure {
+
+  // Does the passed command exist? Returns: bool.
+  commandExists (command) {
+    try {
+      childProcess.execFileSync('which', [command], {env: process.env})
+      return true
+    } catch (error) {
+      return false
+    }
+  }
+
+
   // Ensure we have root privileges and exit if we don’t.
   root () {
     if (process.getuid() !== 0) {
@@ -27,21 +39,19 @@ class Ensure {
     }
   }
 
+
   // Ensure systemctl exists.
   systemctl () {
-    try {
-      childProcess.execSync('which systemctl', {env: process.env})
-    } catch (error) {
+    if (!this.commandExists('systemctl')) {
       console.error('\n 👿 Sorry, daemons are only supported on Linux systems with systemd (systemctl required).\n')
       process.exit(1)
     }
   }
 
+
   // Ensure journalctl exists.
   journalctl () {
-    try {
-      childProcess.execSync('which journalctl', {env: process.env})
-    } catch (error) {
+    if (!this.commandExists('journalctl')) {
       console.error('\n 👿 Sorry, daemons are only supported on Linux systems with systemd (journalctl required).\n')
       process.exit(1)
     }
