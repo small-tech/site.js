@@ -10,6 +10,8 @@ const httpProxyMiddleware = require('http-proxy-middleware')
 const express = require('express')
 const webServer = require('../../index')
 
+const Graceful = require('node-graceful')
+
 function proxy (options) {
 
   const {proxyHttpURL, proxyWebSocketURL, port} = options
@@ -93,6 +95,18 @@ function proxy (options) {
     // Unexpected error, throw it.
     throw error
   })
+
+  // Handle graceful exit.
+  const goodbye = (done) => {
+    console.log('\n 💃 Preparing to exit gracefully, please wait…')
+    server.close( () => {
+      // The server close event will be the last one to fire. Let’s say goodbye :)
+      console.log('\n 💖 Goodbye!\n')
+      done()
+    })
+  }
+  Graceful.on('SIGINT', goodbye)
+  Graceful.on('SIGTERM', goodbye)
 }
 
 module.exports = proxy
