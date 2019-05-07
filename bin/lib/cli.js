@@ -269,15 +269,15 @@ class CommandLineInterface {
             this.syntaxError(`ambiguous sync options: please provide ${clr('either', 'italics')} the ${clr('host', 'cyan')} option or provide the remote host as a positional argument, but not both.`)
           }
 
+          if (syncOptionsDerivedFromPositionalArguments.syncRemoteHost === null && !namedArgumentExists('host')) {
+            // This should not happen.
+            this.syntaxError(`remote ${clr('host', 'cyan')} not provided either using the ${clr('--host', 'yellow')} option or via a positional argument.`)
+          }
+
           // The account to use is either what is set explicitly using the --account option
           // or defaults to the same account as the person has on their local machine.
           const _account = namedArgumentExists('account') ? command.namedArguments.account : process.env.USER
           const _host = namedArgumentExists('host') ? command.namedArguments.host : syncOptionsDerivedFromPositionalArguments.syncRemoteHost
-
-          if (_host === null) {
-            // This should not happen.
-            this.syntaxError(`remote ${clr('host', 'cyan')} not provided either using the ${clr('--host', 'yellow')} option or via a positional argument. This should not happen.`)
-          }
 
           // Helper: redundant but useful so we don’t have to parse the remote connection string again.
           syncOptions.syncRemoteHost = _host
