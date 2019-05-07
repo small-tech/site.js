@@ -123,6 +123,18 @@ function enable (options) {
       //
       if (options.enableSync) {
         ensureRsyncExists()
+
+        try {
+          // Disable rsync daemon on host to plug that security hole in case it was on. (All
+          // our rsync calls will take place via ssh as they should.)
+          childProcess.execSync('sudo systemctl stop rsync', {env: process.env, stdio: 'pipe'})
+          childProcess.execSync('sudo systemctl disable rsync', {env: process.env, stdio: 'pipe'})
+          childProcess.execSync('sudo systemctl mask rsync', {env: process.env, stdio: 'pipe'})
+          console.log(` 💞 [Sync] Rsync set up to only allow secure access via ssh.\n`)
+        } catch (error) {
+          console.error(error, `\n 👿 Error: could not disable insecure rsync daemon.\n`)
+          process.exit(1)
+        }
       }
     }
   })
