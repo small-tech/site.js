@@ -121,22 +121,9 @@ function enable (options) {
       // is set up to accept remote rsync over ssh and also provide some useful information
       // for setting up the client-side development server.
       if (options.enableSync) {
-
-        // If the sync option is specified, ensure that Rsync exists on the system.
-        // (This will install it automatically if a supported package manager exists.)
         ensureRsyncExists()
-
-        // Disable rsync daemon on host to plug that security hole in case it was on. (All
-        // our rsync calls will take place via ssh as they should.)
-        try {
-        childProcess.execSync('sudo systemctl stop rsync', {env: process.env, stdio: 'pipe'})
-        childProcess.execSync('sudo systemctl disable rsync', {env: process.env, stdio: 'pipe'})
-        childProcess.execSync('sudo systemctl mask rsync', {env: process.env, stdio: 'pipe'})
-        console.log(` 💞 [Sync] Rsync set up to only allow secure access via ssh.\n`)
-      } catch (error) {
-        console.error(error, `\n 👿 Error: could not disable insecure rsync daemon.\n`)
-        process.exit(1)
-      }
+        disableInsecureRsyncDaemon()
+        displayConnectionInformation()
       }
     }
   })
@@ -158,6 +145,49 @@ function print(str) {
 }
 
 
+function displayConnectionInformation() {
+  try {
+    const hostname = childProcess.execSync('hostname', {env: process.env, stdio: 'pipe'}).toString('utf-8').trim()
+    const account = process.env.USER
+
+    const homeDirectory = process.env.HOME
+    const currentDirectory = path.resolve('.')
+    const currentDirectoryIsChildOfHome = currentDirectory.startsWith(homeDirectory)
+
+    let options = null
+    if (currentDirectoryIsChildOfHome) {
+      // We can use the --folder argument
+      const folder = currentDirectory.replace(`${homeDirectory}/`, '')
+      options = `--host=${hostname} --account=${account} --folder=${folder}`
+    } else {
+      // We need to specify an absolute path to the folder and provide a remote connection string.
+      options = `--to=${account}@${hostname}:${currentDirectory}`
+    }
+    console.log(` 💞 [Sync] To sync from your local machine, type:\n`)
+    console.log(`           web-server sync ${options}\n`)
+  } catch (error) {
+    console.error(error, `\n 👿 Error: could not get connection information.\n`)
+    process.exit(1)
+  }
+}
+
+
+// Disable rsync daemon on host to plug that security hole in case it was on. (All
+// our rsync calls will take place via ssh as they should.)
+function disableInsecureRsyncDaemon() {
+  try {
+    childProcess.execSync('sudo systemctl stop rsync', {env: process.env, stdio: 'pipe'})
+    childProcess.execSync('sudo systemctl disable rsync', {env: process.env, stdio: 'pipe'})
+    childProcess.execSync('sudo systemctl mask rsync', {env: process.env, stdio: 'pipe'})
+    console.log(` 💞 [Sync] Rsync set up to only allow secure access via ssh.`)
+  } catch (error) {
+    console.error(error, `\n 👿 Error: could not disable insecure rsync daemon.\n`)
+    process.exit(1)
+  }
+}
+
+// If the sync option is specified, ensure that Rsync exists on the system.
+// (This will install it automatically if a supported package manager exists.)
 function ensureRsyncExists() {
   if (commandExists('rsync')) return // Already installed
 
