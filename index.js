@@ -15,6 +15,7 @@ const redirectHTTPS = require('redirect-https')
 
 const nodecert = require('@ind.ie/nodecert')
 
+const Graceful = require('node-graceful')
 
 class WebServer {
 
@@ -255,6 +256,18 @@ class WebServer {
       }
       server.emit('indie-web-server-address-already-in-use')
     })
+
+    // Handle graceful exit.
+    const goodbye = (done) => {
+      console.log('\n 💃 Preparing to exit gracefully, please wait…')
+      server.close( () => {
+        // The server close event will be the last one to fire. Let’s say goodbye :)
+        console.log('\n 💖 Goodbye!\n')
+        done()
+      })
+    }
+    Graceful.on('SIGINT', goodbye)
+    Graceful.on('SIGTERM', goodbye)
 
     return server
   }
