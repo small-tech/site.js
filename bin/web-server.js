@@ -1,13 +1,11 @@
 #!/usr/bin/env node
+const Graceful = require('node-graceful')
 const cli = require('./lib/cli')
 
-function exitElegantly () {
+Graceful.on('exit', () => {
   console.log('\n 💖 Goodbye!\n')
   process.exit()
-}
-
-process.on('SIGINT', exitElegantly) // run signal handler on CTRL-C
-process.on('SIGTERM', exitElegantly) // run signal handler on SIGTERM
+})
 
 try {
   cli.initialise()

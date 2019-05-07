@@ -18,6 +18,7 @@ const chokidar = require('chokidar')
 const Rsync = require('rsync')
 const debounce = require('debounce')
 const path = require('path')
+const Graceful = require('node-graceful')
 
 const consoleTimestamp = require('./console-timestamp')
 
@@ -27,7 +28,8 @@ class RSyncWatcher {
     this.synchronisers = new Map()
     this.watchers = []
 
-    const quit = () => {
+    // Exit gracefully.
+    Graceful.on('exit', () => {
       console.log(`\n 💞 [Sync] Exit request detected.`)
 
       for (let entry of this.synchronisers) {
@@ -44,10 +46,7 @@ class RSyncWatcher {
       console.log('\n 💖 Goodbye!\n')
 
       process.exit()
-    }
-
-    process.on('SIGINT', quit) // run signal handler on CTRL-C
-    process.on('SIGTERM', quit) // run signal handler on SIGTERM
+    })
 
     for (let project in this.options) {
       this.sync(project).then(() => {
