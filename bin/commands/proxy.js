@@ -12,6 +12,9 @@ const webServer = require('../../index')
 
 const Graceful = require('node-graceful')
 
+// TODO: Does not guarantee that it can bind to privileged ports on Linux.
+// [ ] There is redundancy between the serve method and this. Proxy should
+//      be moved there and refactored.
 function proxy (options) {
 
   const {proxyHttpURL, proxyWebSocketURL, port} = options

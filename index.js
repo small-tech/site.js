@@ -28,6 +28,18 @@ class WebServer {
     return `<!doctype html><html lang="en" style="font-family: sans-serif; background-color: #eae7e1"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error 500: Internal Server Error</title></head><body style="display: grid; align-items: center; justify-content: center; height: 100vh; vertical-align: top; margin: 0;"><main><h1 style="font-size: 16vw; color: black; text-align:center; line-height: 0.25">5🔥😱</h1><p style="font-size: 4vw; text-align: center; padding-left: 2vw; padding-right: 2vw;"><span>Internal Server Error</span><br><br><span style="color: grey;">${errorMessage}</span></p></main></body></html>`
   }
 
+  constructor () {
+
+    this.father = null
+
+    process.on('message', (m) => {
+      if (m.IAmYourFather !== undefined) {
+        this.father = m.IAmYourFather
+        console.log(`\n 👶 Running as child process.\n`)
+      }
+    })
+  }
+
   // Returns a nicely-formatted version string based on
   // the version set in the package.json file. (Synchronous.)
   version () {
@@ -263,6 +275,14 @@ class WebServer {
       server.close( () => {
         // The server close event will be the last one to fire. Let’s say goodbye :)
         console.log('\n 💖 Goodbye!\n')
+
+        // Ensure that the parent process is dead.
+        // Filicide is never fun but, in this case necessary.
+        // Oh, the comments you never thought you’d write…
+        if (this.father !== null) {
+          process.kill(this.father, 9)
+        }
+
         done()
       })
     }
@@ -388,7 +408,9 @@ class WebServer {
           console.log(' 😇 [Indie Web Server] First run on Linux: got privileges to bind to ports < 1024. Restarting…')
 
           // Fork a new instance of the server so that it is launched with the privileged Node.js.
-          childProcess.fork(path.join(__dirname, 'bin', 'web-server.js'), process.argv.slice(2), {env: process.env})
+          const luke = childProcess.fork(path.join(__dirname, 'bin', 'web-server.js'), process.argv.slice(2), {env: process.env})
+
+          luke.send({IAmYourFather: process.pid})
 
           // We’re done here. Go into an endless loop. Exiting (Ctrl+C) this will also exit the child process.
           while(1){}
