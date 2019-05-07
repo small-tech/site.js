@@ -28,8 +28,6 @@ function sync (options) {
   //
   console.log(` 💞 [Sync] Will sync folder ${clr(options.syncLocalFolder, 'cyan')} to host ${clr(options.syncRemoteHost, 'cyan')}`)
 
-  console.log('Debug: remote server connection string', options.syncRemoteConnectionString)
-
   const rsyncOptions = {
     'sync': {
       'from': options.syncLocalFolder,
@@ -118,9 +116,6 @@ function sync (options) {
       }
     }
   }
-
-  // Debug
-  console.log('rsyncOptions', rsyncOptions)
 
   // Create the rsync watcher.
   new RsyncWatcher(rsyncOptions)
