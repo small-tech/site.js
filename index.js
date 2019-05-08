@@ -276,6 +276,10 @@ class WebServer {
         // The server close event will be the last one to fire. Let’s say goodbye :)
         console.log('\n 💖 Goodbye!\n')
 
+        // TODO: This appears to be necessary when running sync – check if something
+        // ===== there is not getting cleaned up. It isn’t a problem when running a
+        //       local server. Not sure what is causing the actual issue yet.
+
         // Ensure that the parent process is dead.
         // Patricide is never fun but, in this case necessary.
         // Oh, the comments you never thought you’d write…
