@@ -7,13 +7,15 @@
 const fs = require('fs')
 const path = require('path')
 
+const minimist = require('minimist')
+
 const clr = require('../../lib/clr')
 
 class CommandLineInterface {
 
   // Initialise the command-line interface.
   initialise () {
-    const commandLineOptions = require('minimist')(process.argv.slice(2), {boolean: true})
+    const commandLineOptions = minimist(process.argv.slice(2), {boolean: true})
     const command = this.command(commandLineOptions)
     this.execute(command)
   }

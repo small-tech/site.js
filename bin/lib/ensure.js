@@ -6,6 +6,7 @@
 //////////////////////////////////////////////////////////////////////
 
 const childProcess = require('child_process')
+const os = require('os')
 const path = require('path')
 const runtime = require('./runtime')
 const getStatus = require('./status')
@@ -70,6 +71,44 @@ class Ensure {
       process.exit(1)
     }
   }
+
+  // If we’re on Linux and the requested port is < 1024 ensure that we can bind to it.
+  // (As of macOS Mojave, privileged ports are only an issue on Linux. Good riddance too,
+  // as these so-called privileged ports are a relic from the days of mainframes and they
+  // actually have a negative impact on security today:
+  // https://www.staldal.nu/tech/2007/10/31/why-can-only-root-listen-to-ports-below-1024/
+  //
+  // Note: this might cause issues if https-server is used as a library as it assumes that the
+  // ===== current app is in index.js and that it can be forked. This might be an issue if a
+  //       process manager is already being used, etc. Worth keeping an eye on and possibly
+  //       making this method an optional part of server startup.
+  weCanBindToPort (port) {
+    if (port < 1024 && os.platform() === 'linux') {
+      const options = {env: process.env}
+      try {
+        childProcess.execSync(`setcap -v 'cap_net_bind_service=+ep' $(which ${process.title})`, options)
+      } catch (error) {
+        try {
+          // Allow Node.js to bind to ports < 1024.
+          childProcess.execSync(`sudo setcap 'cap_net_bind_service=+ep' $(which ${process.title})`, options)
+
+          console.log(' 😇 [Indie Web Server] First run on Linux: got privileges to bind to ports < 1024. Restarting…')
+
+          // Fork a new instance of the server so that it is launched with the privileged Node.js.
+          const luke = childProcess.fork(path.resolve(path.join(__dirname, '..', 'web-server.js')), process.argv.slice(2), {env: process.env})
+
+          luke.send({IAmYourFather: process.pid})
+
+          // We’re done here. Go into an endless loop. Exiting (Ctrl+C) this will also exit the child process.
+          while(1){}
+        } catch (error) {
+          console.log(`\n Error: could not get privileges for Node.js to bind to port ${port}.`, error)
+          throw error
+        }
+      }
+    }
+  }
+
 
   // If the sync option is specified, ensure that Rsync exists on the system.
   // (This will install it automatically if a supported package manager exists.)
