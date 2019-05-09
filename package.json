@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node index.js",
     "build": "bin/build.js",
+    "deploy": "bin/build.js --deploy",
     "test": "tape test/*.js | tap-spec",
     "coverage": "nyc tape test/*.js | tap-spec"
   },
