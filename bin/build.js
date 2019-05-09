@@ -32,8 +32,8 @@ const version = package.version
 
 console.log(`\n ⚙ Indie Web Server: building native binaries for version ${version}`)
 
-const linuxVersionDirectory = path.join('dist', 'linux', 'version')
-const macOsVersionDirectory = path.join('dist', 'macos', 'version')
+const linuxVersionDirectory = path.join('dist', 'linux', version)
+const macOsVersionDirectory = path.join('dist', 'macos', version)
 
 fs.mkdirSync(linuxVersionDirectory, {recursive: true})
 fs.mkdirSync(macOsVersionDirectory, {recursive: true})
