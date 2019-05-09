@@ -101,10 +101,10 @@ async function build () {
     const zipFileName = `${version}.tar.gz`
     const mainSourceDirectory = path.join(__dirname, '..')
     const linuxVersionWorkingDirectory = path.join(mainSourceDirectory, linuxVersionDirectory)
-    const macOSVersionWorkingDirectory = path.join(mainSourceDirectory, macOSVersionDirectory)
+    const macOsVersionWorkingDirectory = path.join(mainSourceDirectory, macOsVersionDirectory)
 
     childProcess.execSync(`tar -cvzf ${zipFileName} web-server`, {env: process.env, cwd: linuxVersionWorkingDirectory})
-    childProcess.execSync(`tar -cvzf ${zipFileName} web-server`, {env: process.env, cwd: macOSVersionWorkingDirectory})
+    childProcess.execSync(`tar -cvzf ${zipFileName} web-server`, {env: process.env, cwd: macOsVersionWorkingDirectory})
 
     //
     // Copy to web site.
@@ -127,15 +127,15 @@ async function build () {
     if (fs.existsSync(pathToWebServerSectionOfSite)) {
       console.log('   • Copying binaries to the Indie Web Site…')
       const linuxVersionZipFilePath = path.join(linuxVersionWorkingDirectory, zipFileName)
-      const macOSVersionZipFilePath = path.join(macOSVersionWorkingDirectory, zipFileName)
+      const macOsVersionZipFilePath = path.join(macOsVersionWorkingDirectory, zipFileName)
       const linuxVersionTargetDirectoryOnSite = path.join(pathToWebServerSectionOfSite, 'linux')
-      const macOSVersionTargetDirectoryOnSite = path.join(pathToWebServerSectionOfSite, 'macos')
+      const macOsVersionTargetDirectoryOnSite = path.join(pathToWebServerSectionOfSite, 'macos')
 
       fs.mkdirSync(linuxVersionTargetDirectoryOnSite, {recursive: true})
-      fs.mkdirSync(macOSVersionTargetDirectoryOnSite, {recursive: true})
+      fs.mkdirSync(macOsVersionTargetDirectoryOnSite, {recursive: true})
 
       fs.copyFileSync(linuxVersionZipFilePath, path.join(linuxVersionTargetDirectoryOnSite, zipFileName))
-      fs.copyFileSync(macOSVersionZipFilePath, path.join(macOSVersionTargetDirectoryOnSite, zipFileName))
+      fs.copyFileSync(macOsVersionZipFilePath, path.join(macOsVersionTargetDirectoryOnSite, zipFileName))
     } else {
       console.log('   • Skipped copy of binaries to Indie Web Site as could not find the local working copy.')
     }
