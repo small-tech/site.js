@@ -157,8 +157,8 @@ npm test
 npm run build
 
 # Serve the test site (visit https://localhost to view).
-# e.g., To run the version 9.2.0 Linux binary:
-dist/linux/9.2.0/web-server test/site
+# e.g., To run the version 9.2.2 Linux binary:
+dist/linux/9.2.2/web-server test/site
 ```
 
 ### Build and install native binary locally
