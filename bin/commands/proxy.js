@@ -6,10 +6,11 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-const httpProxyMiddleware = require('http-proxy-middleware')
-const express = require('express')
+const ensure = require('../lib/ensure')
 const webServer = require('../../index')
 
+const httpProxyMiddleware = require('http-proxy-middleware')
+const express = require('express')
 const Graceful = require('node-graceful')
 
 // TODO: Does not guarantee that it can bind to privileged ports on Linux.
@@ -23,7 +24,7 @@ function proxy (options) {
 
   console.log(webServer.version())
 
-  webServer.ensureWeCanBindToPort(port)
+  ensure.weCanBindToPort(port)
 
   const server = webServer.createServer({}, app).listen(port, () => {
     console.log(`\n 🚚 [Indie Web Server] Proxying: HTTPS/WSS on localhost:${port} ←→ HTTP/WS on ${proxyHttpURL.replace('http://', '')}\n`)
@@ -105,6 +106,7 @@ function proxy (options) {
     server.close( () => {
       // The server close event will be the last one to fire. Let’s say goodbye :)
       console.log('\n 💖 Goodbye!\n')
+
       done()
     })
   }

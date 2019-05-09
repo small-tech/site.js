@@ -30,6 +30,10 @@ class WebServer {
 
   constructor () {
 
+    // If we are running as a child process, we will ensure that our parent process
+    // is dead before exiting. (Note: normally, this should not be necessary and this
+    // is here as a brute-force contingency. If you notice this being used, debug and fix
+    // the underlying issue.)
     this.father = null
 
     process.on('message', (m) => {
@@ -276,13 +280,9 @@ class WebServer {
         // The server close event will be the last one to fire. Let’s say goodbye :)
         console.log('\n 💖 Goodbye!\n')
 
-        // TODO: This appears to be necessary when running sync – check if something
-        // ===== there is not getting cleaned up. It isn’t a problem when running a
-        //       local server. Not sure what is causing the actual issue yet.
-
-        // Ensure that the parent process is dead.
-        // Patricide is never fun but, in this case necessary.
-        // Oh, the comments you never thought you’d write…
+        // Just in case we fail to clean up something in the child and that stops the
+        // parent from exiting (resulting in a hung console), esure that the parent process
+        // is dead.
         if (this.father !== null) {
           process.kill(this.father, 9)
         }

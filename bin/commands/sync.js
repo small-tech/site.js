@@ -19,10 +19,16 @@
 
 const localServer = require('./local')
 const proxyServer = require('./proxy')
+
 const RsyncWatcher = require('../lib/RsyncWatcher')
+const ensure = require('../lib/ensure')
 const clr = require('../../lib/clr')
 
 function sync (options) {
+  // Check for prerequisites (sync functionality requires rsync to be installed.)
+  ensure.rsyncExists()
+  ensure.weCanBindToPort(options.port)
+
   //
   // Start rsync watcher.
   //

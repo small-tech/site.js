@@ -8,9 +8,11 @@
 const childProcess = require('child_process')
 const os = require('os')
 const path = require('path')
+
+const Graceful = require('node-graceful')
+
 const runtime = require('./runtime')
 const getStatus = require('./status')
-
 const clr = require('../../lib/clr')
 
 class Ensure {
@@ -36,7 +38,7 @@ class Ensure {
       } else {
         childProcess.execSync(`sudo web-server ${process.argv.slice(2).join(' ')}`, options)
       }
-      process.exit(0)
+      Graceful.exit(0)
     }
   }
 
@@ -45,7 +47,7 @@ class Ensure {
   systemctl () {
     if (!this.commandExists('systemctl')) {
       console.error('\n 👿 Sorry, daemons are only supported on Linux systems with systemd (systemctl required).\n')
-      process.exit(1)
+      Graceful.exit(1)
     }
   }
 
@@ -54,7 +56,7 @@ class Ensure {
   journalctl () {
     if (!this.commandExists('journalctl')) {
       console.error('\n 👿 Sorry, daemons are only supported on Linux systems with systemd (journalctl required).\n')
-      process.exit(1)
+      Graceful.exit(1)
     }
   }
 
@@ -68,7 +70,7 @@ class Ensure {
 
     if (isActive) {
       console.error(`\n 👿 Indie Web Server Daemon is already running.\n\n    ${clr('Please stop it first with the command:', 'yellow')} web-server ${clr('disable', 'green')}\n`)
-      process.exit(1)
+      Graceful.exit(1)
     }
   }
 
@@ -103,7 +105,7 @@ class Ensure {
           while(1){}
         } catch (error) {
           console.log(`\n Error: could not get privileges for Node.js to bind to port ${port}.`, error)
-          throw error
+          Graceful.exit(1)
         }
       }
     }
@@ -114,6 +116,11 @@ class Ensure {
   // (This will install it automatically if a supported package manager exists.)
   rsyncExists() {
     if (this.commandExists('rsync')) return // Already installed
+
+    if (os.platform() === 'darwin') {
+      console.log('\n ⚠️  [Indie Web Server] macOS: rsync should be installed default but isn’t. Please fix this before trying again.\n')
+      Graceful.exit(1)
+    }
 
     console.log(' 🌠 [Indie Web Server] Installing Rsync dependency…')
     let options = {env: process.env}
@@ -134,9 +141,11 @@ class Ensure {
       // No supported package managers installed. Warn the person.
       console.log('\n ⚠️  [Indie Web Server] Linux: No supported package manager found for installing Rsync on Linux (tried apt, yum, and pacman). Please install Rsync manually and run Indie Web Server again.\n')
       }
+      Graceful.exit(1)
     } catch (error) {
       // There was an error and we couldn’t install the dependency. Warn the person.
       console.log('\n ⚠️  [Indie Web Server] Linux: Failed to install Rsync. Please install it manually and run Indie Web Server again.\n', error)
+      Graceful.exit(1)
     }
   }
 
