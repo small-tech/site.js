@@ -23,7 +23,7 @@ const commandLineOptions = minimist(process.argv.slice(2), {boolean: true})
 
 // Display help on syntax error or if explicitly requested.
 if (commandLineOptions._.length !== 0 || commandLineOptions.h || commandLineOptions.help) {
-  console.log('\n Usage: npm run build [--deploy] [--all]\n')
+  console.log('\n Usage: npm run build [--deploy] [--all] [--install]\n')
   process.exit()
 }
 
@@ -32,16 +32,21 @@ const version = package.version
 
 console.log(`\n ⚙ Indie Web Server: building native binaries for version ${version}`)
 
-const linuxVersionPath = `dist/linux/${version}`
-const macOSVersionPath = `dist/macos/${version}`
+const linuxVersionDirectory = path.join('dist', 'linux', 'version')
+const macOsVersionDirectory = path.join('dist', 'macos', 'version')
 
-fs.mkdirSync(linuxVersionPath, {recursive: true})
-fs.mkdirSync(macOSVersionPath, {recursive: true})
+fs.mkdirSync(linuxVersionDirectory, {recursive: true})
+fs.mkdirSync(macOsVersionDirectory, {recursive: true})
+
+const linuxVersionBinaryPath = path.join(linuxVersionDirectory, 'web-server')
+const macOsVersionBinaryPath = path.join(macOsVersionDirectory, 'web-server')
 
 // Only build for the current platform unless a deployment build is requested via --deploy.
 const platform = os.platform()
 const buildLinuxVersion = commandLineOptions.deploy || commandLineOptions.all || (platform === 'linux')
 const buildMacVersion = commandLineOptions.deploy || commandLineOptions.all || (platform === 'darwin')
+
+const currentPlatformBinaryPath = (platform === 'linux') ? linuxVersionBinaryPath : macOsVersionBinaryPath
 
 // Start the build.
 build()
@@ -55,7 +60,7 @@ async function build () {
 
     await compile({
       input: 'bin/web-server.js',
-      output: `${linuxVersionPath}/web-server`,
+      output: linuxVersionBinaryPath,
       target: 'linux-x64-10.15.3',
       resources: ['package.json', 'bin/commands/*', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.3.0-linux-amd64', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.3.0-linux-arm']
     })
@@ -67,12 +72,21 @@ async function build () {
 
     await compile({
       input: 'bin/web-server.js',
-      output: `${macOSVersionPath}/web-server`,
+      output: macOsVersionBinaryPath,
       target: 'mac-x64-10.15.3',
       resources: ['package.json', 'bin/commands/*', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.3.0-darwin-amd64']
     })
   }
 
+  // Install the build for the current platform if requested.
+  if (commandLineOptions.install) {
+    //
+    // Install.
+    //
+    console.log('   • Installing locally…')
+
+    childProcess.execSync(`sudo cp ${currentPlatformBinaryPath} /usr/local/bin`)
+  }
 
   // Only zip and copy files to the Indie Web Site if explicitly asked to.
   if (commandLineOptions.deploy) {
@@ -86,8 +100,8 @@ async function build () {
     // gzip directly as that does not maintain the executable flag on the binary.
     const zipFileName = `${version}.tar.gz`
     const mainSourceDirectory = path.join(__dirname, '..')
-    const linuxVersionWorkingDirectory = path.join(mainSourceDirectory, linuxVersionPath)
-    const macOSVersionWorkingDirectory = path.join(mainSourceDirectory, macOSVersionPath)
+    const linuxVersionWorkingDirectory = path.join(mainSourceDirectory, linuxVersionDirectory)
+    const macOSVersionWorkingDirectory = path.join(mainSourceDirectory, macOSVersionDirectory)
 
     childProcess.execSync(`tar -cvzf ${zipFileName} web-server`, {env: process.env, cwd: linuxVersionWorkingDirectory})
     childProcess.execSync(`tar -cvzf ${zipFileName} web-server`, {env: process.env, cwd: macOSVersionWorkingDirectory})
@@ -106,7 +120,7 @@ async function build () {
     //
     // If it cannot find the Ind.ie Web Site, the build script will just skip this step.
     //
-    const pathToWebServerSectionOfSite = path.join(__dirname, '../../../site/www/content/web-server/')
+    const pathToWebServerSectionOfSite = path.resolve(path.join(__dirname, '../../../site/www/content/web-server/'))
 
     // Check that the local working copy of the Indie Web Site exists at the relative location
     // that we expect it to. If it doesn’t skip this step.

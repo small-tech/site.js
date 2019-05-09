@@ -8,6 +8,7 @@
     "start": "node index.js",
     "build": "bin/build.js",
     "deploy": "bin/build.js --deploy",
+    "install-locally": "bin/build.js --install",
     "test": "tape test/*.js | tap-spec",
     "coverage": "nyc tape test/*.js | tap-spec"
   },

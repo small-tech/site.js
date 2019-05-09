@@ -135,6 +135,12 @@ npm run build
 dist/linux/9.2.0/web-server test/site
 ```
 
+### Build and install native binary locally
+
+```shell
+npm run install-locally
+```
+
 ### Deployment
 
 ```shell
