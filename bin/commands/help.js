@@ -7,58 +7,122 @@
 //////////////////////////////////////////////////////////////////////
 
 const webServer = require('../../index')
-const clr = require('../lib/cli').clr
+const clr = require('../../lib/clr')
+
+const GREEN = 'green'
+const YELLOW = 'yellow'
+const CYAN = 'cyan'
+
+function command(name) { return clr(name, GREEN) }
+function argument(name) { return clr(name, CYAN) }
+function option(name) { name = `--${name}`; return `${clr(name, YELLOW)}` }
+function heading(title) { return clr(title, 'underline') }
+function emphasised(text) { return clr(text, 'italic') }
 
 function help () {
-  const usageCommand = `${clr('command', 'green')}`
-  const usageFolderToServe = `${clr('folder', 'cyan')}${clr('|url', 'darkgrey')}`
-  const usageOptions = clr('options', 'yellow')
+  const usageCommand = command('command')
+  const usageFolderOrHost = `${argument('folder')}|host`
+  const usageHost = argument('host')
+  const usageOptions = option('options')
 
-  const usageVersion = `${clr('version', 'green')}`
-  const usageHelp = `${clr('help', 'green')}`
-  const usageLocal = `${clr('local', 'green')}`
-  const usageGlobal = `${clr('global', 'green')}`
-  const usageProxy = `${clr('proxy', 'green')}`
-  const usageEnable = `${clr('enable', 'green')}`
-  const usageDisable = `${clr('disable', 'green')}`
-  const usageLogs = `${clr('logs', 'green')}`
-  const usageStatus = `${clr('status', 'green')}`
+  const commandVersion = command('version')
+  const commandHelp = command('help')
+  const commandLocal = command('local')
+  const commandGlobal = command('global')
+  const commandProxy = command('proxy')
+  const commandSync = command('sync')
+  const commandEnable = command('enable')
+  const commandDisable = command('disable')
+  const commandLogs = command('logs')
+  const commandStatus = command('status')
 
-  const usagePort = `${clr('--port', 'yellow')}=${clr('N', 'cyan')}`
+  const optionPort = option('port')
+
+  const optionHost = option('host')
+  const optionAccount = option('account')
+  const optionFolder = option('folder')
+  const optionProxy = option('proxy')
+  const optionSync = option('sync')
+
+  const prompt = clr('⯈', 'blue')
 
   const usage = `
    ${webServer.version()}
-  ${clr('Usage:', 'underline')}
+    ${heading('Usage:')}
 
-  ${clr('web-server', 'bold')} [${usageCommand}] [${usageFolderToServe}] [${usageOptions}]
+    ${clr('web-server', 'bold')} [${usageCommand}] [${usageFolderOrHost}] [${usageHost}] [${usageOptions}]
 
-  ${usageCommand}\t${usageVersion} | ${usageHelp} | ${usageLocal} | ${usageGlobal} | ${usageProxy} | ${usageEnable} | ${usageDisable} | ${usageLogs} | ${usageStatus}
-  ${usageFolderToServe}\tPath of folder to serve (defaults to current folder) or HTTP URL to reverse proxy.
-  ${usageOptions}\tSettings that alter server characteristics.
+    ${usageCommand}\t${commandVersion} | ${commandHelp} | ${commandLocal} | ${commandGlobal} | ${commandProxy} | ${commandSync} | ${commandEnable} | ${commandDisable} | ${commandLogs} | ${commandStatus}
+    ${usageFolderOrHost}\tPath of folder to serve (defaults to current folder) or host to proxy or sync.
+    ${usageHost}\tHost to sync.
+    ${usageOptions}\tSettings that alter server characteristics.
 
-  ${clr('Commands:', 'underline')}
+    ${heading('Commands:')}
 
-  ${usageVersion}\tDisplay version and exit.
-  ${usageHelp}\t\tDisplay this help screen and exit.
+    ${commandVersion}\tDisplay version and exit.
+    ${commandHelp}\tDisplay this help screen and exit.
 
-  ${usageLocal}\t\tStart server as regular process with locally-trusted certificates.
-  ${usageGlobal}\tStart server as regular process with globally-trusted certificates.
-  ${usageProxy}\t\tStart server to proxy provided HTTP URL via HTTPS. Also proxies WebSockets.
+    ${commandLocal}\tStart server as regular process with locally-trusted certificates.
+    ${commandGlobal}\tStart server as regular process with globally-trusted certificates.
+    ${commandProxy}\tStart server to proxy provided HTTP URL via HTTPS. Also proxies WebSockets.
+    ${commandSync}\tStart server as regular process with locally-trusted certificates and ${emphasised('rsync')} ${argument('folder')} to ${argument('host')}.
 
-  On Linux distributions with systemd, you can also use:
+    On Linux distributions with systemd, you can also use:
 
-  ${usageEnable}\tStart server as daemon with globally-trusted certificates and add to startup.
-  ${usageDisable}\tStop server daemon and remove from startup.
-  ${usageLogs}\t\tDisplay and tail server logs.
-  ${usageStatus}\tDisplay detailed server information.
+    ${commandEnable}\tStart server as daemon with globally-trusted certificates and add to startup.
+    ${commandDisable}\tStop server daemon and remove from startup.
+    ${commandLogs}\tDisplay and tail server logs.
+    ${commandStatus}\tDisplay detailed server information.
 
-  If ${usageCommand} is omitted, behaviour defaults to ${usageLocal}.
+    If ${usageCommand} is omitted, behaviour defaults to ${commandLocal}.
 
-  ${clr('Options:', 'underline')}
+    ${heading('Options:')}
 
-  ${usagePort}\tPort to start server on (defaults to 443).
+    ${optionPort}\tPort to start server on (defaults to 443).
 
-  ${clr('For further information, please see https://ind.ie/web-server', 'italic')}
+    For the ${commandEnable} command:
+
+    ${optionSync}\tEnsure the server can also rsync via ssh (so you can sync your site to it from your local machine).
+
+    For the ${commandSync} command:
+
+    ${optionHost}\tThe remote host to sync to (e.g., my-demo.site).
+    ${optionAccount}\tThe ssh account to use on remote server (defaults to same as on current session).
+    ${optionFolder}\tThe subfolder of home folder to sync to on remote machine (defaults to name of served folder).
+    ${optionProxy}\tProxy the specified host and port instead of starting a regular local server.
+
+    ${heading('Examples:')}
+
+      Develop using locally-trusted certificates:
+
+    • Serve current folder ${emphasised('(shorthand)')}\t\t${prompt} web-server
+    • Serve folder ${argument('site')} ${emphasised('(shorthand)')}\t\t${prompt} web-server ${argument('site')}
+    • Serve current folder\t\t\t${prompt} web-server ${commandLocal}
+    • Serve folder ${argument('site')}\t\t\t\t${prompt} web-server ${commandLocal} ${argument('site')}
+    • Serve folder ${argument('site')} at port 666\t\t${prompt} web-server ${commandLocal} ${argument('site')} ${option('port')}=${argument('666')}
+
+    • Proxy ${argument('localhost:1313')}🡘 https://localhost\t${prompt} web-server ${commandProxy} ${argument('localhost:1313')}
+
+    • Serve current folder, sync it to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('my.site')}
+    • Serve ${argument('site')} folder, sync it to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('site')} ${argument('my.site')}
+    • Ditto, but using the ${option('host')} option\t${prompt} web-server ${commandSync} ${argument('site')} ${option('host=')}${argument('my.site')}
+    • Ditto, but use account ${argument('me')} on ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('site')} ${option('host=')}${argument('my.site')} ${option('account=')}${argument('me')}
+    • Ditto, but sync to remote folder ${argument('www')}\t${prompt} web-server ${commandSync} ${argument('site')} ${option('host=')}${argument('my.site')} ${option('account=')}${argument('me')} ${option('folder=')}${argument('www')}
+    • Ditto, but using the ${option('to')} option\t\t${prompt} web-server ${commandSync} ${argument('site')} ${option('to=')}${argument('me@my-site:/home/me/www')}
+    • Sync current folder, proxy ${argument('localhost:1313')}\t${prompt} web-server ${commandSync} ${argument('my.site')} ${option('proxy=')}${argument('localhost:1313')}
+
+      Stage and deploy using globally-trusted Let’s Encrypt certificates:
+
+    • Serve current folder\t\t\t${prompt} web-server ${commandGlobal}
+    • Serve folder ${argument('site')}\t\t\t\t${prompt} web-server ${commandGlobal} ${argument('site')}
+
+    • Serve current folder as daemon\t\t${prompt} web-server ${commandEnable}
+    • Ditto & also ensure it can rsync via ssh\t${prompt} web-server ${commandEnable} ${optionSync}
+    • Get status of deamon\t\t\t${prompt} web-server ${commandStatus}
+    • Display server logs\t\t\t${prompt} web-server ${commandLogs}
+    • Stop current daemon\t\t\t${prompt} web-server ${commandDisable}
+
+    ${clr('For further information, please see https://ind.ie/web-server', 'italic')}
   `.replace(/^\n/, '')
 
   console.log(usage)

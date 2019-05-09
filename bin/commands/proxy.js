@@ -6,22 +6,28 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-const httpProxyMiddleware = require('http-proxy-middleware')
-const express = require('express')
+const ensure = require('../lib/ensure')
 const webServer = require('../../index')
 
+const httpProxyMiddleware = require('http-proxy-middleware')
+const express = require('express')
+const Graceful = require('node-graceful')
+
+// TODO: Does not guarantee that it can bind to privileged ports on Linux.
+// [ ] There is redundancy between the serve method and this. Proxy should
+//      be moved there and refactored.
 function proxy (options) {
 
-  const {httpProxyPath, webSocketProxyPath, port} = options
+  const {proxyHttpURL, proxyWebSocketURL, port} = options
 
   const app = express()
 
   console.log(webServer.version())
 
-  webServer.ensureWeCanBindToPort(port)
+  ensure.weCanBindToPort(port)
 
   const server = webServer.createServer({}, app).listen(port, () => {
-    console.log(`\n 🚚 [Indie Web Server] Proxying: HTTPS/WSS on localhost:${port} ←→ HTTP/WS on ${httpProxyPath.replace('http://', '')}\n`)
+    console.log(`\n 🚚 [Indie Web Server] Proxying: HTTPS/WSS on localhost:${port} ←→ HTTP/WS on ${proxyHttpURL.replace('http://', '')}\n`)
 
     function prettyLog (message) {
       console.log(` 🔁 ${message}`)
@@ -32,7 +38,7 @@ function proxy (options) {
     }
 
     const webSocketProxy = httpProxyMiddleware({
-      target: webSocketProxyPath,
+      target: proxyWebSocketURL,
       ws: true,
       changeOrigin:false,
       logProvider,
@@ -40,7 +46,7 @@ function proxy (options) {
     })
 
     const httpsProxy = httpProxyMiddleware({
-      target: httpProxyPath,
+      target: proxyHttpURL,
       changeOrigin: true,
       logProvider,
       logLevel: 'info',
@@ -93,6 +99,19 @@ function proxy (options) {
     // Unexpected error, throw it.
     throw error
   })
+
+  // Handle graceful exit.
+  const goodbye = (done) => {
+    console.log('\n 💃 Preparing to exit gracefully, please wait…')
+    server.close( () => {
+      // The server close event will be the last one to fire. Let’s say goodbye :)
+      console.log('\n 💖 Goodbye!\n')
+
+      done()
+    })
+  }
+  Graceful.on('SIGINT', goodbye)
+  Graceful.on('SIGTERM', goodbye)
 }
 
 module.exports = proxy

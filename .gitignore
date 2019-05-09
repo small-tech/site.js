@@ -3,3 +3,4 @@ dist-iws
 web-server.zip
 
 dist
+.nyc_output

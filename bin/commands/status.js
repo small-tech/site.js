@@ -9,7 +9,7 @@
 //////////////////////////////////////////////////////////////////////
 
 const getStatus = require('../lib/status')
-const clr = require('../lib/cli').clr
+const clr = require('../../lib/clr')
 const ensure = require('../lib/ensure')
 
 function status () {

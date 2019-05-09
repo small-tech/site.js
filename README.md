@@ -126,12 +126,28 @@ npm i         # Install modules and development dependencies.
 # Run unit tests.
 npm test
 
-# Build the native binaries
+# Build the native binary for your platform.
+# To build for all platforms, use npm run build -- --all
 npm run build
 
 # Serve the test site (visit https://localhost to view).
-# e.g., To run the version 9.0.0 Linux binary:
-dist/linux/9.0.0/web-server test/site
+# e.g., To run the version 9.2.0 Linux binary:
+dist/linux/9.2.0/web-server test/site
+```
+
+### Build and install native binary locally
+
+```shell
+npm run install-locally
+```
+
+### Deployment
+
+```shell
+# To build binaries for both linux and macOS and also to
+# copy them over to the Indie Web Site for deployment.
+# (You will most likely not need to do this.)
+npm run deploy
 ```
 
 ## Syntax

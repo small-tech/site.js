@@ -28,7 +28,7 @@ async function secureGet (url) {
 }
 
 
-test('createServer method', t => {
+test('[Web Server] createServer method', t => {
   t.plan(2)
   const server = webServer.createServer()
   t.ok(server instanceof https.Server, 'is https.Server')
@@ -40,7 +40,7 @@ test('createServer method', t => {
   })
 })
 
-test('archival cascade', t => {
+test('[Web Server] archival cascade', t => {
   t.plan(8)
 
   const archive1 = path.join(__dirname, 'site-archive-1')
@@ -116,7 +116,7 @@ test('archival cascade', t => {
 })
 
 
-test('4042302', t => {
+test('[Web Server] 4042302', t => {
   // See https://4042302.org/get-started/
   t.plan(2)
 
@@ -142,7 +142,7 @@ test('4042302', t => {
 })
 
 
-test('serve method default 404 and 500 responses', t => {
+test('[Web Server] serve method default 404 and 500 responses', t => {
     //
     // Test the default 404 and 500 responses of the serve method.
     //
@@ -209,7 +209,7 @@ test('serve method default 404 and 500 responses', t => {
 })
 
 
-test('serve method', t => {
+test('[Web Server] serve method', t => {
   t.plan(7)
   const server = webServer.serve({path: 'test/site', callback: async () => {
 
