@@ -123,7 +123,7 @@ function enable (options) {
       if (options.enableSync) {
         ensure.rsyncExists()
         disableInsecureRsyncDaemon()
-        displayConnectionInformation()
+        displayConnectionInformation(pathToServe)
       }
 
       // All OK!
@@ -133,7 +133,7 @@ function enable (options) {
 }
 
 
-function displayConnectionInformation() {
+function displayConnectionInformation(pathToServe) {
   try {
     const hostname = childProcess.execSync('hostname', {env: process.env, stdio: 'pipe'}).toString('utf-8').trim()
 
@@ -145,19 +145,22 @@ function displayConnectionInformation() {
     const homeDirectoryFragments = homeDirectory.split(path.sep)
     const account = homeDirectoryFragments[homeDirectoryFragments.length - 1]
 
-    const currentDirectory = path.resolve('.')
-    const currentDirectoryIsChildOfHome = currentDirectory.startsWith(homeDirectory)
+    const absolutePathToServe = path.resolve(pathToServe)
+    const absolutePathToServeIsChildOfHome = absolutePathToServe.startsWith(homeDirectory)
 
     let options = null
-    if (currentDirectoryIsChildOfHome) {
+    if (absolutePathToServeIsChildOfHome) {
       // We can use the --folder argument
-      const folder = currentDirectory.replace(`${homeDirectory}/`, '')
+      let folder = absolutePathToServe.replace(`${homeDirectory}`, '')
+      if (folder.startsWith('/')) { folder = folder.substr(1) }
+      if (!folder.endsWith('/')) { folder = `${folder}/` }
+
       options = `--host=${hostname} --account=${account} --folder=${folder}`
     } else {
       // We need to specify an absolute path to the folder and provide a remote connection string.
-      options = `--to=${account}@${hostname}:${currentDirectory}`
+      options = `--to=${account}@${hostname}:${absolutePathToServe}`
     }
-    console.log(` 💞 [Sync] To sync from your local machine, type:`)
+    console.log(` 💞 [Sync] To sync from your local machine, from within your site’s folder, use:`)
     console.log(` 💞 [Sync] web-server sync ${options}\n`)
   } catch (error) {
     console.error(error, `\n 👿 Error: could not get connection information.\n`)

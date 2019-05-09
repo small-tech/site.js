@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Nothing yet.
 
+## [9.2.4] - 2019-05-09
+
+### Fixed
+
+  - Connection string information displayed by the enable command when used with the --sync option.
+
 ## [9.2.3] - 2019-05-09
 
 ### Fixed
