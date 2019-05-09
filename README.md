@@ -44,7 +44,7 @@ $ web-server
 
 ### Proxy server (local)
 
-You can also use Indie Web Server as a development-time reverse proxy for HTTP and WebSocket connections. For example, if you use [Hugo](https://gohugo.io/) and you’re running `hugo server` on the default HTTP port 1313. You can run a HTTPS reverse proxy at https://localhost [with LiveReload support](https://source.ind.ie/hypha/tools/web-server/blob/master/bin/web-server.js#L237) using:
+You can use Indie Web Server as a development-time reverse proxy for HTTP and WebSocket connections. For example, if you use [Hugo](https://gohugo.io/) and you’re running `hugo server` on the default HTTP port 1313. You can run a HTTPS reverse proxy at https://localhost [with LiveReload support](https://source.ind.ie/hypha/tools/web-server/blob/master/bin/web-server.js#L237) using:
 
 ```shell
 $ web-server proxy localhost:1313
@@ -54,6 +54,32 @@ This will create and serve the following proxies:
 
   * http://localhost:1313 → https://localhost
   * ws://localhost:1313 → wss://localhost
+
+### Live sync to remote server
+
+Part of local development involves deploying your changes to a live server at some point. You can use Indie Web Server to handle this for you in real-time:
+
+```shell
+$ web-server sync my-demo/ my-demo.site
+```
+
+The above command will start a local development server at _https://localhost_. Additionally, it will watch the folder _my-demo_ for changes and sync any changes via rsync over ssh to _my-demo.site_. Without any customisations, the sync command assumes that your account on your remote server has the same name as your account on your local machine and that the folder you are watching (_my-demo_, in the example above) is located at _/home/your-account/my-demo_. You can change these defaults using optional arguments.
+
+```shell
+$ web-server sync my-folder/ --host=my-demo.site --account=a-different-account --folder=not-my-folder
+```
+
+e.g., The above command will watch the the contents of the _my-folder_ directory and sync it to _a-different-account@my-demo.site:/home/a-different-account/not-my-folder_.
+
+You can also customise the destination folder completely but supplying a custom remote connection string using the `--to` option:
+
+```shell
+$ web-server sync my-folder/ --to=some-account@my-demo.site:/var/www
+```
+
+Like the other commands, if you do not specify a folder, the current folder will be used by default.
+
+__Important:__ The trailing slash is important. It means “sync the contents of this folder but not the folder itself”. If you leave out the trailing slash, it means “sync the contents of this folder and the folder itself”. The latter will result in a folder of the same name as your local folder being created in your destination folder on the remote server. Indie Web Server inherits this functionality from the rsync command itself and keeps it for consistency.
 
 ### Global (ephemeral)
 
@@ -153,11 +179,12 @@ npm run deploy
 ## Syntax
 
 ```shell
-web-server [command] [folder|url] [options]
+web-server [command] [folder|host] [host] [--options]
 ```
 
-  * `command`: version | help | dev | test | enable | disable | logs | status
-  * `folder`: Path of folder to serve (defaults to current folder).
+  * `command`: version | help | local | global | proxy | sync | enable | disable | logs | status
+  * `folder|host`: Path of folder to serve (defaults to current folder) or host to proxy or sync.
+  * `host`: Host to sync.
   * `options`: Settings that alter server characteristics.
 
 ### Commands:
@@ -166,6 +193,8 @@ web-server [command] [folder|url] [options]
   * `help`: Display help screen and exit.
   * `local`: Start server as regular process with locally-trusted certificates.
   * `global`: Start server as regular process with globally-trusted certificates.
+  * `proxy`: Start server to proxy provided HTTP URL via HTTPS. Also proxies WebSockets.
+  * `sync`: Start server as regular process with locally-trusted certificates and rsync folder to host.
 
 On Linux distributions with systemd, you can also use:
 
@@ -178,13 +207,56 @@ If `command` is omitted, behaviour defaults to `local`.
 
 ### Options:
 
-  * `--port=N`: Port to start the server on (defaults to 443).
+  * `--port=N`: Port to start server on (defaults to 443).
+
+#### For the enable command:
+
+  * `--sync`: Ensure the server can also rsync via ssh (so you can sync your site to it from your local machine).
+
+### For the sync command:
+
+  * `--host`: The remote host to sync to (e.g., my-demo.site).
+  * `--account`: The ssh account to use on remote server (defaults to same as on current session).
+  * `--folder`:	The subfolder of home folder to sync to on remote machine (defaults to name of served folder).
+  * `--proxy`: Proxy the specified host and port instead of starting a regular local server.
 
 All command-line arguments are optional. By default, Indie Web Server will serve your current working folder over port 443 with locally-trusted certificates.
 
 If you want to serve a directory that has the same name as a command, you can specify the command in _options_ format. e.g., `web-server --enable logs` will start Indie Web Server as a startup daemon to serve the _logs_ folder.
 
 When you use the `global` or `enable` commands, globally-trusted Let’s Encrypt TLS certificates are automatically provisioned for you using ACME TLS the first time you hit your hostname. The hostname for the certificates is automatically set from the hostname of your system (and the _www._ subdomain is also automatically provisioned).
+
+## Usage examples
+
+### Develop using locally-trusted certificates:
+
+| Goal                                      | Command                                                       |
+| ----------------------------------------- | ------------------------------------------------------------- |
+| Serve current folder (shorthand)          | web-server                                                    |
+| Serve folder site (shorthand)             | web-server site                                               |
+| Serve current folder                      | web-server local                                              |
+| Serve folder site                         | web-server local site                                         |
+| Serve folder site at port 666             | web-server local site --port=666                              |
+| Proxy localhost:1313 to https://localhost | web-server proxy localhost:1313                               |
+| Serve current folder, sync it to my.site  | web-server sync my.site                                       |
+| Serve site folder, sync it to my.site     | web-server sync site my.site                                  |
+| Ditto, but using the --host option        | web-server sync site --host=my.site                           |
+| Ditto, but use account me on my.site      | web-server sync site --host=my.site --account=me              |
+| Ditto, but sync to remote folder www      | web-server sync site --host=my.site --account=me --folder=www |
+| Ditto, but using the --to option          | web-server sync site --to=me@my-site:/home/me/www             |
+| Sync current folder, proxy localhost:1313 | web-server sync my.site --proxy=localhost:1313                |
+
+### Stage and deploy using globally-trusted Let’s Encrypt certificates:
+
+| Goal                                      | Command                                                       |
+| ----------------------------------------- | ------------------------------------------------------------- |
+| Serve current folder                      | web-server global                                             |
+| Serve folder site                         | web-server global site                                        |
+| Serve current folder as daemon            | web-server enable                                             |
+| Ditto & also ensure it can rsync via ssh  | web-server enable --sync                                      |
+| Get status of deamon                      | web-server status                                             |
+| Display server logs                       | web-server logs                                               |
+| Stop current daemon                       | web-server disable                                            |
 
 ## Native support for an Evergreen Web
 
