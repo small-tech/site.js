@@ -8,21 +8,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Nothing yet.
 
-## [9.2.0] - TBA
+## [9.2.0] - 2019-05-09
 
 ### Added
 
-  - New rsync-based sync command for deploying live changes to a server.
+  - New rsync-based `sync` command for deploying live changes to a server.
   - Unit tests for command-line interface.
-  - Code coverage via nyc and better tape reporting via tap-spec.
+  - Code coverage via _nyc_ and better tape reporting via _tap-spec_.
 
 ### Changed
 
-  - Do not throw after handling a port conflict error when creating a proxy server.
+  - Improved usage instructions for command-line interface.
+  - Does not throw after handling a port conflict error when creating a proxy server.
 
 ### Fixed
 
-  - Fix syntax error display regression.
+  - Syntax error display regression.
 
 ## [9.1.0] - 2019-04-30
 
