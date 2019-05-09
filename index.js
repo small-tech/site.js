@@ -39,7 +39,7 @@ class WebServer {
     process.on('message', (m) => {
       if (m.IAmYourFather !== undefined) {
         this.father = m.IAmYourFather
-        console.log(`\n 👶 Running as child process.\n`)
+        process.stdout.write(`\n 👶 Running as child process.`)
       }
     })
   }

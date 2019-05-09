@@ -165,16 +165,12 @@ function displayConnectionInformation() {
   }
 }
 
-// Write to stdout without a newline
-function print(str) {
-  process.stdout.write(str)
-}
 
 // Disable rsync daemon on host to plug that security hole in case it was on. (All
 // our rsync calls will take place via ssh as they should.)
 function disableInsecureRsyncDaemon() {
   try {
-    print(' 💞 [Sync] Securing Rsync… ')
+    process.stdout.write(' 💞 [Sync] Securing Rsync… ')
     childProcess.execSync('sudo systemctl stop rsync', {env: process.env, stdio: 'pipe'})
     childProcess.execSync('sudo systemctl disable rsync', {env: process.env, stdio: 'pipe'})
     childProcess.execSync('sudo systemctl mask rsync', {env: process.env, stdio: 'pipe'})
