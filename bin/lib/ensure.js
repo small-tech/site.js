@@ -34,11 +34,11 @@ class Ensure {
       // Requires root but wasn’t run with sudo. Automatically restart using sudo.
       const options = {env: process.env, stdio: 'inherit'}
       if (runtime.isNode) {
-        childProcess.execSync(`sudo node ${path.resolve(path.join(__dirname, '..', 'web-server.js'))} ${process.argv.slice(2).join(' ')}`, options)
+        childProcess.execSync(`sudo node ${path.join(__dirname, '..', 'web-server.js')} ${process.argv.slice(2).join(' ')}`, options)
       } else {
         childProcess.execSync(`sudo web-server ${process.argv.slice(2).join(' ')}`, options)
       }
-      Graceful.exit(0)
+      process.exit(0)
     }
   }
 
@@ -47,7 +47,7 @@ class Ensure {
   systemctl () {
     if (!this.commandExists('systemctl')) {
       console.error('\n 👿 Sorry, daemons are only supported on Linux systems with systemd (systemctl required).\n')
-      Graceful.exit(1)
+      process.exit(1)
     }
   }
 
@@ -56,7 +56,7 @@ class Ensure {
   journalctl () {
     if (!this.commandExists('journalctl')) {
       console.error('\n 👿 Sorry, daemons are only supported on Linux systems with systemd (journalctl required).\n')
-      Graceful.exit(1)
+      process.exit(1)
     }
   }
 
@@ -70,7 +70,7 @@ class Ensure {
 
     if (isActive) {
       console.error(`\n 👿 Indie Web Server Daemon is already running.\n\n    ${clr('Please stop it first with the command:', 'yellow')} web-server ${clr('disable', 'green')}\n`)
-      Graceful.exit(1)
+      process.exit(1)
     }
   }
 
@@ -105,7 +105,7 @@ class Ensure {
           while(1){}
         } catch (error) {
           console.log(`\n Error: could not get privileges for Node.js to bind to port ${port}.`, error)
-          Graceful.exit(1)
+          process.exit(1)
         }
       }
     }
@@ -119,7 +119,7 @@ class Ensure {
 
     if (os.platform() === 'darwin') {
       console.log('\n ⚠️  [Indie Web Server] macOS: rsync should be installed default but isn’t. Please fix this before trying again.\n')
-      Graceful.exit(1)
+      process.exit(1)
     }
 
     console.log(' 🌠 [Indie Web Server] Installing Rsync dependency…')
@@ -141,11 +141,11 @@ class Ensure {
       // No supported package managers installed. Warn the person.
       console.log('\n ⚠️  [Indie Web Server] Linux: No supported package manager found for installing Rsync on Linux (tried apt, yum, and pacman). Please install Rsync manually and run Indie Web Server again.\n')
       }
-      Graceful.exit(1)
+      process.exit(1)
     } catch (error) {
       // There was an error and we couldn’t install the dependency. Warn the person.
       console.log('\n ⚠️  [Indie Web Server] Linux: Failed to install Rsync. Please install it manually and run Indie Web Server again.\n', error)
-      Graceful.exit(1)
+      process.exit(1)
     }
   }
 

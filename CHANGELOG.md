@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Nothing yet.
 
+## [9.2.2] - 2019-05-09
+
+### Fixed
+
+  - Revert process.exit to Graceful.exit migration as it causes regression in the enable command.
+
 ## [9.2.1] - 2019-05-09
 
 ### Fixed
