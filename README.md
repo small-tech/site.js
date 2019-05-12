@@ -81,6 +81,12 @@ Like the other commands, if you do not specify a folder, the current folder will
 
 __Important:__ The trailing slash is important. It means “sync the contents of this folder but not the folder itself”. If you leave out the trailing slash, it means “sync the contents of this folder and the folder itself”. The latter will result in a folder of the same name as your local folder being created in your destination folder on the remote server. Indie Web Server inherits this functionality from the rsync command itself and keeps it for consistency.
 
+__Note:__ If you want to carry out a one-time sync and not run the server afterwards, use the `--exit-on-sync` flag. e.g.,
+
+```shell
+$ web-server sync my-folder my-demo.site --exit-on-sync
+```
+
 ### Global (ephemeral)
 
 Start serving the _site_ directory at your _hostname_ as a regular process using globally-trusted Let’s Encrypt certificates:

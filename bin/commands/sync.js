@@ -20,6 +20,8 @@
 const localServer = require('./local')
 const proxyServer = require('./proxy')
 
+const Graceful = require('node-graceful')
+
 const RsyncWatcher = require('../lib/RsyncWatcher')
 const ensure = require('../lib/ensure')
 const clr = require('../../lib/clr')
@@ -104,6 +106,12 @@ function sync (options) {
       'sync': function () {
         // Sync succeeded.
         console.log(` 💞 [Sync] Local folder ${clr(options.syncLocalFolder, 'cyan')} synced to ${clr(options.syncRemoteHost, 'cyan')}`)
+
+        if (options.syncExitOnSync) {
+          // We've been asked to exit once we’ve successfully synced. Do so.
+          console.log('\n 👋 Exit on sync requested, exiting…')
+          Graceful.exit()
+        }
       },
       'watch': function () {
         // Watch succeeded.

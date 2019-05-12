@@ -43,6 +43,7 @@ function help () {
   const optionFolder = option('folder')
   const optionProxy = option('proxy')
   const optionSync = option('sync')
+  const optionExitOnSync = option('exit-on-sync')
 
   const prompt = clr('⯈', 'blue')
 
@@ -90,6 +91,7 @@ function help () {
     ${optionAccount}\tThe ssh account to use on remote server (defaults to same as on current session).
     ${optionFolder}\tThe subfolder of home folder to sync to on remote machine (defaults to name of served folder).
     ${optionProxy}\tProxy the specified host and port instead of starting a regular local server.
+    ${optionExitOnSync}\tExit once the first sync has occurred. Useful in deployment scripts.
 
     ${heading('Examples:')}
 
