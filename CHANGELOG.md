@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Nothing yet.
 
+## [10.0.1] - 2019-05-12
+
+### Fixed
+
+  - Regression: Sync watcher no longer fails when the directory is . (dot; current directory).
+
 ## [10.0.0] - 2019-05-12
 
 ### Changed
