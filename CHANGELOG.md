@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Nothing yet.
 
+## [10.0.0] - 2019-05-12
+
+### Changed
+
+  - By default, sync contents of the folder, regardless of whether it is specified in the arguments with or without a trailing slash, and only sync the folder and its contents if the new --sync-folder-and-contents flag is specified (breaking change).
+
 ## [9.3.0] - 2019-05-12
 
 ### Added
