@@ -252,7 +252,7 @@ class CommandLineInterface {
 
     const syncOptionsDerivedFromPositionalArguments = { syncLocalFolder: null, syncRemoteHost: null }
 
-    const syncOptions = { syncRemoteConnectionString: null, syncLocalFolder: null, syncStartProxyServer: null, syncRemoteHost: null }
+    const syncOptions = { syncRemoteConnectionString: null, syncLocalFolder: null, syncStartProxyServer: null, syncRemoteHost: null, syncExitOnSync: null }
 
     if (command.isSync) {
 
@@ -261,6 +261,9 @@ class CommandLineInterface {
         function namedArgumentExists(namedArgument) {
           return typeof command.namedArguments[namedArgument] === 'string'
         }
+''
+        // Sync on exit flag.
+        syncOptions.syncExitOnSync = command.namedArguments['exit-on-sync'] === true
 
         // Check for conflicts between positional arguments and named arguments
         // and fail if there are any.
