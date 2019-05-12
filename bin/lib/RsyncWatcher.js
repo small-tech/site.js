@@ -148,6 +148,10 @@ class RSyncWatcher {
       folderToWatch = path.resolve(path.join(process.cwd(), folderToWatch))
     }
 
+    // If the folder to watch is ./, that’s valid for rsync but not for chokidar,
+    // so remove the slash.
+    if (folderToWatch === './') folderToWatch = '.'
+
     const watcher = chokidar.watch(folderToWatch, {
       ignoreInitial: true,
       ignored: this.options[project].exclude || null,
