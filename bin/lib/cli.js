@@ -326,7 +326,7 @@ class CommandLineInterface {
 
         // Ensure that the local folder exists.
         if (!fs.existsSync(syncOptions.syncLocalFolder)) {
-          this.throwError(`Error: Folder not found (${clr(syncOptions.syncFolder, 'cyan')}).\n\n    Syntax:\tweb-server ${clr('sync', 'green')} ${clr('folder', 'cyan')} ${clr('domain', 'yellow')}\n    Command:web-server ${clr('sync', 'green')} ${clr(syncOptions.syncFolder, 'cyan')} ${clr(syncOptions.syncDomain, 'yellow')}`)
+          this.throwError(`Error: Folder not found (${clr(syncOptions.syncFolder, 'cyan')}).\n\n    Syntax: web-server ${clr('sync', 'green')} ${clr('folder', 'cyan')} ${clr('domain', 'yellow')}\n    Command: web-server ${clr('sync', 'green')} ${clr(syncOptions.syncFolder, 'cyan')} ${clr(syncOptions.syncDomain, 'yellow')}`)
         }
 
         //
