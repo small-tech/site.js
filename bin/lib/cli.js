@@ -262,9 +262,6 @@ class CommandLineInterface {
           return typeof command.namedArguments[namedArgument] === 'string'
         }
 ''
-        // Sync on exit flag.
-        syncOptions.syncExitOnSync = command.namedArguments['exit-on-sync'] === true
-
         // Check for conflicts between positional arguments and named arguments
         // and fail if there are any.
         if (namedArgumentExists('to')) {
@@ -281,8 +278,8 @@ class CommandLineInterface {
               this.syntaxError(`could not parse rsync connection string in ${clr('--to', 'yellow')} option (${clr(command.namedArguments.to, 'cyan')}). It should be in the form ${clr('account@host:/path/to/folder', 'cyan')}`)
             }
 
-          // Helper: redundant but useful so we don’t have to parse the remote connection string again.
-          syncOptions.syncRemoteHost = remoteConnectionStringSyntaxMatch[2]
+            // Helper: redundant but useful so we don’t have to parse the remote connection string again.
+            syncOptions.syncRemoteHost = remoteConnectionStringSyntaxMatch[2]
 
             // No conflicts or syntax issues: set the remote connection string to the one provided.
             syncOptions.syncRemoteConnectionString = command.namedArguments.to
@@ -335,6 +332,26 @@ class CommandLineInterface {
         //
         // Add any remaining sync options that have been provided.
         //
+
+        // Handle the sync-folder-and-contents flag or its lack
+        if (command.namedArguments['sync-folder-and-contents'] === true) {
+          // We should sync both the folder itself and its contents. We signal this to rsync
+          // by ensuring that the name of the folder *does not* end in a trailing slash.
+          if (syncOptions.syncLocalFolder.endsWith(path.sep)) {
+            syncOptions.syncLocalFolder = syncOptions.syncLocalFolder.substr(0, syncOptions.syncLocalFolder.length - 1)
+          }
+        } else {
+          // Default: we sync only the contents of the local folder, not the folder itself. To
+          // ======== specify this to rsync, we ensure that the local folder path ends with a slash.
+          if (!syncOptions.syncLocalFolder.endsWith(path.sep)) {
+            syncOptions.syncLocalFolder = `${syncOptions.syncLocalFolder}${path.sep}`
+          }
+        }
+
+        // Sync on exit flag.
+        syncOptions.syncExitOnSync = command.namedArguments['exit-on-sync'] === true
+
+        // Proxy.
         if (namedArgumentExists('proxy')) {
           syncOptions.syncStartProxyServer = true
           const proxyOptions = this.proxyUrls(command.namedArguments.proxy)

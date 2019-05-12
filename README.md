@@ -60,13 +60,13 @@ This will create and serve the following proxies:
 Part of local development involves deploying your changes to a live server at some point. You can use Indie Web Server to handle this for you in real-time:
 
 ```shell
-$ web-server sync my-demo/ my-demo.site
+$ web-server sync my-demo my-demo.site
 ```
 
-The above command will start a local development server at _https://localhost_. Additionally, it will watch the folder _my-demo_ for changes and sync any changes via rsync over ssh to _my-demo.site_. Without any customisations, the sync command assumes that your account on your remote server has the same name as your account on your local machine and that the folder you are watching (_my-demo_, in the example above) is located at _/home/your-account/my-demo_. You can change these defaults using optional arguments.
+The above command will start a local development server at _https://localhost_. Additionally, it will watch the folder _my-demo_ for changes and sync any changes to its contents via rsync over ssh to _my-demo.site_. Without any customisations, the sync command assumes that your account on your remote server has the same name as your account on your local machine and that the folder you are watching (_my-demo_, in the example above) is located at _/home/your-account/my-demo_. Also, by default, the contents of the folder will be synced, not the folder itself. You can change these defaults using optional arguments.
 
 ```shell
-$ web-server sync my-folder/ --host=my-demo.site --account=a-different-account --folder=not-my-folder
+$ web-server sync my-folder --host=my-demo.site --account=a-different-account --folder=not-my-folder
 ```
 
 e.g., The above command will watch the the contents of the _my-folder_ directory and sync it to _a-different-account@my-demo.site:/home/a-different-account/not-my-folder_.
@@ -74,14 +74,20 @@ e.g., The above command will watch the the contents of the _my-folder_ directory
 You can also customise the destination folder completely but supplying a custom remote connection string using the `--to` option:
 
 ```shell
-$ web-server sync my-folder/ --to=some-account@my-demo.site:/var/www
+$ web-server sync my-folder --to=some-account@my-demo.site:/var/www
 ```
 
 Like the other commands, if you do not specify a folder, the current folder will be used by default.
 
-__Important:__ The trailing slash is important. It means “sync the contents of this folder but not the folder itself”. If you leave out the trailing slash, it means “sync the contents of this folder and the folder itself”. The latter will result in a folder of the same name as your local folder being created in your destination folder on the remote server. Indie Web Server inherits this functionality from the rsync command itself and keeps it for consistency.
+If you want to sync not the folder’s contents but the folder itself, use the `--sync-folder-and-contents` flag. e.g.,
 
-__Note:__ If you want to carry out a one-time sync and not run the server afterwards, use the `--exit-on-sync` flag. e.g.,
+```shell
+$ web-server sync my-local-folder/ my.site --account=me --folder=my-remote-folder
+```
+
+The above command will result in the following directory structure on the remote server: _/home/me/my-remote-folder/my-local-folder_
+
+If you want to carry out a one-time sync and not continue to run the web server afterwards, use the `--exit-on-sync` flag. e.g.,
 
 ```shell
 $ web-server sync my-folder my-demo.site --exit-on-sync
@@ -225,6 +231,8 @@ If `command` is omitted, behaviour defaults to `local`.
   * `--account`: The ssh account to use on remote server (defaults to same as on current session).
   * `--folder`:	The subfolder of home folder to sync to on remote machine (defaults to name of served folder).
   * `--proxy`: Proxy the specified host and port instead of starting a regular local server.
+  * `--exit-on-sync`: Exit once the first sync has occurred. Useful in deployment scripts.
+  * `--sync-folder-and-contents`: Sync folder and contents (default is to sync the folder’s contents only).
 
 All command-line arguments are optional. By default, Indie Web Server will serve your current working folder over port 443 with locally-trusted certificates.
 

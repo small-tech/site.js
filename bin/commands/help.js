@@ -44,6 +44,7 @@ function help () {
   const optionProxy = option('proxy')
   const optionSync = option('sync')
   const optionExitOnSync = option('exit-on-sync')
+  const optionSyncFolderAndContents = option('sync-folder-and-contents')
 
   const prompt = clr('⯈', 'blue')
 
@@ -87,11 +88,12 @@ function help () {
 
     For the ${commandSync} command:
 
-    ${optionHost}\tThe remote host to sync to (e.g., my-demo.site).
-    ${optionAccount}\tThe ssh account to use on remote server (defaults to same as on current session).
-    ${optionFolder}\tThe subfolder of home folder to sync to on remote machine (defaults to name of served folder).
-    ${optionProxy}\tProxy the specified host and port instead of starting a regular local server.
-    ${optionExitOnSync}\tExit once the first sync has occurred. Useful in deployment scripts.
+    ${optionHost}\t\t\tThe remote host to sync to (e.g., my-demo.site).
+    ${optionAccount}\t\t\tThe ssh account to use on remote server (defaults to same as on current session).
+    ${optionFolder}\t\t\tThe subfolder of home folder to sync to on remote machine (defaults to name of served folder).
+    ${optionProxy}\t\t\tProxy the specified host and port instead of starting a regular local server.
+    ${optionExitOnSync}\t\tExit once the first sync has occurred. Useful in deployment scripts.
+    ${optionSyncFolderAndContents}\tSync local folder and contents (default is to sync the folder’s contents only).
 
     ${heading('Examples:')}
 

@@ -361,7 +361,15 @@ test('[CLI] proxyOptions()', t => {
 
 test('[CLI] syncOptions()', t => {
   // This method is thoroughly tested via the sync command tests. These are just a few method-specific tests.
-  t.plan(6)
+  t.plan(9)
+
+  // A folder passed without a trailing slash should have one added by default so that
+  // rsync syncs the contents of the folder only, not the folder itself also.
+  t.strictEquals(cli.syncOptions(cli.command({_:['sync', 'test/site', 'my.site']})).syncLocalFolder, 'test/site/', 'a trailing slash should be added to the local folder if missing for default sync')
+
+  // If we specify the --sync-folder-and-contents option, then the folder should not have a trailing slash, even
+  // if the person has provided one.
+  t.strictEquals(cli.syncOptions(cli.command({_:['sync', 'test/site/', 'my.site'], 'sync-folder-and-contents': true})).syncLocalFolder, 'test/site', 'a trailing slash should be removed from the local folder if it exists when --sync-folder-and-contents is true')
 
   // Non-sync command should return sync options object will all nulls.
   const syncOptions = cli.syncOptions(cli.command({_:[]}))
