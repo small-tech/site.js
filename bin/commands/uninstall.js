@@ -12,6 +12,7 @@ const path = require('path')
 const childProcess = require('child_process')
 
 const prompts = require('prompts')
+const Graceful = require('node-graceful')
 const actualStringLength = require('string-length')
 
 const ensure = require('../lib/ensure')
@@ -58,12 +59,12 @@ class WarningBox {
 
 
 async function uninstall (options) {
-  console.log(webServer.version())
-
   ensure.systemctl()
   ensure.root('uninstall')
 
-  const { serverIsActive, serverIsEnabled } = status()
+  console.log(webServer.version())
+
+  const { isActive: serverIsActive, isEnabled: serverIsEnabled } = status()
 
   const warning = new WarningBox()
   warning.line(`${clr('WARNING!', 'yellow')} ${clr('About to uninstall Indie Web Server.', 'green')}`)
@@ -106,7 +107,7 @@ async function uninstall (options) {
 
   if (!response.confirmed) {
     console.log('\n ❌ Aborting…\n')
-    process.exit(1)
+    Graceful.exit()
   } else {
     console.log('\n 👋 Uninstalling…\n')
 
@@ -154,7 +155,7 @@ async function uninstall (options) {
 
     console.log(`\n 🎉 Indie Web Server uninstalled.\n`)
     console.log('\n💖 Goodbye!\n')
-    process.exit()
+    Graceful.exit()
   }
 }
 
