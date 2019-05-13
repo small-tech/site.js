@@ -22,7 +22,7 @@ async function uninstall (options) {
   const response = await prompts({
     type: 'confirm',
     name: 'confirmed',
-    message: 'Are you sure you want to proceed?',
+    message: 'Are you sure you want to proceed (y/n)?',
     initial: false,
     style: 'invisible',
     symbol: () => (done, aborted) => aborted ? ' ❌' : done ? ' 😉' : ' 🧐',
