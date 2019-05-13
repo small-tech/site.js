@@ -35,6 +35,7 @@
     "minimist": "^1.2.0",
     "morgan": "^1.9.1",
     "node-graceful": "^1.0.1",
+    "prompts": "aral/prompts#custom-symbols-for-confirm",
     "recursive-copy": "^2.0.10",
     "redirect-https": "^1.3.0",
     "rsync": "^0.6.1",

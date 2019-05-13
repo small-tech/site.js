@@ -37,8 +37,9 @@ class CommandLineInterface {
     //       a proxy command but web-server sync … --proxy=localhost:1313 specifies the proxy host to use
     //       for a sync command).
     const command = {
-      isHelp: (commandLineOptions.h === true || commandLineOptions.help === true || positionalCommand === 'help'),
       isVersion: (commandLineOptions.version === true || commandLineOptions.v === true || positionalCommand === 'version'),
+      isUninstall: (commandLineOptions.uninstall === true || positionalCommand === 'uninstall'),
+      isHelp: (commandLineOptions.h === true || commandLineOptions.help === true || positionalCommand === 'help'),
       isGlobal: (commandLineOptions.global === true || positionalCommand === 'global'),
       isProxy: (commandLineOptions.proxy === true || positionalCommand === 'proxy'),
       // Note: --sync is a valid flag for the enable command.
@@ -60,7 +61,7 @@ class CommandLineInterface {
       this.throwError('Unknown command.')
     }
 
-    const positionalCommandDidMatchCommand = ['version', 'help', 'local', 'global', 'proxy', 'sync', 'enable', 'disable', 'logs', 'status'].reduce((p, n) => p || (positionalCommand === n), false)
+    const positionalCommandDidMatchCommand = ['version', 'uninstall', 'help', 'local', 'global', 'proxy', 'sync', 'enable', 'disable', 'logs', 'status'].reduce((p, n) => p || (positionalCommand === n), false)
 
     // Save the commands arguments.
     command.positionalArguments = positionalCommandDidMatchCommand ? commandLineOptions._.slice(1) : commandLineOptions._

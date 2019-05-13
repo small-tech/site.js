@@ -27,6 +27,7 @@ function help () {
 
   const commandVersion = command('version')
   const commandHelp = command('help')
+  const commandUninstall = command('uninstall')
   const commandLocal = command('local')
   const commandGlobal = command('global')
   const commandProxy = command('proxy')
@@ -63,6 +64,7 @@ function help () {
 
     ${commandVersion}\tDisplay version and exit.
     ${commandHelp}\tDisplay this help screen and exit.
+    ${commandUninstall}\tUninstall Indie Web Server.
 
     ${commandLocal}\tStart server as regular process with locally-trusted certificates.
     ${commandGlobal}\tStart server as regular process with globally-trusted certificates.
