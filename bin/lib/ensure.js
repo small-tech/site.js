@@ -9,8 +9,6 @@ const childProcess = require('child_process')
 const os = require('os')
 const path = require('path')
 
-const Graceful = require('node-graceful')
-
 const runtime = require('./runtime')
 const getStatus = require('./status')
 const clr = require('../../lib/clr')
