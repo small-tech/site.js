@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+  - Nothing yet.
+
+## [10.1.0] - 2019-05-14
+
 ### Added
 
   - Uninstall command.
