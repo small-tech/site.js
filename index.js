@@ -214,7 +214,7 @@ class WebServer {
       const dynamicRoutes = getRoutes(dynamicRoutesDirectory)
 
       dynamicRoutes.forEach(route => {
-        console.log(` 🐁 Dynamic route loaded: ${route.path}\n`)
+        console.log(` 🐁 Dynamic route loaded: ${route.path}`)
         app.get(route.path, require(route.callback))
       })
     }
