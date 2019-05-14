@@ -208,8 +208,9 @@ class WebServer {
       }
     })
 
-    // Add dynamic routes, if they have been specified in <pathToServer>.routes/name-of-route.js
-    const dynamicRoutesDirectory = path.join(pathToServe, '.routes')
+    // Add dynamic routes, if any, if a <pathToServe>/.dynamic/ folder exists.
+    // If there are errors in any of your dynamic routes, you will get 500 (server) errors.
+    const dynamicRoutesDirectory = path.join(pathToServe, '.dynamic')
     if (fs.existsSync(dynamicRoutesDirectory)) {
       const dynamicRoutes = getRoutes(dynamicRoutesDirectory)
 
@@ -219,6 +220,8 @@ class WebServer {
       })
     }
 
+    // Add static routes.
+    // (Note: directories that begin with a dot (hidden directories) will be ignored.)
     app.use(express.static(pathToServe))
 
     // Serve the archive cascade (if there is one).

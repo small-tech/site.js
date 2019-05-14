@@ -330,9 +330,9 @@ When creating your own servers (see [API](#API)), you can generate the default e
 
 ## Dynamic routes
 
-You can include very basic dynamic routes by including JavaScript files that export middleware-style functions in a special _.routes_ folder in the root folder of your web content. The syntax and conventions are [detailed here](https://source.ind.ie/hypha/tools/web-routes-from-files).
+You can include very basic dynamic routes by including JavaScript files that export middleware-style functions in a special _.dynamic_ folder in the root folder of your web content. The syntax and conventions are [detailed here](https://source.ind.ie/hypha/tools/web-routes-from-files).
 
-So, for example, if you wanted to have a dynamic route that showed the server CPU load and free memory, you could create a file called _.routes/server-stats.js_ in your web folder with the following content:
+So, for example, if you wanted to have a dynamic route that showed the server CPU load and free memory, you could create a file called _.dynamic/server-stats.js_ in your web folder with the following content:
 
 ```js
 const os = require('os')
@@ -352,6 +352,8 @@ module.exports = serverStats
 ```
 
 Indie Web Server will load your dynamic route at startup and you can test it by hitting _https://localhost/server-stats_ using a local web server. Each time you refresh, you should get the latest dynamic content.
+
+If you need to use custom Node modules, initialise your _.dynamic_ folder using `npm init` and use `npm install` as usual. And modules you require from your routes will be properly loaded and used.
 
 ### Directories
 
@@ -373,7 +375,7 @@ The code within your JavaScript routes is executed on the server. Exercise the s
 
 ### Intended usage
 
-You shouldn’t use this functionality to create your latest amazing web app. For that, include Indie Web Server as a node module in your project and extend it that way. This is to add tiny bits of dynamic functionality. The routes are added as `get` routes and the only Node modules you will have access to are the ones used by Indie Web Server. Again, if you need custom modules, extend Indie Web Server using Node.js.
+You shouldn’t use this functionality to create your latest amazing web app. For that, include Indie Web Server as a node module in your project and extend it that way. This is to add tiny bits of dynamic functionality. There is currently only support for `get` routes. Again, if you need custom modules, extend Indie Web Server using Node.js.
 
 ## API
 
