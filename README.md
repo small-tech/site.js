@@ -353,7 +353,27 @@ module.exports = serverStats
 
 Indie Web Server will load your dynamic route at startup and you can test it by hitting _https://localhost/server-stats_ using a local web server. Each time you refresh, you should get the latest dynamic content.
 
-__Note:__ You shouldn’t use this functionality to create your latest amazing web app. To do that, include Indie Web Server as a node module in your project and extend it that way. This is to add tiny bits of dynamic functionality. The routes are added as `get` routes and the only Node modules you will have access to are the ones used by Indie Web Server. Again, if you need custom modules, extend Indie Web Server using Node.js.
+### Directories
+
+Your dynamic web routes are running within Indie Web Server, which is a Node application compiled into a native binary.
+
+  - `os.homedir()`: __(writable)__ This is the home folder of the account running Indie Web Server. You can write to it to store persistent objects (e.g., save data).
+
+  - `os.tmpdir()`: __(writable)__ Path to the system temporary folder. Use for content you can afford to lose and can recreate (e.g., cache API calls).
+
+  - `.`: __(writable)__ Path to the root of your web content. Since you can write here, you can, if you want to, create content dynamically that will then automatically be served by the static web server.
+
+  - `__dirname`: __(writeable) Path to the `.routes` folder.
+
+  - `/`: __(read-only)__ Path to the `/usr` folder (Indie Web Server is installed in `/usr/local/web-server`). You should not have any reason to use this.
+
+### Security
+
+The code within your JavaScript routes is executed on the server. Exercise the same caution as you would when creating any Node.js app (sanitise input, etc.)
+
+### Intended usage
+
+You shouldn’t use this functionality to create your latest amazing web app. For that, include Indie Web Server as a node module in your project and extend it that way. This is to add tiny bits of dynamic functionality. The routes are added as `get` routes and the only Node modules you will have access to are the ones used by Indie Web Server. Again, if you need custom modules, extend Indie Web Server using Node.js.
 
 ## API
 
