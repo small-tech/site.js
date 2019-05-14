@@ -1,6 +1,6 @@
 {
   "name": "@ind.ie/web-server",
-  "version": "10.1.0",
+  "version": "10.2.0",
   "description": "A secure and seamless Small Tech personal web server.",
   "main": "index.js",
   "bin": "bin/web-server.js",
@@ -25,6 +25,7 @@
   "dependencies": {
     "@ind.ie/acme-tls": "^2.1.2",
     "@ind.ie/nodecert": "^3.0.1",
+    "@ind.ie/web-routes-from-files": "^1.0.0",
     "ansi-escape-sequences": "^4.1.0",
     "chokidar": "^2.1.5",
     "copy-concurrently": "^1.0.5",
