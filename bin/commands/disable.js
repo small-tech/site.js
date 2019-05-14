@@ -7,19 +7,15 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-const childProcess = require('child_process')
-const ensure = require('../lib/ensure')
+const _disable = require('../lib/disable')
 
 function disable () {
-  ensure.systemctl()
-  ensure.root('disable')
 
   try {
-    childProcess.execSync('sudo systemctl disable web-server', {env: process.env, stdio: 'pipe'})
-    childProcess.execSync('sudo systemctl stop web-server', {env: process.env, stdio: 'pipe'})
+    // Disable and stop the web server.
+    _disable()
     console.log('\n 🎈 Server stopped and removed from startup.\n')
   } catch (error) {
-    console.error(`\n 👿 Error: Could not disable web server.\n ${error}`)
     process.exit(1)
   }
 }

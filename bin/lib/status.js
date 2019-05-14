@@ -10,7 +10,13 @@
 
 const childProcess = require('child_process')
 
+const ensure = require('../lib/ensure')
+
 function status () {
+
+  // Note: do not call ensure.systemctl() here as it will
+  // ===== create a cyclic dependency. Instead, check for
+  //       systemctl support manually before calling status().
 
   let isActive
   try {

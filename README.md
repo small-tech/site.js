@@ -22,14 +22,22 @@ Copy and paste the following commands into your terminal:
 
 __Before you pipe any script into your computer, always [view the source code](https://ind.ie/web-server/install.sh) and make sure you understand what it does.__
 
-```
+```shell
 wget -qO- https://ind.ie/web-server/install.sh | bash
 ```
 
 ### Node.js
 
-```sh
+```shell
 npm i -g @ind.ie/web-server
+```
+
+## Uninstall
+
+To uninstall the native binary (and any created artifacts, like TLS certificates, systemd services, etc.):
+
+```shell
+web-server uninstall
 ```
 
 ## Use

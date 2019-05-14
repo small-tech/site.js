@@ -9,8 +9,6 @@ const childProcess = require('child_process')
 const os = require('os')
 const path = require('path')
 
-const Graceful = require('node-graceful')
-
 const runtime = require('./runtime')
 const getStatus = require('./status')
 const clr = require('../../lib/clr')
@@ -33,10 +31,14 @@ class Ensure {
     if (process.getuid() !== 0) {
       // Requires root but wasn’t run with sudo. Automatically restart using sudo.
       const options = {env: process.env, stdio: 'inherit'}
-      if (runtime.isNode) {
-        childProcess.execSync(`sudo node ${path.join(__dirname, '..', 'web-server.js')} ${process.argv.slice(2).join(' ')}`, options)
-      } else {
-        childProcess.execSync(`sudo web-server ${process.argv.slice(2).join(' ')}`, options)
+      try {
+        if (runtime.isNode) {
+          childProcess.execSync(`sudo node ${path.join(__dirname, '..', 'web-server.js')} ${process.argv.slice(2).join(' ')}`, options)
+        } else {
+          childProcess.execSync(`sudo web-server ${process.argv.slice(2).join(' ')}`, options)
+        }
+      } catch (error) {
+        process.exit(1)
       }
       process.exit(0)
     }
