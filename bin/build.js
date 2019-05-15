@@ -120,7 +120,9 @@ async function build () {
     //
     // If it cannot find the Ind.ie Web Site, the build script will just skip this step.
     //
-    const pathToWebServerSectionOfSite = path.resolve(path.join(__dirname, '../../../site/www/content/web-server/'))
+    const pathToSite = path.resolve(path.join(__dirname, '../../../site/www/'))
+    const pathToWebServerSectionOfSite = path.resolve(path.join(pathToSite, 'content/web-server/'))
+    const pathToDynamicVersionRoute = path.join(pathToSite, 'static', '.dynamic', 'web-server', 'version.js')
 
     // Check that the local working copy of the Indie Web Site exists at the relative location
     // that we expect it to. If it doesn’t skip this step.
@@ -139,6 +141,12 @@ async function build () {
     } else {
       console.log('   • Skipped copy of binaries to Indie Web Site as could not find the local working copy.')
     }
+
+    // Write out a dynamic route with the latest version into the site. That endpoint will be used by the
+    // auto-update feature to decide whether it needs to update.
+    console.log('   • Adding dynamic version endpoint to Indie Web Site.')
+    const versionRoute = `module.exports = (request, response) => { response.end('${package.version}') }\n`
+    fs.writeFileSync(pathToDynamicVersionRoute, versionRoute, {encoding: 'utf-8'})
   }
 
   console.log('\n 😁👍 Done!\n')
