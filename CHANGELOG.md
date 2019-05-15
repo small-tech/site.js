@@ -8,11 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - Nothing yet.
 
-## [10.2.0] - 2019-05-14
+## [10.2.0] - 2019-05-15
 
 ## Added
 
-  - Dynamic routes feature. You can now specify simple dynamic routes by including middleware functions in JS files within a folder named _.routes_ in your web folder.
+  - Dynamic routes feature. You can now specify simple dynamic routes by including middleware functions in JS files within a folder named _.dynamic_ in your web folder.
 
 ## [10.1.0] - 2019-05-14
 
