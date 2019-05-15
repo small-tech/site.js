@@ -14,6 +14,7 @@ const Graceful = require('node-graceful')
 
 const AcmeTLS = require('@ind.ie/acme-tls')
 const nodecert = require('@ind.ie/nodecert')
+const getRoutes = require('@ind.ie/web-routes-from-files')
 
 const ensure = require('./bin/lib/ensure')
 
@@ -207,6 +208,20 @@ class WebServer {
       }
     })
 
+    // Add dynamic routes, if any, if a <pathToServe>/.dynamic/ folder exists.
+    // If there are errors in any of your dynamic routes, you will get 500 (server) errors.
+    const dynamicRoutesDirectory = path.join(pathToServe, '.dynamic')
+    if (fs.existsSync(dynamicRoutesDirectory)) {
+      const dynamicRoutes = getRoutes(dynamicRoutesDirectory)
+
+      dynamicRoutes.forEach(route => {
+        console.log(` 🐁 Dynamic route loaded: ${route.path}`)
+        app.get(route.path, require(route.callback))
+      })
+    }
+
+    // Add static routes.
+    // (Note: directories that begin with a dot (hidden directories) will be ignored.)
     app.use(express.static(pathToServe))
 
     // Serve the archive cascade (if there is one).

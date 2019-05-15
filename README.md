@@ -328,6 +328,55 @@ If you do not create custom error pages, the built-in default error pages will b
 
 When creating your own servers (see [API](#API)), you can generate the default error pages programmatically using the static methods `WebServer.default404ErrorPage()` and `WebServer.default500ErrorPage()`, passing in the missing path and the error message as the argument, respectively to get the HTML string of the error page returned.
 
+## Dynamic routes
+
+You can include very basic dynamic routes by including JavaScript files that export middleware-style functions in a special _.dynamic_ folder in the root folder of your web content. The syntax and conventions are [detailed here](https://source.ind.ie/hypha/tools/web-routes-from-files).
+
+So, for example, if you wanted to have a dynamic route that showed the server CPU load and free memory, you could create a file called _.dynamic/server-stats.js_ in your web folder with the following content:
+
+```js
+const os = require('os')
+
+function serverStats (request, response, next) {
+
+  const loadAverages = `<p> ${os.loadavg().reduce((a, c, i) => `${a}\n<li><strong>CPU ${i+1}:</strong> ${c}</li>`, '<ul>') + '</ul>'}</p>`
+
+  const freeMemory = `<p>${os.freemem()} bytes</p>`
+
+  const page = `<html><head><title>Server statistics</title><style>body {font-family: sans-serif;}</style></head><body><h1>Server statistics</h1><h2>Load averages</h2>${loadAverages}<h2>Free memory</h2>${freeMemory}</body></html>`
+
+  response.end(page)
+}
+
+module.exports = serverStats
+```
+
+Indie Web Server will load your dynamic route at startup and you can test it by hitting _https://localhost/server-stats_ using a local web server. Each time you refresh, you should get the latest dynamic content.
+
+If you need to use custom Node modules, initialise your _.dynamic_ folder using `npm init` and use `npm install` as usual. And modules you require from your routes will be properly loaded and used.
+
+### Directories
+
+Your dynamic web routes are running within Indie Web Server, which is a Node application compiled into a native binary.
+
+  - `os.homedir()`: __(writable)__ This is the home folder of the account running Indie Web Server. You can write to it to store persistent objects (e.g., save data).
+
+  - `os.tmpdir()`: __(writable)__ Path to the system temporary folder. Use for content you can afford to lose and can recreate (e.g., cache API calls).
+
+  - `.`: __(writable)__ Path to the root of your web content. Since you can write here, you can, if you want to, create content dynamically that will then automatically be served by the static web server.
+
+  - `__dirname`: __(writeable) Path to the `.routes` folder.
+
+  - `/`: __(read-only)__ Path to the `/usr` folder (Indie Web Server is installed in `/usr/local/web-server`). You should not have any reason to use this.
+
+### Security
+
+The code within your JavaScript routes is executed on the server. Exercise the same caution as you would when creating any Node.js app (sanitise input, etc.)
+
+### Intended usage
+
+You shouldn’t use this functionality to create your latest amazing web app. For that, include Indie Web Server as a node module in your project and extend it that way. This is to add tiny bits of dynamic functionality. There is currently only support for `get` routes. Again, if you need custom modules, extend Indie Web Server using Node.js.
+
 ## API
 
 Indie Web Server’s `createServer` method behaves like the built-in _https_ module’s `createServer` function. Anywhere you use `require('https').createServer`, you can simply replace it with `require('@ind.ie/web-server').createServer`.
