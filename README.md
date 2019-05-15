@@ -365,9 +365,15 @@ Your dynamic web routes are running within Indie Web Server, which is a Node app
 
   - `.`: __(writable)__ Path to the root of your web content. Since you can write here, you can, if you want to, create content dynamically that will then automatically be served by the static web server.
 
-  - `__dirname`: __(writeable) Path to the `.routes` folder.
+  - `__dirname`: __(writeable)__ Path to the `.dynamic` folder.
 
   - `/`: __(read-only)__ Path to the `/usr` folder (Indie Web Server is installed in `/usr/local/web-server`). You should not have any reason to use this.
+
+If you want to access the directory of Indie Web Server itself (e.g., to load in the `package.json` to read the app’s version), you can use the following code:
+
+```js
+const appPath = require.main.filename.replace('bin/web-server.js', '')
+```
 
 ### Security
 
