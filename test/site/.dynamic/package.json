@@ -1,0 +1,16 @@
+{
+  "name": "@small/site.js/test/site/.dynamic",
+  "version": "1.0.0",
+  "description": "Tests for site.js dynamic routes",
+  "main": "index.js",
+  "author": {
+    "name": "Aral Balkan",
+    "email": "aral@ind.ie",
+    "url": "https://ar.al"
+  },
+  "license": "AGPL-3.0-or-later",
+  "devDependencies": {
+    "cows": "^2.1.0",
+    "markdown-it": "^8.4.2"
+  }
+}
