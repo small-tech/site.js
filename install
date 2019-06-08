@@ -1,0 +1,15 @@
+#!/bin/sh
+
+echo '\nSite.js: installing dependencies…\n'
+
+# Install main dependencies
+npm install
+
+# Install dynamic test route dependencies
+cd test/site/.dynamic
+npm install
+cd ../../../
+
+echo 'Site.js dependencies installed.\n'
+
+echo 'Now’s a good time to run: npm test ;)\n'
