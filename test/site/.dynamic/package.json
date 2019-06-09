@@ -1,5 +1,5 @@
 {
-  "name": "@small/site.js/test/site/.dynamic",
+  "name": "@small-tech/site.js/test/site/.dynamic",
   "version": "1.0.0",
   "description": "Tests for site.js dynamic routes",
   "main": "index.js",
