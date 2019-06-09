@@ -49,27 +49,27 @@ test('[CLI] command and option parsing', t => {
   const expectedLocalCommands = []
 
   // Implicit command, no arguments – shorthand.
-  // i.e., web-server
+  // i.e., site
   expectedLocalCommands.push(cli.command({_:[]}))
 
   // Implicit command, one argument; local folder ­– shorthand.
-  // e.g., web-server test/site
+  // e.g., site test/site
   expectedLocalCommands.push(cli.command({_:['test/site']}))
 
   // Explicit command, no positional arguments.
-  // i.e., web-server local
+  // i.e., site local
   expectedLocalCommands.push(cli.command({_:['local']}))
 
   // Explicit command, one positional argument (local folder).
-  // e.g., web-server local test/site
+  // e.g., site local test/site
   expectedLocalCommands.push(cli.command({_:['local', 'test/site']}))
 
   // Explicit command via named argument, no positional arguments.
-  // i.e., web-server --local
+  // i.e., site --local
   expectedLocalCommands.push(cli.command({_:[], local: true}))
 
   // Explicit command via named argument, one positional argument (local folder).
-  // e.g., web-server test/site --local
+  // e.g., site test/site --local
   expectedLocalCommands.push(cli.command({_:['test/site'], local: true}))
 
   // Test all commands we expect to be local.
@@ -82,19 +82,19 @@ test('[CLI] command and option parsing', t => {
   const expectedGlobalCommands = []
 
   // No positional arguments.
-  // i.e., web-server global
+  // i.e., site global
   expectedGlobalCommands.push(cli.command({_:['global']}))
 
   // One positional argument (local folder).
-  // e.g., web-server global test/site
+  // e.g., site global test/site
   expectedGlobalCommands.push(cli.command({_:['global', 'test/site']}))
 
   // Command specified via named argument, no positional arguments.
-  // i.e., web-server --global
+  // i.e., site --global
   expectedGlobalCommands.push(cli.command({_:[], global: true}))
 
   // Command specified via named argument and one positional argument (local folder).
-  // e.g., web-server test/site --global
+  // e.g., site test/site --global
   expectedGlobalCommands.push(cli.command({_:['test/site'], global: true}))
 
   // Test all commands we expect to be global.
@@ -104,11 +104,11 @@ test('[CLI] command and option parsing', t => {
   // Command: proxy
   //
 
-  // e.g., web-server proxy localhost:1313
+  // e.g., site proxy localhost:1313
   const proxyCommandWithCorrectPositionalSyntax = cli.command({_:['proxy', 'localhost:1313']})
   t.true(verifyCommand(proxyCommandWithCorrectPositionalSyntax, 'isProxy'), 'command is proxy')
 
-  // e.g. web-server --proxy localhost:1313
+  // e.g. site --proxy localhost:1313
   const proxyCommandWithCorrectMixedSyntax = cli.command({_:['localhost:1313'], proxy: true})
   t.true(verifyCommand(proxyCommandWithCorrectMixedSyntax, 'isProxy'), 'command is proxy')
 
@@ -170,29 +170,29 @@ test('[CLI] command and option parsing', t => {
     }
   }
 
-  // No positional arguments and named argument for the host (e.g., web-server sync --host=my.site).
+  // No positional arguments and named argument for the host (e.g., site sync --host=my.site).
   verifySyncCommand(cli.command({_:['sync'], host: 'my.site'}))
 
   // No positional arguments and named arguments for host & account.
-  // e.g., web-server sync --host=my.site --account=me
+  // e.g., site sync --host=my.site --account=me
   verifySyncCommand(cli.command({_:['sync'], host: 'my.site', account: 'me'}))
 
   // No positional arguments and named arguments for host, account, & remote folder.
-  // e.g., web-server sync --host=my.site --account=me --folder=www
+  // e.g., site sync --host=my.site --account=me --folder=www
   verifySyncCommand(cli.command({_:['sync'], host: 'my.site', account: 'me', folder: 'www'}))
 
   // No positional arguments and named argument for the remote connection string.
-  // e.g., web-server sync --to=me@my.site:/home/me/my-remote-site-folder
+  // e.g., site sync --to=me@my.site:/home/me/my-remote-site-folder
   verifySyncCommand(cli.command({_:['sync'], to: 'me@my.site:/home/me/my-remote-site-folder'}))
 
   // One positional argument (local folder) and named argument for the remote connection string.
-  // e.g., web-server sync test/site --to=me@my.site:/home/me/my-remote-site-folder
+  // e.g., site sync test/site --to=me@my.site:/home/me/my-remote-site-folder
   verifySyncCommand(cli.command({_:['sync', 'test/site'], to: 'me@my.site:/home/me/my-remote-site-folder'}))
 
-  // One positional argument (the host) (e.g., web-server sync my.site)
+  // One positional argument (the host) (e.g., site sync my.site)
   verifySyncCommand(cli.command({_:['sync', 'my.site']}))
 
-  // Two positional arguments (local folder and host) (e.g., web-server sync test/site my.site).
+  // Two positional arguments (local folder and host) (e.g., site sync test/site my.site).
   verifySyncCommand(cli.command({_:['sync', 'test/site', 'my.site']}))
 
   // Proxy.
@@ -200,7 +200,7 @@ test('[CLI] command and option parsing', t => {
 
 
   // Syntax conflict: one positional argument (the host) and the host also defined via named argument
-  // (e.g., web-server sync my.site --host=some-other-side)
+  // (e.g., site sync my.site --host=some-other-side)
   // This should throw as my.site will be interpreted as a local folder and does not exist(in our test anyway).
   t.throws(function() { cli.options(cli.command({_:['sync', 'my.site'], host: 'some-other.site'})) }, 'host conflict between positional and named arguments should throw')
 
@@ -224,19 +224,19 @@ test('[CLI] command and option parsing', t => {
   const expectedEnableCommands = []
 
   // No positional arguments.
-  // i.e., web-server enable
+  // i.e., site enable
   expectedEnableCommands.push(cli.command({_:['enable']}))
 
   // One positional argument (local folder).
-  // e.g., web-server enable test/site
+  // e.g., site enable test/site
   expectedEnableCommands.push(cli.command({_:['enable', 'test/site']}))
 
   // Command specified via named argument, no positional arguments.
-  // i.e., web-server --enable
+  // i.e., site --enable
   expectedEnableCommands.push(cli.command({_:[], enable: true}))
 
   // Command specified via named argument and one positional argument (local folder).
-  // e.g., web-server test/site --enable
+  // e.g., site test/site --enable
   expectedEnableCommands.push(cli.command({_:['test/site'], enable: true}))
 
   // Test all commands we expect to be global.
