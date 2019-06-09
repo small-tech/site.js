@@ -2,7 +2,7 @@
 //
 // Command: status
 //
-// Displays the web server daemon status.
+// Displays the Site.js server daemon status.
 //
 // Proxies: systemctl status web-server
 //
@@ -24,7 +24,7 @@ function status () {
 
   const stateEmoji = (isActive && isEnabled) ? '✔' : '❌'
 
-  console.log(`\n ${stateEmoji} Indie Web Server is ${activeState} and ${enabledState}.\n`)
+  console.log(`\n ${stateEmoji} Site.js is ${activeState} and ${enabledState}.\n`)
 }
 
 module.exports = status
