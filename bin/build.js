@@ -2,7 +2,7 @@
 
 ////////////////////////////////////////////////////////////
 //
-// Builds Linux and macOS binaries of Indie Web Server.
+// Builds Linux and macOS binaries of Site.js.
 //
 // Run with: npm run build
 //
@@ -29,8 +29,9 @@ if (commandLineOptions._.length !== 0 || commandLineOptions.h || commandLineOpti
 
 // Get the version from the npm package configuration.
 const version = package.version
+const binaryName = 'site'
 
-console.log(`\n ⚙ Indie Web Server: building native binaries for version ${version}`)
+console.log(`\n ⚙ Site.js: building native binaries for version ${version}`)
 
 const linuxVersionDirectory = path.join('dist', 'linux', version)
 const macOsVersionDirectory = path.join('dist', 'macos', version)
@@ -38,8 +39,8 @@ const macOsVersionDirectory = path.join('dist', 'macos', version)
 fs.mkdirSync(linuxVersionDirectory, {recursive: true})
 fs.mkdirSync(macOsVersionDirectory, {recursive: true})
 
-const linuxVersionBinaryPath = path.join(linuxVersionDirectory, 'web-server')
-const macOsVersionBinaryPath = path.join(macOsVersionDirectory, 'web-server')
+const linuxVersionBinaryPath = path.join(linuxVersionDirectory, binaryName)
+const macOsVersionBinaryPath = path.join(macOsVersionDirectory, binaryName)
 
 // Only build for the current platform unless a deployment build is requested via --deploy.
 const platform = os.platform()
@@ -59,7 +60,7 @@ async function build () {
     console.log('   • Building Linux version…')
 
     await compile({
-      input: 'bin/web-server.js',
+      input: 'bin/site.js',
       output: linuxVersionBinaryPath,
       target: 'linux-x64-10.15.3',
       resources: ['package.json', 'bin/commands/*', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.3.0-linux-amd64', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.3.0-linux-arm']
@@ -71,7 +72,7 @@ async function build () {
     console.log('   • Building macOS version…')
 
     await compile({
-      input: 'bin/web-server.js',
+      input: 'bin/site.js',
       output: macOsVersionBinaryPath,
       target: 'mac-x64-10.15.3',
       resources: ['package.json', 'bin/commands/*', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.3.0-darwin-amd64']
@@ -103,35 +104,35 @@ async function build () {
     const linuxVersionWorkingDirectory = path.join(mainSourceDirectory, linuxVersionDirectory)
     const macOsVersionWorkingDirectory = path.join(mainSourceDirectory, macOsVersionDirectory)
 
-    childProcess.execSync(`tar -cvzf ${zipFileName} web-server`, {env: process.env, cwd: linuxVersionWorkingDirectory})
-    childProcess.execSync(`tar -cvzf ${zipFileName} web-server`, {env: process.env, cwd: macOsVersionWorkingDirectory})
+    childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: linuxVersionWorkingDirectory})
+    childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: macOsVersionWorkingDirectory})
 
     //
-    // Copy to web site.
+    // Copy Site.js release binaries to the Site.js web site.
     //
-    // Note: this requires a relative directory setup that matches what I have on my
-    // ===== development machine (remember we are running in web-server/bin/):
+    // Note: this requires a relative directory setup that matches the project structure
+    // ===== of the Site.js source code repository. Remember we are running in:
+    // web-server/bin/
     //
-    // |
-    // |- site                                <- Ind.ie Web Site source
-    //     |_www/content/web-server/
-    // |- hypha
-    //     |_ web-server                      <- This project
+    // site.js
+    //  |_ app                 This project.
+    //  |_ site                The Site.js web site.
+    //      |_releases         The folder that releease binaries are held.
     //
-    // If it cannot find the Ind.ie Web Site, the build script will just skip this step.
+    // If it cannot find the Site.js web site, the build script will simply skip this step.
     //
-    const pathToSite = path.resolve(path.join(__dirname, '../../../site/www/'))
-    const pathToWebServerSectionOfSite = path.resolve(path.join(pathToSite, 'content/web-server/'))
-    const pathToDynamicVersionRoute = path.join(pathToSite, 'static', '.dynamic', 'web-server', 'version.js')
+    const pathToWebSite = path.resolve(path.join(__dirname, '../site/'))
+    const pathToReleasesFolder = path.resolve(path.join(pathToSite, 'releases/'))
+    const pathToDynamicVersionRoute = path.join(pathToSite, '.dynamic', 'version.js')
 
-    // Check that the local working copy of the Indie Web Site exists at the relative location
+    // Check that a local working copy of the Site.js web site exists at the relative location
     // that we expect it to. If it doesn’t skip this step.
-    if (fs.existsSync(pathToWebServerSectionOfSite)) {
-      console.log('   • Copying binaries to the Indie Web Site…')
+    if (fs.existsSync(pathToReleasesFolder)) {
+      console.log('   • Copying release binaries to the Site.js web site…')
       const linuxVersionZipFilePath = path.join(linuxVersionWorkingDirectory, zipFileName)
       const macOsVersionZipFilePath = path.join(macOsVersionWorkingDirectory, zipFileName)
-      const linuxVersionTargetDirectoryOnSite = path.join(pathToWebServerSectionOfSite, 'linux')
-      const macOsVersionTargetDirectoryOnSite = path.join(pathToWebServerSectionOfSite, 'macos')
+      const linuxVersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'linux')
+      const macOsVersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'macos')
 
       fs.mkdirSync(linuxVersionTargetDirectoryOnSite, {recursive: true})
       fs.mkdirSync(macOsVersionTargetDirectoryOnSite, {recursive: true})
@@ -139,12 +140,12 @@ async function build () {
       fs.copyFileSync(linuxVersionZipFilePath, path.join(linuxVersionTargetDirectoryOnSite, zipFileName))
       fs.copyFileSync(macOsVersionZipFilePath, path.join(macOsVersionTargetDirectoryOnSite, zipFileName))
     } else {
-      console.log('   • Skipped copy of binaries to Indie Web Site as could not find the local working copy.')
+      console.log('   • No local working copy of Site.js web site found. Skipped copy of release binaries.')
     }
 
     // Write out a dynamic route with the latest version into the site. That endpoint will be used by the
     // auto-update feature to decide whether it needs to update.
-    console.log('   • Adding dynamic version endpoint to Indie Web Site.')
+    console.log('   • Adding dynamic version endpoint to Site.js web site.')
     const versionRoute = `module.exports = (request, response) => { response.end('${package.version}') }\n`
     fs.writeFileSync(pathToDynamicVersionRoute, versionRoute, {encoding: 'utf-8'})
   }
