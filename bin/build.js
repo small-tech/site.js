@@ -112,18 +112,19 @@ async function build () {
     //
     // Note: this requires a relative directory setup that matches the project structure
     // ===== of the Site.js source code repository. Remember we are running in:
-    // web-server/bin/
+    // site.js/app/bin/
     //
     // site.js
     //  |_ app                 This project.
+    //  |   |_ bin             The folder that this script is running in.
     //  |_ site                The Site.js web site.
-    //      |_releases         The folder that releease binaries are held.
+    //      |_ releases        The folder that releease binaries are held.
     //
     // If it cannot find the Site.js web site, the build script will simply skip this step.
     //
-    const pathToWebSite = path.resolve(path.join(__dirname, '../site/'))
-    const pathToReleasesFolder = path.resolve(path.join(pathToSite, 'releases/'))
-    const pathToDynamicVersionRoute = path.join(pathToSite, '.dynamic', 'version.js')
+    const pathToWebSite = path.resolve(path.join(__dirname, '../../site/'))
+    const pathToReleasesFolder = path.resolve(path.join(pathToWebSite, 'releases/'))
+    const pathToDynamicVersionRoute = path.join(pathToWebSite, '.dynamic', 'version.js')
 
     // Check that a local working copy of the Site.js web site exists at the relative location
     // that we expect it to. If it doesn’t skip this step.
