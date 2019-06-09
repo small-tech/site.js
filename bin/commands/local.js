@@ -7,7 +7,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-const webServer = require('../../index')
+const site = require('../../index')
 const tcpPortUsed = require('tcp-port-used')
 const clr = require('../../lib/clr')
 
@@ -22,7 +22,7 @@ function serve (options) {
       //
       // Start a regular server process with locally-trusted security certificates.
       //
-      webServer.serve({
+      site.serve({
         path: options.pathToServe,
         port: options.port,
         global: false
