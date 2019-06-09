@@ -7,7 +7,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-const webServer = require('../../index')
+const site = require('../../index')
 const tcpPortUsed = require('tcp-port-used')
 const clr = require('../../lib/clr')
 
@@ -22,7 +22,7 @@ tcpPortUsed.check(options.port)
       //
       // Start a regular server process.
       //
-      const server = webServer.serve({
+      const server = site.serve({
         path: options.pathToServe,
         port: options.port,
         global: true
