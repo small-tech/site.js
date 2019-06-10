@@ -2,7 +2,7 @@
 //
 // Command: uninstall
 //
-// Uninstalls Indie Web Server after prompting for confirmation.
+// Uninstalls Site.js after prompting for confirmation.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -19,7 +19,7 @@ const ensure = require('../lib/ensure')
 const status = require('../lib/status')
 const disableServer = require('../lib/disable')
 
-const webServer = require('../../index')
+const site = require('../../index')
 const clr = require('../../lib/clr')
 
 class WarningBox {
@@ -62,12 +62,12 @@ async function uninstall (options) {
   ensure.systemctl()
   ensure.root('uninstall')
 
-  console.log(webServer.version())
+  console.log(site.version())
 
   const { isActive: serverIsActive, isEnabled: serverIsEnabled } = status()
 
   const warning = new WarningBox()
-  warning.line(`${clr('WARNING!', 'yellow')} ${clr('About to uninstall Indie Web Server.', 'green')}`)
+  warning.line(`${clr('WARNING!', 'yellow')} ${clr('About to uninstall Site.js.', 'green')}`)
 
   // Check if the server is active/enabled and add a note about that to the warning box.
   if (serverIsActive && serverIsEnabled) {
@@ -144,16 +144,16 @@ async function uninstall (options) {
       }
     }
 
-    // Remove the Indie Web Server binary itself.
+    // Remove the Site.js binary itself.
     try {
-      childProcess.execSync('rm /usr/local/bin/web-server', {env: process.env})
-      console.log(' ✔ Indie Web Server binary removed.\n')
+      childProcess.execSync('rm /usr/local/bin/site', {env: process.env})
+      console.log(' ✔ Site.js binary removed.\n')
     } catch (error) {
-      console.log(`\n ❌ Could not remove the Indie Web Server binary (${error}).\n`)
+      console.log(`\n ❌ Could not remove the Site.js binary (${error}).\n`)
       process.exit(1)
     }
 
-    console.log(`\n 🎉 Indie Web Server uninstalled.\n`)
+    console.log(`\n 🎉 Site.js uninstalled.\n`)
     console.log('\n💖 Goodbye!\n')
     Graceful.exit()
   }

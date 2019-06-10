@@ -33,9 +33,9 @@ class Ensure {
       const options = {env: process.env, stdio: 'inherit'}
       try {
         if (runtime.isNode) {
-          childProcess.execSync(`sudo node ${path.join(__dirname, '..', 'web-server.js')} ${process.argv.slice(2).join(' ')}`, options)
+          childProcess.execSync(`sudo node ${path.join(__dirname, '..', 'site.js')} ${process.argv.slice(2).join(' ')}`, options)
         } else {
-          childProcess.execSync(`sudo web-server ${process.argv.slice(2).join(' ')}`, options)
+          childProcess.execSync(`sudo site ${process.argv.slice(2).join(' ')}`, options)
         }
       } catch (error) {
         process.exit(1)
@@ -71,7 +71,7 @@ class Ensure {
     const { isActive } = getStatus()
 
     if (isActive) {
-      console.error(`\n 👿 Indie Web Server Daemon is already running.\n\n    ${clr('Please stop it first with the command:', 'yellow')} web-server ${clr('disable', 'green')}\n`)
+      console.error(`\n 👿 Site.js Daemon is already running.\n\n    ${clr('Please stop it first with the command:', 'yellow')} site ${clr('disable', 'green')}\n`)
       process.exit(1)
     }
   }
@@ -96,10 +96,10 @@ class Ensure {
           // Allow Node.js to bind to ports < 1024.
           childProcess.execSync(`sudo setcap 'cap_net_bind_service=+ep' $(which ${process.title})`, options)
 
-          console.log(' 😇 [Indie Web Server] First run on Linux: got privileges to bind to ports < 1024. Restarting…')
+          console.log(' 😇 [Site.js] First run on Linux: got privileges to bind to ports < 1024. Restarting…')
 
           // Fork a new instance of the server so that it is launched with the privileged Node.js.
-          const luke = childProcess.fork(path.resolve(path.join(__dirname, '..', 'web-server.js')), process.argv.slice(2), {env: process.env})
+          const luke = childProcess.fork(path.resolve(path.join(__dirname, '..', 'site.js')), process.argv.slice(2), {env: process.env})
 
           luke.send({IAmYourFather: process.pid})
 
@@ -120,33 +120,33 @@ class Ensure {
     if (this.commandExists('rsync')) return // Already installed
 
     if (os.platform() === 'darwin') {
-      console.log('\n ⚠️  [Indie Web Server] macOS: rsync should be installed default but isn’t. Please fix this before trying again.\n')
+      console.log('\n ⚠️  [Site.js] macOS: rsync should be installed default but isn’t. Please fix this before trying again.\n')
       process.exit(1)
     }
 
-    console.log(' 🌠 [Indie Web Server] Installing Rsync dependency…')
+    console.log(' 🌠 [Site.js] Installing Rsync dependency…')
     let options = {env: process.env}
     try {
       if (this.commandExists('apt')) {
         options.env.DEBIAN_FRONTEND = 'noninteractive'
         childProcess.execSync('sudo apt-get install -y -q rsync', options)
-        console.log(' 🎉 [Indie Web Server] Rsync installed using apt.\n')
+        console.log(' 🎉 [Site.js] Rsync installed using apt.\n')
       } else if (this.commandExists('yum')) {
         // Untested: if you test this, please let me know https://github.com/indie-mirror/https-server/issues
-        console.log('\n 🤪  [Indie Web Server] Attempting to install required dependency using yum. This is currently untested. If it works (or blows up) for you, I’d appreciate it if you could open an issue at https://github.com/indie-mirror/https-server/issues and let me know. Thanks! – Aral\n')
+        console.log('\n 🤪  [Site.js] Attempting to install required dependency using yum. This is currently untested. If it works (or blows up) for you, I’d appreciate it if you could open an issue at https://github.com/indie-mirror/https-server/issues and let me know. Thanks! – Aral\n')
         childProcess.execSync('sudo yum install rsync', options)
-        console.log(' 🎉 [Indie Web Server] Rsync installed using yum.')
+        console.log(' 🎉 [Site.js] Rsync installed using yum.')
       } else if (this.commandExists('pacman')) {
         childProcess.execSync('sudo pacman -S rsync', options)
-        console.log(' 🎉 [Indie Web Server] Rsync installed using pacman.')
+        console.log(' 🎉 [Site.js] Rsync installed using pacman.')
       } else {
       // No supported package managers installed. Warn the person.
-      console.log('\n ⚠️  [Indie Web Server] Linux: No supported package manager found for installing Rsync on Linux (tried apt, yum, and pacman). Please install Rsync manually and run Indie Web Server again.\n')
+      console.log('\n ⚠️  [Site.js] Linux: No supported package manager found for installing Rsync on Linux (tried apt, yum, and pacman). Please install Rsync manually and run Site.js again.\n')
       }
       process.exit(1)
     } catch (error) {
       // There was an error and we couldn’t install the dependency. Warn the person.
-      console.log('\n ⚠️  [Indie Web Server] Linux: Failed to install Rsync. Please install it manually and run Indie Web Server again.\n', error)
+      console.log('\n ⚠️  [Site.js] Linux: Failed to install Rsync. Please install it manually and run Site.js again.\n', error)
       process.exit(1)
     }
   }

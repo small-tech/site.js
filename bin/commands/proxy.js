@@ -7,7 +7,7 @@
 //////////////////////////////////////////////////////////////////////
 
 const ensure = require('../lib/ensure')
-const webServer = require('../../index')
+const site = require('../../index')
 
 const httpProxyMiddleware = require('http-proxy-middleware')
 const express = require('express')
@@ -22,12 +22,12 @@ function proxy (options) {
 
   const app = express()
 
-  console.log(webServer.version())
+  console.log(site.version())
 
   ensure.weCanBindToPort(port)
 
-  const server = webServer.createServer({}, app).listen(port, () => {
-    console.log(`\n 🚚 [Indie Web Server] Proxying: HTTPS/WSS on localhost:${port} ←→ HTTP/WS on ${proxyHttpURL.replace('http://', '')}\n`)
+  const server = site.createServer({}, app).listen(port, () => {
+    console.log(`\n 🚚 [Site.js] Proxying: HTTPS/WSS on localhost:${port} ←→ HTTP/WS on ${proxyHttpURL.replace('http://', '')}\n`)
 
     function prettyLog (message) {
       console.log(` 🔁 ${message}`)
@@ -57,7 +57,7 @@ function proxy (options) {
       // to work around the port being hardcoded to the Hugo server
       // port (instead of the port that the page is being served from).
       //
-      // This enables you to use Indie Web Server as a reverse proxy
+      // This enables you to use Site.js as a reverse proxy
       // for Hugo during development time and test your site from https://localhost
       //
       // All other content is left as-is.
@@ -71,7 +71,7 @@ function proxy (options) {
         response.write = function (data) {
           let output = data.toString('utf-8')
           if (output.match(/livereload.js\?port=1313/) !== null) {
-            console.log(' 📝 [Indie Web Server] Rewriting Hugo LiveReload URL to use WebSocket proxy.')
+            console.log(' 📝 [Site.js] Rewriting Hugo LiveReload URL to use WebSocket proxy.')
             output = output.replace('livereload.js?port=1313', `livereload.js?port=${port}`)
             _write.call(response, output)
           } else {

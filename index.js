@@ -1,3 +1,15 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+// Site.js
+//
+// Develop, test, and deploy your secure static or dynamic personal web site
+// with zero configuration.
+//
+// Copyright ⓒ 2019 Aral Balkan. Licensed under AGPLv3 or later.
+// Shared with ♥ by the Small Technology Foundation.
+//
+////////////////////////////////////////////////////////////////////////////////
+
 const http = require('http')
 const https = require('https')
 const fs = require('fs')
@@ -18,7 +30,7 @@ const getRoutes = require('@ind.ie/web-routes-from-files')
 
 const ensure = require('./bin/lib/ensure')
 
-class WebServer {
+class Site {
 
   // Default error pages.
   static default404ErrorPage(missingPath) {
@@ -49,7 +61,7 @@ class WebServer {
   // the version set in the package.json file. (Synchronous.)
   version () {
     const version = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json'), 'utf-8')).version
-    return `\n 💖 Indie Web Server v${version} ${clr(`(running on Node ${process.version})`, 'italic')}\n`
+    return `\n 💖 Site.js v${version} ${clr(`(running on Node ${process.version})`, 'italic')}\n`
   }
 
   // Returns an https server instance – the same as you’d get with
@@ -104,7 +116,7 @@ class WebServer {
     // Check if a 4042302 (404 → 302) redirect has been requested.
     //
     // What if links never died? What if we never broke the Web? What if it didn’t involve any extra work?
-    // It’s possible. And easy. (And with Indie Web Server, it’s seamless.)
+    // It’s possible. And easy. (And with Site.js, it’s seamless.)
     // Just make your 404s into 302s.
     //
     // Find out more at https://4042302.org/
@@ -113,7 +125,7 @@ class WebServer {
     // TODO: We should really be checking that this is a file, not that it
     // ===== exists, on the off-chance that someone might have a directory
     //       with that name in their web root (that someone was me when I
-    //       erroneously ran web-server on the directory that I had the
+    //       erroneously ran Site.js on the directory that I had the
     //       actually 4042302 project folder in).
     const has4042302 = fs.existsSync(_4042302Path)
     let _4042302 = null
@@ -228,7 +240,7 @@ class WebServer {
     let archiveNumber = 0
     archiveCascade.forEach(archivePath => {
       archiveNumber++
-      console.log(` 🌱 [Indie Web Server] Evergreen web: serving archive #${archiveNumber}`)
+      console.log(` 🌱 [Site.js] Evergreen web: serving archive #${archiveNumber}`)
       app.use(express.static(archivePath))
     })
 
@@ -252,7 +264,7 @@ class WebServer {
         response.status(404).send(custom404WithPathAndBase)
       } else {
         // Send default 404 page.
-        response.status(404).send(WebServer.default404ErrorPage(request.path))
+        response.status(404).send(Site.default404ErrorPage(request.path))
       }
     })
 
@@ -273,7 +285,7 @@ class WebServer {
         response.status(500).send(custom500WithErrorMessageAndBase)
       } else {
         // Send default 500 page.
-        response.status(500).send(WebServer.default500ErrorPage(errorMessage))
+        response.status(500).send(Site.default500ErrorPage(errorMessage))
       }
     })
 
@@ -285,7 +297,7 @@ class WebServer {
       if (error.code === 'EADDRINUSE') {
         console.log(` 💥 Port ${port} is already in use.\n`)
       }
-      server.emit('indie-web-server-address-already-in-use')
+      server.emit('site.js-address-already-in-use')
     })
 
     // Handle graceful exit.
@@ -316,7 +328,7 @@ class WebServer {
   //
 
   _createTLSServerWithLocallyTrustedCertificate (options, requestListener = undefined) {
-    console.log(' 🚧 [Indie Web Server] Using locally-trusted certificates.')
+    console.log(' 🚧 [Site.js] Using locally-trusted certificates.')
 
     // Ensure that locally-trusted certificates exist.
     nodecert()
@@ -336,7 +348,7 @@ class WebServer {
 
 
   _createTLSServerWithGloballyTrustedCertificate (options, requestListener = undefined) {
-    console.log(' 🌍 [Indie Web Server] Using globally-trusted certificates.')
+    console.log(' 🌍 [Site.js] Using globally-trusted certificates.')
 
     // Certificates are automatically obtained for the hostname and the www. subdomain of the hostname
     // for the machine that we are running on.
@@ -387,11 +399,11 @@ class WebServer {
       // party can listen for the event on the returned server instance. (We do
       // not return the httpServer instance and hence there is no purpose in
       // emitting the event on that server.)
-      httpsServer.emit('indie-web-server-address-already-in-use')
+      httpsServer.emit('site.js-address-already-in-use')
     })
 
     httpServer.listen(80, () => {
-      console.log(' 👉 [Indie Web Server] HTTP → HTTPS redirection active.')
+      console.log(' 👉 [Site.js] HTTP → HTTPS redirection active.')
     })
 
     // Add the TLS options from ACME TLS to any existing options that might have been passed in.
@@ -404,5 +416,5 @@ class WebServer {
   }
 }
 
-module.exports = new WebServer()
+module.exports = new Site()
 

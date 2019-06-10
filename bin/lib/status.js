@@ -2,9 +2,9 @@
 //
 // Function: status (synchronous)
 //
-// Returns the web server daemon status.
+// Returns the Site.js server daemon status.
 //
-// Proxies: systemctl status web-server
+// Proxies: systemctl status site.js
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -20,7 +20,7 @@ function status () {
 
   let isActive
   try {
-    childProcess.execSync('systemctl is-active web-server', {env: process.env, stdio: 'pipe'})
+    childProcess.execSync('systemctl is-active site.js', {env: process.env, stdio: 'pipe'})
     isActive = true
   } catch (error) {
     isActive = false
@@ -28,7 +28,7 @@ function status () {
 
   let isEnabled
   try {
-    childProcess.execSync('systemctl is-enabled web-server', {env: process.env, stdio: 'pipe'})
+    childProcess.execSync('systemctl is-enabled site.js', {env: process.env, stdio: 'pipe'})
     isEnabled = true
   } catch (error) {
     isEnabled = false

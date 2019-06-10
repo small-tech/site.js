@@ -1,6 +1,6 @@
 const test = require('tape')
 
-const webServer = require('../index.js')
+const site = require('../index.js')
 const https = require('https')
 
 const fs = require('fs')
@@ -28,9 +28,9 @@ async function secureGet (url) {
 }
 
 
-test('[Web Server] createServer method', t => {
+test('[site.js] createServer method', t => {
   t.plan(2)
-  const server = webServer.createServer()
+  const server = site.createServer()
   t.ok(server instanceof https.Server, 'is https.Server')
 
   server.listen(443, () => {
@@ -40,7 +40,7 @@ test('[Web Server] createServer method', t => {
   })
 })
 
-test('[Web Server] archival cascade', t => {
+test('[site.js] archival cascade', t => {
   t.plan(8)
 
   const archive1 = path.join(__dirname, 'site-archive-1')
@@ -75,7 +75,7 @@ test('[Web Server] archival cascade', t => {
   const unique2URL = `https://localhost/unique-2.html`
   const overrideURL = `https://localhost/override.html`
 
-  const server = webServer.serve({
+  const server = site.serve({
     path: 'test/site',
     callback: async () => {
       let responseIndex, responseUnique1, responseUnique2, responseOverride
@@ -116,14 +116,14 @@ test('[Web Server] archival cascade', t => {
 })
 
 
-test('[Web Server] 4042302', t => {
+test('[site.js] 4042302', t => {
   // See https://4042302.org/get-started/
   t.plan(2)
 
   const _4042302FilePath = path.join(__dirname, 'site', '4042302')
   fs.writeFileSync(_4042302FilePath, 'https://my-previous.site', 'utf-8')
 
-  const server = webServer.serve({path: 'test/site', callback: async () => {
+  const server = site.serve({path: 'test/site', callback: async () => {
     let response
     try {
       response = await secureGet('https://localhost/this-page-exists-on-my-previous-site')
@@ -142,7 +142,7 @@ test('[Web Server] 4042302', t => {
 })
 
 
-test('[Web Server] serve method default 404 and 500 responses', t => {
+test('[site.js] serve method default 404 and 500 responses', t => {
     //
     // Test the default 404 and 500 responses of the serve method.
     //
@@ -161,7 +161,7 @@ test('[Web Server] serve method default 404 and 500 responses', t => {
     fs.renameSync(custom404Folder, backup404Folder)
     fs.renameSync(custom500Folder, backup500Folder)
 
-    const server = webServer.serve({path: 'test/site', callback: async () => {
+    const server = site.serve({path: 'test/site', callback: async () => {
 
       // The server is initialised with the default messages. We can now
       // rename the folders back.
@@ -209,9 +209,9 @@ test('[Web Server] serve method default 404 and 500 responses', t => {
 })
 
 
-test('[Web Server] serve method', t => {
+test('[site.js] serve method', t => {
   t.plan(7)
-  const server = webServer.serve({path: 'test/site', callback: async () => {
+  const server = site.serve({path: 'test/site', callback: async () => {
 
     t.ok(server instanceof https.Server, 'is https.Server')
 

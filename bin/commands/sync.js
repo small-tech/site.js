@@ -4,16 +4,16 @@
 //
 // On your development machine:
 //
-//     Syntax: web-server sync [folder] <domain>
+// site sync [folder] <domain>
 //
-// Starts a regular web server process with locally-trusted
+// Starts a regular Site.js server process with locally-trusted
 // security certificates and rsyncs changes to the server at
 // the provided domain. Account must have ssh access to the
 // server and the server must have rsync installed.
 //
-// On the server, to ensure that rsync is installed, run:
+// On the remote server, to ensure that rsync is installed, run:
 //
-//     web-server sync
+// site sync
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -83,7 +83,7 @@ function sync (options) {
         _[25] = 'The --max-delete limit stopped deletions'
         _[30] = 'Timeout in data send/receive'
         _[35] = 'Timeout waiting for daemon connection'
-        _[127] = 'Rsync not found; please run web-server enable --sync'
+        _[127] = 'Rsync not found; please run site enable --sync'
         _[255] = `SSH error while connecting to ${clr(options.syncRemoteHost, 'cyan')} (is this hostname/SSH certificates correct?)`
 
         // Scrape the error code from the error string (not ideal but it’s all

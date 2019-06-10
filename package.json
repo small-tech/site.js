@@ -1,11 +1,10 @@
 {
-  "name": "@ind.ie/web-server",
-  "version": "10.2.0",
-  "description": "A secure and seamless Small Tech personal web server.",
+  "name": "@small-tech/site.js",
+  "version": "11.0.0",
+  "description": "Develop, test, and deploy your secure static or dynamic personal web site with zero configuration.",
   "main": "index.js",
-  "bin": "bin/web-server.js",
+  "bin": "bin/site.js",
   "scripts": {
-    "start": "node index.js",
     "build": "bin/build.js",
     "deploy": "bin/build.js --deploy",
     "install-locally": "bin/build.js --install",
@@ -14,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@source.ind.ie:hypha/tools/web-server.git"
+    "url": "git@source.ind.ie:site.js/app.git"
   },
   "author": {
     "name": "Aral Balkan",

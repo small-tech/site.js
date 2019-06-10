@@ -4,10 +4,10 @@
 // Display the version and exit.
 //
 
-const webServer = require('../../index.js')
+const site = require('../../index.js')
 
 function version () {
-  console.log(webServer.version())
+  console.log(site.version())
   process.exit()
 }
 

@@ -20,6 +20,8 @@ function heading(title) { return clr(title, 'underline') }
 function emphasised(text) { return clr(text, 'italic') }
 
 function help () {
+  const appName = 'site'
+
   const usageCommand = command('command')
   const usageFolderOrHost = `${argument('folder')}|host`
   const usageHost = argument('host')
@@ -53,7 +55,7 @@ function help () {
    ${webServer.version()}
     ${heading('Usage:')}
 
-    ${clr('web-server', 'bold')} [${usageCommand}] [${usageFolderOrHost}] [${usageHost}] [${usageOptions}]
+    ${prompt} ${clr(appName, 'bold')} [${usageCommand}] [${usageFolderOrHost}] [${usageHost}] [${usageOptions}]
 
     ${usageCommand}\t${commandVersion} | ${commandHelp} | ${commandLocal} | ${commandGlobal} | ${commandProxy} | ${commandSync} | ${commandEnable} | ${commandDisable} | ${commandLogs} | ${commandStatus}
     ${usageFolderOrHost}\tPath of folder to serve (defaults to current folder) or host to proxy or sync.
@@ -101,34 +103,34 @@ function help () {
 
       Develop using locally-trusted certificates:
 
-    • Serve current folder ${emphasised('(shorthand)')}\t\t${prompt} web-server
-    • Serve folder ${argument('site')} ${emphasised('(shorthand)')}\t\t${prompt} web-server ${argument('site')}
-    • Serve current folder\t\t\t${prompt} web-server ${commandLocal}
-    • Serve folder ${argument('site')}\t\t\t\t${prompt} web-server ${commandLocal} ${argument('site')}
-    • Serve folder ${argument('site')} at port 666\t\t${prompt} web-server ${commandLocal} ${argument('site')} ${option('port')}=${argument('666')}
+    • Serve current folder ${emphasised('(shorthand)')}\t\t${prompt} ${appName}
+    • Serve folder ${argument('site')} ${emphasised('(shorthand)')}\t\t${prompt} ${appName} ${argument('site')}
+    • Serve current folder\t\t\t${prompt} ${appName} ${commandLocal}
+    • Serve folder ${argument('site')}\t\t\t\t${prompt} ${appName} ${commandLocal} ${argument('site')}
+    • Serve folder ${argument('site')} at port 666\t\t${prompt} ${appName} ${commandLocal} ${argument('site')} ${option('port')}=${argument('666')}
 
-    • Proxy ${argument('localhost:1313')}🡘 https://localhost\t${prompt} web-server ${commandProxy} ${argument('localhost:1313')}
+    • Proxy ${argument('localhost:1313')}🡘 https://localhost\t${prompt} ${appName} ${commandProxy} ${argument('localhost:1313')}
 
-    • Serve current folder, sync it to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('my.site')}
-    • Serve ${argument('site')} folder, sync it to ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('site')} ${argument('my.site')}
-    • Ditto, but using the ${option('host')} option\t${prompt} web-server ${commandSync} ${argument('site')} ${option('host=')}${argument('my.site')}
-    • Ditto, but use account ${argument('me')} on ${argument('my.site')}\t${prompt} web-server ${commandSync} ${argument('site')} ${option('host=')}${argument('my.site')} ${option('account=')}${argument('me')}
-    • Ditto, but sync to remote folder ${argument('www')}\t${prompt} web-server ${commandSync} ${argument('site')} ${option('host=')}${argument('my.site')} ${option('account=')}${argument('me')} ${option('folder=')}${argument('www')}
-    • Ditto, but using the ${option('to')} option\t\t${prompt} web-server ${commandSync} ${argument('site')} ${option('to=')}${argument('me@my-site:/home/me/www')}
-    • Sync current folder, proxy ${argument('localhost:1313')}\t${prompt} web-server ${commandSync} ${argument('my.site')} ${option('proxy=')}${argument('localhost:1313')}
+    • Serve current folder, sync it to ${argument('my.site')}\t${prompt} ${appName} ${commandSync} ${argument('my.site')}
+    • Serve ${argument('site')} folder, sync it to ${argument('my.site')}\t${prompt} ${appName} ${commandSync} ${argument('site')} ${argument('my.site')}
+    • Ditto, but using the ${option('host')} option\t${prompt} ${appName} ${commandSync} ${argument('site')} ${option('host=')}${argument('my.site')}
+    • Ditto, but use account ${argument('me')} on ${argument('my.site')}\t${prompt} ${appName} ${commandSync} ${argument('site')} ${option('host=')}${argument('my.site')} ${option('account=')}${argument('me')}
+    • Ditto, but sync to remote folder ${argument('www')}\t${prompt} ${appName} ${commandSync} ${argument('site')} ${option('host=')}${argument('my.site')} ${option('account=')}${argument('me')} ${option('folder=')}${argument('www')}
+    • Ditto, but using the ${option('to')} option\t\t${prompt} ${appName} ${commandSync} ${argument('site')} ${option('to=')}${argument('me@my-site:/home/me/www')}
+    • Sync current folder, proxy ${argument('localhost:1313')}\t${prompt} ${appName} ${commandSync} ${argument('my.site')} ${option('proxy=')}${argument('localhost:1313')}
 
       Stage and deploy using globally-trusted Let’s Encrypt certificates:
 
-    • Serve current folder\t\t\t${prompt} web-server ${commandGlobal}
-    • Serve folder ${argument('site')}\t\t\t\t${prompt} web-server ${commandGlobal} ${argument('site')}
+    • Serve current folder\t\t\t${prompt} ${appName} ${commandGlobal}
+    • Serve folder ${argument('site')}\t\t\t\t${prompt} ${appName} ${commandGlobal} ${argument('site')}
 
-    • Serve current folder as daemon\t\t${prompt} web-server ${commandEnable}
-    • Ditto & also ensure it can rsync via ssh\t${prompt} web-server ${commandEnable} ${optionSync}
-    • Get status of deamon\t\t\t${prompt} web-server ${commandStatus}
-    • Display server logs\t\t\t${prompt} web-server ${commandLogs}
-    • Stop current daemon\t\t\t${prompt} web-server ${commandDisable}
+    • Serve current folder as daemon\t\t${prompt} ${appName} ${commandEnable}
+    • Ditto & also ensure it can rsync via ssh\t${prompt} ${appName} ${commandEnable} ${optionSync}
+    • Get status of deamon\t\t\t${prompt} ${appName} ${commandStatus}
+    • Display server logs\t\t\t${prompt} ${appName} ${commandLogs}
+    • Stop current daemon\t\t\t${prompt} ${appName} ${commandDisable}
 
-    ${clr('For further information, please see https://ind.ie/web-server', 'italic')}
+    ${clr('For further information, please see https://sitejs.org', 'italic')}
   `.replace(/^\n/, '')
 
   console.log(usage)

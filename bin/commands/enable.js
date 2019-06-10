@@ -17,7 +17,7 @@ const runtime = require('../lib/runtime')
 const ensure = require('../lib/ensure')
 const clr = require('../../lib/clr')
 
-const webServer = require('../../index')
+const site = require('../../index')
 
 function enable (options) {
   //
@@ -26,7 +26,7 @@ function enable (options) {
   ensure.systemctl()
   ensure.serverDaemonNotActive()
 
-  // While we’ve already checked that the Indie Web Server daemon is not
+  // While we’ve already checked that the Site.js daemon is not
   // active, above, it is still possible that there is another service
   // running on port 443. We could ignore this and enable the systemd
   // service anyway and this command would succeed and our server would
@@ -50,9 +50,9 @@ function enable (options) {
       // Create the systemd service unit.
       //
       const pathToServe = options.pathToServe
-      const binaryExecutable = '/usr/local/bin/web-server'
+      const binaryExecutable = '/usr/local/bin/site'
       const sourceDirectory = path.resolve(__dirname, '..', '..')
-      const nodeExecutable = `node ${path.join(sourceDirectory, 'bin/web-server.js')}`
+      const nodeExecutable = `node ${path.join(sourceDirectory, 'bin/site.js')}`
       const executable = runtime.isBinary ? binaryExecutable : nodeExecutable
 
       const absolutePathToServe = path.resolve(pathToServe)
@@ -79,8 +79,8 @@ function enable (options) {
       }
 
       const unit = `[Unit]
-      Description=Indie Web Server
-      Documentation=https://ind.ie/web-server/
+      Description=Site.js
+      Documentation=https://sitejs.org/
       After=network.target
       StartLimitIntervalSec=0
 
@@ -99,21 +99,21 @@ function enable (options) {
       `
 
       // Save the systemd service unit.
-      fs.writeFileSync('/etc/systemd/system/web-server.service', unit, 'utf-8')
+      fs.writeFileSync('/etc/systemd/system/site.js.service', unit, 'utf-8')
 
       //
       // Enable and start systemd service.
       //
       try {
         // Start.
-        childProcess.execSync('sudo systemctl start web-server', {env: process.env, stdio: 'pipe'})
-        console.log(`${webServer.version()}\n 😈 Launched as daemon on ${clr(`https://${os.hostname()}`, 'green')} serving ${clr(pathToServe, 'cyan')}\n`)
+        childProcess.execSync('sudo systemctl start site.js', {env: process.env, stdio: 'pipe'})
+        console.log(`${site.version()}\n 😈 Launched as daemon on ${clr(`https://${os.hostname()}`, 'green')} serving ${clr(pathToServe, 'cyan')}\n`)
 
         // Enable.
-        childProcess.execSync('sudo systemctl enable web-server', {env: process.env, stdio: 'pipe'})
+        childProcess.execSync('sudo systemctl enable site.js', {env: process.env, stdio: 'pipe'})
         console.log(` 😈 Installed for auto-launch at startup.\n`)
       } catch (error) {
-        console.error(error, `\n 👿 Error: could not enable web server.\n`)
+        console.error(error, `\n 👿 Error: could not enable server.\n`)
         process.exit(1)
       }
 
@@ -161,7 +161,7 @@ function displayConnectionInformation(pathToServe) {
       options = `--to=${account}@${hostname}:${absolutePathToServe}`
     }
     console.log(` 💞 [Sync] To sync from your local machine, from within your site’s folder, use:`)
-    console.log(` 💞 [Sync] web-server sync ${options}\n`)
+    console.log(` 💞 [Sync] site sync ${options}\n`)
   } catch (error) {
     console.error(error, `\n 👿 Error: could not get connection information.\n`)
     process.exit(1)

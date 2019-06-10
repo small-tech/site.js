@@ -33,8 +33,8 @@ class CommandLineInterface {
     const positionalCommand = positionalArguments[0]
 
     // Note: important that we check for strict equality here since a command flag and a
-    // ===== a named argument for some other command may have the same name. (e.g., web-server … --proxy flags
-    //       a proxy command but web-server sync … --proxy=localhost:1313 specifies the proxy host to use
+    // ===== a named argument for some other command may have the same name. (e.g., site … --proxy flags
+    //       a proxy command but site sync … --proxy=localhost:1313 specifies the proxy host to use
     //       for a sync command).
     const command = {
       isVersion: (commandLineOptions.version === true || commandLineOptions.v === true || positionalCommand === 'version'),
@@ -144,7 +144,7 @@ class CommandLineInterface {
     let pathToServe = '.'
 
     if (command.positionalArguments.length === 1) {
-      // e.g., web-server enable path-to-serve OR web-server --enable path-to-serve
+      // e.g., site enable path-to-serve OR site --enable path-to-serve
       pathToServe = command.positionalArguments[0]
     }
 
@@ -223,7 +223,7 @@ class CommandLineInterface {
     if (command.isProxy) {
       if (command.positionalArguments.length < 1) {
         // A proxy path must be included.
-        this.throwError('Error: you must supply a URL to proxy. e.g., web-server proxy http://localhost:1313')
+        this.throwError('Error: you must supply a URL to proxy. e.g., site proxy http://localhost:1313')
       }
       if (command.positionalArguments.length > 1) {
         // Syntax error.
@@ -241,12 +241,12 @@ class CommandLineInterface {
     //
     // Syntax:
     //
-    //  1. web-server sync --host=<host> [--folder=<folder>] [--account=<account>] [--proxy=<proxy-host>]
-    //  2. web-server sync <host>
-    //  3. web-server sync <folder> --host=<host>
-    //  4. web-server sync <folder> <host>
-    //  5. web-server sync --to=<account>@<host>:/home/<account>/<folder> [--proxy=<proxy-host>]
-    //  6. web-server sync <folder> --to=<account>@<host>:/home/<account>/<folder> [--proxy=<proxy-host>]
+    //  1. site sync --host=<host> [--folder=<folder>] [--account=<account>] [--proxy=<proxy-host>]
+    //  2. site sync <host>
+    //  3. site sync <folder> --host=<host>
+    //  4. site sync <folder> <host>
+    //  5. site sync --to=<account>@<host>:/home/<account>/<folder> [--proxy=<proxy-host>]
+    //  6. site sync <folder> --to=<account>@<host>:/home/<account>/<folder> [--proxy=<proxy-host>]
     //
     // Key: […] = optional, <…> = value placeholder.
     //
@@ -327,7 +327,7 @@ class CommandLineInterface {
 
         // Ensure that the local folder exists.
         if (!fs.existsSync(syncOptions.syncLocalFolder)) {
-          this.throwError(`Error: Folder not found (${clr(syncOptions.syncFolder, 'cyan')}).\n\n    Syntax: web-server ${clr('sync', 'green')} ${clr('folder', 'cyan')} ${clr('domain', 'yellow')}\n    Command: web-server ${clr('sync', 'green')} ${clr(syncOptions.syncFolder, 'cyan')} ${clr(syncOptions.syncDomain, 'yellow')}`)
+          this.throwError(`Error: Folder not found (${clr(syncOptions.syncFolder, 'cyan')}).\n\n    Syntax: site ${clr('sync', 'green')} ${clr('folder', 'cyan')} ${clr('domain', 'yellow')}\n    Command: site ${clr('sync', 'green')} ${clr(syncOptions.syncFolder, 'cyan')} ${clr(syncOptions.syncDomain, 'yellow')}`)
         }
 
         //
