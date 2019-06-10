@@ -128,7 +128,7 @@ async function build () {
 
     // Check that a local working copy of the Site.js web site exists at the relative location
     // that we expect it to. If it doesn’t skip this step.
-    if (fs.existsSync(pathToReleasesFolder)) {
+    if (fs.existsSync(pathToWebSite)) {
       console.log('   • Copying release binaries to the Site.js web site…')
       const linuxVersionZipFilePath = path.join(linuxVersionWorkingDirectory, zipFileName)
       const macOsVersionZipFilePath = path.join(macOsVersionWorkingDirectory, zipFileName)
@@ -140,15 +140,21 @@ async function build () {
 
       fs.copyFileSync(linuxVersionZipFilePath, path.join(linuxVersionTargetDirectoryOnSite, zipFileName))
       fs.copyFileSync(macOsVersionZipFilePath, path.join(macOsVersionTargetDirectoryOnSite, zipFileName))
+
+      // Write out a dynamic route with the latest version into the site. That endpoint will be used by the
+      // auto-update feature to decide whether it needs to update.
+      console.log('   • Adding dynamic version endpoint to Site.js web site.')
+      const versionRoute = `module.exports = (request, response) => { response.end('${package.version}') }\n`
+      fs.writeFileSync(pathToDynamicVersionRoute, versionRoute, {encoding: 'utf-8'})
+
+      // Update the install file on the Site.js web site.
+      const installScriptFile = path.join(pathToWebSite, 'install')
+      let installScript = fs.readFileSync(installScriptFile, 'utf-8')
+      installScript = installScript.replace(/\d+\.\d+\.\d+/g, package.version)
+      fs.writeFileSync(installScriptFile, installScript)
     } else {
       console.log('   • No local working copy of Site.js web site found. Skipped copy of release binaries.')
     }
-
-    // Write out a dynamic route with the latest version into the site. That endpoint will be used by the
-    // auto-update feature to decide whether it needs to update.
-    console.log('   • Adding dynamic version endpoint to Site.js web site.')
-    const versionRoute = `module.exports = (request, response) => { response.end('${package.version}') }\n`
-    fs.writeFileSync(pathToDynamicVersionRoute, versionRoute, {encoding: 'utf-8'})
   }
 
   console.log('\n 😁👍 Done!\n')
