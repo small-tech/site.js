@@ -15,6 +15,7 @@ const https = require('https')
 const fs = require('fs')
 const path = require('path')
 const os = require('os')
+const crypto = require('crypto')
 
 const clr = require('./lib/clr')
 
@@ -56,6 +57,13 @@ class Site {
         process.stdout.write(`\n 👶 Running as child process.`)
       }
     })
+
+    // Ensure that the settings directory exists and create it if it doesn’t.
+    this.settingsDirectory = path.join(os.homedir(), '.site.js')
+
+    if (!fs.existsSync(this.settingsDirectory)) {
+      fs.mkdirSync(this.settingsDirectory)
+    }
   }
 
   // Returns a nicely-formatted version string based on
@@ -98,6 +106,19 @@ class Site {
 
     console.log(this.version())
 
+    // Check if a random statistics path has generated and use that or generate it.
+    // TODO: Add option for resetting this.
+    let statisticsRoute = null
+    const statisticsRouteSettingFile = path.join(this.settingsDirectory, 'statistics-route')
+    if (!fs.existsSync(statisticsRouteSettingFile)) {
+      // Generate a random route.
+      statisticsRoute = crypto.randomBytes(32).toString('hex')
+      fs.writeFileSync(statisticsRouteSettingFile, statisticsRoute)
+    } else {
+      // Load the existing route.
+      statisticsRoute = fs.readFileSync(statisticsRouteSettingFile, 'utf-8')
+    }
+
     // The options parameter object and all supported properties on the options parameter
     // object are optional. Check and populate the defaults.
     if (options === undefined) options = {}
@@ -112,6 +133,8 @@ class Site {
       }
       const location = global ? os.hostname() : `localhost${portSuffix}`
       console.log(`\n 🎉 Serving ${clr(pathToServe, 'cyan')} on ${clr(`https://${location}`, 'green')}\n`)
+
+      console.log(` 📊 For statistics, see https://${location}/${statisticsRoute}\n`)
     }
 
     // Check if a 4042302 (404 → 302) redirect has been requested.
@@ -229,7 +252,7 @@ class Site {
 
     // Statistics view (displays anonymous, ephemeral statistics)
     // TODO: Generate random hash for this route and display it in the console.
-    app.get('/stats', stats.view())
+    app.get(`/${statisticsRoute}`, stats.view())
 
     // Add dynamic routes, if any, if a <pathToServe>/.dynamic/ folder exists.
     // If there are errors in any of your dynamic routes, you will get 500 (server) errors.
