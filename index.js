@@ -27,6 +27,7 @@ const Graceful = require('node-graceful')
 const AcmeTLS = require('@ind.ie/acme-tls')
 const nodecert = require('@ind.ie/nodecert')
 const getRoutes = require('@ind.ie/web-routes-from-files')
+const Stats = require('./lib/Stats')
 
 const ensure = require('./bin/lib/ensure')
 
@@ -209,7 +210,12 @@ class Site {
     // Create an express server to serve the path using Morgan for logging.
     const app = express()
     app.use(helmet())                     // Express.js security with HTTP headers.
-    app.use(morgan('tiny'))               // Logging.
+
+    // Stats.
+    app.use(new Stats().middleware())
+
+    // Logging.
+    app.use(morgan('tiny'))
 
     // To test a 500 error, hit /test-500-error
     app.use((request, response, next) => {
