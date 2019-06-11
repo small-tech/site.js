@@ -211,8 +211,9 @@ class Site {
     const app = express()
     app.use(helmet())                     // Express.js security with HTTP headers.
 
-    // Stats.
-    app.use(new Stats().middleware())
+    // Statistics middleware (captures anonymous, ephemeral statistics).
+    const stats = new Stats()
+    app.use(stats.middleware())
 
     // Logging.
     app.use(morgan('tiny'))
@@ -225,6 +226,10 @@ class Site {
         next()
       }
     })
+
+    // Statistics view (displays anonymous, ephemeral statistics)
+    // TODO: Generate random hash for this route and display it in the console.
+    app.get('/stats', stats.view())
 
     // Add dynamic routes, if any, if a <pathToServe>/.dynamic/ folder exists.
     // If there are errors in any of your dynamic routes, you will get 500 (server) errors.
