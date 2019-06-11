@@ -15,7 +15,6 @@ const https = require('https')
 const fs = require('fs')
 const path = require('path')
 const os = require('os')
-const crypto = require('crypto')
 
 const clr = require('./lib/clr')
 
@@ -106,18 +105,8 @@ class Site {
 
     console.log(this.version())
 
-    // Check if a random statistics path has generated and use that or generate it.
-    // TODO: Add option for resetting this.
-    let statisticsRoute = null
     const statisticsRouteSettingFile = path.join(this.settingsDirectory, 'statistics-route')
-    if (!fs.existsSync(statisticsRouteSettingFile)) {
-      // Generate a random route.
-      statisticsRoute = crypto.randomBytes(32).toString('hex')
-      fs.writeFileSync(statisticsRouteSettingFile, statisticsRoute)
-    } else {
-      // Load the existing route.
-      statisticsRoute = fs.readFileSync(statisticsRouteSettingFile, 'utf-8')
-    }
+    const stats = new Stats(statisticsRouteSettingFile)
 
     // The options parameter object and all supported properties on the options parameter
     // object are optional. Check and populate the defaults.
@@ -134,7 +123,7 @@ class Site {
       const location = global ? os.hostname() : `localhost${portSuffix}`
       console.log(`\n 🎉 Serving ${clr(pathToServe, 'cyan')} on ${clr(`https://${location}`, 'green')}\n`)
 
-      console.log(` 📊 For statistics, see https://${location}/${statisticsRoute}\n`)
+      console.log(` 📊 For statistics, see https://${location}${stats.route}\n`)
     }
 
     // Check if a 4042302 (404 → 302) redirect has been requested.
@@ -235,8 +224,7 @@ class Site {
     app.use(helmet())                     // Express.js security with HTTP headers.
 
     // Statistics middleware (captures anonymous, ephemeral statistics).
-    const stats = new Stats()
-    app.use(stats.middleware())
+    app.use(stats.middleware)
 
     // Logging.
     app.use(morgan('tiny'))
@@ -252,7 +240,7 @@ class Site {
 
     // Statistics view (displays anonymous, ephemeral statistics)
     // TODO: Generate random hash for this route and display it in the console.
-    app.get(`/${statisticsRoute}`, stats.view())
+    app.get(stats.route, stats.view)
 
     // Add dynamic routes, if any, if a <pathToServe>/.dynamic/ folder exists.
     // If there are errors in any of your dynamic routes, you will get 500 (server) errors.
