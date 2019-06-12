@@ -27,6 +27,7 @@ const Graceful = require('node-graceful')
 const AcmeTLS = require('@ind.ie/acme-tls')
 const nodecert = require('@ind.ie/nodecert')
 const getRoutes = require('@ind.ie/web-routes-from-files')
+const Stats = require('./lib/Stats')
 
 const ensure = require('./bin/lib/ensure')
 
@@ -55,6 +56,13 @@ class Site {
         process.stdout.write(`\n 👶 Running as child process.`)
       }
     })
+
+    // Ensure that the settings directory exists and create it if it doesn’t.
+    this.settingsDirectory = path.join(os.homedir(), '.site.js')
+
+    if (!fs.existsSync(this.settingsDirectory)) {
+      fs.mkdirSync(this.settingsDirectory)
+    }
   }
 
   // Returns a nicely-formatted version string based on
@@ -97,6 +105,9 @@ class Site {
 
     console.log(this.version())
 
+    const statisticsRouteSettingFile = path.join(this.settingsDirectory, 'statistics-route')
+    const stats = new Stats(statisticsRouteSettingFile)
+
     // The options parameter object and all supported properties on the options parameter
     // object are optional. Check and populate the defaults.
     if (options === undefined) options = {}
@@ -111,6 +122,8 @@ class Site {
       }
       const location = global ? os.hostname() : `localhost${portSuffix}`
       console.log(`\n 🎉 Serving ${clr(pathToServe, 'cyan')} on ${clr(`https://${location}`, 'green')}\n`)
+
+      console.log(` 📊 For statistics, see https://${location}${stats.route}\n`)
     }
 
     // Check if a 4042302 (404 → 302) redirect has been requested.
@@ -208,8 +221,14 @@ class Site {
 
     // Create an express server to serve the path using Morgan for logging.
     const app = express()
-    app.use(helmet())                     // Express.js security with HTTP headers.
-    app.use(morgan('tiny'))               // Logging.
+    app.set('trust-proxy', true )
+    // app.use(helmet())                     // Express.js security with HTTP headers.
+
+    // Statistics middleware (captures anonymous, ephemeral statistics).
+    app.use(stats.middleware)
+
+    // Logging.
+    app.use(morgan('tiny'))
 
     // To test a 500 error, hit /test-500-error
     app.use((request, response, next) => {
@@ -219,6 +238,10 @@ class Site {
         next()
       }
     })
+
+    // Statistics view (displays anonymous, ephemeral statistics)
+    // TODO: Generate random hash for this route and display it in the console.
+    app.get(stats.route, stats.view)
 
     // Add dynamic routes, if any, if a <pathToServe>/.dynamic/ folder exists.
     // If there are errors in any of your dynamic routes, you will get 500 (server) errors.
