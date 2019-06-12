@@ -36,6 +36,17 @@ wget -qO- https://sitejs.org/install | bash
 npm i -g @small-tech/site.js
 ```
 
+## Dependencies
+
+Site.js is tries to install the dependencies it needs seamlessly while running. That said, there are certain basic components it expects on a Linux-like system. These are:
+
+  - `sudo`
+  - `libcap2-bin` (we use `setcap` to escalate privileges on the binary as necessary)
+
+If it turns out that any of these are a widespread reason for first-run breakage, we can look into having them installed automatically in the future. Please open an issue if any of these is an issue in your deployments or everyday usage.
+
+Of course, you will need `wget` (or `curl`) installed to download the install script. You can install `wget` via your distribution’s package manager (e.g., `sudo apt install wget` on Ubuntu-like systems).
+
 ## Uninstall
 
 To uninstall the native binary (and any created artifacts, like TLS certificates, systemd services, etc.):
