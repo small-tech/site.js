@@ -8,11 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - Nothing yet.
 
-## [11.0.0] - TBA
+## [11.0.0] - 2019-06-12
 
 ### Changed
 
   - (Breaking) Name changed to Site.js.
+
+### Added
+
+  - Very basic statistics middleware and view.
 
 ## [10.2.0] - 2019-05-15
 
