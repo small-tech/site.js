@@ -221,7 +221,8 @@ class Site {
 
     // Create an express server to serve the path using Morgan for logging.
     const app = express()
-    app.use(helmet())                     // Express.js security with HTTP headers.
+    app.set('trust-proxy', true )
+    // app.use(helmet())                     // Express.js security with HTTP headers.
 
     // Statistics middleware (captures anonymous, ephemeral statistics).
     app.use(stats.middleware)
