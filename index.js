@@ -241,7 +241,6 @@ class Site {
     })
 
     // Statistics view (displays anonymous, ephemeral statistics)
-    // TODO: Generate random hash for this route and display it in the console.
     app.get(stats.route, stats.view)
 
     // Add dynamic routes, if any, if a <pathToServe>/.dynamic/ folder exists.
