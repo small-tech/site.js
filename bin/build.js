@@ -125,6 +125,7 @@ async function build () {
     const pathToWebSite = path.resolve(path.join(__dirname, '../../site/'))
     const pathToReleasesFolder = path.resolve(path.join(pathToWebSite, 'releases/'))
     const pathToDynamicVersionRoute = path.join(pathToWebSite, '.dynamic', 'version.js')
+    const pathToInstallationScriptFolderOnWebSite = path.join(pathToWebSite, 'installation-script', 'install')
 
     // Check that a local working copy of the Site.js web site exists at the relative location
     // that we expect it to. If it doesn’t skip this step.
@@ -147,11 +148,14 @@ async function build () {
       const versionRoute = `module.exports = (request, response) => { response.end('${package.version}') }\n`
       fs.writeFileSync(pathToDynamicVersionRoute, versionRoute, {encoding: 'utf-8'})
 
-      // Update the install file on the Site.js web site.
-      const installScriptFile = path.join(pathToWebSite, 'install')
+      // Update the install file and deploy it to the Site.js web site.
+      console.log('   • Updating the installation script and deploying it to Site.js web site.')
+      const installScriptFile = path.join(mainSourceDirectory, 'script', 'install')
       let installScript = fs.readFileSync(installScriptFile, 'utf-8')
       installScript = installScript.replace(/\d+\.\d+\.\d+/g, package.version)
       fs.writeFileSync(installScriptFile, installScript)
+
+      fs.copyFileSync(installScriptFile, pathToInstallationScriptFolderOnWebSite)
     } else {
       console.log('   • No local working copy of Site.js web site found. Skipped copy of release binaries.')
     }

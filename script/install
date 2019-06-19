@@ -1,0 +1,51 @@
+#!/bin/bash
+
+######################################################################
+#
+# Site.js v11.0.0 Installer
+#
+# To use:
+#
+# wget -qO- https://sitejs.org/install | bash
+#
+# This script is only for Linux and macOS.
+# On Windows, please use Windows Subsystem for Linux.
+#
+######################################################################
+
+set -e
+echo
+echo " 📡 Downloading Site.js v11.0.0…"
+
+function cleanUp {
+  popd > /dev/null
+  rm -rf /tmp/sitejs.org
+}
+
+# Setup
+rm -rf /tmp/sitejs.org
+mkdir -p /tmp/sitejs.org
+pushd /tmp/sitejs.org > /dev/null
+
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+  # Linux
+  wget -q https://sitejs.org/releases/linux/11.0.0.tar.gz
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+  # macOS
+  wget -q https://sitejs.org/releases/macos/11.0.0.tar.gz
+else
+  # Unsupported
+  echo "\n ❌ Error: this operating system is not supported.\n"
+  cleanUp
+  exit 1
+fi
+
+echo " 📦 Installing…"
+gzip -d 11.0.0.tar.gz
+tar -xvf 11.0.0.tar > /dev/null
+sudo mv site /usr/local/bin/
+
+cleanUp
+
+echo " 🎉 Done!"
+echo
