@@ -8,6 +8,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - Nothing yet.
 
+## [11.0.1] - 2019-06-20
+
+### Fixed
+
+  - Statistics view sends proper status code and content type ([#59](https://source.ind.ie/site.js/app/issues/59))
+
+### Changed
+
+  - Install script now runs in _/tmp/sitejs.org_ directory. ([#57](https://source.ind.ie/site.js/app/issues/57))
+  - Moved install script from Sitejs.org site repo to the app repo ([#58](https://source.ind.ie/site.js/app/issues/58))
+
 ## [11.0.0] - 2019-06-12
 
 ### Changed
