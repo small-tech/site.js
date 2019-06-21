@@ -102,6 +102,7 @@ class Ensure {
           // Fork a new instance of the server so that it is launched with the privileged Node.js.
           const luke = childProcess.fork(path.resolve(path.join(__dirname, '..', 'site.js')), process.argv.slice(2), {env: process.env})
 
+          // Let the child process know it’s a child process.
           luke.send({IAmYourFather: process.pid})
 
           function exitMainProcess () {

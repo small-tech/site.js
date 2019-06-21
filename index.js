@@ -44,15 +44,8 @@ class Site {
 
   constructor () {
 
-    // If we are running as a child process, we will ensure that our parent process
-    // is dead before exiting. (Note: normally, this should not be necessary and this
-    // is here as a brute-force contingency. If you notice this being used, debug and fix
-    // the underlying issue.)
-    this.father = null
-
     process.on('message', (m) => {
       if (m.IAmYourFather !== undefined) {
-        this.father = m.IAmYourFather
         process.stdout.write(`\n 👶 Running as child process.`)
       }
     })
@@ -327,14 +320,6 @@ class Site {
       server.close( () => {
         // The server close event will be the last one to fire. Let’s say goodbye :)
         console.log('\n 💖 Goodbye!\n')
-
-        // Just in case we fail to clean up something in the child and that stops the
-        // parent from exiting (resulting in a hung console), esure that the parent process
-        // is dead.
-        if (this.father !== null) {
-          process.kill(this.father, 9)
-        }
-
         done()
       })
     }
