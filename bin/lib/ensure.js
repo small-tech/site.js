@@ -86,11 +86,12 @@ class Ensure {
   // ===== current app is in index.js and that it can be forked. This might be an issue if a
   //       process manager is already being used, etc. Worth keeping an eye on and possibly
   //       making this method an optional part of server startup.
-  weCanBindToPort (port) {
+  weCanBindToPort (port, callback) {
     if (port < 1024 && os.platform() === 'linux') {
       const options = {env: process.env}
       try {
         childProcess.execSync(`setcap -v 'cap_net_bind_service=+ep' $(which ${process.title})`, options)
+        callback()
       } catch (error) {
         try {
           // Allow Node.js to bind to ports < 1024.
@@ -103,8 +104,14 @@ class Ensure {
 
           luke.send({IAmYourFather: process.pid})
 
-          // We’re done here. Go into an endless loop. Exiting (Ctrl+C) this will also exit the child process.
-          while(1){}
+          function exitMainProcess () {
+            console.log('Exiting main process in response to child.')
+            process.exit()
+          }
+          luke.on('exit', exitMainProcess)
+          luke.on('disconnect', exitMainProcess)
+          luke.on('close', exitMainProcess)
+          luke.on('error', exitMainProcess)
         } catch (error) {
           console.log(`\n Error: could not get privileges for Node.js to bind to port ${port}.`, error)
           process.exit(1)

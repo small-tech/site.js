@@ -93,7 +93,7 @@ class Site {
     }
   }
 
-
+  //
   // Starts a static server. You can customise it by passing an options object with the
   // following properties (all optional):
   //
@@ -101,10 +101,14 @@ class Site {
   // •  callback: (function)  the callback to call once the server is ready (a default is provided).
   // •      port: (integer)   the port to bind to (between 0 - 49,151; the default is 443).
   // •    global: (boolean)   if true, automatically provision an use Let’s Encrypt TLS certificates.
+  //
+  // Note: if calling this method with a port < 1024 on Linux, ensure your process has the
+  // ===== necessary privileges to bind to such ports. E.g., use require('lib/ensure').weCanBindToPort(port)
+  //
   serve (options) {
-
     console.log(this.version())
 
+    // Set up statistics.
     const statisticsRouteSettingFile = path.join(this.settingsDirectory, 'statistics-route')
     const stats = new Stats(statisticsRouteSettingFile)
 
@@ -124,6 +128,12 @@ class Site {
       console.log(`\n 🎉 Serving ${clr(pathToServe, 'cyan')} on ${clr(`https://${location}`, 'green')}\n`)
 
       console.log(` 📊 For statistics, see https://${location}${stats.route}\n`)
+    }
+
+    // Check for a valid port range
+    // (port above 49,151 are ephemeral ports. See https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic,_private_or_ephemeral_ports)
+    if (port < 0 || port > 49151) {
+      throw new Error('Error: specified port must be between 0 and 49,151 inclusive.')
     }
 
     // Check if a 4042302 (404 → 302) redirect has been requested.
@@ -206,18 +216,6 @@ class Site {
       // lowest, with latter versions overriding earlier ones), so reverse the list.
       archiveCascade.reverse()
     }
-
-    // Check for a valid port range
-    // (port above 49,151 are ephemeral ports. See https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic,_private_or_ephemeral_ports)
-    if (port < 0 || port > 49151) {
-      throw new Error('Error: specified port must be between 0 and 49,151 inclusive.')
-    }
-
-    // On Linux, we need to get the Node process special access to so-called privileged
-    // ports (<1,024). This is meaningless security theatre unless you’re living in 1968
-    // and using a mainframe and hopefully Linux will join the rest of the modern world
-    // in dropping this requirement soon (macOS just did in Mojave).
-    ensure.weCanBindToPort(port)
 
     // Create an express server to serve the path using Morgan for logging.
     const app = express()
