@@ -105,7 +105,7 @@ class Ensure {
           luke.send({IAmYourFather: process.pid})
 
           function exitMainProcess () {
-            console.log('Exiting main process in response to child.')
+            // Exit main process in response to child process event.
             process.exit()
           }
           luke.on('exit', exitMainProcess)
