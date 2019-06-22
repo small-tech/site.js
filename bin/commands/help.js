@@ -23,29 +23,23 @@ function help () {
   const appName = 'site'
 
   const usageCommand = command('command')
-  const usageFolderOrHost = `${argument('folder')}|host`
-  const usageHost = argument('host')
+  const usageFolderOrPort = `${argument('folder')}|${argument(':port')}`
+  const usageHostAndPort = argument('@host[:port]')
   const usageOptions = option('options')
 
   const commandVersion = command('version')
   const commandHelp = command('help')
   const commandUninstall = command('uninstall')
-  const commandLocal = command('local')
-  const commandGlobal = command('global')
-  const commandProxy = command('proxy')
-  const commandSync = command('sync')
+  const commandServe = command('serve')
   const commandEnable = command('enable')
   const commandDisable = command('disable')
   const commandLogs = command('logs')
   const commandStatus = command('status')
 
-  const optionPort = option('port')
+  const optionSyncFrom = option('sync-from')
+  const optionSyncTo = option('sync-to')
 
-  const optionHost = option('host')
-  const optionAccount = option('account')
-  const optionFolder = option('folder')
-  const optionProxy = option('proxy')
-  const optionSync = option('sync')
+  const optionEnsureCanSync = option('ensure-sync')
   const optionExitOnSync = option('exit-on-sync')
   const optionSyncFolderAndContents = option('sync-folder-and-contents')
 
@@ -55,23 +49,29 @@ function help () {
    ${webServer.version()}
     ${heading('Usage:')}
 
-    ${prompt} ${clr(appName, 'bold')} [${usageCommand}] [${usageFolderOrHost}] [${usageHost}] [${usageOptions}]
+  ${prompt} ${clr(appName, 'bold')} [${usageCommand}] [${usageFolderOrPort}] [${usageHostAndPort}] [${usageOptions}]
 
-    ${usageCommand}\t${commandVersion} | ${commandHelp} | ${commandLocal} | ${commandGlobal} | ${commandProxy} | ${commandSync} | ${commandEnable} | ${commandDisable} | ${commandLogs} | ${commandStatus}
-    ${usageFolderOrHost}\tPath of folder to serve (defaults to current folder) or host to proxy or sync.
-    ${usageHost}\tHost to sync.
-    ${usageOptions}\tSettings that alter server characteristics.
+    ${usageCommand}\t\t${commandVersion} | ${commandHelp} | ${commandServe} | ${commandEnable} | ${commandDisable} | ${commandLogs} | ${commandStatus}
+    ${usageFolderOrPort}\tPath of folder to serve (defaults to current folder) or port on localhost to proxy.
+    ${usageHostAndPort}\tHost (and, optionally port) to sync. Valid hosts are @localhost and @hostname.
+    ${usageOptions}\t\tSettings that alter command behaviour.
+
+    ${heading('Key:')}
+
+    [] = optional  | = or  ${prompt} = command prompt
 
     ${heading('Commands:')}
+
+    ${commandServe}\tServe specified ${argument('folder')} (or proxy specified ${argument(':port')}) on specified ${argument('@host')} (at ${argument(':port')}, if given).
+    \t\tThe order of arguments is: 1. what to serve, 2. where to serve it. e.g.,
+
+    \t      ${prompt} ${appName} ${commandServe} ${argument('my-folder')} ${argument('@localhost')}
+
+    \t\tIf a port (e.g., ${argument(':1313')}) is specified instead of ${argument('my-folder')}, start an HTTP/WebSocket proxy.
 
     ${commandVersion}\tDisplay version and exit.
     ${commandHelp}\tDisplay this help screen and exit.
     ${commandUninstall}\tUninstall Indie Web Server.
-
-    ${commandLocal}\tStart server as regular process with locally-trusted certificates.
-    ${commandGlobal}\tStart server as regular process with globally-trusted certificates.
-    ${commandProxy}\tStart server to proxy provided HTTP URL via HTTPS. Also proxies WebSockets.
-    ${commandSync}\tStart server as regular process with locally-trusted certificates and ${emphasised('rsync')} ${argument('folder')} to ${argument('host')}.
 
     On Linux distributions with systemd, you can also use:
 
@@ -80,52 +80,67 @@ function help () {
     ${commandLogs}\tDisplay and tail server logs.
     ${commandStatus}\tDisplay detailed server information.
 
-    If ${usageCommand} is omitted, behaviour defaults to ${commandLocal}.
+    If ${usageCommand} is omitted, behaviour defaults to ${commandServe}.
 
     ${heading('Options:')}
 
-    ${optionPort}\tPort to start server on (defaults to 443).
+    For ${commandServe} command:
 
-    For the ${commandEnable} command:
-
-    ${optionSync}\tEnsure the server can also rsync via ssh (so you can sync your site to it from your local machine).
-
-    For the ${commandSync} command:
-
-    ${optionHost}\t\t\tThe remote host to sync to (e.g., my-demo.site).
-    ${optionAccount}\t\t\tThe ssh account to use on remote server (defaults to same as on current session).
-    ${optionFolder}\t\t\tThe subfolder of home folder to sync to on remote machine (defaults to name of served folder).
-    ${optionProxy}\t\t\tProxy the specified host and port instead of starting a regular local server.
+    ${optionSyncTo}\t\t\tThe host to sync to.
+    ${optionSyncFrom}\t\t\tThe folder to sync from (only relevant if ${optionSyncTo} is specified).
     ${optionExitOnSync}\t\tExit once the first sync has occurred. Useful in deployment scripts.
     ${optionSyncFolderAndContents}\tSync local folder and contents (default is to sync the folder’s contents only).
 
+    For ${commandEnable} command:
+
+    ${optionEnsureCanSync}\t\tEnsure server can rsync via ssh.
+
     ${heading('Examples:')}
 
-      Develop using locally-trusted certificates:
+      ${heading('Develop using locally-trusted TLS certificates:')}
 
-    • Serve current folder ${emphasised('(shorthand)')}\t\t${prompt} ${appName}
-    • Serve folder ${argument('site')} ${emphasised('(shorthand)')}\t\t${prompt} ${appName} ${argument('site')}
-    • Serve current folder\t\t\t${prompt} ${appName} ${commandLocal}
-    • Serve folder ${argument('site')}\t\t\t\t${prompt} ${appName} ${commandLocal} ${argument('site')}
-    • Serve folder ${argument('site')} at port 666\t\t${prompt} ${appName} ${commandLocal} ${argument('site')} ${option('port')}=${argument('666')}
+    • Serve current folder \t\t\t${prompt} ${appName}
+      ${emphasised('(all forms; shorthand to full syntax)')}\t${prompt} ${appName} ${commandServe}
+      \t\t\t\t\t\t${prompt} ${appName} ${commandServe} ${argument('.')}
+      \t\t\t\t\t\t${prompt} ${appName} ${commandServe} ${argument('.')} ${argument('@localhost')}
+      \t\t\t\t\t\t${prompt} ${appName} ${commandServe} ${argument('.')} ${argument('@localhost:443')}
 
-    • Proxy ${argument('localhost:1313')}🡘 https://localhost\t${prompt} ${appName} ${commandProxy} ${argument('localhost:1313')}
+    • Serve folder ${argument('demo')} ${emphasised('(shorthand)')}\t\t${prompt} ${appName} ${argument('demo')}
+    • Serve folder ${argument('demo')} at port 666\t\t${prompt} ${appName} ${commandServe} ${argument('demo')} ${argument('@localhost:666')}
 
-    • Serve current folder, sync it to ${argument('my.site')}\t${prompt} ${appName} ${commandSync} ${argument('my.site')}
-    • Serve ${argument('site')} folder, sync it to ${argument('my.site')}\t${prompt} ${appName} ${commandSync} ${argument('site')} ${argument('my.site')}
-    • Ditto, but using the ${option('host')} option\t${prompt} ${appName} ${commandSync} ${argument('site')} ${option('host=')}${argument('my.site')}
-    • Ditto, but use account ${argument('me')} on ${argument('my.site')}\t${prompt} ${appName} ${commandSync} ${argument('site')} ${option('host=')}${argument('my.site')} ${option('account=')}${argument('me')}
-    • Ditto, but sync to remote folder ${argument('www')}\t${prompt} ${appName} ${commandSync} ${argument('site')} ${option('host=')}${argument('my.site')} ${option('account=')}${argument('me')} ${option('folder=')}${argument('www')}
-    • Ditto, but using the ${option('to')} option\t\t${prompt} ${appName} ${commandSync} ${argument('site')} ${option('to=')}${argument('me@my-site:/home/me/www')}
-    • Sync current folder, proxy ${argument('localhost:1313')}\t${prompt} ${appName} ${commandSync} ${argument('my.site')} ${option('proxy=')}${argument('localhost:1313')}
+    • Proxy ${argument('localhost:1313')}🡘 https://localhost\t${prompt} ${appName} ${argument(':1313')}
+      (shorthand and full)\t\t\t${prompt} ${appName} ${commandServe} ${argument(':1313')} ${argument('@localhost:443')}
 
-      Stage and deploy using globally-trusted Let’s Encrypt certificates:
+    • Serve current folder, sync it to ${argument('my.site')}\t${prompt} ${appName} ${optionSyncTo}=${argument('my.site')}
+      (shorthand and full)\t\t\t${prompt} ${appName} ${commandServe} ${argument('.')} ${argument('@localhost:443')} ${optionSyncTo}=${argument('my.site')}
 
-    • Serve current folder\t\t\t${prompt} ${appName} ${commandGlobal}
-    • Serve folder ${argument('site')}\t\t\t\t${prompt} ${appName} ${commandGlobal} ${argument('site')}
+    • Serve ${argument('demo')} folder, sync it to ${argument('my.site')}\t${prompt} ${appName} ${commandServe} ${argument('demo')} ${optionSyncTo}=${argument('my.site')}
+    • Ditto, but use account ${argument('me')} on ${argument('my.site')}\t${prompt} ${appName} ${commandServe} ${argument('demo')} ${optionSyncTo}=${argument('me@my.site')}
+    • Ditto, but sync to remote folder ${argument('~/www')}\t${prompt} ${appName} ${commandServe} ${argument('demo')} ${optionSyncTo}=${argument('me@my.site:www')}
+    • Ditto, but specify absolute path\t\t${prompt} ${appName} ${commandServe} ${argument('demo')} ${optionSyncTo}=${argument('me@my.site:/home/me/www')}
+
+    • Sync current folder, proxy ${argument('localhost:1313')}\t${prompt} ${appName} ${commandServe} ${argument(':1313')} ${optionSyncFrom}=${argument('.')} ${optionSyncTo}=${argument('my.site')}
+
+    • Sync current folder to ${argument('my.site')} and exit\t${prompt} ${appName} ${optionSyncTo}=${argument('my.site')} ${optionExitOnSync}
+
+    • Sync ${argument('demo')} folder to ${argument('my.site')} and exit\t${prompt} ${appName} ${argument('demo')} ${optionSyncTo}=${argument('my.site')} ${optionExitOnSync}
+      (alternative forms)\t\t\t${prompt} ${appName} ${optionSyncFrom}=${argument('demo')} ${optionSyncTo}=${argument('my.site')} ${optionExitOnSync}
+
+      ${heading('Stage and deploy using globally-trusted Let’s Encrypt certificates:')}
+
+      Regular process:
+
+    • Serve current folder\t\t\t${prompt} ${appName} ${argument('@hostname')}
+
+    • Serve folder ${argument('demo')}\t\t\t\t${prompt} ${appName} ${argument('demo')} ${argument('@hostname')}
+      (shorthand and full)\t\t\t${prompt} ${appName} ${commandServe} ${argument('demo')} ${argument('@hostname')}
+
+    • Proxy ${argument('localhost:1313')}🡘 https://hostname\t${prompt} ${appName} ${commandServe} ${argument(':1313')} ${argument('@hostname')}
+
+      Start-up daemon:
 
     • Serve current folder as daemon\t\t${prompt} ${appName} ${commandEnable}
-    • Ditto & also ensure it can rsync via ssh\t${prompt} ${appName} ${commandEnable} ${optionSync}
+    • Ditto & also ensure it can rsync via ssh\t${prompt} ${appName} ${commandEnable} ${optionEnsureCanSync}
     • Get status of deamon\t\t\t${prompt} ${appName} ${commandStatus}
     • Display server logs\t\t\t${prompt} ${appName} ${commandLogs}
     • Stop current daemon\t\t\t${prompt} ${appName} ${commandDisable}
