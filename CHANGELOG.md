@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
-  - Nothing yet.
+  - New CLI grammar (breaking change)
 
 ## [11.0.2] - 2019-06-21
 
