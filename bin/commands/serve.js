@@ -9,7 +9,9 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-const site = require('../../index')
+const httpProxyMiddleware = require('http-proxy-middleware')
+
+const Site = require('../../index')
 const ensure = require('../lib/ensure')
 const tcpPortUsed = require('tcp-port-used')
 const clr = require('../../lib/clr')
@@ -88,33 +90,48 @@ function serve (args) {
   let sync = null
 
   if (args.named.syncTo !== undefined) {
-    sync = {}
-    sync.to = args.named.syncTo
-    sync.from = args.named.syncFrom || path
-    sync.exit = args.named.exitOnSync || false
-    sync.folderAndContents = args.named.syncFolderAndContents || false
+    sync = {
+      to: args.named.syncTo,
+      from: args.named.syncFrom || path,
+      exit: args.named.exitOnSync || false,
+      folderAndContents: args.named.syncFolderAndContents || false
+    }
   }
 
-  ensure.weCanBindToPort(port, () => {
-    tcpPortUsed.check(port)
-    .then(inUse => {
-      if (inUse) {
-        console.log(`\n 🤯 Error: Cannot start server. Port ${clr(port.toString(), 'cyan')} is already in use.\n`)
-        process.exit(1)
-      } else {
+  // No need to start a server if all we want to do is to sync.
+  if (sync !== null && sync.exit) {
+    startSync(sync)
+  } else {
+    startSync(sync)
 
-        // TODO: Start sync if requested.
+    ensure.weCanBindToPort(port, () => {
+      tcpPortUsed.check(port)
+      .then(inUse => {
+        if (inUse) {
+          console.log(`\n 🤯 Error: Cannot start server. Port ${clr(port.toString(), 'cyan')} is already in use.\n`)
+          process.exit(1)
+        } else {
 
-        // TODO: Only start server is --exit-on-sync is false.
-        site.serve ({
-          path,
-          port,
-          global,
-          proxyPort
-        })
-      }
+          const options = {
+            path,
+            port,
+            global,
+            proxyPort
+          }
+
+          // Start serving the site.
+          const site = new Site(options)
+          const server = site.serve()
+
+          // Exit on known errors as we have already logged them to console.
+          // (Otherwise, the stack trace will be output for debugging purposes.)
+          server.on('site.js-address-already-in-use', () => {
+            process.exit(1)
+          })
+        }
+      })
     })
-  })
+  }
 }
 
 // Display a syntax error.
@@ -155,6 +172,11 @@ function ensurePort (port) {
   }
 
   return port
+}
+
+// Creates the proxy server functionality once
+function startSync (sync) {
+
 }
 
 module.exports = serve

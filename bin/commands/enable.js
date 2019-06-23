@@ -6,6 +6,8 @@
 //
 //////////////////////////////////////////////////////////////////////
 
+// TODO: [ ] Requires refactor to parse its own options. New method sig: function enable (args) {}
+
 const os = require('os')
 const fs = require('fs')
 const path = require('path')
