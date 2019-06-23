@@ -6,7 +6,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-const webServer = require('../../index')
+const Site = require('../../index')
 const clr = require('../../lib/clr')
 
 const GREEN = 'green'
@@ -46,7 +46,7 @@ function help () {
   const prompt = clr('⯈', 'blue')
 
   const usage = `
-   ${webServer.version()}
+   ${Site.version()}
     ${heading('Usage:')}
 
   ${prompt} ${clr(appName, 'bold')} [${usageCommand}] [${usageFolderOrPort}] [${usageHostAndPort}] [${usageOptions}]

@@ -29,9 +29,14 @@ const nodecert = require('@ind.ie/nodecert')
 const getRoutes = require('@ind.ie/web-routes-from-files')
 const Stats = require('./lib/Stats')
 
-const ensure = require('./bin/lib/ensure')
 
 class Site {
+  // Returns a nicely-formatted version string based on
+  // the version set in the package.json file. (Synchronous.)
+  static version () {
+    const version = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json'), 'utf-8')).version
+    return `\n 💖 Site.js v${version} ${clr(`(running on Node ${process.version})`, 'italic')}\n`
+  }
 
   // Default error pages.
   static default404ErrorPage(missingPath) {
@@ -54,7 +59,7 @@ class Site {
   // ===== necessary privileges to bind to such ports. E.g., use require('lib/ensure').weCanBindToPort(port, callback)
   constructor (options) {
     // Introduce ourselves.
-    console.log(this.version())
+    console.log(Site.version())
 
     // The options parameter object and all supported properties on the options parameter
     // object are optional. Check and populate the defaults.
@@ -257,14 +262,6 @@ class Site {
   initialiseStatistics () {
     const statisticsRouteSettingFile = path.join(this.settingsDirectory, 'statistics-route')
     return new Stats(statisticsRouteSettingFile)
-  }
-
-
-  // Returns a nicely-formatted version string based on
-  // the version set in the package.json file. (Synchronous.)
-  version () {
-    const version = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json'), 'utf-8')).version
-    return `\n 💖 Site.js v${version} ${clr(`(running on Node ${process.version})`, 'italic')}\n`
   }
 
 
