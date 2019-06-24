@@ -18,15 +18,6 @@ const RsyncWatcher = require('./RsyncWatcher')
 const ensure = require('./ensure')
 const clr = require('../../lib/clr')
 
-// { to: 'aral@mydemo.site:/home/aral/demo',
-//   account: 'aral',
-//   host: 'mydemo.site',
-//   remotePath: '/home/aral/demo',
-//   from: '~/demo/',
-//   exit: false
-// }
-
-
 function sync (options) {
   // Check for prerequisites (sync functionality requires rsync to be installed.)
   ensure.rsyncExists()
