@@ -9,23 +9,34 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-const httpProxyMiddleware = require('http-proxy-middleware')
+const _path = require('path')
+
+const sync = require('../lib/sync')
+
+// function sync (options) {
+//   console.log('Sync called with', options)
+// }
 
 const Site = require('../../index')
 const ensure = require('../lib/ensure')
 const tcpPortUsed = require('tcp-port-used')
 const clr = require('../../lib/clr')
 
+const SYNC_TO = 'sync-to'
+const SYNC_FROM = 'sync-from'
+const EXIT_ON_SYNC = 'exit-on-sync'
+const SYNC_FOLDER_AND_CONTENTS = 'sync-folder-and-contents'
+
+let global = null
+let port = null
+let path = null
+let proxyPort = null
+
 function serve (args) {
 
   if (args.positional.length > 2) {
     syntaxError('Serve command has maximum of two arguments (what to serve and where to serve it).')
   }
-
-  let global = null
-  let port = null
-  let path = null
-  let proxyPort = null
 
   // Parse positional arguments.
   args.positional.forEach(arg => {
@@ -87,23 +98,22 @@ function serve (args) {
   path = path === null ? '.' : path
 
   // Parse named arguments.
-  let sync = null
+  let syncOptions = null
 
-  if (args.named.syncTo !== undefined) {
-    sync = {
-      to: args.named.syncTo,
-      from: args.named.syncFrom || path,
-      exit: args.named.exitOnSync || false,
-      folderAndContents: args.named.syncFolderAndContents || false
-    }
+  if (args.named[SYNC_TO] !== undefined) {
+    console.log('moo')
+    syncOptions = remoteConnectionInfo(args)
+    Object.assign(syncOptions, {
+      from: localFolder(args),
+      exit: args.named[EXIT_ON_SYNC] || false,
+    })
   }
 
-  // No need to start a server if all we want to do is to sync.
-  if (sync !== null && sync.exit) {
-    startSync(sync)
+  if (syncOptions !== null && syncOptions.exit) {
+    // No need to start a server if all we want to do is to sync.
+    sync(syncOptions)
   } else {
-    startSync(sync)
-
+    // Start a server and also sync if requested.
     ensure.weCanBindToPort(port, () => {
       tcpPortUsed.check(port)
       .then(inUse => {
@@ -128,6 +138,11 @@ function serve (args) {
           server.on('site.js-address-already-in-use', () => {
             process.exit(1)
           })
+
+          // Start sync if requested.
+          if (syncOptions !== null) {
+            sync(syncOptions)
+          }
         }
       })
     })
@@ -174,9 +189,119 @@ function ensurePort (port) {
   return port
 }
 
-// Creates the proxy server functionality once
-function startSync (sync) {
 
+// Returns the local folder given an args object.
+function localFolder (args) {
+
+  let localFolder = null
+
+  // If --sync-from is not specified, we default to the path to be served (or default path).
+  const syncFrom = args.named[SYNC_FROM] || path
+  const syncFromEndsWithPathSeparator = syncFrom.endsWith(_path.sep)
+
+  // Handle the sync-folder-and-contents flag or its lack
+  if (args.named[SYNC_FOLDER_AND_CONTENTS] === true) {
+    // We should sync both the folder itself and its contents. We signal this to rsync
+    // by ensuring that the name of the folder *does not* end in a trailing slash.
+    if (syncFromEndsWithPathSeparator) {
+      localFolder = syncFrom.substr(0, syncFrom - 1)
+    }
+  } else {
+    // Default: we sync only the contents of the local folder, not the folder itself. To
+    // ======== specify this to rsync, we ensure that the local folder path ends with a slash.
+    if (!syncFromEndsWithPathSeparator) {
+      localFolder = `${syncFrom}${_path.sep}`
+    }
+  }
+
+  return localFolder
+}
+
+// Returns a remote connection info object from the provided args object:
+//
+//  {
+//    account: …
+//    host: …
+//    remotePath: …
+//    remoteConnectionString: …
+//  }
+//
+// (All properties strings.)
+//
+// Argument syntax:
+//
+// Short-hand:  my.site         →   <same-as-local-account-name>@my.site:/home/me/<same-as-from-folder>
+//              me@my.site      →   me@my.site:/home/me/<same-as-from-folder>
+//              me@my.site:www  →   me@my.site:/home/me/www
+//       Full:  me@my.site:/home/me/www
+function remoteConnectionInfo (args) {
+
+  const syncFrom = args.named[SYNC_FROM]
+  const syncTo = args.named[SYNC_TO]
+
+  let account = null
+  let host = null
+  let remotePath = null
+
+  function remotePathPrefix (account) {
+    return _path.join('/home', account)
+  }
+
+  function remotePathForAccountAndLocalFolderName (account, localFolderName) {
+    return _path.join(remotePathPrefix(account), localFolderName)
+  }
+
+  function defaultRemotePath (account) {
+    const localFolderPath = _path.resolve(syncFrom || path)
+    const localFolderFragments = localFolderPath.split(_path.sep)
+    const localFolderName = localFolderFragments[localFolderFragments.length-1]
+
+    return _path.join(remotePathPrefix(account), localFolderName)
+  }
+
+  const splitOnAt = syncTo.split('@')
+
+  if (splitOnAt.length === 1) {
+    // No account provided. Default to the same account as on local machine.
+    account = process.env.USER
+    host = splitOnAt[0]
+    remotePath = defaultRemotePath(account)
+  }
+
+  if (splitOnAt.length === 2) {
+    account = splitOnAt[0]
+
+    // Check if remote path is provided.
+    const splitOnColon = splitOnAt[1].split(':')
+    host = splitOnColon[0]
+
+    if (splitOnColon.length === 1) {
+      // No remote path provided. Default to the same directory in the person’s home directory
+      // as the current directory.
+      remotePath = defaultRemotePath(account)
+    }
+
+    if (splitOnColon.length === 2) {
+      // Remote path provided. Check if it is a relative or absolute path and
+      // set the remotePath accordingly.
+      if (splitOnColon[1].startsWith('/')) {
+        // Remote path is an absolute path, use it as-is.
+        remotePath = splitOnColon[1]
+      } else {
+        // Remote path is relative; rewrite it.
+        remotePath = remotePathForAccountAndLocalFolderName(account, splitOnColon[1])
+      }
+    }
+  }
+
+  const remoteConnectionString = `${account}@${host}:${remotePath}`
+
+  return {
+    to: remoteConnectionString,
+    account,
+    host,
+    remotePath,
+  }
 }
 
 module.exports = serve
