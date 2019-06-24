@@ -196,7 +196,7 @@ function localFolder (args) {
   let localFolder = null
 
   // If --sync-from is not specified, we default to the path to be served (or default path).
-  const syncFrom = args.named[SYNC_FROM] || path
+  const syncFrom = _path.resolve(args.named[SYNC_FROM] || path)
   const syncFromEndsWithPathSeparator = syncFrom.endsWith(_path.sep)
 
   // Handle the sync-folder-and-contents flag or its lack

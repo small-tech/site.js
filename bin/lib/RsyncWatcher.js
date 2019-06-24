@@ -23,7 +23,11 @@ const Graceful = require('node-graceful')
 const consoleTimestamp = require('./console-timestamp')
 
 class RSyncWatcher {
+
   constructor (options) {
+
+    console.log('rsync options', options)
+
     this.options = options
     this.synchronisers = new Map()
     this.watchers = []
