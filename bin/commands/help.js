@@ -72,7 +72,7 @@ function help () {
 
     ${commandVersion}\tDisplay version and exit.
     ${commandHelp}\tDisplay this help screen and exit.
-    ${commandUninstall}\tUninstall Indie Web Server.
+    ${commandUninstall}\tUninstall Site.js.
 
     On Linux distributions with systemd, you can also use:
 
