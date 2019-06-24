@@ -13,10 +13,6 @@ const _path = require('path')
 
 const sync = require('../lib/sync')
 
-// function sync (options) {
-//   console.log('Sync called with', options)
-// }
-
 const Site = require('../../index')
 const ensure = require('../lib/ensure')
 const tcpPortUsed = require('tcp-port-used')

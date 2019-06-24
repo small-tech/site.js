@@ -28,9 +28,6 @@ const clr = require('../../lib/clr')
 
 
 function sync (options) {
-  console.log('Sync called with', options)
-
-
   // Check for prerequisites (sync functionality requires rsync to be installed.)
   ensure.rsyncExists()
 
