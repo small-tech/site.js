@@ -40,7 +40,7 @@ function serve (args) {
         const hostAndPort = arg.split(':')
         const hasCorrectNumberOfColons = hostAndPort.length === 2
         if (!hasCorrectNumberOfColons) {
-          syntaxError('Host definition syntax can only contain one colon: either @localhost:port or @hostname:port. Default: @localhost:443')
+          syntaxError('Host definition syntax can only contain one colon: @localhost:port. Default: @localhost:443')
         }
 
         _host = hostAndPort[0]

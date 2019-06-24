@@ -349,7 +349,7 @@ class Site {
     if (this.port !== 443) {
       portSuffix = `:${this.port}`
     }
-    return this.global ? os.hostname() : `localhost${portSuffix}`
+    return this.global ? `${os.hostname()}${portSuffix}` : `localhost${portSuffix}`
   }
 
 

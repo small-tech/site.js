@@ -8,7 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - New CLI grammar (breaking change)
   - Sync with --exit-on-sync no longer starts server
-  - API change: serve method now handles proxying also
+  - API change: serve method now handles proxying.
+  - Any port is supported for servers running on hostname, not just localhost.
 
 ## [11.0.2] - 2019-06-21
 
