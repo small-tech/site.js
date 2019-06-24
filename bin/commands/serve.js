@@ -146,10 +146,12 @@ function serve (args) {
 
 // Display a syntax error.
 function syntaxError(message = null) {
-  const additionalMessage = message === null ? '' : ` (${message})`
-  require('./help')
+  const additionalMessage = message === null ? '' : message
+  console.log(`\n ${clr('Syntax error: ', 'red')}${additionalMessage}`)
+  require('./help')()
 }
 
+// Throw a general error.
 function throwError(errorMessage) {
   console.log(`\n 🤯 ${errorMessage}\n`)
   throw new Error(errorMessage)
@@ -172,13 +174,13 @@ function ensurePort (port) {
 
   // Invalid port.
   if (isNaN(port)) {
-    this.throwError(`Error: “${port}” is not a valid port. Try a number ${inTheValidPortRange}.`)
+    throwError(`Error: “${port}” is not a valid port. Try a number ${inTheValidPortRange}.`)
   }
 
   // Check for a valid port range
   // (port above 49,151 are ephemeral ports. See https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic,_private_or_ephemeral_ports)
   if (port < 0 || port > 49151) {
-    this.throwError(`Error: specified port must be ${inTheValidPortRange}.`)
+    throwError(`Error: specified port must be ${inTheValidPortRange}.`)
   }
 
   return port
@@ -212,23 +214,25 @@ function localFolder (args) {
   return localFolder
 }
 
+
 // Returns a remote connection info object from the provided args object:
 //
-//  {
-//    account: …
-//    host: …
-//    remotePath: …
-//    remoteConnectionString: …
-//  }
+// {
+//   to,
+//   account,
+//   host,
+//   remotePath,
+// }
 //
 // (All properties strings.)
 //
 // Argument syntax:
 //
-// Short-hand:  my.site         →   <same-as-local-account-name>@my.site:/home/me/<same-as-from-folder>
-//              me@my.site      →   me@my.site:/home/me/<same-as-from-folder>
-//              me@my.site:www  →   me@my.site:/home/me/www
-//       Full:  me@my.site:/home/me/www
+// Short-hand: my.site         →   <same-as-local-account-name>@my.site:/home/me/<same-as-from-folder>
+//             me@my.site      →   me@my.site:/home/me/<same-as-from-folder>
+//             me@my.site:www  →   me@my.site:/home/me/www
+//       Full: me@my.site:/var/www
+
 function remoteConnectionInfo (args) {
 
   const syncFrom = args.named[SYNC_FROM]
@@ -289,10 +293,10 @@ function remoteConnectionInfo (args) {
     }
   }
 
-  const remoteConnectionString = `${account}@${host}:${remotePath}`
+  const to = `${account}@${host}:${remotePath}`
 
   return {
-    to: remoteConnectionString,
+    to,
     account,
     host,
     remotePath,

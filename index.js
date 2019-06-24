@@ -30,13 +30,24 @@ const nodecert = require('@ind.ie/nodecert')
 const getRoutes = require('@ind.ie/web-routes-from-files')
 const Stats = require('./lib/Stats')
 
-
 class Site {
-  // Returns a nicely-formatted version string based on
-  // the version set in the package.json file. (Synchronous.)
-  static version () {
-    const version = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json'), 'utf-8')).version
-    return `\n 💖 Site.js v${version} ${clr(`(running on Node ${process.version})`, 'italic')}\n`
+  // Logs a nicely-formatted version string based on
+  // the version set in the package.json file to console.
+  // (Only once per Site lifetime.)
+  // (Synchronous.)
+  static logAppNameAndVersion () {
+    if (!Site.appNameAndVersionAlreadyLogged) {
+      console.log(`\n 💖 Site.js v${Site.versionNumber()} ${clr(`(running on Node ${process.version})`, 'italic')}\n`)
+      Site.appNameAndVersionAlreadyLogged = true
+    }
+  }
+
+  // Calculate and cache version number from package.json on first call.
+  static versionNumber () {
+    if (Site._versionNumber === null) {
+      Site._versionNumber = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json'), 'utf-8')).version
+    }
+    return Site._versionNumber
   }
 
   // Default error pages.
@@ -60,7 +71,7 @@ class Site {
   // ===== necessary privileges to bind to such ports. E.g., use require('lib/ensure').weCanBindToPort(port, callback)
   constructor (options) {
     // Introduce ourselves.
-    console.log(Site.version())
+    Site.logAppNameAndVersion()
 
     // Ensure that the settings directory exists and create it if it doesn’t.
     this.settingsDirectory = path.join(os.homedir(), '.site.js')
@@ -596,6 +607,9 @@ class Site {
     return httpsServer
   }
 }
+
+Site.appNameAndVersionAlreadyLogged = false
+Site._versionNumber = null
 
 module.exports = Site
 

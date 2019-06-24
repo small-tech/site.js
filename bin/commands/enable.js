@@ -19,7 +19,7 @@ const runtime = require('../lib/runtime')
 const ensure = require('../lib/ensure')
 const clr = require('../../lib/clr')
 
-const site = require('../../index')
+const Site = require('../../index')
 
 function enable (options) {
   //
@@ -110,7 +110,8 @@ function enable (options) {
         try {
           // Start.
           childProcess.execSync('sudo systemctl start site.js', {env: process.env, stdio: 'pipe'})
-          console.log(`${site.version()}\n 😈 Launched as daemon on ${clr(`https://${os.hostname()}`, 'green')} serving ${clr(pathToServe, 'cyan')}\n`)
+          Site.logAppNameAndVersion()
+          console.log(`\n 😈 Launched as daemon on ${clr(`https://${os.hostname()}`, 'green')} serving ${clr(pathToServe, 'cyan')}\n`)
 
           // Enable.
           childProcess.execSync('sudo systemctl enable site.js', {env: process.env, stdio: 'pipe'})

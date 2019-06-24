@@ -45,8 +45,9 @@ function help () {
 
   const prompt = clr('⯈', 'blue')
 
+  Site.logAppNameAndVersion()
+
   const usage = `
-   ${Site.version()}
     ${heading('Usage:')}
 
   ${prompt} ${clr(appName, 'bold')} [${usageCommand}] [${usageFolderOrPort}] [${usageHostAndPort}] [${usageOptions}]
