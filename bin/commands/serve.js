@@ -156,7 +156,7 @@ function isHostGlobal(host) {
 // Ensures that port is valid before returning it.
 function ensurePort (port) {
   // If a port is specified, use it. Otherwise use the default port (443).
-  let port = parseInt(port)
+  port = parseInt(port)
 
   const inTheValidPortRange = 'between 0 and 49,151 inclusive'
 
