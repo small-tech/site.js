@@ -8,11 +8,14 @@
 //
 //////////////////////////////////////////////////////////////////////
 
+const Site = require('../../index')
 const getStatus = require('../lib/status')
 const clr = require('../../lib/clr')
 const ensure = require('../lib/ensure')
 
 function status () {
+  Site.logAppNameAndVersion()
+
   // Ensure systemctl exists as it is required for getStatus().
   // We cannot check in the function itself as it would create
   // a circular dependency.
@@ -24,7 +27,7 @@ function status () {
 
   const stateEmoji = (isActive && isEnabled) ? '✔' : '❌'
 
-  console.log(`\n ${stateEmoji} Site.js is ${activeState} and ${enabledState}.\n`)
+  console.log(` ${stateEmoji} Site.js is ${activeState} and ${enabledState}.\n`)
 }
 
 module.exports = status
