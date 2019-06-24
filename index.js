@@ -23,6 +23,7 @@ const helmet = require('helmet')
 const morgan = require('morgan')
 const redirectHTTPS = require('redirect-https')
 const Graceful = require('node-graceful')
+const httpProxyMiddleware = require('http-proxy-middleware')
 
 const AcmeTLS = require('@ind.ie/acme-tls')
 const nodecert = require('@ind.ie/nodecert')
@@ -92,7 +93,9 @@ class Site {
 
     this.startAppConfiguration()
 
-    if (!this.isProxyServer) {
+    if (this.isProxyServer) {
+      this.configureProxyRoutes()
+    } else {
       this.configureAppRoutes()
     }
 
@@ -141,6 +144,7 @@ class Site {
   // Middleware unique to proxy servers.
   // TODO: Refactor: Break this method up. []
   configureProxyRoutes () {
+
     const proxyHttpUrl = `http://localhost:${this.proxyPort}`
     const proxyWebSocketUrl = `ws://localhost:${this.proxyPort}`
 
@@ -153,7 +157,7 @@ class Site {
     }
 
     const webSocketProxy = httpProxyMiddleware({
-      target: proxyWebSocketURL,
+      target: proxyWebSocketUrl,
       ws: true,
       changeOrigin:false,
       logProvider,
@@ -161,7 +165,7 @@ class Site {
     })
 
     const httpsProxy = httpProxyMiddleware({
-      target: proxyHttpURL,
+      target: proxyHttpUrl,
       changeOrigin: true,
       logProvider,
       logLevel: 'info',
@@ -353,11 +357,15 @@ class Site {
   }
 
 
+  showStatisticsUrl (location) {
+    console.log(` 📊 For statistics, see https://${location}${this.stats.route}\n`)
+  }
+
   // Callback used in regular servers.
   regularCallback (server) {
     const location = this.prettyLocation()
     console.log(`\n 🎉 Serving ${clr(this.pathToServe, 'cyan')} on ${clr(`https://${location}`, 'green')}\n`)
-    console.log(` 📊 For statistics, see https://${location}${this.stats.route}\n`)
+    this.showStatisticsUrl(location)
   }
 
 
@@ -365,6 +373,7 @@ class Site {
   proxyCallback (server) {
     const location = this.prettyLocation()
     console.log(`\n 🚚 [Site.js] Proxying: HTTP/WS on localhost:${this.proxyPort} ←→ HTTPS/WSS on ${location}\n`)
+    this.showStatisticsUrl(location)
   }
 
 

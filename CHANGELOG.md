@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Sync with --exit-on-sync no longer starts server
   - API change: serve method now handles proxying.
   - Any port is supported for servers running on hostname, not just localhost.
+  - Statistics now support for proxy servers.
 
 ## [11.0.2] - 2019-06-21
 
