@@ -9,6 +9,7 @@ const childProcess = require('child_process')
 const os = require('os')
 const path = require('path')
 
+const Site = require('../../index')
 const runtime = require('./runtime')
 const getStatus = require('./status')
 const clr = require('../../lib/clr')
@@ -97,10 +98,15 @@ class Ensure {
           // Allow Node.js to bind to ports < 1024.
           childProcess.execSync(`sudo setcap 'cap_net_bind_service=+ep' $(which ${process.title})`, options)
 
-          console.log(' 😇 [Site.js] First run on Linux: got privileges to bind to ports < 1024. Restarting…')
+          Site.logAppNameAndVersion()
+
+          console.log(' 😇 [Site.js] First run on Linux: got privileges to bind to ports < 1024.\n')
 
           // Fork a new instance of the server so that it is launched with the privileged Node.js.
-          const luke = childProcess.fork(path.resolve(path.join(__dirname, '..', 'site.js')), process.argv.slice(2), {env: process.env})
+          const newArgs = process.argv.slice(2)
+          newArgs.push('--dont-log-app-name-and-version')
+
+          const luke = childProcess.fork(path.resolve(path.join(__dirname, '..', 'site.js')), newArgs, {env: process.env})
 
           // Let the child process know it’s a child process.
           luke.send({IAmYourFather: process.pid})
