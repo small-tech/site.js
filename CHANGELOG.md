@@ -7,10 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
   - New CLI grammar (breaking change)
+  - You can now use Site.js as a reverse proxy (proxy servers now supported @hostname)
   - Sync with --exit-on-sync no longer starts server
   - API change: serve method now handles proxying.
-  - Any port is supported for servers running on hostname, not just localhost.
-  - Statistics now support for proxy servers.
+  - Run at any port on @hostname, not just @localhost.
+  - Statistics now supported on proxy servers.
 
 ## [11.0.2] - 2019-06-21
 
