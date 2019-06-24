@@ -61,6 +61,13 @@ class Site {
     // Introduce ourselves.
     console.log(Site.version())
 
+    // Ensure that the settings directory exists and create it if it doesn’t.
+    this.settingsDirectory = path.join(os.homedir(), '.site.js')
+
+    if (!fs.existsSync(this.settingsDirectory)) {
+      fs.mkdirSync(this.settingsDirectory)
+    }
+
     // The options parameter object and all supported properties on the options parameter
     // object are optional. Check and populate the defaults.
     if (options === undefined) options = {}
@@ -83,13 +90,13 @@ class Site {
     this.stats = this.initialiseStatistics()
     this.app = express()
 
-    startAppConfiguration()
+    this.startAppConfiguration()
 
     if (!this.isProxyServer) {
-      configureAppRoutes()
+      this.configureAppRoutes()
     }
 
-    endAppConfiguration()
+    this.endAppConfiguration()
 
     // If running as child process, notify person.
     process.on('message', (m) => {
@@ -97,13 +104,6 @@ class Site {
         process.stdout.write(`\n 👶 Running as child process.`)
       }
     })
-
-    // Ensure that the settings directory exists and create it if it doesn’t.
-    this.settingsDirectory = path.join(os.homedir(), '.site.js')
-
-    if (!fs.existsSync(this.settingsDirectory)) {
-      fs.mkdirSync(this.settingsDirectory)
-    }
   }
 
 
@@ -211,7 +211,7 @@ class Site {
     //
     // 404 (Not Found) support.
     //
-    app.use((request, response, next) => {
+    this.app.use((request, response, next) => {
       // If a 4042302 (404 → 302) redirect has been requested, honour that.
       // (See https://4042302.org/). Otherwise, if there is a custom 404 error page,
       // serve that. (The template variable THE_PATH, if present on the page, will be
@@ -237,7 +237,7 @@ class Site {
     //
     // 500 (Server error) support.
     //
-    app.use((error, request, response, next) => {
+    this.app.use((error, request, response, next) => {
       // Strip the Error: prefix from the message.
       const errorMessage = error.toString().replace('Error: ', '')
 
@@ -314,7 +314,7 @@ class Site {
 
       // Call the overridable callback (the defaults for these are purely informational/cosmetic
       // so they are safe to override).
-      callback(server)
+      callback.apply(this, [server])
     })
 
     server.on('error', error => {
@@ -356,7 +356,7 @@ class Site {
   // Callback used in regular servers.
   regularCallback (server) {
     const location = this.prettyLocation()
-    console.log(`\n 🎉 Serving ${clr(pathToServe, 'cyan')} on ${clr(`https://${location}`, 'green')}\n`)
+    console.log(`\n 🎉 Serving ${clr(this.pathToServe, 'cyan')} on ${clr(`https://${location}`, 'green')}\n`)
     console.log(` 📊 For statistics, see https://${location}${this.stats.route}\n`)
   }
 
@@ -371,19 +371,19 @@ class Site {
   // Adds custom error page support for 404 and 500 errors.
   addCustomErrorPagesSupport () {
     // Check if a custom 404 page exists at the conventional path. If it does, load it for use later.
-    const custom404Path = path.join(pathToServe, '404', 'index.html')
-    const hasCustom404 = fs.existsSync(custom404Path)
-    let custom404 = null
-    if (hasCustom404) {
-      custom404 = fs.readFileSync(custom404Path, 'utf-8')
+    const custom404Path = path.join(this.pathToServe, '404', 'index.html')
+    this.hasCustom404 = fs.existsSync(custom404Path)
+    this.custom404 = null
+    if (this.hasCustom404) {
+      this.custom404 = fs.readFileSync(custom404Path, 'utf-8')
     }
 
     // Check if a custom 500 page exists at the conventional path. If it does, load it for use later.
-    const custom500Path = path.join(pathToServe, '500', 'index.html')
-    const hasCustom500 = fs.existsSync(custom500Path)
-    let custom500 = null
-    if (hasCustom500) {
-      custom500 = fs.readFileSync(custom500Path, 'utf-8')
+    const custom500Path = path.join(this.pathToServe, '500', 'index.html')
+    this.hasCustom500 = fs.existsSync(custom500Path)
+    this.custom500 = null
+    if (this.hasCustom500) {
+      this.custom500 = fs.readFileSync(custom500Path, 'utf-8')
     }
   }
 
@@ -396,17 +396,17 @@ class Site {
   //
   // Find out more at https://4042302.org/
   add4042302Support () {
-    const _4042302Path = path.join(pathToServe, '4042302')
+    const _4042302Path = path.join(this.pathToServe, '4042302')
 
     // TODO: We should really be checking that this is a file, not that it
     // ===== exists, on the off-chance that someone might have a directory
     //       with that name in their web root (that someone was me when I
     //       erroneously ran Site.js on the directory that I had the
     //       actually 4042302 project folder in).
-    const has4042302 = fs.existsSync(_4042302Path)
-    let _4042302 = null
-    if (has4042302) {
-      _4042302 = fs.readFileSync(_4042302Path, 'utf-8').replace(/\s/g, '')
+    this.has4042302 = fs.existsSync(_4042302Path)
+    this._4042302 = null
+    if (this.has4042302) {
+      this._4042302 = fs.readFileSync(_4042302Path, 'utf-8').replace(/\s/g, '')
     }
   }
 
@@ -468,7 +468,7 @@ class Site {
   // my-lovely-site-archive-1, etc.
   appAddArchiveCascade () {
     const archiveCascade = []
-    const absolutePathToServe = path.resolve(pathToServe)
+    const absolutePathToServe = path.resolve(this.pathToServe)
     const pathName = absolutePathToServe.match(/.*\/(.*?)$/)[1]
     if (pathName !== '') {
       let archiveLevel = 0

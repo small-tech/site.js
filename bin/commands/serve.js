@@ -18,7 +18,7 @@ const clr = require('../../lib/clr')
 
 function serve (args) {
 
-  if (args.positionalArguments.length > 2) {
+  if (args.positional.length > 2) {
     syntaxError('Serve command has maximum of two arguments (what to serve and where to serve it).')
   }
 
