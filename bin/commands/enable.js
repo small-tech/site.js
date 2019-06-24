@@ -118,7 +118,7 @@ function enable (args) {
           // Start.
           childProcess.execSync('sudo systemctl start site.js', {env: process.env, stdio: 'pipe'})
           Site.logAppNameAndVersion()
-          console.log(`\n 😈 Launched as daemon on ${clr(`https://${os.hostname()}`, 'green')} serving ${clr(pathToServe, 'cyan')}\n`)
+          console.log(` 😈 Launched as daemon on ${clr(`https://${os.hostname()}`, 'green')} serving ${clr(pathToServe, 'cyan')}\n`)
 
           // Enable.
           childProcess.execSync('sudo systemctl enable site.js', {env: process.env, stdio: 'pipe'})
