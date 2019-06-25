@@ -70,7 +70,7 @@ $ site
 You can use Site.js as a development-time reverse proxy for HTTP and WebSocket connections. For example, if you use [Hugo](https://gohugo.io/) and you’re running `hugo server` on the default HTTP port 1313. You can run a HTTPS reverse proxy at https://localhost [with LiveReload support](https://source.ind.ie/hypha/tools/web-server/blob/master/bin/web-server.js#L237) using:
 
 ```shell
-$ site proxy localhost:1313
+$ site :1313
 ```
 
 This will create and serve the following proxies:
@@ -83,38 +83,46 @@ This will create and serve the following proxies:
 Part of local development involves deploying your changes to a live server at some point. You can use Site.js to handle this for you in real-time:
 
 ```shell
-$ site sync my-demo my-demo.site
+$ site my-demo --sync-to=my-demo.site
 ```
 
-The above command will start a local development server at _https://localhost_. Additionally, it will watch the folder _my-demo_ for changes and sync any changes to its contents via rsync over ssh to _my-demo.site_. Without any customisations, the sync command assumes that your account on your remote server has the same name as your account on your local machine and that the folder you are watching (_my-demo_, in the example above) is located at _/home/your-account/my-demo_. Also, by default, the contents of the folder will be synced, not the folder itself. You can change these defaults using optional arguments.
+The above command will start a local development server at _https://localhost_. Additionally, it will watch the folder _my-demo_ for changes and sync any changes to its contents via rsync over ssh to the host _my-demo.site_.
+
+If don’t want Site.js to start a server and you want to perform just a one-time sync, use the `--exit-on-sync` flag.
 
 ```shell
-$ site sync my-folder --host=my-demo.site --account=a-different-account --folder=not-my-folder
+$ site my-demo --sync-to=my-demo.site --exit-on-sync
 ```
 
-e.g., The above command will watch the the contents of the _my-folder_ directory and sync it to _a-different-account@my-demo.site:/home/a-different-account/not-my-folder_.
+Without any customisations, the sync feature assumes that your account on your remote server has the same name as your account on your local machine and that the folder you are watching (_my-demo_, in the example above) is located at _/home/your-account/my-demo_ on the remote server. Also, by default, the contents of the folder will be synced, not the folder itself. You can change these defaults by specifying a full-qualified remote connection string as the `--sync-to` value.
 
-You can also customise the destination folder completely but supplying a custom remote connection string using the `--to` option:
+The remote connection string has the format:
+
+```
+remoteAccount@host:/absolute/path/to/remoteFolder
+```
+
+For example:
 
 ```shell
-$ site sync my-folder --to=some-account@my-demo.site:/var/www
+$ site my-folder --sync-to=someOtherAccount@my-demo.site:/var/www
 ```
 
-Like the other commands, if you do not specify a folder, the current folder will be used by default.
+If you want to sync a different folder to the one you’re serving or if you’re running a proxy server (or if you just want to be as explicit as possible about your intent) you can use the `--sync-from` option to specify the folder to sync:
+
+```shell
+$ site :1313 --sync-from=public --sync-to=my-demo.site
+```
+
+(The above command will start a proxy server that forwards requests to and responses from http://localhost to https://localhost and sync the folder called `public` to the host `my-demo.site`.)
 
 If you want to sync not the folder’s contents but the folder itself, use the `--sync-folder-and-contents` flag. e.g.,
 
 ```shell
-$ site sync my-local-folder my.site --account=me --folder=my-remote-folder --sync-folder-and-contents
+$ site my-local-folder --sync-to=me@my.site:my-remote-folder --sync-folder-and-contents
 ```
 
-The above command will result in the following directory structure on the remote server: _/home/me/my-remote-folder/my-local-folder_
-
-If you want to carry out a one-time sync and not continue to run the web server afterwards, use the `--exit-on-sync` flag. e.g.,
-
-```shell
-$ site sync my-folder my-demo.site --exit-on-sync
-```
+The above command will result in the following directory structure on the remote server: _/home/me/my-remote-folder/my-local-folder_. It also demonstrates that if you specify a relative folder, Site.js assumes you mean the folder exists in the home directory of the account on the remote server.
 
 ### Global (ephemeral)
 
