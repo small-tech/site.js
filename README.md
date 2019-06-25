@@ -337,6 +337,8 @@ When you `serve` a site at `@hostname` or use the `enable` command, globally-tru
 
 #### Start-up daemon:
 
+| Goal                                      | Command                                                       |
+| ----------------------------------------- | ------------------------------------------------------------- |
 | Serve current folder as daemon            | site enable                                                   |
 | Ditto & also ensure it can rsync via ssh  | site enable --ensure-can-sync                                 |
 | Get status of daemon                      | site status                                                   |
