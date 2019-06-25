@@ -514,7 +514,7 @@ class Site {
     archiveCascade.forEach(archivePath => {
       archiveNumber++
       console.log(` 🌱 [Site.js] Evergreen web: serving archive #${archiveNumber}`)
-      app.use(express.static(archivePath))
+      this.app.use(express.static(archivePath))
     })
   }
 
