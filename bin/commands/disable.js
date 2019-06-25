@@ -8,13 +8,13 @@
 //////////////////////////////////////////////////////////////////////
 
 const _disable = require('../lib/disable')
+const Site = require('../../index')
 
 function disable () {
 
   try {
     // Disable and stop the web server.
     _disable()
-    console.log('\n 🎈 Server stopped and removed from startup.\n')
   } catch (error) {
     process.exit(1)
   }

@@ -17,16 +17,19 @@ const runtime = require('../lib/runtime')
 const ensure = require('../lib/ensure')
 const clr = require('../../lib/clr')
 
-const site = require('../../index')
+const Site = require('../../index')
 
-function enable (options) {
+function enable (args) {
   //
   // Sanity checks.
   //
   ensure.systemctl()
   ensure.serverDaemonNotActive()
 
-  ensure.weCanBindToPort(options.port, () => {
+  // Note: daemons are currently only supported on port 443. If there is a need
+  // ===== to support other ports, please open an issue and explain the use case
+  //       (it is easy enough to implement.)
+  ensure.weCanBindToPort(443, () => {
     // While we’ve already checked that the Site.js daemon is not
     // active, above, it is still possible that there is another service
     // running on port 443. We could ignore this and enable the systemd
@@ -36,10 +39,10 @@ function enable (options) {
     // server has started running. So, instead, we detect if the port
     // is already in use and, if it is, refuse to install and activate the
     // service. This is should provide the least amount of surprise in usage.
-    tcpPortUsed.check(options.port)
+    tcpPortUsed.check(443)
     .then(inUse => {
       if (inUse) {
-        console.log(`\n 🤯 Error: Cannot start server. Port ${clr(options.port.toString(), 'cyan')} is already in use.\n`)
+        console.log(`\n 🤯 Error: Cannot start daemon. Port 443 is already in use.\n`)
         process.exit(1)
       } else {
 
@@ -47,10 +50,16 @@ function enable (options) {
         // avoid any timing-related issues around a restart and a port-in-use error).
         ensure.root()
 
+        if (args.positional.length > 1) {
+          // Syntax error.
+          console.log(`\n ${clr('Syntax error: ', 'red')} Too many arguments supplied to enable command (it expects at most one, the path to serve).`)
+          require('./help')()
+        }
+
         //
         // Create the systemd service unit.
         //
-        const pathToServe = options.pathToServe
+        const pathToServe = args.positional.length === 1 ? args.positional[0] : '.'
         const binaryExecutable = '/usr/local/bin/site'
         const sourceDirectory = path.resolve(__dirname, '..', '..')
         const nodeExecutable = `node ${path.join(sourceDirectory, 'bin/site.js')}`
@@ -93,7 +102,7 @@ function enable (options) {
         RestartSec=1
         Restart=always
 
-        ExecStart=${executable} global ${absolutePathToServe}
+        ExecStart=${executable} ${absolutePathToServe} @hostname
 
         [Install]
         WantedBy=multi-user.target
@@ -108,7 +117,10 @@ function enable (options) {
         try {
           // Start.
           childProcess.execSync('sudo systemctl start site.js', {env: process.env, stdio: 'pipe'})
-          console.log(`${site.version()}\n 😈 Launched as daemon on ${clr(`https://${os.hostname()}`, 'green')} serving ${clr(pathToServe, 'cyan')}\n`)
+          if (!args.named['dont-log-app-name-and-version']) {
+            Site.logAppNameAndVersion()
+          }
+          console.log(` 😈 Launched as daemon on ${clr(`https://${os.hostname()}`, 'green')} serving ${clr(pathToServe, 'cyan')}\n`)
 
           // Enable.
           childProcess.execSync('sudo systemctl enable site.js', {env: process.env, stdio: 'pipe'})
@@ -118,10 +130,10 @@ function enable (options) {
           process.exit(1)
         }
 
-        // When enable command is run with the --sync option, ensure that the current environment
+        // When enable command is run with the --ensure-can-sync option, ensure that the current environment
         // is set up to accept remote rsync over ssh and also provide some useful information
         // for setting up the client-side development server.
-        if (options.enableSync) {
+        if (args.named['ensure-can-sync']) {
           ensure.rsyncExists()
           disableInsecureRsyncDaemon()
           displayConnectionInformation(pathToServe)
@@ -139,31 +151,19 @@ function displayConnectionInformation(pathToServe) {
   try {
     const hostname = childProcess.execSync('hostname', {env: process.env, stdio: 'pipe'}).toString('utf-8').trim()
 
-    const homeDirectory = process.env.HOME
-
     // Note: since this process will be run internally with sudo, we cannot use process.env.USER
     // ===== here as that would return root. However, process.env.HOME returns the regular account’s home folder
     //       and we can use that to find the account name.
+    const homeDirectory = process.env.HOME
     const homeDirectoryFragments = homeDirectory.split(path.sep)
     const account = homeDirectoryFragments[homeDirectoryFragments.length - 1]
 
     const absolutePathToServe = path.resolve(pathToServe)
-    const absolutePathToServeIsChildOfHome = absolutePathToServe.startsWith(homeDirectory)
 
-    let options = null
-    if (absolutePathToServeIsChildOfHome) {
-      // We can use the --folder argument
-      let folder = absolutePathToServe.replace(`${homeDirectory}`, '')
-      if (folder.startsWith('/')) { folder = folder.substr(1) }
-      if (!folder.endsWith('/')) { folder = `${folder}/` }
+    const syncToValue = `${account}@${hostname}:${absolutePathToServe}`
 
-      options = `--host=${hostname} --account=${account} --folder=${folder}`
-    } else {
-      // We need to specify an absolute path to the folder and provide a remote connection string.
-      options = `--to=${account}@${hostname}:${absolutePathToServe}`
-    }
     console.log(` 💞 [Sync] To sync from your local machine, from within your site’s folder, use:`)
-    console.log(` 💞 [Sync] site sync ${options}\n`)
+    console.log(` 💞 [Sync] site --sync-to=${syncToValue} --exit-on-sync\n`)
   } catch (error) {
     console.error(error, `\n 👿 Error: could not get connection information.\n`)
     process.exit(1)

@@ -2,11 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-  - Nothing yet.
+### Added
+
+  - You can now use Site.js as a reverse proxy (proxy servers now supported @hostname).
+  - Statistics now supported on proxy servers.
+  - Can run at any port on @hostname, not just @localhost.
+  - API: serve method now handles proxying.
+
+### Fixed
+
+  - When run with `--exit-on-sync`, Site.js no longer starts up a server.
+
+### Changed
+
+  - New CLI grammar (breaking change).
+  - API: `site` is now `Site`; a class, not an object (breaking change).
+  - API: The server configuration object is now passed to the `Site` class constructor, not to the `serve()` method (breaking change).
+  - API: server callback is now a positional parameter on the `serve()` method of `Site` not a property in the configuration parameter object (breaking change).
 
 ## [11.0.2] - 2019-06-21
 

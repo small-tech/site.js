@@ -19,7 +19,7 @@ const ensure = require('../lib/ensure')
 const status = require('../lib/status')
 const disableServer = require('../lib/disable')
 
-const site = require('../../index')
+const Site = require('../../index')
 const clr = require('../../lib/clr')
 
 class WarningBox {
@@ -62,7 +62,7 @@ async function uninstall (options) {
   ensure.systemctl()
   ensure.root('uninstall')
 
-  console.log(site.version())
+  Site.logAppNameAndVersion()
 
   const { isActive: serverIsActive, isEnabled: serverIsEnabled } = status()
 

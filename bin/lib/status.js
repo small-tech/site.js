@@ -10,8 +10,6 @@
 
 const childProcess = require('child_process')
 
-const ensure = require('../lib/ensure')
-
 function status () {
 
   // Note: do not call ensure.systemctl() here as it will

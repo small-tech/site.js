@@ -4,10 +4,10 @@
 // Display the version and exit.
 //
 
-const site = require('../../index.js')
+const Site = require('../../index.js')
 
 function version () {
-  console.log(site.version())
+  Site.logAppNameAndVersion()
   process.exit()
 }
 

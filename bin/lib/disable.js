@@ -10,11 +10,12 @@
 const fs = require('fs')
 const childProcess = require('child_process')
 
+const Site = require('../../index')
 const status = require('../lib/status')
 const ensure = require('../lib/ensure')
 
 function throwError(errorMessage) {
-  console.log(`\n 👿 Error: ${errorMessage}\n`)
+  console.log(` 👿 Error: ${errorMessage}\n`)
   throw new Error(errorMessage)
 }
 
@@ -26,10 +27,13 @@ function disable () {
   const { isActive, isEnabled } = status()
 
   if (!isEnabled) {
+    Site.logAppNameAndVersion()
     throwError('Site.js server is not enabled. Nothing to disable.')
   }
 
   ensure.root('disable')
+
+  Site.logAppNameAndVersion()
 
   try {
     // Disable and stop the web server.
@@ -44,6 +48,8 @@ function disable () {
   } catch (error) {
     throwError(`Could not disable Site.js server (${error}).`)
   }
+
+  console.log(' 🎈 Server stopped and removed from startup.\n')
 }
 
 module.exports = disable
