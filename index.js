@@ -36,7 +36,7 @@ class Site {
   // (Only once per Site lifetime.)
   // (Synchronous.)
   static logAppNameAndVersion () {
-    if (!Site.appNameAndVersionAlreadyLogged) {
+    if (!Site.appNameAndVersionAlreadyLogged && !process.argv.includes('--dont-log-app-name-and-version')) {
       console.log(`\n 💖 Site.js v${Site.versionNumber()} ${clr(`(running on Node ${process.version})`, 'italic')}\n`)
       Site.appNameAndVersionAlreadyLogged = true
     }
