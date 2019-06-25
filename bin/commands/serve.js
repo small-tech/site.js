@@ -260,36 +260,39 @@ function remoteConnectionInfo (args) {
 
   const splitOnAt = syncTo.split('@')
 
+  let hostAndMaybePort = null
+
   if (splitOnAt.length === 1) {
     // No account provided. Default to the same account as on local machine.
     account = process.env.USER
-    host = splitOnAt[0]
+    hostAndMaybePort = splitOnAt[0]
     remotePath = defaultRemotePath(account)
   }
 
   if (splitOnAt.length === 2) {
     account = splitOnAt[0]
+    hostAndMaybePort = splitOnAt[1]
+  }
 
-    // Check if remote path is provided.
-    const splitOnColon = splitOnAt[1].split(':')
-    host = splitOnColon[0]
+  // Check if remote path is provided.
+  const splitOnColon = hostAndMaybePort.split(':')
+  host = splitOnColon[0]
 
-    if (splitOnColon.length === 1) {
-      // No remote path provided. Default to the same directory in the person’s home directory
-      // as the current directory.
-      remotePath = defaultRemotePath(account)
-    }
+  if (splitOnColon.length === 1) {
+    // No remote path provided. Default to the same directory in the person’s home directory
+    // as the current directory.
+    remotePath = defaultRemotePath(account)
+  }
 
-    if (splitOnColon.length === 2) {
-      // Remote path provided. Check if it is a relative or absolute path and
-      // set the remotePath accordingly.
-      if (splitOnColon[1].startsWith('/')) {
-        // Remote path is an absolute path, use it as-is.
-        remotePath = splitOnColon[1]
-      } else {
-        // Remote path is relative; rewrite it.
-        remotePath = remotePathForAccountAndLocalFolderName(account, splitOnColon[1])
-      }
+  if (splitOnColon.length === 2) {
+    // Remote path provided. Check if it is a relative or absolute path and
+    // set the remotePath accordingly.
+    if (splitOnColon[1].startsWith('/')) {
+      // Remote path is an absolute path, use it as-is.
+      remotePath = splitOnColon[1]
+    } else {
+      // Remote path is relative; rewrite it.
+      remotePath = remotePathForAccountAndLocalFolderName(account, splitOnColon[1])
     }
   }
 
