@@ -345,7 +345,7 @@ When you `serve` a site at `@hostname` or use the `enable` command, globally-tru
 | Display server logs                       | site logs                                                     |
 | Stop current daemon                       | site disable                                                  |
 
-* Alternative, equivalent forms listed (some commands have shorthands).
+\* _Alternative, equivalent forms listed (some commands have shorthands)._
 
 ## Native support for an Evergreen Web
 
