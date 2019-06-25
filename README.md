@@ -57,7 +57,9 @@ site uninstall
 
 ## Use
 
-### Local
+### Development (servers @localhost)
+
+#### Regular server
 
 Start serving the current directory at https://localhost as a regular process using locally-trusted certificates:
 
@@ -65,7 +67,7 @@ Start serving the current directory at https://localhost as a regular process us
 $ site
 ```
 
-### Proxy server (local)
+#### Proxy server
 
 You can use Site.js as a development-time reverse proxy for HTTP and WebSocket connections. For example, if you use [Hugo](https://gohugo.io/) and you’re running `hugo server` on the default HTTP port 1313. You can run a HTTPS reverse proxy at https://localhost [with LiveReload support](https://source.ind.ie/hypha/tools/web-server/blob/master/bin/web-server.js#L237) using:
 
@@ -78,9 +80,33 @@ This will create and serve the following proxies:
   * http://localhost:1313 → https://localhost
   * ws://localhost:1313 → wss://localhost
 
-### Live sync to remote server
+### Testing (servers @hostname)
 
-Part of local development involves deploying your changes to a live server at some point. You can use Site.js to handle this for you in real-time:
+#### Regular server
+
+Start serving the _my-site_ directory at your _hostname_ as a regular process using globally-trusted Let’s Encrypt certificates:
+
+```shell
+$ site my-site @hostname
+```
+
+#### Proxy server
+
+Start serving `http://localhost:1313` and `ws://localhost:1313` at your _hostname_:
+
+```shell
+$ site :1313 @hostname
+```
+
+#### Making your server public
+
+Use a service like [ngrok](https://ngrok.com/) (Pro+) to point a custom domain name to your temporary staging server. Make sure you set your `hostname` file (e.g., in `/etc/hostname` or via `hostnamectl set-hostname <hostname>` or the equivalent for your platform) to match your domain name. The first time you hit your server via your hostname it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
+
+When you start your server, it will run as a regular process. It will not be restarted if it crashes or if you exit the foreground process or restart the computer.
+
+### Deployment (live and one-time sync)
+
+Site.js can also help you when you want to deploy your site to your live server with its sync feature. You can even have Site.js watch for changes and sync them to your server in real-time (e.g., if you want to live blog something or want to keep a page updated with local data you’re collecting from a sensor):
 
 ```shell
 $ site my-demo --sync-to=my-demo.site
@@ -124,23 +150,11 @@ $ site my-local-folder --sync-to=me@my.site:my-remote-folder --sync-folder-and-c
 
 The above command will result in the following directory structure on the remote server: _/home/me/my-remote-folder/my-local-folder_. It also demonstrates that if you specify a relative folder, Site.js assumes you mean the folder exists in the home directory of the account on the remote server.
 
-### Global (ephemeral)
-
-Start serving the _my-site_ directory at your _hostname_ as a regular process using globally-trusted Let’s Encrypt certificates:
-
-```shell
-$ site global my-site
-```
-
-Then use, for example, [ngrok](https://ngrok.com/) (Pro+) to point a custom domain name to your temporary staging server. Make sure you set your `hostname` file (e.g., in `/etc/hostname` or via `hostnamectl set-hostname <hostname>` or the equivalent for your platform) to match your domain name. The first time you hit your server via your hostname it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
-
-When you start your server using the `global` command, it will run as a regular process. It will not be restarted if it crashes or if you exit the foreground process or restart the computer.
-
-### Global (persistent)
+### Production
 
 __Available on Linux distributions with systemd (most Linux distributions, but [not these ones](https://sysdfree.wordpress.com/2019/03/09/135/) or on macOS).__
 
-Start serving the _my-site_ directory at your _hostname_ as a daemon that is automatically run at system startup and restarted if it crashes:
+On your live, public server, you can start serving the _my-site_ directory at your _hostname_ as a daemon that is automatically run at system startup and restarted if it crashes with:
 
 ```shell
 $ site enable my-site
@@ -148,15 +162,15 @@ $ site enable my-site
 
 The `enable` command sets up your server to start automatically when your server starts and restart automatically if it crashes. Requires superuser privileges on first run to set up the launch item.
 
-For example, if you run the command on a connected server that has the ar.al domain pointing to it and `ar.al` set in _/etc/hostname_, you will be able to access the site at https://ar.al. The first time you hit it, it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
+For example, if you run the command on a connected server that has the ar.al domain pointing to it and `ar.al` set in _/etc/hostname_, you will be able to access the site at https://ar.al. (Yes, of course, [ar.al](https://ar.al) runs on Site.js.) The first time you hit your live site, it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
 
-When the server is enabled, you can also use:
+When the server is enabled, you can also use the following commands:
 
   - `disable`: Stop server and remove from startup.
   - `logs`: Display and tail server logs.
   - `status`: Display detailed server information (press ‘q’ to exit).
 
-Site.js uses the [systemd](https://freedesktop.org/wiki/Software/systemd/) to start and manage the daemon. Beyond the commands listed above that Site.js supports natively (and proxies to systemd), you can make use of all systemd functionality via the `systemctl` and `journalctl` commands.
+Site.js uses the [systemd](https://freedesktop.org/wiki/Software/systemd/) to start and manage the daemon. Beyond the commands listed above that Site.js supports natively (and proxies to systemd), you can make use of all systemd functionality via the [systemctl](https://www.freedesktop.org/software/systemd/man/systemctl.html) and [journalctl](https://www.freedesktop.org/software/systemd/man/journalctl.html) commands.
 
 ## Build and test from source
 
@@ -203,8 +217,8 @@ After you install the source and run tests:
 npm run build
 
 # Serve the test site (visit https://localhost to view).
-# e.g., To run the version 11.0.0 Linux binary:
-dist/linux/11.0.0/web-server test/site
+# e.g., To run the version 12.0.0 Linux binary:
+dist/linux/12.0.0/web-server test/site
 ```
 
 ### Build and install native binary locally
@@ -219,7 +233,7 @@ npm run install-locally
 
 ```shell
 # To build binaries for both linux and macOS and also to
-# copy them over to the Indie Web Site for deployment.
+# copy them over to the Site.js web Site for deployment.
 # (You will most likely not need to do this.)
 npm run deploy
 ```
@@ -227,86 +241,109 @@ npm run deploy
 ## Syntax
 
 ```shell
-site [command] [folder|host] [host] [--options]
+site [command] [folder|:port] [@host[:port]] [--options]
 ```
 
-  * `command`: version | help | local | global | proxy | sync | enable | disable | logs | status
-  * `folder|host`: Path of folder to serve (defaults to current folder) or host to proxy or sync.
-  * `host`: Host to sync.
-  * `options`: Settings that alter server characteristics.
+  - `command`: version | help | serve | enable | disable | logs | status
+  - `folder|:port`: Path of folder to serve (defaults to current folder) or port on localhost to proxy.
+  - `@host[:port]`: Host (and, optionally port) to sync. Valid hosts are @localhost and @hostname.
+  - `--options`: Settings that alter command behaviour.
+
+__Key:__ `[]` = optional &nbsp;&nbsp;`|` = or
 
 ### Commands:
 
-  * `version`: Display version and exit.
-  * `help`: Display help screen and exit.
-  * `local`: Start server as regular process with locally-trusted certificates.
-  * `global`: Start server as regular process with globally-trusted certificates.
-  * `proxy`: Start server to proxy provided HTTP URL via HTTPS. Also proxies WebSockets.
-  * `sync`: Start server as regular process with locally-trusted certificates and rsync folder to host.
+  - `serve`: Serve specified folder (or proxy specified `:port`) on specified `@host` (at `:port`, if given). The order of arguments is:
+
+    1. what to serve,
+    2. where to serve it at. e.g.,
+
+    ```site serve my-folder @localhost```
+
+    If a port (e.g., `:1313`) is specified instead of my-folder, start an HTTP/WebSocket proxy.
+
+  - `version`: Display version and exit.
+  - `help`: Display help screen and exit.
+  - `uninstall`: Uninstall Site.js.
 
 On Linux distributions with systemd, you can also use:
 
-  * `enable`: Start server as daemon with globally-trusted certificates and add to startup.
-  * `disable`: Stop server daemon and remove from startup.
-  * `logs`: Display and tail server logs.
-  * `status`: Display detailed server information.
+  - `enable`: Start server as daemon with globally-trusted certificates and add to startup.
 
-If `command` is omitted, behaviour defaults to `local`.
+  - `disable`: Stop server daemon and remove from startup.
+
+  - `logs`: Display and tail server logs.
+
+  - `status`: Display detailed server information.
+
+If `command` is omitted, behaviour defaults to `serve`.
 
 ### Options:
 
-  * `--port=N`: Port to start server on (defaults to 443).
+#### For the `serve` command:
 
-#### For the enable command:
+  - `--sync-to`: The host to sync to.
 
-  * `--sync`: Ensure the server can also rsync via ssh (so you can sync your site to it from your local machine).
+  - `--sync-from`: The folder to sync from (only relevant if `--sync-to` is specified).
 
-### For the sync command:
+  - `--exit-on-sync`: Exit once the first sync has occurred (only relevant if `--sync-to` is specified). Useful in deployment scripts.
 
-  * `--host`: The remote host to sync to (e.g., my-demo.site).
-  * `--account`: The ssh account to use on remote server (defaults to same as on current session).
-  * `--folder`:	The subfolder of home folder to sync to on remote machine (defaults to name of served folder).
-  * `--proxy`: Proxy the specified host and port instead of starting a regular local server.
-  * `--exit-on-sync`: Exit once the first sync has occurred. Useful in deployment scripts.
-  * `--sync-folder-and-contents`: Sync folder and contents (default is to sync the folder’s contents only).
+  - `--sync-folder-and-contents`: Sync folder and contents (default is to sync the folder’s contents only).
+
+#### For the `enable` command:
+
+  - `--ensure-can-sync`: Ensure server can rsync via ssh.
 
 All command-line arguments are optional. By default, Site.js will serve your current working folder over port 443 with locally-trusted certificates.
 
-If you want to serve a directory that has the same name as a command, you can specify the command in _options_ format. e.g., `site --enable logs` will start Site.js as a startup daemon to serve the _logs_ folder.
-
-When you use the `global` or `enable` commands, globally-trusted Let’s Encrypt TLS certificates are automatically provisioned for you using ACME TLS the first time you hit your hostname. The hostname for the certificates is automatically set from the hostname of your system (and the _www._ subdomain is also automatically provisioned).
+When you `serve` a site at `@hostname` or use the `enable` command, globally-trusted Let’s Encrypt TLS certificates are automatically provisioned for you using ACME TLS the first time you hit your hostname. The hostname for the certificates is automatically set from the hostname of your system (and the _www._ subdomain is also automatically provisioned).
 
 ## Usage examples
 
-### Develop using locally-trusted certificates:
+### Develop using locally-trusted TLS certificates
 
 | Goal                                      | Command                                                       |
 | ----------------------------------------- | ------------------------------------------------------------- |
-| Serve current folder (shorthand)          | site                                                          |
-| Serve folder my-site (shorthand)          | site my-site                                                  |
-| Serve current folder                      | site local                                                    |
-| Serve folder my-site                      | site local my-site                                            |
-| Serve folder my-site at port 666          | site local my-site --port=666                                 |
-| Proxy localhost:1313 to https://localhost | site proxy localhost:1313                                     |
-| Serve current folder, sync it to my.site  | site sync my.site                                             |
-| Serve my-site folder, sync it to my.site  | site sync my-site my.site                                     |
-| Ditto, but using the --host option        | site sync site --host=my.site                                 |
-| Ditto, but use account me on my.site      | site sync site --host=my.site --account=me                    |
-| Ditto, but sync to remote folder www      | site sync site --host=my.site --account=me --folder=www       |
-| Ditto, but using the --to option          | site sync site --to=me@my.site:/home/me/www                   |
-| Sync current folder, proxy localhost:1313 | site sync my.site --proxy=localhost:1313                      |
+| Serve current folder*                     | site                                                          |
+|                                           | site serve                                                    |
+|                                           | site serve .                                                  |
+|                                           | site serve . @localhost                                       |
+|                                           | site serve . @localhost:443                                   |
+| Serve folder demo (shorthand)             | site demo                                                     |
+| Serve folder demo on port 666             | site serve demo @localhost:666                                |
+| Proxy localhost:1313 to https://localhost*| site :1313                                                    |
+|                                           | site serve :1313 @localhost:443                               |
+| Serve current folder, sync it to my.site* | site --sync-to=my.site                                        |
+|                                           | site serve . @localhost:443 --sync-to=my.site                 |
+| Serve demo folder, sync it to my.site     | site serve demo --sync-to=my.site                             |
+| Ditto, but use account me on my.site      | site serve demo --sync-to=me@my.site                          |
+| Ditto, but sync to remote folder ~/www    | site serve demo --sync-to=me@my.site:www                      |
+| Ditto, but specify absolute path          | site serve demo --sync-to=me@my.site:/home/me/www             |
+| Sync current folder, proxy localhost:1313 | site serve :1313 --sync-from=. --sync-to=my.site              |
+| Sync current folder to my.site and exit   | site --sync-to=my.site --exit-on-sync                         |
+| Sync demo folder to my.site and exit*     | site demo --sync-to=my.site --exit-on-sync                    |
+|                                           | site --sync-from=demo --sync-to=my.site --exit-on-sync        |
 
-### Stage and deploy using globally-trusted Let’s Encrypt certificates:
+### Stage and deploy using globally-trusted Let’s Encrypt certificates
+
+#### Regular process:
 
 | Goal                                      | Command                                                       |
 | ----------------------------------------- | ------------------------------------------------------------- |
-| Serve current folder                      | site global                                                   |
-| Serve folder my-site                      | site global my-site                                           |
+| Serve current folder                      | site @hostname                                                |
+| Serve folder demo*                        | site demo @hostname                                           |
+|                                           | site serve demo @hostname                                     |
+| Proxy localhost:1313 to https://hostname  | site serve :1313 @hostname                                    |
+
+#### Start-up daemon:
+
 | Serve current folder as daemon            | site enable                                                   |
-| Ditto & also ensure it can rsync via ssh  | site enable --sync                                            |
+| Ditto & also ensure it can rsync via ssh  | site enable --ensure-can-sync                                 |
 | Get status of daemon                      | site status                                                   |
 | Display server logs                       | site logs                                                     |
 | Stop current daemon                       | site disable                                                  |
+
+* Alternative, equivalent forms listed (some commands have shorthands).
 
 ## Native support for an Evergreen Web
 
@@ -354,7 +391,7 @@ You can specify a custom error page for 404 (not found) and 500 (internal server
 
 If you do not create custom error pages, the built-in default error pages will be displayed for 404 and 500 errors.
 
-When creating your own servers (see [API](#API)), you can generate the default error pages programmatically using the static methods `WebServer.default404ErrorPage()` and `WebServer.default500ErrorPage()`, passing in the missing path and the error message as the argument, respectively to get the HTML string of the error page returned.
+When creating your own servers (see [API](#API)), you can generate the default error pages programmatically using the static methods `Site.default404ErrorPage()` and `Site.default500ErrorPage()`, passing in the missing path and the error message as the argument, respectively to get the HTML string of the error page returned.
 
 ## Dynamic routes
 
@@ -413,8 +450,12 @@ You shouldn’t use this functionality to create your latest amazing web app. Fo
 
 ## API
 
-Site.js’s `createServer` method behaves like the built-in _https_ module’s `createServer` function. Anywhere you use `require('https').createServer`, you can simply replace it with `require('@small-tech/site.js').createServer`.
+Site.js’s `createServer` method behaves like the built-in _https_ module’s `createServer` function. Anywhere you use `require('https').createServer`, you can simply replace it with:
 
+```js
+const Site = require('@small-tech/site.js')
+new Site().createServer
+```
 
 ### createServer([options], [requestListener])
 
@@ -427,29 +468,43 @@ Site.js’s `createServer` method behaves like the built-in _https_ module’s `
 #### Example
 
 ```js
-const site = require('@small-tech/site.js')
+const Site = require('@small-tech/site.js')
 const express = require('express')
 
 const app = express()
 app.use(express.static('.'))
 
 const options = {} // to use globally-trusted certificates instead, set this to {global: true}
-const server = site.createServer(options, app).listen(443, () => {
+const server = new Site().createServer(options, app).listen(443, () => {
   console.log(` 🎉 Serving on https://localhost\n`)
 })
 ```
 
-### serve([options])
+### constructor (options)
 
 Options is an optional parameter object that may contain the following properties, all optional:
 
   - __path__ _(string)_: the directory to serve using [Express](http://expressjs.com/).static.
 
-  - __callback__ _(function)_: a function to be called when the server is ready. If you do not specify a callback, you can specify the port as the second argument.
-
   - __port__ _(number)_: the port to serve on. Defaults to 443. (On Linux, privileges to bind to the port are automatically obtained for you.)
 
   - __global__ _(boolean)_: if true, globally-trusted Let’s Encrypt certificates will be provisioned (if necessary) and used via ACME TLS. If false (default), locally-trusted certificates will be provisioned (if necessary) and used using _nodecert_.
+
+  - __proxyPort__ _(number)_: if provided, a proxy server will be created for the port (and `path` will be ignored).
+
+    __Returns:__ Site instance.
+
+__Note:__ if you want to run the site on a port < 1024 on Linux, ensure your process has the necessary privileges to bind to such ports. E.g., use:
+
+```js
+require('lib/ensure').weCanBindToPort(port, () => {
+  // You can safely bind to a ‘privileged’ port on Linux now.
+})
+```
+
+### serve(callback)
+
+  - __callback__ _(function)_: a function to be called when the server is ready. This parameter is optional. Default callbacks are provided for both regular and proxy servers.
 
     __Returns:__ [https.Server](https://nodejs.org/api/https.html#https_class_https_server) instance, configured with either locally or globally-trusted certificates.
 
@@ -459,16 +514,24 @@ Options is an optional parameter object that may contain the following propertie
 Serve the current directory at https://localhost using locally-trusted TLS certificates:
 
 ```js
-const site = require('@small-tech/site.js')
-const server = site.serve()
+const Site = require('@small-tech/site.js')
+const server = new Site().serve()
 ```
 
 Serve the current directory at your hostname using globally-trusted Let’s Encrypt TLS certificates:
 
 ```js
-const site = require('@small-tech/site.js')
-const server = site.serve({global: true})
+const Site = require('@small-tech/site.js')
+const server = new Site().serve({global: true})
 ```
+
+Start a proxy server to proxy local port 1313 at your hostname:
+
+```js
+const Site = require('@small-tech/site.js')
+const server = new Site().serve({proxyPort: 1313, global: true})
+```
+
 
 ## Contributing
 
