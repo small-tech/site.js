@@ -9,8 +9,8 @@ const minimist = require('minimist')
 class CommandLineInterface {
 
   // Initialise the command-line interface.
-  initialise () {
-    const options = minimist(process.argv.slice(2), {boolean: true})
+  initialise (args) {
+    const options = minimist(args, {boolean: true})
     const positionalArguments = options._
     const arg0 = positionalArguments[0]
 
@@ -49,26 +49,14 @@ class CommandLineInterface {
     delete options._
     const commandNamedArguments = options
 
-    const commandPath = `../commands/${commandName}`
+    // Note that this is included from bin/site.js and the path is relative to that script.
+    const commandPath = `./commands/${commandName}`
 
-    require(commandPath)({
+    return {commandPath, args: {
       positional: commandPositionalArguments,
       named: commandNamedArguments
-    })
+    }}
   }
-
-  //   // If the command is enable, populate its options.
-  //   enableOptions (command) {
-  //     let enableOptions = { enableSync: null }
-
-  //     if (command.isEnable) {
-  //       if (command.namedArguments.sync === true) {
-  //         enableOptions.enableSync = true
-  //       }
-  //     }
-
-  //     return enableOptions
-  //   }
 }
 
 module.exports = new CommandLineInterface()
