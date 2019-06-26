@@ -180,35 +180,6 @@ class Site {
       changeOrigin: true,
       logProvider,
       logLevel: 'info',
-
-      //
-      // Special handling of LiveReload implementation bug in Hugo
-      // (https://github.com/gohugoio/hugo/issues/2205#issuecomment-484443057)
-      // to work around the port being hardcoded to the Hugo server
-      // port (instead of the port that the page is being served from).
-      //
-      // This enables you to use Site.js as a reverse proxy
-      // for Hugo during development time and test your site from https://localhost
-      //
-      // All other content is left as-is.
-      //
-      onProxyRes: (proxyResponse, request, response) => {
-        const _write = response.write
-
-        // As we’re going to change it.
-        delete proxyResponse.headers['content-length']
-
-        response.write = function (data) {
-          let output = data.toString('utf-8')
-          if (output.match(/livereload.js\?port=1313/) !== null) {
-            console.log(' 📝 [Site.js] Rewriting Hugo LiveReload URL to use WebSocket proxy.')
-            output = output.replace('livereload.js?port=1313', `livereload.js?port=${this.port}`)
-            _write.call(response, output)
-          } else {
-            _write.call(response, data)
-          }
-        }
-      }
     })
 
     this.app.use(httpsProxy)
