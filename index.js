@@ -202,7 +202,7 @@ class Site {
           let output = data.toString('utf-8')
           if (output.match(/livereload.js\?port=1313/) !== null) {
             console.log(' 📝 [Site.js] Rewriting Hugo LiveReload URL to use WebSocket proxy.')
-            output = output.replace('livereload.js?port=1313', `livereload.js?port=${port}`)
+            output = output.replace('livereload.js?port=1313', `livereload.js?port=${this.port}`)
             _write.call(response, output)
           } else {
             _write.call(response, data)
