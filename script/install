@@ -2,7 +2,7 @@
 
 ######################################################################
 #
-# Site.js v12.0.1 Installer
+# Site.js v12.0.0 Installer
 #
 # To use:
 #
@@ -15,7 +15,7 @@
 
 set -e
 echo
-echo " 📡 Downloading Site.js v12.0.1…"
+echo " 📡 Downloading Site.js v12.0.0…"
 
 function cleanUp {
   popd > /dev/null
@@ -29,10 +29,10 @@ pushd /tmp/sitejs.org > /dev/null
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
   # Linux
-  wget -q https://sitejs.org/releases/linux/12.0.1.tar.gz
+  wget -q https://sitejs.org/releases/linux/12.0.0.tar.gz
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   # macOS
-  wget -q https://sitejs.org/releases/macos/12.0.1.tar.gz
+  wget -q https://sitejs.org/releases/macos/12.0.0.tar.gz
 else
   # Unsupported
   echo "\n ❌ Error: this operating system is not supported.\n"
@@ -41,8 +41,8 @@ else
 fi
 
 echo " 📦 Installing…"
-gzip -d 12.0.1.tar.gz
-tar -xvf 12.0.1.tar > /dev/null
+gzip -d 12.0.0.tar.gz
+tar -xvf 12.0.0.tar > /dev/null
 sudo mv site /usr/local/bin/
 
 cleanUp
