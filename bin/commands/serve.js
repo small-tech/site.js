@@ -18,6 +18,7 @@ const ensure = require('../lib/ensure')
 const tcpPortUsed = require('tcp-port-used')
 const clr = require('../../lib/clr')
 
+const ARCHIVE_PREFIX = 'archive-prefix'
 const SYNC_TO = 'sync-to'
 const SYNC_FROM = 'sync-from'
 const EXIT_ON_SYNC = 'exit-on-sync'
@@ -104,6 +105,8 @@ function serve (args) {
     })
   }
 
+  let archivePrefix = args.named[ARCHIVE_PREFIX] || null
+
   if (syncOptions !== null && syncOptions.exit) {
     // No need to start a server if all we want to do is to sync.
     sync(syncOptions)
@@ -121,7 +124,8 @@ function serve (args) {
             path,
             port,
             global,
-            proxyPort
+            proxyPort,
+            archivePrefix
           }
 
           // Start serving the site.

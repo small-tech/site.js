@@ -62,10 +62,12 @@ class Site {
   // Creates a Site instance. Customise it by passing an options object with the
   // following properties (all optional):
   //
-  // •      path: (string)    the path to serve (defaults to the current working directory).
-  // •      port: (integer)   the port to bind to (between 0 - 49,151; the default is 443).
-  // •    global: (boolean)   if true, automatically provision an use Let’s Encrypt TLS certificates.
-  // • proxyPort: (number)    if provided, a proxy server will be created for the port (and path will be ignored)
+  // •          path: (string)    the path to serve (defaults to the current working directory).
+  // •          port: (integer)   the port to bind to (between 0 - 49,151; the default is 443).
+  // •        global: (boolean)   if true, automatically provision an use Let’s Encrypt TLS certificates.
+  // •     proxyPort: (number)    if provided, a proxy server will be created for the port (and path will be ignored)
+  // • archivePrefix: (string)    if provided, the prefix to use to find cascading archives (providing this also
+  //                              ensures they’re served when creating a proxy server).
   //
   // Note: if you want to run the site on a port < 1024 on Linux, ensure your process has the
   // ===== necessary privileges to bind to such ports. E.g., use require('lib/ensure').weCanBindToPort(port, callback)
@@ -82,6 +84,8 @@ class Site {
 
     // The options parameter object and all supported properties on the options parameter
     // object are optional. Check and populate the defaults.
+    // Note: no default for archivePath as its presence/absence is relevant for deciding
+    // ===== whether or not cascading archives are supported for proxy servers.
     if (options === undefined) options = {}
     this.pathToServe = typeof options.path === 'string' ? options.path : '.'
     this.port = typeof options.port === 'number' ? options.port : 443
@@ -105,9 +109,9 @@ class Site {
     this.startAppConfiguration()
 
     if (this.isProxyServer) {
-      this.configureProxyRoutes()
+      this.configureProxyRoutes(options)
     } else {
-      this.configureAppRoutes()
+      this.configureAppRoutes(options)
     }
 
     this.endAppConfiguration()
@@ -140,7 +144,7 @@ class Site {
 
   // Middleware and routes that are unique to regular sites
   // (not used on proxy servers).
-  configureAppRoutes () {
+  configureAppRoutes (options) {
     this.add4042302Support()
     this.addCustomErrorPagesSupport()
 
@@ -148,13 +152,13 @@ class Site {
     this.appAddTest500ErrorPage()
     this.appAddDynamicRoutes()
     this.appAddStaticRoutes()
-    this.appAddArchiveCascade()
+    this.appAddArchiveCascade(options.archivePrefix)
   }
 
 
   // Middleware unique to proxy servers.
   // TODO: Refactor: Break this method up. []
-  configureProxyRoutes () {
+  configureProxyRoutes (options) {
 
     const proxyHttpUrl = `http://localhost:${this.proxyPort}`
     const proxyWebSocketUrl = `ws://localhost:${this.proxyPort}`
@@ -180,10 +184,23 @@ class Site {
       changeOrigin: true,
       logProvider,
       logLevel: 'info',
+      onProxyRes: function (proxyRes, req, res) {
+        if (proxyRes.statusCode === 404) {
+          console.log('Calling next')
+          // console.log('Got 404 from proxy')
+          // res.end('Poo poo')
+          // console.log('proxyRes', proxyRes )
+        }
+      }
     })
 
     this.app.use(httpsProxy)
     this.app.use(webSocketProxy)
+
+    // If an archive prefix has been specifically provided, enable cascading archives.
+    if (options.archivePrefix !== null) {
+      this.appAddArchiveCascade(options.archivePrefix)
+    }
 
     this.httpsProxy = httpsProxy
     this.webSocketProxy = webSocketProxy
@@ -457,15 +474,17 @@ class Site {
   // convention. If the folder that is being served is called
   // my-lovely-site, then the archive folders we would look for are
   // my-lovely-site-archive-1, etc.
-  appAddArchiveCascade () {
+  appAddArchiveCascade (archivePrefix) {
     const archiveCascade = []
     const absolutePathToServe = path.resolve(this.pathToServe)
     const pathName = absolutePathToServe.match(/.*\/(.*?)$/)[1]
-    if (pathName !== '') {
+    if (pathName !== '' || archivePrefix !== null) {
       let archiveLevel = 0
       do {
         archiveLevel++
-        const archiveDirectory = path.resolve(absolutePathToServe, '..', `${pathName}-archive-${archiveLevel}`)
+        const archiveName = `-archive-${archiveLevel}`
+        const archiveDirectory = archivePrefix === null ? path.resolve(absolutePathToServe, '..', `${pathName}${archiveName}`) : path.resolve(`${archivePrefix}${archiveName}`)
+        console.log('testing', archiveDirectory)
         if (fs.existsSync(archiveDirectory)) {
           // Archive exists, add it to the archive cascade.
           archiveCascade.push(archiveDirectory)
@@ -485,6 +504,7 @@ class Site {
     archiveCascade.forEach(archivePath => {
       archiveNumber++
       console.log(` 🌱 [Site.js] Evergreen web: serving archive #${archiveNumber}`)
+      console.log(archivePath)
       this.app.use(express.static(archivePath))
     })
   }

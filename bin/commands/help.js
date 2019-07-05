@@ -36,6 +36,8 @@ function help () {
   const commandLogs = command('logs')
   const commandStatus = command('status')
 
+  const optionArchivePrefix = option('archive-prefix')
+
   const optionSyncFrom = option('sync-from')
   const optionSyncTo = option('sync-to')
 
@@ -87,6 +89,7 @@ function help () {
 
     For ${commandServe} command:
 
+    ${optionArchivePrefix}\t\tOverride cascading archives prefix. If proxy server, ensure they’re served.
     ${optionSyncTo}\t\t\tThe host to sync to.
     ${optionSyncFrom}\t\t\tThe folder to sync from (only relevant if ${optionSyncTo} is specified).
     ${optionExitOnSync}\t\tExit once the first sync has occurred. Useful in deployment scripts.
