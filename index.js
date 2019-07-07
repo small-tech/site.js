@@ -88,7 +88,10 @@ class Site {
     this.pathToServe = typeof options.path === 'string' ? options.path : '.'
     this.port = typeof options.port === 'number' ? options.port : 443
     this.global = typeof options.global === 'boolean' ? options.global : false
-    this.aliases = Array.isArray(options.aliases) ? options.aliases : [`www.${os.hostname()}`]
+    this.aliases = Array.isArray(options.aliases) ? options.aliases : []
+
+    // The www subdomain is a default alias.
+    this.aliases.push(`www.${os.hostname()}`)
 
     // Has a proxy server been requested? If so, we flag it and save the port
     // we were asked to proxy. In this case, pathToServe is ignored/unused.
