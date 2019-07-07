@@ -522,7 +522,7 @@ class Site {
     // for the machine that we are running on.
     const hostname = os.hostname()
 
-    const acmeTLS = AcmeTLS.create({
+    const acmeTLSOptions = {
       // Note: while testing, you might want to use the staging server at:
       // ===== https://acme-staging-v02.api.letsencrypt.org/directory
       server: 'https://acme-v02.api.letsencrypt.org/directory',
@@ -551,16 +551,18 @@ class Site {
       // These will be removed altogether soon.
       telemetry: false,
       communityMember: false,
-    })
+    }
 
     // If additional aliases have been specified, add those to the approved domains list.
-    acmeTLS.approvedDomains = acmeTLS.approvedDomains.concat(this.aliases)
-    if (this.aliases !== []) {
+    acmeTLSOptions.approvedDomains = acmeTLSOptions.approvedDomains.concat(this.aliases)
+    if (this.aliases.length !== 0) {
       const listOfAliases = this.aliases.reduce((prev, current) => {
         return `${prev}${current}, `
       }, '').slice(0, -2)
-      console.log(` 👉 [Site.js] Also responding for aliases ${listOfAliases}.`)
+      console.log(` 👉 [Site.js] Aliases: also responding for ${listOfAliases}.`)
     }
+
+    const acmeTLS = AcmeTLS.create(acmeTLSOptions)
 
     // Create an HTTP server to handle redirects for the Let’s Encrypt ACME HTTP-01 challenge method that we use.
     const httpsRedirectionMiddleware = redirectHTTPS()
