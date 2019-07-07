@@ -569,12 +569,10 @@ class Site {
 
     // If additional aliases have been specified, add those to the approved domains list.
     acmeTLSOptions.approvedDomains = acmeTLSOptions.approvedDomains.concat(this.aliases)
-    if (this.aliases.length !== 0) {
-      const listOfAliases = this.aliases.reduce((prev, current) => {
-        return `${prev}${current}, `
-      }, '').slice(0, -2)
-      console.log(` 👉 [Site.js] Aliases: also responding for ${listOfAliases}.`)
-    }
+    const listOfAliases = this.aliases.reduce((prev, current) => {
+      return `${prev}${current}, `
+    }, '').slice(0, -2)
+    console.log(` 👉 [Site.js] Aliases: also responding for ${listOfAliases}.`)
 
     const acmeTLS = AcmeTLS.create(acmeTLSOptions)
 
