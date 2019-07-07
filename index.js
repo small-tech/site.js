@@ -88,7 +88,7 @@ class Site {
     this.pathToServe = typeof options.path === 'string' ? options.path : '.'
     this.port = typeof options.port === 'number' ? options.port : 443
     this.global = typeof options.global === 'boolean' ? options.global : false
-    this.aliases = Array.isArray(options.aliases) ? options.aliases : []
+    this.aliases = Array.isArray(options.aliases) ? options.aliases : [`www.${os.hostname()}`]
 
     // Has a proxy server been requested? If so, we flag it and save the port
     // we were asked to proxy. In this case, pathToServe is ignored/unused.
@@ -137,19 +137,18 @@ class Site {
     this.app.use(morgan('tiny'))
 
     // Add domain aliases support (add 302 redirects for any domains
-    // defined as aliases so that the URL is rewritten)
+    // defined as aliases so that the URL is rewritten). There is always
+    // at least one alias (the www. subdomain).
     const mainHostname = os.hostname()
-    if (this.aliases.length > 0) {
-      this.app.use((request, response, next) => {
-        const requestedHost = request.header('host')
-        if (requestedHost === mainHostname) {
-          next()
-        } else {
-          console.log(` 👉 [Site.js] Redirecting alias ${requestedHost} to main hostname ${mainHostname}.`)
-          response.redirect(`https://${mainHostname}${request.path}`)
-        }
-      })
-    }
+    this.app.use((request, response, next) => {
+      const requestedHost = request.header('host')
+      if (requestedHost === mainHostname) {
+        next()
+      } else {
+        console.log(` 👉 [Site.js] Redirecting alias ${requestedHost} to main hostname ${mainHostname}.`)
+        response.redirect(`https://${mainHostname}${request.path}`)
+      }
+    })
 
     // Statistics view (displays anonymous, ephemeral statistics)
     this.app.get(this.stats.route, this.stats.view)
@@ -547,7 +546,7 @@ class Site {
       // Certificates are stored in ~/.acme-tls/<hostname>
       configDir: `~/.acme-tls/${hostname}/`,
 
-      approvedDomains: [hostname, `www.${hostname}`],
+      approvedDomains: [hostname],
       agreeTos: true,
 
       // Instead of an email address, we pass the hostname. ACME TLS is based on
