@@ -66,6 +66,8 @@ class Site {
   // •      port: (integer)   the port to bind to (between 0 - 49,151; the default is 443).
   // •    global: (boolean)   if true, automatically provision an use Let’s Encrypt TLS certificates.
   // • proxyPort: (number)    if provided, a proxy server will be created for the port (and path will be ignored)
+  // •   aliases: (string)    comma-separated list of domains that we should get TLS certs
+  //                          for and serve.
   //
   // Note: if you want to run the site on a port < 1024 on Linux, ensure your process has the
   // ===== necessary privileges to bind to such ports. E.g., use require('lib/ensure').weCanBindToPort(port, callback)
@@ -86,6 +88,7 @@ class Site {
     this.pathToServe = typeof options.path === 'string' ? options.path : '.'
     this.port = typeof options.port === 'number' ? options.port : 443
     this.global = typeof options.global === 'boolean' ? options.global : false
+    this.aliases = Array.isArray(options.aliases) ? options.aliases : []
 
     // Has a proxy server been requested? If so, we flag it and save the port
     // we were asked to proxy. In this case, pathToServe is ignored/unused.
@@ -513,6 +516,8 @@ class Site {
   _createTLSServerWithGloballyTrustedCertificate (options, requestListener = undefined) {
     console.log(' 🌍 [Site.js] Using globally-trusted certificates.')
 
+    console.log('options', options)
+
     // Certificates are automatically obtained for the hostname and the www. subdomain of the hostname
     // for the machine that we are running on.
     const hostname = os.hostname()
@@ -547,6 +552,15 @@ class Site {
       telemetry: false,
       communityMember: false,
     })
+
+    // If additional aliases have been specified, add those to the approved domains list.
+    acmeTLS.approvedDomains = acmeTLS.approvedDomains.concat(this.aliases)
+    if (this.aliases !== []) {
+      const listOfAliases = this.aliases.reduce((prev, current) => {
+        return `${prev}${current}, `
+      }, '').slice(0, -2)
+      console.log(` 👉 [Site.js] Also responding for aliases ${listOfAliases}.`)
+    }
 
     // Create an HTTP server to handle redirects for the Let’s Encrypt ACME HTTP-01 challenge method that we use.
     const httpsRedirectionMiddleware = redirectHTTPS()

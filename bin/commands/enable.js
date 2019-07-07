@@ -67,6 +67,11 @@ function enable (args) {
 
         const absolutePathToServe = path.resolve(pathToServe)
 
+        // If there are aliase, we will add them to the configuration so they can
+        // be passed to the serve command when Site.js is started.
+        const _aliases = args.named['aliases']
+        const aliases = _aliases === undefined ? '' : `--aliases=${_aliases}`
+
         // Expectation: At this point, regardless of whether we are running as a regular
         // Node script or as a standalone executable created with Nexe, all paths should
         // be set correctly.
@@ -102,7 +107,7 @@ function enable (args) {
         RestartSec=1
         Restart=always
 
-        ExecStart=${executable} ${absolutePathToServe} @hostname
+        ExecStart=${executable} ${absolutePathToServe} @hostname ${aliases}
 
         [Install]
         WantedBy=multi-user.target

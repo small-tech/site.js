@@ -18,6 +18,7 @@ const ensure = require('../lib/ensure')
 const tcpPortUsed = require('tcp-port-used')
 const clr = require('../../lib/clr')
 
+const ALIASES = 'aliases'
 const SYNC_TO = 'sync-to'
 const SYNC_FROM = 'sync-from'
 const EXIT_ON_SYNC = 'exit-on-sync'
@@ -93,7 +94,15 @@ function serve (args) {
   port = port === null ? 443 : port
   path = path === null ? '.' : path
 
+  //
   // Parse named arguments.
+  //
+
+  // Aliases.
+  const _aliases = args.named[ALIASES]
+  const aliases = _aliases === undefined ? [] : _aliases.split(',')
+
+  // Sync options.
   let syncOptions = null
 
   if (args.named[SYNC_TO] !== undefined) {
@@ -121,7 +130,8 @@ function serve (args) {
             path,
             port,
             global,
-            proxyPort
+            proxyPort,
+            aliases
           }
 
           // Start serving the site.

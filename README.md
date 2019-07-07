@@ -282,6 +282,10 @@ If `command` is omitted, behaviour defaults to `serve`.
 
 ### Options:
 
+#### For both the `serve` and `enable` commands:
+
+  - `--aliases`: Comma-separated list of additional domains to obtain TLS certificates for and respond to.
+
 #### For the `serve` command:
 
   - `--sync-to`: The host to sync to.
@@ -333,6 +337,7 @@ When you `serve` a site at `@hostname` or use the `enable` command, globally-tru
 | Goal                                      | Command                                                       |
 | ----------------------------------------- | ------------------------------------------------------------- |
 | Serve current folder                      | site @hostname                                                |
+| Serve current folder also at aliases	    | site @hostname --aliases=other.site,www.other.site            |
 | Serve folder demo*                        | site demo @hostname                                           |
 |                                           | site serve demo @hostname                                     |
 | Proxy localhost:1313 to https://hostname  | site serve :1313 @hostname                                    |

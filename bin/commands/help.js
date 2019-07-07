@@ -36,6 +36,8 @@ function help () {
   const commandLogs = command('logs')
   const commandStatus = command('status')
 
+  const optionAliases = option('aliases')
+
   const optionSyncFrom = option('sync-from')
   const optionSyncTo = option('sync-to')
 
@@ -85,6 +87,10 @@ function help () {
 
     ${heading('Options:')}
 
+    For both ${commandServe} and ${commandEnable} commands:
+
+    ${optionAliases}\t\t\tSpecify additional domains to obtain TLS certs for and respond to.
+
     For ${commandServe} command:
 
     ${optionSyncTo}\t\t\tThe host to sync to.
@@ -132,6 +138,8 @@ function help () {
       Regular process:
 
     • Serve current folder\t\t\t${prompt} ${appName} ${argument('@hostname')}
+
+    • Serve current folder also at aliases\t${prompt} ${appName} ${argument('@hostname')} ${optionAliases}=${argument('other.site,www.other.site')}
 
     • Serve folder ${argument('demo')}\t\t\t\t${prompt} ${appName} ${argument('demo')} ${argument('@hostname')}
       (shorthand and full)\t\t\t${prompt} ${appName} ${commandServe} ${argument('demo')} ${argument('@hostname')}
