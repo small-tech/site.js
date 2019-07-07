@@ -124,6 +124,11 @@ class Ensure {
           process.exit(1)
         }
       }
+    } else {
+      // This is only relevant for Linux, which is the last major platform to 
+      // carry forward the archaic security theatre of privileged ports. On other
+      // Linux-like platforms (notably, macOS), just call the callback.
+      callback()
     }
   }
 
