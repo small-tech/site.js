@@ -136,6 +136,21 @@ class Site {
     // Logging.
     this.app.use(morgan('tiny'))
 
+    // Add domain aliases support (add 302 redirects for any domains
+    // defined as aliases so that the URL is rewritten)
+    const mainHostname = os.hostname()
+    if (this.aliases.length > 0) {
+      this.app.use((request, response, next) => {
+        const requestedHost = request.header('host')
+        if (requestedHost === mainHostname) {
+          next()
+        } else {
+          console.log(` 👉 [Site.js] Redirecting alias ${requestedHost} to main hostname ${mainHostname}.`)
+          response.redirect(`https://${mainHostname}${request.path}`)
+        }
+      })
+    }
+
     // Statistics view (displays anonymous, ephemeral statistics)
     this.app.get(this.stats.route, this.stats.view)
   }
