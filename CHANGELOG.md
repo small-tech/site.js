@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 
+  - Aliases no longer incorrectly applied to local servers (regression from 12.1.0).
   - Actually exits on sync when run with `--exit-on-sync`.
 
 ## [12.1.0] - 2019-07-07
