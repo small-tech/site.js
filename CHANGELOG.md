@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [12.1.1] - 2019-07-??
+
+### Fixed
+
+  - Actually exits on sync when run with `--exit-on-sync`.
+
 ## [12.1.0] - 2019-07-07
 
 ### Added
