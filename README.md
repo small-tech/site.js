@@ -429,6 +429,37 @@ Site.js will load your dynamic route at startup and you can test it by hitting _
 
 If you need to use custom Node modules, initialise your _.dynamic_ folder using `npm init` and use `npm install` as usual. And modules you require from your routes will be properly loaded and used.
 
+__Note:__ You could also have named your route _.dynamic/server-stats/index.js_ and still hit it from _https://localhost/server-stats_. It’s best to keep to one or other convention (either using file names as route names or directory names as route names). Using both in the same app will probably confuse you (see [Precedence](#Precendence), below).
+
+### Precedence
+
+#### Between dynamic route and static route
+
+If a dynamic route and a static route have the same name, the dynamic route will take precedence. So, for example, if you’re serving the following site:
+
+```
+site/
+  ├ index.html
+  └ .dynamic/
+        └ index.js
+```
+
+When you hit `https://localhost`, you will get the dynamic route defined in _index.js_.
+
+#### Between two dynamic routes (TL; DR: do not rely on this)
+
+In the following scenario:
+
+```
+site/
+  └ .dynamic/
+        ├ fun.html
+        └ fun/
+           └ index.js
+```
+
+The behaviour observed under Linux at the time of writing is that _fun/index.js_ will have precendence and mask _fun.html_. __Do not rely on this behaviour.__ The order of dynamic routes is based on a directory crawl and is not guaranteed to be the same in all future versions. For your peace of mind, please do not mix file-name-based and directory-name-based routing.
+
 ### Directories
 
 Your dynamic web routes are running within Site.js, which is a Node application compiled into a native binary.
