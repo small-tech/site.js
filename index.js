@@ -19,6 +19,7 @@ const os = require('os')
 const clr = require('./lib/clr')
 
 const express = require('express')
+const expressWebSocket = require('express-ws')
 const helmet = require('helmet')
 const morgan = require('morgan')
 const redirectHTTPS = require('redirect-https')
@@ -318,6 +319,9 @@ class Site {
         // and upgrade the web socket proxy also.
         // (See https://github.com/chimurai/http-proxy-middleware#external-websocket-upgrade)
         server.on('upgrade', this.webSocketProxy.upgrade)
+      } else {
+        // Create a regular WebSocket server.
+        expressWebSocket(this.app, server, { perMessageDeflate: false })
       }
 
       // Call the overridable callback (the defaults for these are purely informational/cosmetic
