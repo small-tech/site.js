@@ -636,9 +636,11 @@ module.exports = function (request, response) {
 
 After this refactor, if you restart the server and hit `https://localhost/cows` again in your browser, you should see exactly the same behaviour as before.
 
-### Precedence
+As you can see, you can create quite a bit of dynamic functionality just by using the most basic file-based routing. However, with this convention you are limited to GET routes. After a quick look at [Precendence](#precedence), below, we will see how you can
 
-#### Between dynamic route and static route
+#### Precedence
+
+##### Between dynamic route and static route
 
 If a dynamic route and a static route have the same name, the dynamic route will take precedence. So, for example, if you’re serving the following site:
 
@@ -651,7 +653,7 @@ site/
 
 When you hit `https://localhost`, you will get the dynamic route defined in _index.js_.
 
-#### Between two dynamic routes (TL; DR: do not rely on this)
+##### Between two dynamic routes (TL; DR: do not rely on this)
 
 In the following scenario:
 
@@ -664,6 +666,27 @@ site/
 ```
 
 The behaviour observed under Linux at the time of writing is that _fun/index.js_ will have precendence and mask _fun.html_. __Do not rely on this behaviour.__ The order of dynamic routes is based on a directory crawl and is not guaranteed to be the same in all future versions. For your peace of mind, please do not mix file-name-based and directory-name-based routing.
+
+#### GET and POST routes
+
+If you need POST routes (e.g., you want to post form content back to the server) in addition to GET routes, the directory structure works a little differently. In this case, you have to create a _.get_ directory for your GET routes and a _.post_ directory for your post routes.
+
+Otherwise, the naming and directory structure conventions work exactly as before.
+
+So, for example, if you have the following directory structure:
+
+```
+site/
+  └ .dynamic/
+        ├ .get/
+        │   └ index.js
+        └ .post/
+            └ index.js
+```
+
+Then a GET request for `https://localhost` will be routed to _site/.dynamic/.get/index.js_ and a POST request for `https://localhost` will be routed to _site/.dynamic/.post/index.js_.
+
+These two routes are enough to cover your needs for dynamic routes and form handling.
 
 ### Directories
 
