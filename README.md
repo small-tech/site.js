@@ -6,15 +6,27 @@
 
 __Site.js is an integrated [Small Tech](https://ar.al/2019/03/04/small-technology/) personal web tool for Linux and Linux-like* operating systems.__
 
+Most of our tools today are built for the needs of startups and enterprises – Site.js is built for individuals.
+
+## Features
+
   - Zero-configuration – It Just Works 🤞™.
 
-  - Develop with automatically-provisioned locally-trusted TLS courtesy of [mkcert](https://github.com/FiloSottile/mkcert) seamlessly integrated via [Nodecert](https://source.ind.ie/hypha/tools/nodecert).
+  - Seamless single binary [install](#install) (thanks to [Nexe](https://github.com/nexe/nexe)).
 
-  - Stage and deploy production servers with automatically-provisioned globally-trusted TLS courtesy of [Let’s Encrypt](https://letsencrypt.org/) seamlessly integrated via [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) and [systemd](https://freedesktop.org/wiki/Software/systemd/). Your server will score an A on the [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest).
+  - Automatically provisions locally-trusted TLS for development (courtesy of [mkcert](https://github.com/FiloSottile/mkcert) seamlessly integrated via [Nodecert](https://source.ind.ie/hypha/tools/nodecert)).
 
-  - Create static web sites, dynamic web sites, or a combination of the two.
+  - Automatically provisions globally-trusted TLS for staging and production (courtesy of [Let’s Encrypt](https://letsencrypt.org/) seamlessly integrated via [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) and [systemd](https://freedesktop.org/wiki/Software/systemd/). Your server will score an A on the [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest).)
 
-  - For dynamic functionality, choose between simple file-based JavaScript routes (think PHP but for JavaScript) for simple routing or specifying your routes in code. HTTPS and WebSocket (WSS) are both supported.
+  - Supports static web sites, dynamic web sites, and hybrid sites (via integrated [Express](https://expressjs.com))
+
+  - Can be used as a proxy server (via integrated [http-proxy-middleware](https://github.com/chimurai/http-proxy-middleware))
+
+  - Supports WebSockets (via integrated [express-ws](https://github.com/HenningM/express-ws), which itself wraps [ws](https://github.com/websockets/ws)).
+
+  - Supports PHP-like simple routing for JavaScript/Node.js to quickly prototype and build dynamic sites.
+
+  - Or, for full flexibility, you can define your HTTPS and WebSocket (WSS) routes entirely in code in the traditional way for Express apps.
 
   <ins>Note:</ins> Live deployments via startup daemons are only supported on Linux distributions with systemd.
 
