@@ -199,9 +199,19 @@ git clone https://source.ind.ie/site.js/app.git
 cd app
 ./install
 
+# Run the app once (so that it can get your Node.js binary
+# permission to bind to ports < 1024 on Linux ­– otherwise
+# the tests will fail.)
+bin/site.js test/site
+
+# You should be able to see the site at https://localhost
+# now. Press Ctrl+C to stop the server.
+
 # Run unit tests.
 npm test
 ```
+
+__Note:__ If you upgrade your Node.js binary, please run `bin/site.js` again before running the tests (or using Site.js as a module in your own app) so that it can get permissions for your Node.js binary to bind to ports < 1024. Otherwise, it will fail with `Error: listen EACCES: permission denied 0.0.0.0:443`.
 
 ### Install as global Node.js module
 
