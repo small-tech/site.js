@@ -768,9 +768,9 @@ site/
         └ global.js
 ```
 
-### Directories
+### Directory paths in your application
 
-Your dynamic web routes are running within Site.js, which is a Node application compiled into a native binary.
+Your dynamic web routes are running within Site.js, which is a Node application compiled into a native binary. Here are how the various common directories for Node.js apps will behave:
 
   - `os.homedir()`: __(writable)__ This is the home folder of the account running Site.js. You can write to it to store persistent objects (e.g., save data).
 
