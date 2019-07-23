@@ -472,9 +472,9 @@ class Site {
 
       // Attempts to load HTTPS routes from the passed directory,
       // adhering to rules 3 & 4.
-      function loadHttpsRoutesFrom (httpsRoutesDirectory) {
+      const loadHttpsRoutesFrom = (httpsRoutesDirectory) => {
         // Attempts to load HTTPS GET routes from the passed directory.
-        function loadHttpsGetRoutesFrom (httpsGetRoutesDirectory) {
+        const loadHttpsGetRoutesFrom = (httpsGetRoutesDirectory) => {
           const httpsGetRoutes = getRoutes(httpsGetRoutesDirectory)
           httpsGetRoutes.forEach(route => {
             console.log(` 🐁 Adding HTTPS GET route: ${route.path}`)
