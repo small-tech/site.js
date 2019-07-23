@@ -118,7 +118,7 @@ class Site {
       this.configureAppRoutes()
     }
 
-    this.endAppConfiguration()
+    // this.endAppConfiguration()
 
     // If running as child process, notify person.
     process.on('message', (m) => {
@@ -314,21 +314,23 @@ class Site {
     }
 
     // Create the server and start listening on the requested port.
-    let server = this.createServer({global: this.global}, this.app).listen(this.port, () => {
-      if (this.isProxyServer) {
-        // As we’re using a custom server, manually listen for the http upgrade event
-        // and upgrade the web socket proxy also.
-        // (See https://github.com/chimurai/http-proxy-middleware#external-websocket-upgrade)
-        server.on('upgrade', this.webSocketProxy.upgrade)
-      } else {
-        // Create a regular WebSocket server.
-        expressWebSocket(this.app, server, { perMessageDeflate: false })
-      }
+    let server = this.createServer({global: this.global}, this.app)
 
-      // Call the overridable callback (the defaults for these are purely informational/cosmetic
-      // so they are safe to override).
-      callback.apply(this, [server])
-    })
+    if (!this.isProxyServer) {
+      // If there are WebSocket routes, create a regular WebSocket server and
+      // add the WebSocket routes (if any) to the app.
+      if (this.wssRoutes !== undefined) {
+        expressWebSocket(this.app, server, { perMessageDeflate: false })
+        this.wssRoutes.forEach(route => {
+          console.log(` 🐁 Adding WebSocket (WSS) route: ${route.path}`)
+          this.app.ws(route.path, require(route.callback))
+        })
+      }
+    }
+
+    // We end the app configuration here as the 404 and 500 routes should come at the end.
+    // (otherwise the WebSocket routes are never reached).
+    this.endAppConfiguration()
 
     server.on('error', error => {
       console.log('\n 🤯 Error: could not start server.\n')
@@ -349,6 +351,20 @@ class Site {
     }
     Graceful.on('SIGINT', goodbye)
     Graceful.on('SIGTERM', goodbye)
+
+    // Start the server.
+    server.listen(this.port, () => {
+      if (this.isProxyServer) {
+        // As we’re using a custom server, manually listen for the http upgrade event
+        // and upgrade the web socket proxy also.
+        // (See https://github.com/chimurai/http-proxy-middleware#external-websocket-upgrade)
+        server.on('upgrade', this.webSocketProxy.upgrade)
+      }
+
+      // Call the overridable callback (the defaults for these are purely informational/cosmetic
+      // so they are safe to override).
+      callback.apply(this, [server])
+    })
 
     return server
   }
@@ -499,6 +515,7 @@ class Site {
             // Load HTTPS POST routes.
 
             // Add body parser
+            // TODO: Also do this for routes.js.!!!!!
             this.app.use(bodyParser.json())
             this.app.use(bodyParser.urlencoded({ extended: true }))
 
@@ -541,12 +558,12 @@ class Site {
         }
         if (wssRoutesDirectoryExists) {
           // Load WebSocket (WSS) routes.
-          const wssRoutes = getRoutes(wssRoutesDirectory)
-          wssRoutes.forEach(route => {
-            console.log(` 🐁 Adding WebSocket (WSS) route: ${route.path}`)
-            this.app.ws(route.path, require(route.callback))
-          })
-
+          //
+          // Note: we are not adding them to the app here because Express-WS requires a
+          // ===== reference to the server instance that we create manually (in order to
+          //       add its HTTP upgrade handling. Since we don’t have the server instance
+          //       yet, we delay adding the routes until the server is created).
+          this.wssRoutes = getRoutes(wssRoutesDirectory)
         }
         return
       }
