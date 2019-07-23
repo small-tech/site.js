@@ -19,6 +19,7 @@ const os = require('os')
 const clr = require('./lib/clr')
 
 const express = require('express')
+const bodyParser = require('body-parser')
 const expressWebSocket = require('express-ws')
 const helmet = require('helmet')
 const morgan = require('morgan')
@@ -490,12 +491,17 @@ class Site {
 
         if (httpsGetRoutesDirectoryExists || httpsPostRoutesDirectoryExists) {
           // Either .get or .post routes directories (or both) exist.
-          console.log('Dynamic routes: found .get/.post folders. Will load routes from there.')
+          console.log(' 🐁 Found .get/.post folders. Will load dynamic routes from there.')
           if (httpsGetRoutesDirectoryExists) {
             loadHttpsGetRoutesFrom(httpsGetRoutesDirectory)
           }
           if (httpsPostRoutesDirectoryExists) {
             // Load HTTPS POST routes.
+
+            // Add body parser
+            this.app.use(bodyParser.json())
+            this.app.use(bodyParser.urlencoded({ extended: true }))
+
             const httpsPostRoutes = getRoutes(httpsPostRoutesDirectory)
             httpsPostRoutes.forEach(route => {
               console.log(` 🐁 Adding HTTPS POST route: ${route.path}`)
@@ -515,7 +521,7 @@ class Site {
       const routesJsFile = path.join(dynamicRoutesDirectory, 'routes.js')
 
       if (fs.existsSync(routesJsFile)) {
-        console.log('Dynamic routes: found routes.js file, will load routes from there.')
+        console.log(' 🐁 Found routes.js file, will load dynamic routes from there.')
         require(routesJsFile)(this.app)
         return
       }
@@ -529,7 +535,7 @@ class Site {
 
       if (httpsRoutesDirectoryExists || wssRoutesDirectoryExists) {
         // Either .https or .wss routes directories (or both) exist.
-        console.log('Dynamic routes: found .https/.wss folders. Will load routes from there.')
+        console.log(' 🐁 Found .https/.wss folders. Will load dynamic routes from there.')
         if (httpsRoutesDirectoryExists) {
           loadHttpsRoutesFrom(httpsRoutesDirectory)
         }
