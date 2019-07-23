@@ -770,8 +770,11 @@ The behaviour observed under Linux at the time of writing is that _fun/index.js_
 Each of the routing conventions are mutually exclusive and applied according to the following precedence rules:
 
 1. Advanced _routes.js_-based advanced routing.
+
 2. Separate folders for _.https_ and _.wss_ routes routing (the _.http_ folder itself will apply precedence rules 3 and 4 internally).
+
 3. Separate folders for _.get_ and _.post_ routes in HTTPS-only routing.
+
 4. GET-only routing.
 
 So, if Site.js finds a _routes.js_ file in the root folder of your site’s folder, it will only use the routes from that file (it will not apply file-based routing).
