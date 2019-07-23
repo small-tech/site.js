@@ -18,13 +18,13 @@ Most of our tools today are built for the needs of startups and enterprises – 
 
   - Automatically provisions globally-trusted TLS for staging and production (courtesy of [Let’s Encrypt](https://letsencrypt.org/) seamlessly integrated via [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) and [systemd](https://freedesktop.org/wiki/Software/systemd/). Your server will score an A on the [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest).)
 
-  - Supports static web sites, dynamic web sites, and hybrid sites (via integrated [Express](https://expressjs.com))
+  - Supports static web sites, dynamic web sites written in JavaScript, and hybrid sites (via integrated [Node.js](https://nodejs.org/) and [Express](https://expressjs.com)).
 
-  - Can be used as a proxy server (via integrated [http-proxy-middleware](https://github.com/chimurai/http-proxy-middleware))
+  - Can be used as a proxy server (via integrated [http-proxy-middleware](https://github.com/chimurai/http-proxy-middleware)).
 
   - Supports WebSockets (via integrated [express-ws](https://github.com/HenningM/express-ws), which itself wraps [ws](https://github.com/websockets/ws)).
 
-  - Supports PHP-like simple routing for JavaScript/Node.js to quickly prototype and build dynamic sites.
+  - Supports PHP-like simple routing for Node.js to quickly prototype and build dynamic sites.
 
   - Or, for full flexibility, you can define your HTTPS and WebSocket (WSS) routes entirely in code in the traditional way for Express apps.
 
