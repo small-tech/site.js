@@ -449,15 +449,106 @@ class Site {
 
   // Add dynamic routes, if any, if a <pathToServe>/.dynamic/ folder exists.
   // If there are errors in any of your dynamic routes, you will get 500 (server) errors.
-  appAddDynamicRoutes () {
-    const dynamicRoutesDirectory = path.join(this.pathToServe, '.dynamic')
-    if (fs.existsSync(dynamicRoutesDirectory)) {
-      const dynamicRoutes = getRoutes(dynamicRoutesDirectory)
+  //
+  // Each of the routing conventions are mutually exclusive and applied according to the following precedence rules:
+  //
+  // 1. Advanced _routes.js_-based advanced routing.
+  //
+  // 2. Separate folders for _.https_ and _.wss_ routes routing (the _.http_ folder itself will apply precedence rules 3 and 4 internally).
+  //
+  // 3. Separate folders for _.get_ and _.post_ routes in HTTPS-only routing.
+  //
+  // 4. GET-only routing.
+  //
+  // For full details, please see the readme file.
 
-      dynamicRoutes.forEach(route => {
-        console.log(` 🐁 Dynamic route loaded: ${route.path}`)
-        this.app.get(route.path, require(route.callback))
-      })
+  appAddDynamicRoutes () {
+
+    // Initially check if a dynamic routes directory exists. If it does not,
+    // we don’t need to take this any further.
+    const dynamicRoutesDirectory = path.join(this.pathToServe, '.dynamic')
+
+    if (fs.existsSync(dynamicRoutesDirectory)) {
+
+      // Attempts to load HTTPS routes from the passed directory,
+      // adhering to rules 3 & 4.
+      function loadHttpsRoutesFrom (httpsRoutesDirectory) {
+        // Attempts to load HTTPS GET routes from the passed directory.
+        function loadHttpsGetRoutesFrom (httpsGetRoutesDirectory) {
+          const httpsGetRoutes = getRoutes(httpsGetRoutesDirectory)
+          httpsGetRoutes.forEach(route => {
+            console.log(` 🐁 Adding HTTPS GET route: ${route.path}`)
+            this.app.get(route.path, require(route.callback))
+          })
+        }
+
+        // Check if separate .get and .post route directories exist.
+        const httpsGetRoutesDirectory = path.join(httpsRoutesDirectory, '.get')
+        const httpsPostRoutesDirectory = path.join(httpsRoutesDirectory, '.post')
+        const httpsGetRoutesDirectoryExists = fs.existsSync(httpsGetRoutesDirectory)
+        const httpsPostRoutesDirectoryExists = fs.existsSync(httpsPostRoutesDirectory)
+
+        if (httpsGetRoutesDirectoryExists || httpsPostRoutesDirectoryExists) {
+          // Either .get or .post routes directories (or both) exist.
+          console.log('Dynamic routes: found .get/.post folders. Will load routes from there.')
+          if (httpsGetRoutesDirectoryExists) {
+            loadHttpsGetRoutesFrom(httpsGetRoutesDirectory)
+          }
+          if (httpsPostRoutesDirectoryExists) {
+            // Load HTTPS POST routes.
+            const httpsPostRoutes = getRoutes(httpsPostRoutesDirectory)
+            httpsPostRoutes.forEach(route => {
+              console.log(` 🐁 Adding HTTPS POST route: ${route.path}`)
+              this.app.post(route.path, require(route.callback))
+            })
+          }
+          return
+        }
+
+        // Separate .get and .post directories do not exist. This is our final fallback
+        // where we try to load HTTPS GET routes directly from the root of the
+        // passed https routes path.
+        loadHttpsGetRoutesFrom(httpsRoutesDirectory)
+      }
+
+      // Rule 1: Check if a routes.js file exists. If it does, we just need to load that in.
+      const routesJsFile = path.join(dynamicRoutesDirectory, 'routes.js')
+
+      if (fs.existsSync(routesJsFile)) {
+        console.log('Dynamic routes: found routes.js file, will load routes from there.')
+        require(routesJsFile)(this.app)
+        return
+      }
+
+      // Rule 2: Check if .https and/or .wss folders exist. If they do,
+      // load the routes from there.
+      const httpsRoutesDirectory = path.join(dynamicRoutesDirectory, '.https')
+      const wssRoutesDirectory = path.join(dynamicRoutesDirectory, '.wss')
+      const httpsRoutesDirectoryExists = fs.existsSync(httpsRoutesDirectory)
+      const wssRoutesDirectoryExists = fs.existsSync(wssRoutesDirectory)
+
+      if (httpsRoutesDirectoryExists || wssRoutesDirectoryExists) {
+        // Either .https or .wss routes directories (or both) exist.
+        console.log('Dynamic routes: found .https/.wss folders. Will load routes from there.')
+        if (httpsRoutesDirectoryExists) {
+          loadHttpsRoutesFrom(httpsRoutesDirectory)
+        }
+        if (wssRoutesDirectoryExists) {
+          // Load WebSocket (WSS) routes.
+          const wssRoutes = getRoutes(wssRoutesDirectory)
+          wssRoutes.forEach(route => {
+            console.log(` 🐁 Adding WebSocket (WSS) route: ${route.path}`)
+            this.app.ws(route.path, require(route.callback))
+          })
+
+        }
+        return
+      }
+
+      // Fallback behaviour: routes.js file doesn’t exist and we don’t have
+      // separate folders for .https and .wss routes. Attempt to load HTTPS
+      // routes from the dynamic routes directory, while applying rules 3 & 4.
+      loadHttpsRoutesFrom(dynamicRoutesDirectory)
     }
   }
 
