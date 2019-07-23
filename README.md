@@ -190,6 +190,8 @@ Site.js uses the [systemd](https://freedesktop.org/wiki/Software/systemd/) to st
 
 ## Build and test from source
 
+Site.js is built using and supports the latest Node.js LTS (currently 10.6.0; on October 22nd, 2019, we are scheduled to move to Node 12 LTS when it becomes the active branch).
+
 ### Install the source and run tests
 
 ```shell
