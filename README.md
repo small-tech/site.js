@@ -638,34 +638,6 @@ After this refactor, if you restart the server and hit `https://localhost/cows` 
 
 As you can see, you can create quite a bit of dynamic functionality just by using the most basic file-based routing. However, with this convention you are limited to GET routes. After a quick look at [Precendence](#precedence), below, we will see how you can
 
-#### Precedence
-
-##### Between dynamic route and static route
-
-If a dynamic route and a static route have the same name, the dynamic route will take precedence. So, for example, if you’re serving the following site:
-
-```
-site/
-  ├ index.html
-  └ .dynamic/
-        └ index.js
-```
-
-When you hit `https://localhost`, you will get the dynamic route defined in _index.js_.
-
-##### Between two dynamic routes (TL; DR: do not rely on this)
-
-In the following scenario:
-
-```
-site/
-  └ .dynamic/
-        ├ fun.html
-        └ fun/
-           └ index.js
-```
-
-The behaviour observed under Linux at the time of writing is that _fun/index.js_ will have precendence and mask _fun.html_. __Do not rely on this behaviour.__ The order of dynamic routes is based on a directory crawl and is not guaranteed to be the same in all future versions. For your peace of mind, please do not mix file-name-based and directory-name-based routing.
 
 #### GET and POST routes
 
@@ -739,6 +711,52 @@ module.exports = app => {
 ```
 
 When using the _routes.js_ file, you can use all of the features in [Express](https://expressjs.com/) and [Express-WS](https://github.com/HenningM/express-ws) (which itself wraps [WS](https://github.com/websockets/ws#usage-examples)).
+
+### Routing precedence
+
+#### Between dynamic route and static route
+
+If a dynamic route and a static route have the same name, the dynamic route will take precedence. So, for example, if you’re serving the following site:
+
+```
+site/
+  ├ index.html
+  └ .dynamic/
+        └ index.js
+```
+
+When you hit `https://localhost`, you will get the dynamic route defined in _index.js_.
+
+#### Between two dynamic routes (TL; DR: do not rely on this)
+
+In the following scenario:
+
+```
+site/
+  └ .dynamic/
+        ├ fun.html
+        └ fun/
+           └ index.js
+```
+
+The behaviour observed under Linux at the time of writing is that _fun/index.js_ will have precendence and mask _fun.html_. __Do not rely on this behaviour.__ The order of dynamic routes is based on a directory crawl and is not guaranteed to be the same in all future versions. For your peace of mind, please do not mix file-name-based and directory-name-based routing.
+
+#### Between the various routing methods
+
+Each of the routing conventions are mutually exclusive and applied according to the following precedence rules:
+
+1. Advanced _routes.js_-based advanced routing.
+2. Separate folders for _.https_ and _.wss_ routes routing (the _.http_ folder itself will apply precedence rules 3 and 4 internally).
+3. Separate folders for _.get_ and _.post_ routes in HTTPS-only routing.
+4. GET-only routing.
+
+So, if Site.js finds a _routes.js_ file in the root folder of your site’s folder, it will only use the routes from that file (it will not apply file-based routing).
+
+If Site.js cannot find a _routes.js_ file, it will look to see if separate _.https_ and _.wss_ folders have been defined (the existence of just one of these is enough) and attempt to load routes from those folders. (If it finds separate _.get_ or _.post_ folders within the _.https_ folder, it will add the relevant routes from those folders; if it can’t it will load GET-only routes from the _.https_ folder and its subfolders.)
+
+If separate _.https_ and _.wss_ folders do not exist, Site.js will expect all defined routes to be HTTP and will initially looks for separate _.get_ and _.post_ folders (the existence of either is enough to trigger this mode). If they exist, it will add the relevant routes from those folders and their subfolders.
+
+Finally, if Site.js cannot find separate _.get_ and _.post_ folders either, it will assume that any routes it finds in the _.dynamic_ folder are HTTPS GET routes and attempt to add them from there (and any subfolders).
 
 ### Defining globals for dynamic applications
 
