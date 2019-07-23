@@ -688,6 +688,68 @@ Then a GET request for `https://localhost` will be routed to _site/.dynamic/.get
 
 These two routes are enough to cover your needs for dynamic routes and form handling.
 
+#### WebSocket (WSS) routes
+
+You can define WebSocket (WSS) routes alongside HTTPS routes. To do so, you need to modify the directory structure so it resembles the one below:
+
+```
+site/
+  └ .dynamic/
+        ├ .https/
+        │   ├ .get/
+        │   │   └ index.js
+        │   └ .post/
+        │       └ index.js
+        └ .wss/
+            └ index.js
+```
+
+#### Advanced routing (routes.js file)
+
+File-based routing should get you pretty far for simple use cases but if you need full flexibility in routing, simply define a _routes.js_ in your _.dynamic_ folder:
+
+```
+site/
+  └ .dynamic/
+        └ routes.js
+```
+
+The _routes.js_ file should export a function that accepts a reference to the Express app created by Site.js and defines its routes on it. For example:
+
+```js
+module.exports = app => {
+
+  // HTTPS route with a parameter called id.
+  app.get('/photo/:id', (request, response) {
+    response.type('html').end(`
+      <h1>Photo with ID ${id}</h1>
+      <img src='/photos/${id}'>
+    `)
+  })
+
+  // WebSocket route: push a random photo every 30 seconds.
+  app.ws('/random-photos', (webSocket, request) {
+    setInterval(() => {
+      const photoId = Math.round(Math.random()*100)
+      webSocket.send(photoId)
+    }, 30000)
+  })
+
+}
+```
+
+When using the _routes.js_ file, you can use all of the features in [Express](https://expressjs.com/) and [Express-WS](https://github.com/HenningM/express-ws) (which itself wraps [WS](https://github.com/websockets/ws#usage-examples)).
+
+### Defining globals for dynamic applications
+
+If you app requires global functionality that needs to be set up when the server starts, create a file named _global.js_ in your _.dynamic_ folder:
+
+```
+site/
+  └ .dynamic/
+        └ global.js
+```
+
 ### Directories
 
 Your dynamic web routes are running within Site.js, which is a Node application compiled into a native binary.
