@@ -792,11 +792,10 @@ const appPath = require.main.filename.replace('bin/site.js', '')
 
 The code within your JavaScript routes is executed on the server. Exercise the same caution as you would when creating any Node.js app (sanitise input, etc.)
 
-### Intended usage
-
-You shouldn’t use this functionality to create your latest amazing web app. For that, include Site.js as a node module in your project and extend it that way. This is to add tiny bits of dynamic functionality. There is currently only support for `GET` routes. Again, if you need custom modules, extend Site.js using Node.js.
 
 ## API
+
+You can also include Site.js as a Node module into your Node project. This section details the API you can use if you do that.
 
 Site.js’s `createServer` method behaves like the built-in _https_ module’s `createServer` function. Anywhere you use `require('https').createServer`, you can simply replace it with:
 
