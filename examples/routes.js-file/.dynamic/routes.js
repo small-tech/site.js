@@ -12,7 +12,7 @@
 module.exports = app => {
 
   //
-  // An example of complex routing using a parameter. (This isn’t possible with dotJS routing.)
+  // An basic example of complex routing using a parameter. (This isn’t possible with dotJS routing.)
   //
   // For more examples, including the use of regular expressions in routes, please refer to
   // the Express Routing section of the ExpressJS documentation at
