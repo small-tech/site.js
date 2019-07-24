@@ -17,6 +17,8 @@
   <ul id='received'></ul>
   <script>
     window.addEventListener('load', () => {
+      // Shorthand for basic DOM lookup.
+      $ = document.querySelector.bind(document)
 
       // Initialise the web socket
       const socket = new WebSocket(`wss://localhost/echo`)
@@ -27,18 +29,18 @@
 
       socket.onclose = event => {
         console.log('Socket closed.')
-        document.querySelector('#message').disabled = true
-        document.querySelector('button[type="submit"]').disabled = true
-        document.querySelector('#received').innerHTML += `<li style="color: red;">Socket closed.</li>`
+        $('#message').disabled = true
+        $('button[type="submit"]').disabled = true
+        $('#received').innerHTML += `<li style="color: red;">Socket closed.</li>`
       }
 
       socket.onmessage = event => {
-        document.querySelector('#received').innerHTML += `<li>${event.data}</li>`
+        $('#received').innerHTML += `<li>${event.data}</li>`
       }
 
       document.querySelector('#messageForm').addEventListener('submit', event => {
         event.preventDefault()
-        const messageTextInput = document.querySelector('#message')
+        const messageTextInput = $('#message')
         const message = messageTextInput.value
         messageTextInput.value = ''
         socket.send(message)
