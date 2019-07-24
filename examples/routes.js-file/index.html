@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebSocket demo</title>
+</head>
+<body>
+  <h1>WebSocket Echo Demo</h1>
+  <form id='messageForm'>
+    <label for='message'>Message:</label>
+    <input id='message' type='text' name='message' value=''>
+    <button type='submit'>Send</button>
+  </form>
+  <h2>Received messages</h2>
+  <!-- In actual app would use Aria to announce received messages. -->
+  <ul id='received'></ul>
+  <script>
+    window.addEventListener('load', () => {
+
+      // Initialise the web socket
+      const socket = new WebSocket(`wss://localhost/echo`)
+
+      socket.onopen = event => {
+        socket.send('Hello, there!')
+      }
+
+      socket.onmessage = event => {
+        document.querySelector('#received').innerHTML += `<li>${event.data}</li>`
+      }
+
+      document.querySelector('#messageForm').addEventListener('submit', event => {
+        event.preventDefault()
+        const message = document.querySelector('#message').value
+        socket.send(message)
+      })
+
+    })
+  </script>
+</body>
+</html>
