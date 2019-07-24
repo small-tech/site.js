@@ -25,13 +25,22 @@
         socket.send('Hello, there!')
       }
 
+      socket.onclose = event => {
+        console.log('Socket closed.')
+        document.querySelector('#message').disabled = true
+        document.querySelector('button[type="submit"]').disabled = true
+        document.querySelector('#received').innerHTML += `<li style="color: red;">Socket closed.</li>`
+      }
+
       socket.onmessage = event => {
         document.querySelector('#received').innerHTML += `<li>${event.data}</li>`
       }
 
       document.querySelector('#messageForm').addEventListener('submit', event => {
         event.preventDefault()
-        const message = document.querySelector('#message').value
+        const messageTextInput = document.querySelector('#message')
+        const message = messageTextInput.value
+        messageTextInput.value = ''
         socket.send(message)
       })
 

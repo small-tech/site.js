@@ -24,6 +24,7 @@ const expressWebSocket = require('express-ws')
 const helmet = require('helmet')
 const morgan = require('morgan')
 const redirectHTTPS = require('redirect-https')
+const enableDestroy = require('server-destroy')
 const Graceful = require('node-graceful')
 const httpProxyMiddleware = require('http-proxy-middleware')
 
@@ -354,8 +355,14 @@ class Site {
     // Handle graceful exit.
     const goodbye = (done) => {
       console.log('\n 💃 Preparing to exit gracefully, please wait…')
+
+      // Close all active connections on the server.
+      // (This is so that long-running connections – e.g., WebSockets – do not block the exit.)
+      server.destroy()
+
+      // Stop accepting new connections.
       server.close( () => {
-        // The server close event will be the last one to fire. Let’s say goodbye :)
+        // OK, it’s time to go :)
         console.log('\n 💖 Goodbye!\n')
         done()
       })
@@ -376,6 +383,9 @@ class Site {
       // so they are safe to override).
       callback.apply(this, [server])
     })
+
+    // Enable the ability to destroy the server (close all active connections).
+    enableDestroy(server)
 
     return server
   }
