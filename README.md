@@ -785,16 +785,6 @@ If separate _.https_ and _.wss_ folders do not exist, Site.js will expect all de
 
 Finally, if Site.js cannot find separate _.get_ and _.post_ folders either, it will assume that any routes it finds in the _.dynamic_ folder are HTTPS GET routes and attempt to add them from there (and any subfolders).
 
-### Defining globals for dynamic applications
-
-If you app requires global functionality that needs to be set up when the server starts, create a file named _global.js_ in your _.dynamic_ folder:
-
-```
-site/
-  └ .dynamic/
-        └ global.js
-```
-
 ### Directory paths in your application
 
 Your dynamic web routes are running within Site.js, which is a Node application compiled into a native binary. Here are how the various common directories for Node.js apps will behave:
