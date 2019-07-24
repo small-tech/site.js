@@ -317,10 +317,21 @@ class Site {
     let server = this.createServer({global: this.global}, this.app)
 
     if (!this.isProxyServer) {
+
+      const createWebSocketServer = () => {
+        expressWebSocket(this.app, server, { perMessageDeflate: false })
+      }
+
+      // If we need to load dynamic routes from a routesJS file, do it now.
+      if (this.routesJsFile !== undefined) {
+        createWebSocketServer()
+        require(path.resolve(this.routesJsFile))(this.app)
+      }
+
       // If there are WebSocket routes, create a regular WebSocket server and
       // add the WebSocket routes (if any) to the app.
       if (this.wssRoutes !== undefined) {
-        expressWebSocket(this.app, server, { perMessageDeflate: false })
+        createWebSocketServer()
         this.wssRoutes.forEach(route => {
           console.log(` 🐁 Adding WebSocket (WSS) route: ${route.path}`)
           this.app.ws(route.path, require(route.callback))
@@ -487,6 +498,11 @@ class Site {
 
     if (fs.existsSync(dynamicRoutesDirectory)) {
 
+      const addBodyParser = () => {
+        this.app.use(bodyParser.json())
+        this.app.use(bodyParser.urlencoded({ extended: true }))
+      }
+
       // Attempts to load HTTPS routes from the passed directory,
       // adhering to rules 3 & 4.
       const loadHttpsRoutesFrom = (httpsRoutesDirectory) => {
@@ -514,10 +530,7 @@ class Site {
           if (httpsPostRoutesDirectoryExists) {
             // Load HTTPS POST routes.
 
-            // Add body parser
-            // TODO: Also do this for routes.js.!!!!!
-            this.app.use(bodyParser.json())
-            this.app.use(bodyParser.urlencoded({ extended: true }))
+            addBodyParser()
 
             const httpsPostRoutes = getRoutes(httpsPostRoutesDirectory)
             httpsPostRoutes.forEach(route => {
@@ -539,7 +552,12 @@ class Site {
 
       if (fs.existsSync(routesJsFile)) {
         console.log(' 🐁 Found routes.js file, will load dynamic routes from there.')
-        require(routesJsFile)(this.app)
+        // We flag that this needs to be done here and actually require the file
+        // once the server has been created so that WebSocket routes can be added also.
+        this.routesJsFile = routesJsFile
+
+        // Add POST handling in case there are POST routes defined.
+        addBodyParser()
         return
       }
 
