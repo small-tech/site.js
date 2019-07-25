@@ -34,6 +34,10 @@ const getRoutes = require('@ind.ie/web-routes-from-files')
 const Stats = require('./lib/Stats')
 
 class Site {
+
+  // Emitted when the address the server is trying to use is already in use by a different process on the system.
+  static get EVENT_ADDRESS_ALREADY_IN_USE () { return 'site.js-address-already-in-use' }
+
   // Logs a nicely-formatted version string based on
   // the version set in the package.json file to console.
   // (Only once per Site lifetime.)
@@ -118,8 +122,6 @@ class Site {
     } else {
       this.configureAppRoutes()
     }
-
-    // this.endAppConfiguration()
 
     // If running as child process, notify person.
     process.on('message', (m) => {
@@ -349,7 +351,7 @@ class Site {
       if (error.code === 'EADDRINUSE') {
         console.log(` 💥 Port ${port} is already in use.\n`)
       }
-      server.emit('site.js-address-already-in-use')
+      server.emit(Site.EVENT_ADDRESS_ALREADY_IN_USE)
     })
 
     // Handle graceful exit.
@@ -531,6 +533,11 @@ class Site {
         const httpsGetRoutesDirectoryExists = fs.existsSync(httpsGetRoutesDirectory)
         const httpsPostRoutesDirectoryExists = fs.existsSync(httpsPostRoutesDirectory)
 
+        //
+        // Rule 3: If a .get or a .post directory exists, attempt to load the dotJS routes from there.
+        // ===========================================================================================
+        //
+
         if (httpsGetRoutesDirectoryExists || httpsPostRoutesDirectoryExists) {
           // Either .get or .post routes directories (or both) exist.
           console.log(' 🐁 Found .get/.post folders. Will load dynamic routes from there.')
@@ -551,13 +558,19 @@ class Site {
           return
         }
 
-        // Separate .get and .post directories do not exist. This is our final fallback
-        // where we try to load HTTPS GET routes directly from the root of the
-        // passed https routes path.
+        //
+        // Rule 4: If all else fails, try to load dotJS GET routes.
+        // ========================================================
+        //
+
         loadHttpsGetRoutesFrom(httpsRoutesDirectory)
       }
 
+      //
       // Rule 1: Check if a routes.js file exists. If it does, we just need to load that in.
+      // ===================================================================================
+      //
+
       const routesJsFile = path.join(dynamicRoutesDirectory, 'routes.js')
 
       if (fs.existsSync(routesJsFile)) {
@@ -571,8 +584,11 @@ class Site {
         return
       }
 
-      // Rule 2: Check if .https and/or .wss folders exist. If they do,
-      // load the routes from there.
+      //
+      // Rule 2: Check if .https and/or .wss folders exist. If they do, load the routes from there.
+      // ==========================================================================================
+      //
+
       const httpsRoutesDirectory = path.join(dynamicRoutesDirectory, '.https')
       const wssRoutesDirectory = path.join(dynamicRoutesDirectory, '.wss')
       const httpsRoutesDirectoryExists = fs.existsSync(httpsRoutesDirectory)

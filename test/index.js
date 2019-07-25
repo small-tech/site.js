@@ -51,6 +51,34 @@ test('[site.js] createServer method', t => {
   })
 })
 
+test('[site.js] Simple dotJS filesystem-based route loading', t => {
+
+  t.plan(3)
+
+  const site = new Site({path: 'test/site-dynamic-dotjs-simple'})
+
+  // Ensure the route is loaded as we expect.
+  const routerStack = site.app._router.stack
+  t.strictEquals(routerStack[routerStack.length - 2].route.path, '/simple')
+
+  // Hit the route to ensure we get the response we expect.
+  const server = site.serve(async () => {
+    let response
+    try {
+      response = await secureGet('https://localhost/simple')
+    } catch (error) {
+      console.log(error)
+      process.exit(1)
+    }
+
+    t.strictEquals(response.statusCode, 200, 'request succeeds')
+    t.strictEquals(response.body, 'simple', 'route loads')
+
+    server.close()
+    t.end()
+  })
+})
+
 test('[site.js] archival cascade', t => {
   t.plan(8)
 
