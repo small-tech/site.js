@@ -292,6 +292,25 @@ test('[site.js] Separate .https and .wss folders with separate .get and .post fo
 })
 
 
+test('[site.js] dynamic route loading from routes.js file', t => {
+
+  t.plan(4)
+
+  const site = new Site({path: 'test/site-dynamic-routes-js'})
+  const routerStack = site.app._router.stack
+
+  const getRouteWithParameter = routerStack[10].route
+  t.true(getRouteWithParameter.methods.get, 'request method should be GET')
+  t.strictEquals(getRouteWithParameter.path, '/hello/:thing', 'path should be correct and contain parameter')
+
+  const wssRoute = routerStack[11].route
+  t.true(wssRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
+  t.strictEquals(wssRoute.path, '/echo/.websocket', 'path should be correct and contain parameter')
+
+  t.end()
+})
+
+
 test('[site.js] archival cascade', t => {
   t.plan(8)
 
