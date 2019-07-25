@@ -261,9 +261,9 @@ class Site {
     this.server.on('error', error => {
       console.log('\n 🤯 Error: could not start server.\n')
       if (error.code === 'EADDRINUSE') {
-        console.log(` 💥 Port ${port} is already in use.\n`)
+        console.log(` 💥 Port ${this.port} is already in use.\n`)
       }
-      server.emit(Site.EVENT_ADDRESS_ALREADY_IN_USE)
+      this.server.emit(Site.EVENT_ADDRESS_ALREADY_IN_USE)
     })
 
     // The error routes go at the very end.

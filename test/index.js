@@ -121,13 +121,11 @@ test('[site.js] Simple dotJS filesystem-based route loading', t => {
 })
 
 
-test('[site.js] Separate .get and .post folders with dotJS filesystem-based route loading', t => {
+// Runs the tests for routes within separate .get and .https folders.
+function runDotJsSeparateGetAndPostTests (t, site, callback) {
 
-  t.plan(32)
+  // 32 tests.
 
-  const site = new Site({path: 'test/site-dynamic-dotjs-separate-get-and-post'})
-
-  // Ensure the route is loaded as we expect.
   const routerStack = site.app._router.stack
 
   const getFileNameAsRouteNameRoute = routerStack[7].route
@@ -207,29 +205,36 @@ test('[site.js] Separate .get and .post folders with dotJS filesystem-based rout
     t.strictEquals(postSubRouteIndexRouteResponse.data, 'POST /sub-route', 'route loads')
 
     server.close()
+
+    callback.apply(this, [])
+  })
+}
+
+
+test('[site.js] Separate .get and .post folders with dotJS filesystem-based route loading', t => {
+
+  t.plan(32)
+
+  const site = new Site({path: 'test/site-dynamic-dotjs-separate-get-and-post'})
+  runDotJsSeparateGetAndPostTests(t, site, () => {
     t.end()
   })
 
 })
 
 
-// test('[site.js] Separate .https and .wss folders with separate .get and .post folders in the .https folder with dotJS filesystem-based route loading', t => {
+test('[site.js] Separate .https and .wss folders with separate .get and .post folders in the .https folder with dotJS filesystem-based route loading', t => {
 
-//   const site = new Site({path: 'test/site-dynamic-dotjs-separate-https-and-wss-and-separate-get-and-post'})
+  t.plan(32)
 
-//   // Ensure the route is loaded as we expect.
-//   const routerStack = site.app._router.stack
+  const site = new Site({path: 'test/site-dynamic-dotjs-separate-https-and-wss-and-separate-get-and-post'})
 
-//   console.log(routerStack)
+  runDotJsSeparateGetAndPostTests(t, site , () => {
 
-//   // const server = site.serve(async () => {
-
-
-//   // })
-
-//   t.end()
-//   process.exit()
-// })
+    // Run the WSS tests.
+    t.end()
+  })
+})
 
 
 test('[site.js] archival cascade', t => {
