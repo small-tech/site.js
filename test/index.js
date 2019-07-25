@@ -225,7 +225,7 @@ test('[site.js] Separate .get and .post folders with dotJS filesystem-based rout
 
 test('[site.js] Separate .https and .wss folders with separate .get and .post folders in the .https folder with dotJS filesystem-based route loading', t => {
 
-  t.plan(34)
+  t.plan(40)
 
   const site = new Site({path: 'test/site-dynamic-dotjs-separate-https-and-wss-and-separate-get-and-post'})
 
@@ -242,8 +242,17 @@ test('[site.js] Separate .https and .wss folders with separate .get and .post fo
     t.true(webSocketFileNameAsRouteNameRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
     t.strictEquals(webSocketFileNameAsRouteNameRoute.path, '/file-name-as-route-name/.websocket', 'path should be correct')
 
+    const webSocketIndexRoute = routerStack[19].route
+    t.true(webSocketIndexRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
+    t.strictEquals(webSocketIndexRoute.path, '/.websocket', 'path should be correct')
 
-    // console.log(routerStack)
+    const webSocketSubRouteFileNameAsRouteNameRoute = routerStack[20].route
+    t.true(webSocketSubRouteFileNameAsRouteNameRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
+    t.strictEquals(webSocketSubRouteFileNameAsRouteNameRoute.path, '/sub-route/file-name-as-route-name/.websocket', 'path should be correct')
+
+    const webSocketSubRouteIndexRoute = routerStack[21].route
+    t.true(webSocketSubRouteIndexRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
+    t.strictEquals(webSocketSubRouteIndexRoute.path, '/sub-route/.websocket', 'path should be correct')
 
     t.end()
   })
