@@ -19,6 +19,8 @@ const path = require('path')
 
 const queryString = require('querystring')
 
+const WebSocket = require('ws')
+
 function localhost(path) {
   return `https://localhost${path}`
 }
@@ -225,7 +227,7 @@ test('[site.js] Separate .get and .post folders with dotJS filesystem-based rout
 
 test('[site.js] Separate .https and .wss folders with separate .get and .post folders in the .https folder with dotJS filesystem-based route loading', t => {
 
-  t.plan(40)
+  t.plan(41)
 
   const site = new Site({path: 'test/site-dynamic-dotjs-separate-https-and-wss-and-separate-get-and-post'})
 
@@ -254,7 +256,24 @@ test('[site.js] Separate .https and .wss folders with separate .get and .post fo
     t.true(webSocketSubRouteIndexRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
     t.strictEquals(webSocketSubRouteIndexRoute.path, '/sub-route/.websocket', 'path should be correct')
 
-    t.end()
+    // Actually test the WebSocket (WSS) routes by connecting to them.
+    const server = site.serve(() => {
+
+      const ws = new WebSocket(`wss://localhost/`, {
+        rejectUnauthorized: false
+      })
+
+      ws.on('open', () => {
+        ws.send('test')
+      })
+
+      ws.on('message', (data) => {
+        ws.close()
+        server.close()
+        t.strictEquals(data, '/ test', 'the correct message is echoed back')
+        t.end()
+      })
+    })
   })
 })
 
