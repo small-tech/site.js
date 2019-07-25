@@ -6,10 +6,8 @@ module.exports = app => {
   // GET route with parameter.
   app.get('/hello/:thing', (request, response) => {
     response
-      .type('html')
-      .end(`
-        <h1>Hello, ${request.params.thing}!</h1>
-      `)
+      .type('text')
+      .end(`Hello, ${request.params.thing}!`)
   })
 
   // Simple echo WebSocket (WSS) route.

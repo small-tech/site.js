@@ -294,7 +294,7 @@ test('[site.js] Separate .https and .wss folders with separate .get and .post fo
 
 test('[site.js] dynamic route loading from routes.js file', t => {
 
-  t.plan(4)
+  t.plan(6)
 
   const site = new Site({path: 'test/site-dynamic-routes-js'})
   const routerStack = site.app._router.stack
@@ -307,7 +307,23 @@ test('[site.js] dynamic route loading from routes.js file', t => {
   t.true(wssRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
   t.strictEquals(wssRoute.path, '/echo/.websocket', 'path should be correct and contain parameter')
 
-  t.end()
+  // Actually connect to the routes and test the responses.
+  const server = site.serve(async () => {
+    let response
+    try {
+      response = await secureGet('https://localhost/hello/world')
+    } catch (error) {
+      console.log(error)
+      process.exit(1)
+    }
+
+    t.strictEquals(response.statusCode, 200, 'request succeeds')
+    t.strictEquals(response.body, 'Hello, world!', 'route loads with correct message')
+
+    server.close()
+    t.end()
+  })
+
 })
 
 
