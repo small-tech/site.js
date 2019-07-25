@@ -227,7 +227,7 @@ test('[site.js] Separate .get and .post folders with dotJS filesystem-based rout
 
 test('[site.js] Separate .https and .wss folders with separate .get and .post folders in the .https folder with dotJS filesystem-based route loading', t => {
 
-  t.plan(41)
+  t.plan(44)
 
   const site = new Site({path: 'test/site-dynamic-dotjs-separate-https-and-wss-and-separate-get-and-post'})
 
@@ -257,22 +257,36 @@ test('[site.js] Separate .https and .wss folders with separate .get and .post fo
     t.strictEquals(webSocketSubRouteIndexRoute.path, '/sub-route/.websocket', 'path should be correct')
 
     // Actually test the WebSocket (WSS) routes by connecting to them.
-    const server = site.serve(() => {
+    const server = site.serve(async () => {
 
-      const ws = new WebSocket(`wss://localhost/`, {
-        rejectUnauthorized: false
-      })
+      const testWebSocketPath = (path) => {
 
-      ws.on('open', () => {
-        ws.send('test')
-      })
+        return new Promise((resolve, reject) => {
 
-      ws.on('message', (data) => {
-        ws.close()
-        server.close()
-        t.strictEquals(data, '/ test', 'the correct message is echoed back')
-        t.end()
-      })
+          const webSocketUrl = `wss://localhost${path}`
+          const ws = new WebSocket(webSocketUrl, { rejectUnauthorized: false })
+
+          ws.on('open', () => { ws.send('test') })
+
+          ws.on('message', (data) => {
+            ws.close()
+            t.strictEquals(data, `${path} test`, 'the correct message is echoed back')
+            resolve()
+          })
+
+          ws.on('error', (error) => {
+            reject(error)
+          })
+        })
+      }
+
+      await testWebSocketPath('/file-name-as-route-name')
+      await testWebSocketPath('/')
+      await testWebSocketPath('/sub-route/file-name-as-route-name')
+      await testWebSocketPath('/sub-route')
+
+      server.close()
+      t.end()
     })
   })
 })
