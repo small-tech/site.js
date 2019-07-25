@@ -6,7 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
-## [12.1.1] - 2019-07-??
+Nothing yet.
+
+## [12.2.0] - 2019-07-25
+
+### Added
+
+  - Full support for dynamic applications with dotJS and routes.js routing for HTTPS and WebSocket (WSS).
+
+## [12.1.1] - 2019-07-10
 
 ### Fixed
 

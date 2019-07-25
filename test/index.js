@@ -17,6 +17,13 @@ const https = require('https')
 const fs = require('fs')
 const path = require('path')
 
+const queryString = require('querystring')
+
+const WebSocket = require('ws')
+
+function localhost(path) {
+  return `https://localhost${path}`
+}
 
 async function secureGet (url) {
   return new Promise((resolve, reject) => {
@@ -39,6 +46,41 @@ async function secureGet (url) {
 }
 
 
+async function securePost (hostname, path, data = {}, isJSON = false) {
+  return new Promise((resolve, reject) => {
+
+    const encodedData = isJSON ? JSON.stringify(data) : queryString.stringify(data)
+
+    const options = {
+      hostname,
+      path,
+      port: 443,
+      method: 'POST',
+      headers: {
+        'Content-Type': isJSON ? 'application/json' : 'application/x-www-form-urlencoded',
+        'Content-Length': encodedData.length
+      }
+    }
+
+    const request = https.request(options, response => {
+      const statusCode = response.statusCode
+      let body = ''
+      response.on('data', (data) => {
+        // Note: we should really be parsing querystring data here but our test routes
+        // ===== return plain text at the moment. TODO: Update.
+        decodedData = isJSON ? JSON.parse(data) : data.toString('utf-8') // queryString.parse(data)
+        resolve({statusCode, data: decodedData})
+      })
+    })
+
+    request.on('error', () => reject(error))
+
+    request.write(encodedData)
+    request.end()
+  })
+}
+
+
 test('[site.js] createServer method', t => {
   t.plan(2)
   const server = new Site().createServer()
@@ -51,42 +93,284 @@ test('[site.js] createServer method', t => {
   })
 })
 
+
+test('[site.js] Simple dotJS filesystem-based route loading', t => {
+
+  t.plan(3)
+
+  const site = new Site({path: 'test/site-dynamic-dotjs-simple'})
+
+  // Ensure the route is loaded as we expect.
+  const routerStack = site.app._router.stack
+  t.strictEquals(routerStack[7].route.path, '/simple')
+
+  // Hit the route to ensure we get the response we expect.
+  const server = site.serve(async () => {
+    let response
+    try {
+      response = await secureGet('https://localhost/simple')
+    } catch (error) {
+      console.log(error)
+      process.exit(1)
+    }
+
+    t.strictEquals(response.statusCode, 200, 'request succeeds')
+    t.strictEquals(response.body, 'simple', 'route loads')
+
+    server.close()
+    t.end()
+  })
+})
+
+
+// Runs the tests for routes within separate .get and .https folders.
+function runDotJsSeparateGetAndPostTests (t, site, callback) {
+
+  // 32 tests.
+
+  const routerStack = site.app._router.stack
+
+  const getFileNameAsRouteNameRoute = routerStack[7].route
+  t.true(getFileNameAsRouteNameRoute.methods.get, 'request method should be GET')
+  t.strictEquals(getFileNameAsRouteNameRoute.path, '/file-name-as-route-name', 'path should be correct')
+
+  const getIndexRoute = routerStack[8].route
+  t.true(getIndexRoute.methods.get, 'request method should be GET')
+  t.strictEquals(getIndexRoute.path, '/', 'path should be correct')
+
+  const getSubRouteFileNameAsRouteNameRoute = routerStack[9].route
+  t.true(getSubRouteFileNameAsRouteNameRoute.methods.get, 'request method should be GET')
+  t.strictEquals(getSubRouteFileNameAsRouteNameRoute.path, '/sub-route/file-name-as-route-name', 'path should be correct')
+
+  const getSubRouteIndexRoute = routerStack[10].route
+  t.true(getSubRouteIndexRoute.methods.get, 'request method should be GET')
+  t.strictEquals(getSubRouteIndexRoute.path, '/sub-route', 'path should be correct')
+
+  // Next two routes are the body parser and JSON parser, so we skip those.
+
+  const postFileNameAsRouteNameRoute = routerStack[13].route
+  t.true(postFileNameAsRouteNameRoute.methods.post, 'request method should be POST')
+  t.strictEquals(postFileNameAsRouteNameRoute.path, '/file-name-as-route-name', 'path should be correct')
+
+  const postIndexRoute = routerStack[14].route
+  t.true(postIndexRoute.methods.post, 'request method should be POST')
+  t.strictEquals(postIndexRoute.path, '/', 'path should be correct')
+
+  const postSubRouteFileNameAsRouteNameRoute = routerStack[15].route
+  t.true(postSubRouteFileNameAsRouteNameRoute.methods.post, 'request method should be POST')
+  t.strictEquals(postSubRouteFileNameAsRouteNameRoute.path, '/sub-route/file-name-as-route-name', 'path should be correct')
+
+  const postSubRouteIndexRoute = routerStack[16].route
+  t.true(postSubRouteIndexRoute.methods.post, 'request method should be POST')
+  t.strictEquals(postSubRouteIndexRoute.path, '/sub-route', 'path should be correct')
+
+  // Hit the routes to ensure we get the responses we expect.
+  const server = site.serve(async () => {
+
+    // So we can access them outside of the try block (scope).
+    let getFileNameAsRouteNameRouteResponse, getIndexRouteResponse, getSubRouteFileNameAsRouteNameRouteResponse, getSubRouteIndexRouteResponse, postFileNameAsRouteNameRouteResponse, postIndexRouteResponse,postSubRouteFileNameAsRouteNameRouteResponse, postSubRouteIndexRouteResponse;
+
+    try {
+      getFileNameAsRouteNameRouteResponse = await secureGet(localhost(getFileNameAsRouteNameRoute.path))
+      getIndexRouteResponse = await secureGet(localhost(getIndexRoute.path))
+      getSubRouteFileNameAsRouteNameRouteResponse = await secureGet(localhost(getSubRouteFileNameAsRouteNameRoute.path))
+      getSubRouteIndexRouteResponse = await secureGet(localhost(getSubRouteIndexRoute.path))
+
+      postFileNameAsRouteNameRouteResponse = await securePost('localhost', postFileNameAsRouteNameRoute.path)
+      postIndexRouteResponse = await securePost('localhost', postIndexRoute.path)
+      postSubRouteFileNameAsRouteNameRouteResponse = await securePost('localhost', postSubRouteFileNameAsRouteNameRoute.path)
+      postSubRouteIndexRouteResponse = await securePost('localhost', postSubRouteIndexRoute.path)
+    } catch (error) {
+      console.log(error)
+      process.exit(1)
+    }
+
+    t.strictEquals(getFileNameAsRouteNameRouteResponse.statusCode, 200, 'request succeeds')
+    t.strictEquals(getIndexRouteResponse.statusCode, 200, 'request succeeds')
+    t.strictEquals(getSubRouteFileNameAsRouteNameRouteResponse.statusCode, 200, 'request succeeds')
+    t.strictEquals(getSubRouteIndexRouteResponse.statusCode, 200, 'request succeeds')
+
+    t.strictEquals(postFileNameAsRouteNameRouteResponse.statusCode, 200, 'request succeeds')
+    t.strictEquals(postIndexRouteResponse.statusCode, 200, 'request succeeds')
+    t.strictEquals(postSubRouteFileNameAsRouteNameRouteResponse.statusCode, 200, 'request succeeds')
+    t.strictEquals(postSubRouteIndexRouteResponse.statusCode, 200, 'request succeeds')
+
+    t.strictEquals(getFileNameAsRouteNameRouteResponse.body, 'GET /file-name-as-route-name', 'route loads')
+    t.strictEquals(getIndexRouteResponse.body, 'GET /', 'route loads')
+    t.strictEquals(getSubRouteFileNameAsRouteNameRouteResponse.body, 'GET /sub-route/file-name-as-route-name', 'route loads')
+    t.strictEquals(getSubRouteIndexRouteResponse.body, 'GET /sub-route', 'route loads')
+
+    t.strictEquals(postFileNameAsRouteNameRouteResponse.data, 'POST /file-name-as-route-name', 'route loads')
+
+    t.strictEquals(postIndexRouteResponse.data, 'POST /', 'route loads')
+    t.strictEquals(postSubRouteFileNameAsRouteNameRouteResponse.data, 'POST /sub-route/file-name-as-route-name', 'route loads')
+    t.strictEquals(postSubRouteIndexRouteResponse.data, 'POST /sub-route', 'route loads')
+
+    server.close()
+
+    callback.apply(this, [])
+  })
+}
+
+
+test('[site.js] Separate .get and .post folders with dotJS filesystem-based route loading', t => {
+
+  t.plan(32)
+
+  const site = new Site({path: 'test/site-dynamic-dotjs-separate-get-and-post'})
+  runDotJsSeparateGetAndPostTests(t, site, () => {
+    t.end()
+  })
+
+})
+
+
+test('[site.js] Separate .https and .wss folders with separate .get and .post folders in the .https folder with dotJS filesystem-based route loading', t => {
+
+  t.plan(44)
+
+  const site = new Site({path: 'test/site-dynamic-dotjs-separate-https-and-wss-and-separate-get-and-post'})
+
+  runDotJsSeparateGetAndPostTests(t, site , () => {
+
+    // Run the WSS tests.
+    const routerStack = site.app._router.stack
+
+    // Indices up to 16 have been covered by runDotJsSeparateGetAndPostTests() above.
+    // Index 17 is that static router.
+    // The WSS routes start at index 18.
+
+    const webSocketFileNameAsRouteNameRoute = routerStack[18].route
+    t.true(webSocketFileNameAsRouteNameRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
+    t.strictEquals(webSocketFileNameAsRouteNameRoute.path, '/file-name-as-route-name/.websocket', 'path should be correct')
+
+    const webSocketIndexRoute = routerStack[19].route
+    t.true(webSocketIndexRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
+    t.strictEquals(webSocketIndexRoute.path, '/.websocket', 'path should be correct')
+
+    const webSocketSubRouteFileNameAsRouteNameRoute = routerStack[20].route
+    t.true(webSocketSubRouteFileNameAsRouteNameRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
+    t.strictEquals(webSocketSubRouteFileNameAsRouteNameRoute.path, '/sub-route/file-name-as-route-name/.websocket', 'path should be correct')
+
+    const webSocketSubRouteIndexRoute = routerStack[21].route
+    t.true(webSocketSubRouteIndexRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
+    t.strictEquals(webSocketSubRouteIndexRoute.path, '/sub-route/.websocket', 'path should be correct')
+
+    // Actually test the WebSocket (WSS) routes by connecting to them.
+    const server = site.serve(async () => {
+
+      const testWebSocketPath = (path) => {
+
+        return new Promise((resolve, reject) => {
+
+          const webSocketUrl = `wss://localhost${path}`
+          const ws = new WebSocket(webSocketUrl, { rejectUnauthorized: false })
+
+          ws.on('open', () => { ws.send('test') })
+
+          ws.on('message', (data) => {
+            ws.close()
+            t.strictEquals(data, `${path} test`, 'the correct message is echoed back')
+            resolve()
+          })
+
+          ws.on('error', (error) => {
+            reject(error)
+          })
+        })
+      }
+
+      await testWebSocketPath('/file-name-as-route-name')
+      await testWebSocketPath('/')
+      await testWebSocketPath('/sub-route/file-name-as-route-name')
+      await testWebSocketPath('/sub-route')
+
+      server.close()
+      t.end()
+    })
+  })
+})
+
+
+test('[site.js] dynamic route loading from routes.js file', t => {
+
+  t.plan(7)
+
+  const site = new Site({path: 'test/site-dynamic-routes-js'})
+  const routerStack = site.app._router.stack
+
+  const getRouteWithParameter = routerStack[10].route
+  t.true(getRouteWithParameter.methods.get, 'request method should be GET')
+  t.strictEquals(getRouteWithParameter.path, '/hello/:thing', 'path should be correct and contain parameter')
+
+  const wssRoute = routerStack[11].route
+  t.true(wssRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
+  t.strictEquals(wssRoute.path, '/echo/.websocket', 'path should be correct and contain parameter')
+
+  // Actually connect to the routes and test the responses.
+  const server = site.serve(async () => {
+
+    // Test the GET route with the parameter.
+    let response
+    try {
+      response = await secureGet('https://localhost/hello/world')
+    } catch (error) {
+      console.log(error)
+      process.exit(1)
+    }
+
+    t.strictEquals(response.statusCode, 200, 'request succeeds')
+    t.strictEquals(response.body, 'Hello, world!', 'route loads with correct message')
+
+    // Test the WSS route.
+    const ws = new WebSocket('wss://localhost/echo', { rejectUnauthorized: false })
+
+    ws.on('open', () => { ws.send('test') })
+
+    ws.on('message', (data) => {
+      ws.close()
+      t.strictEquals(data, 'test', 'the correct message is echoed back')
+
+      server.close()
+      t.end()
+    })
+  })
+})
+
+
 test('[site.js] archival cascade', t => {
   t.plan(8)
 
-  const archive1 = path.join(__dirname, 'site-archive-1')
-  const archive2 = path.join(__dirname, 'site-archive-2')
-  fs.mkdirSync(archive1)
-  fs.mkdirSync(archive2)
+  const archivalCascadeRoot = path.join(__dirname, 'archival-cascade')
+
+  const mainSiteIndexPath = path.join(archivalCascadeRoot, 'site', 'index.html')
+  const mainSiteIndexContent = fs.readFileSync(mainSiteIndexPath, 'utf-8')
+
+  const archive1 = path.join(archivalCascadeRoot, 'site-archive-1')
+  const archive2 = path.join(archivalCascadeRoot, 'site-archive-2')
 
   // Older archive
   const archive1Index = path.join(archive1, 'index.html')
   const archive1Unique = path.join(archive1, 'unique-1.html')
   const archive1Override = path.join(archive1, 'override.html')
-  const archive1IndexContent = 'Archive 1 index – this file should be overriden by site'
-  const archive1UniqueContent = 'Archive 1 unique – this file should be served'
-  const archive1OverrideContent = 'Archive 1 – this file should be overriden by Archive 2’s version'
-  fs.writeFileSync(archive1Index, archive1IndexContent, 'utf-8')
-  fs.writeFileSync(archive1Unique, archive1UniqueContent, 'utf-8')
-  fs.writeFileSync(archive1Override, archive1OverrideContent, 'utf-8')
+  const archive1IndexContent = fs.readFileSync(archive1Index, 'utf-8')
+  const archive1UniqueContent = fs.readFileSync(archive1Unique, 'utf-8')
+  const archive1OverrideContent = fs.readFileSync(archive1Override, 'utf-8')
 
   // Newer archive
   const archive2Index = path.join(archive2, 'index.html')
   const archive2Unique = path.join(archive2, 'unique-2.html')
   const archive2Override = path.join(archive2, 'override.html')
-  const archive2IndexContent = 'Archive 2 index – this file should be overriden by site'
-  const archive2UniqueContent = 'Archive 2 unique – this file should be served'
-  const archive2OverrideContent = 'Archive 2 – this file should be served and override Archive 1’s version'
-  fs.writeFileSync(archive2Index, archive2IndexContent, 'utf-8')
-  fs.writeFileSync(archive2Unique, archive2UniqueContent, 'utf-8')
-  fs.writeFileSync(archive2Override, archive2OverrideContent, 'utf-8')
+  const archive2IndexContent = fs.readFileSync(archive2Index, 'utf-8')
+  const archive2UniqueContent = fs.readFileSync(archive2Unique, 'utf-8')
+  const archive2OverrideContent = fs.readFileSync(archive2Override, 'utf-8')
 
   const indexURL = `https://localhost/index.html`
   const unique1URL = `https://localhost/unique-1.html`
   const unique2URL = `https://localhost/unique-2.html`
   const overrideURL = `https://localhost/override.html`
 
-  const server = new Site({path: 'test/site'}).serve(async () => {
+  const server = new Site({path: 'test/archival-cascade/site'}).serve(async () => {
     let responseIndex, responseUnique1, responseUnique2, responseOverride
     try {
       responseIndex = await secureGet(indexURL)
@@ -103,23 +387,13 @@ test('[site.js] archival cascade', t => {
     t.equal(responseUnique2.statusCode, 200, 'requestUnique2 succeeds')
     t.equal(responseOverride.statusCode, 200, 'requestOverride succeeds')
 
-    t.equal(responseIndex.body.replace(/\s/g, ''), fs.readFileSync(path.join(__dirname, 'site', 'index.html'), 'utf-8').replace(/\s/g, ''), 'site index overrides archive indices')
+    t.equal(responseIndex.body, mainSiteIndexContent, 'site index overrides archive indices')
     t.equal(responseUnique1.body, archive1UniqueContent, 'archive 1 unique content loads')
     t.equal(responseUnique2.body, archive2UniqueContent, 'archive 2 unique content loads')
     t.equal(responseOverride.body, archive2OverrideContent, 'archive 2 content overrides archive 1 content')
 
     server.close()
     t.end()
-
-    // Clean up
-    fs.unlinkSync(archive1Index)
-    fs.unlinkSync(archive1Unique)
-    fs.unlinkSync(archive1Override)
-    fs.unlinkSync(archive2Index)
-    fs.unlinkSync(archive2Unique)
-    fs.unlinkSync(archive2Override)
-    fs.rmdirSync(archive1)
-    fs.rmdirSync(archive2)
   })
 })
 

@@ -6,13 +6,27 @@
 
 __Site.js is an integrated [Small Tech](https://ar.al/2019/03/04/small-technology/) personal web tool for Linux and Linux-like* operating systems.__
 
+Most of our tools today are built for the needs of startups and enterprises – Site.js is built for individuals.
+
+## Features
+
   - Zero-configuration – It Just Works 🤞™.
 
-  - Develop with automatically-provisioned locally-trusted TLS courtesy of [mkcert](https://github.com/FiloSottile/mkcert) seamlessly integrated via [Nodecert](https://source.ind.ie/hypha/tools/nodecert).
+  - Seamless single binary [install](#install) (thanks to [Nexe](https://github.com/nexe/nexe)).
 
-  - Stage and deploy production servers with automatically-provisioned globally-trusted TLS courtesy of [Let’s Encrypt](https://letsencrypt.org/) seamlessly integrated via [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) and [systemd](https://freedesktop.org/wiki/Software/systemd/). Your server will score an A on the [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest).
+  - Automatically provisions locally-trusted TLS for development (courtesy of [mkcert](https://github.com/FiloSottile/mkcert) seamlessly integrated via [Nodecert](https://source.ind.ie/hypha/tools/nodecert)).
 
-  - Create static web sites, extend them with dynamic JavaScript routes, or extend Site.js in Node.js to create fully-dynamic personal web applications.
+  - Automatically provisions globally-trusted TLS for staging and production (courtesy of [Let’s Encrypt](https://letsencrypt.org/) seamlessly integrated via [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) and [systemd](https://freedesktop.org/wiki/Software/systemd/). Your server will score an A on the [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest).)
+
+  - Supports static web sites, dynamic web sites written in JavaScript, and hybrid sites (via integrated [Node.js](https://nodejs.org/) and [Express](https://expressjs.com)).
+
+  - Can be used as a proxy server (via integrated [http-proxy-middleware](https://github.com/chimurai/http-proxy-middleware)).
+
+  - Supports WebSockets (via integrated [express-ws](https://github.com/HenningM/express-ws), which itself wraps [ws](https://github.com/websockets/ws)).
+
+  - Supports PHP-like simple routing for Node.js to quickly prototype and build dynamic sites.
+
+  - Or, for full flexibility, you can define your HTTPS and WebSocket (WSS) routes entirely in code in the traditional way for Express apps.
 
   <ins>Note:</ins> Live deployments via startup daemons are only supported on Linux distributions with systemd.
 
@@ -176,6 +190,8 @@ Site.js uses the [systemd](https://freedesktop.org/wiki/Software/systemd/) to st
 
 ## Build and test from source
 
+Site.js is built using and supports the latest Node.js LTS (currently 10.6.0; on October 22nd, 2019, we are scheduled to move to Node 12 LTS when it becomes the active branch).
+
 ### Install the source and run tests
 
 ```shell
@@ -185,9 +201,19 @@ git clone https://source.ind.ie/site.js/app.git
 cd app
 ./install
 
+# Run the app once (so that it can get your Node.js binary
+# permission to bind to ports < 1024 on Linux ­– otherwise
+# the tests will fail.)
+bin/site.js test/site
+
+# You should be able to see the site at https://localhost
+# now. Press Ctrl+C to stop the server.
+
 # Run unit tests.
 npm test
 ```
+
+__Note:__ If you upgrade your Node.js binary, please run `bin/site.js` again before running the tests (or using Site.js as a module in your own app) so that it can get permissions for your Node.js binary to bind to ports < 1024. Otherwise, it will fail with `Error: listen EACCES: permission denied 0.0.0.0:443`.
 
 ### Install as global Node.js module
 
@@ -402,16 +428,54 @@ If you do not create custom error pages, the built-in default error pages will b
 
 When creating your own servers (see [API](#API)), you can generate the default error pages programmatically using the static methods `Site.default404ErrorPage()` and `Site.default500ErrorPage()`, passing in the missing path and the error message as the argument, respectively to get the HTML string of the error page returned.
 
-## Dynamic routes
+## Dynamic sites
 
-You can include very basic dynamic routes by including JavaScript files that export middleware-style functions in a special _.dynamic_ folder in the root folder of your web content. The syntax and conventions are [detailed here](https://source.ind.ie/hypha/tools/web-routes-from-files).
+You can specify routes with dynamic functionality by specifying HTTPS and WebSocket (WSS) routes in two ways: either using a simple file system routing convention (ala PHP, but for JavaScript) or through code in a _routes.js_ file.
+
+In either case, your dynamic routes go into a directory named _.dynamic_ in the root of your site.
+
+### File System Routing
+
+#### GET-only (simplest approach)
+
+The easiest way to get started with dynamic routes is to simply create a JavaScript file in a folder called _.dynamic_ in the root folder of your site. Any routes added in this manner will be served via HTTPS GET.
+
+For example, to have a dynamic route at `https://localhost`, create the following file:
+
+```
+.dynamic/
+    └ index.js
+```
+
+Inside _index.js_, all you need to do is to export your route handler:
+
+```js
+let counter = 0
+
+module.exports = (request, response) => {
+  response
+    .type('html')
+    .end(`
+      <h1>Hello, world!</h1>
+      <p>I’ve been called ${++counter} time${counter > 1 ? 's': ''} since the server started.</p>
+    `)
+}
+```
+
+To test it, run a local server (`site`) and go to `https://localhost`. Refresh the page a couple of times to see the counter increase.
+
+Congratulations, you’ve just made your first dynamic route.
+
+In the above example, _index.js_ is special in that the file name is ignored and the directory that the file is in becomes the name of the route. In this case, since we put it in the root of our site, the route becomes `/`.
+
+Usually, you will have more than just the index route (or your index route might be a static one). In those cases, you can either use directories with _index.js_ files in them to name and organise your routes or you can use the names of _.js_ files themselves as the route names. Either method is fine but you should choose one and stick to it in order not to confuse yourself later on (see [Precedence](#Precendence), below).
 
 So, for example, if you wanted to have a dynamic route that showed the server CPU load and free memory, you could create a file called _.dynamic/server-stats.js_ in your web folder with the following content:
 
 ```js
 const os = require('os')
 
-function serverStats (request, response, next) {
+function serverStats (request, response) {
 
   const loadAverages = `<p> ${os.loadavg().reduce((a, c, i) => `${a}\n<li><strong>CPU ${i+1}:</strong> ${c}</li>`, '<ul>') + '</ul>'}</p>`
 
@@ -419,7 +483,9 @@ function serverStats (request, response, next) {
 
   const page = `<html><head><title>Server statistics</title><style>body {font-family: sans-serif;}</style></head><body><h1>Server statistics</h1><h2>Load averages</h2>${loadAverages}<h2>Free memory</h2>${freeMemory}</body></html>`
 
-  response.end(page)
+  response
+    .type('html')
+    .end(page)
 }
 
 module.exports = serverStats
@@ -427,11 +493,301 @@ module.exports = serverStats
 
 Site.js will load your dynamic route at startup and you can test it by hitting _https://localhost/server-stats_ using a local web server. Each time you refresh, you should get the latest dynamic content.
 
+__Note:__ You could also have named your route _.dynamic/server-stats/index.js_ and still hit it from _https://localhost/server-stats_. It’s best to keep to one or other convention (either using file names as route names or directory names as route names). Using both in the same app will probably confuse you (see [Precedence](#Precendence), below).
+
 If you need to use custom Node modules, initialise your _.dynamic_ folder using `npm init` and use `npm install` as usual. And modules you require from your routes will be properly loaded and used.
 
-### Directories
+So, for example, if you want to display a random ASCII Cow using the Cows module, create a _package.json_ file in your _.dynamic_ folder (e.g., use `npm init` to create this interactively). Something like:
 
-Your dynamic web routes are running within Site.js, which is a Node application compiled into a native binary.
+```json
+{
+  "name": "random-cow",
+  "version": "1.0.0",
+  "description": "Displays a random cow.",
+  "main": "index.js",
+  "author": "Aral Balkan <mail@ar.al> (https://ar.al)",
+  "license": "AGPL-3.0-or-later"
+}
+```
+
+Then, install the [cows npm module](https://www.npmjs.com/package/cows):
+
+```sh
+npm i cows
+```
+
+This will create a directory called _node_modules_ in your _.dynamic_ folder and install the cows module (and any dependencies it may have) inside it. Now is a good time to also create a `.gitignore` file in the root of your web project and add the _node_modules_ directory to it if you’re using Git for source control so that it is not accidentally checked in. E.g.,
+
+```sh
+echo 'node_modules' >> .gitignore
+```
+
+Now, let’s create the route. We want it reachable at `https://localhost/cows` (of course), so let’s put it in:
+
+```
+.dynamic/
+    └ cows
+        └ index.js
+```
+
+And, finally, the route itself:
+
+```js
+const cows = require('cows')()
+
+module.exports = function (request, response) {
+  const randomCowIndex = Math.round(Math.random()*cows.length)-1
+  const randomCow = cows[randomCowIndex]
+
+  function randomColor () {
+    const c = () => (Math.round(Math.random() * 63) + 191).toString(16)
+    return `#${c()}${c()}${c()}`
+  }
+
+  response.end(`
+    <!doctype html>
+    <html lang='en'>
+    <head>
+      <meta charset='utf-8'>
+      <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+      <title>Cows!</title>
+      <style>
+        html { font-family: sans-serif; color: dark-grey; background-color: ${randomColor()}; }
+        body {
+          display: grid; align-items: center; justify-content: center;
+          height: 100vh; vertical-align: top; margin: 0;
+        }
+        pre { font-size: 24px; color: ${randomColor()}; mix-blend-mode: difference;}
+      </style>
+    </head>
+    <body>
+        <pre>${randomCow}</pre>
+    </body>
+    </html>`)
+}
+```
+
+Now if you run `site` on the root of your web folder (the one that contains the _.dynamic_ folder) and hit `https://localhost/cows`, you should get a random cow in a random colour every time you refresh.
+
+If including HTML and CSS directly in your dynamic route makes you cringe, feel free to `require` your templating library of choice and move them to external files. As hidden folders (directories that begin with a dot) are ignored in the _.dynamic_ folder and its subfolders, you can place any assets (HTML, CSS, images, etc.) into a diretory that starts with a dot and load them in from there.
+
+For example, if I wanted to move the HTML and CSS into their own files in the example above, I could create the following directory structure:
+
+```
+.dynamic/
+    └ cows
+        ├ .assets
+        │     ├ index.html
+        │     └ index.css
+        └ index.js
+```
+
+For this example, I’m not going to use an external templating engine but will instead rely on the built-in template string functionality in JavaScript along with `eval()` (which is perfectly safe to use here as we are not processing external input).
+
+So I move the HTML to the _index.html_ file (and add a template placeholder for the CSS in addition to the existing random cow placeholder):
+
+```html
+<!doctype html>
+<html lang='en'>
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Cows!</title>
+  <style>${css}</style>
+</head>
+<body>
+    <pre>${randomCow}</pre>
+</body>
+</html>
+```
+
+And, similarly, I move the CSS to its own file, _index.css_:
+
+```css
+html {
+  font-family: sans-serif;
+  color: dark-grey;
+  background-color: ${randomColor()};
+}
+
+body {
+  display: grid;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  vertical-align: top;
+  margin: 0;
+}
+
+pre {
+  font-size: 24px;
+  mix-blend-mode: difference;
+  color: ${randomColor()};
+}
+```
+
+Then, finally, I modify my `cows` route to read in these two template files and to dynamically render them in response to requests. My _index.js_ now looks like this:
+
+```js
+// These are run when the server starts so sync calls are fine.
+const fs = require('fs')
+const cssTemplate = fs.readFileSync('cows/.assets/index.css')
+const htmlTemplate = fs.readFileSync('cows/.assets/index.html')
+const cows = require('cows')()
+
+module.exports = function (request, response) {
+  const randomCowIndex = Math.round(Math.random()*cows.length)-1
+  const randomCow = cows[randomCowIndex]
+
+  function randomColor () {
+    const c = () => (Math.round(Math.random() * 63) + 191).toString(16)
+    return `#${c()}${c()}${c()}`
+  }
+
+  function render (template) {
+    return eval('`' + template + '`')
+  }
+
+  // We render the CSS template first…
+  const css = render(cssTemplate)
+
+  // … because the HTML template references the rendered CSS template.
+  const html = render(htmlTemplate)
+
+  response.type('html').end(html)
+}
+```
+
+After this refactor, if you restart the server and hit `https://localhost/cows` again in your browser, you should see exactly the same behaviour as before.
+
+As you can see, you can create quite a bit of dynamic functionality just by using the most basic file-based routing. However, with this convention you are limited to GET routes. After a quick look at [Precendence](#precedence), below, we will see how you can
+
+
+#### GET and POST routes
+
+If you need POST routes (e.g., you want to post form content back to the server) in addition to GET routes, the directory structure works a little differently. In this case, you have to create a _.get_ directory for your GET routes and a _.post_ directory for your post routes.
+
+Otherwise, the naming and directory structure conventions work exactly as before.
+
+So, for example, if you have the following directory structure:
+
+```
+site/
+  └ .dynamic/
+        ├ .get/
+        │   └ index.js
+        └ .post/
+            └ index.js
+```
+
+Then a GET request for `https://localhost` will be routed to _site/.dynamic/.get/index.js_ and a POST request for `https://localhost` will be routed to _site/.dynamic/.post/index.js_.
+
+These two routes are enough to cover your needs for dynamic routes and form handling.
+
+#### WebSocket (WSS) routes
+
+You can define WebSocket (WSS) routes alongside HTTPS routes. To do so, you need to modify the directory structure so it resembles the one below:
+
+```
+site/
+  └ .dynamic/
+        ├ .https/
+        │   ├ .get/
+        │   │   └ index.js
+        │   └ .post/
+        │       └ index.js
+        └ .wss/
+            └ index.js
+```
+
+#### Advanced routing (routes.js file)
+
+File-based routing should get you pretty far for simple use cases but if you need full flexibility in routing, simply define a _routes.js_ in your _.dynamic_ folder:
+
+```
+site/
+  └ .dynamic/
+        └ routes.js
+```
+
+The _routes.js_ file should export a function that accepts a reference to the Express app created by Site.js and defines its routes on it. For example:
+
+```js
+module.exports = app => {
+
+  // HTTPS route with a parameter called id.
+  app.get('/photo/:id', (request, response) {
+    response.type('html').end(`
+      <h1>Photo with ID ${id}</h1>
+      <img src='/photos/${id}'>
+    `)
+  })
+
+  // WebSocket route: push a random photo every 30 seconds.
+  app.ws('/random-photos', (webSocket, request) {
+    setInterval(() => {
+      const photoId = Math.round(Math.random()*100)
+      webSocket.send(photoId)
+    }, 30000)
+  })
+
+}
+```
+
+When using the _routes.js_ file, you can use all of the features in [Express](https://expressjs.com/) and [Express-WS](https://github.com/HenningM/express-ws) (which itself wraps [WS](https://github.com/websockets/ws#usage-examples)).
+
+### Routing precedence
+
+#### Between dynamic route and static route
+
+If a dynamic route and a static route have the same name, the dynamic route will take precedence. So, for example, if you’re serving the following site:
+
+```
+site/
+  ├ index.html
+  └ .dynamic/
+        └ index.js
+```
+
+When you hit `https://localhost`, you will get the dynamic route defined in _index.js_.
+
+#### Between two dynamic routes (TL; DR: do not rely on this)
+
+In the following scenario:
+
+```
+site/
+  └ .dynamic/
+        ├ fun.html
+        └ fun/
+           └ index.js
+```
+
+The behaviour observed under Linux at the time of writing is that _fun/index.js_ will have precendence and mask _fun.html_. __Do not rely on this behaviour.__ The order of dynamic routes is based on a directory crawl and is not guaranteed to be the same in all future versions. For your peace of mind, please do not mix file-name-based and directory-name-based routing.
+
+#### Between the various routing methods
+
+Each of the routing conventions are mutually exclusive and applied according to the following precedence rules:
+
+1. Advanced _routes.js_-based advanced routing.
+
+2. Separate folders for _.https_ and _.wss_ routes routing (the _.http_ folder itself will apply precedence rules 3 and 4 internally).
+
+3. Separate folders for _.get_ and _.post_ routes in HTTPS-only routing.
+
+4. GET-only routing.
+
+So, if Site.js finds a _routes.js_ file in the root folder of your site’s folder, it will only use the routes from that file (it will not apply file-based routing).
+
+If Site.js cannot find a _routes.js_ file, it will look to see if separate _.https_ and _.wss_ folders have been defined (the existence of just one of these is enough) and attempt to load routes from those folders. (If it finds separate _.get_ or _.post_ folders within the _.https_ folder, it will add the relevant routes from those folders; if it can’t it will load GET-only routes from the _.https_ folder and its subfolders.)
+
+If separate _.https_ and _.wss_ folders do not exist, Site.js will expect all defined routes to be HTTP and will initially looks for separate _.get_ and _.post_ folders (the existence of either is enough to trigger this mode). If they exist, it will add the relevant routes from those folders and their subfolders.
+
+Finally, if Site.js cannot find separate _.get_ and _.post_ folders either, it will assume that any routes it finds in the _.dynamic_ folder are HTTPS GET routes and attempt to add them from there (and any subfolders).
+
+### Directory paths in your application
+
+Your dynamic web routes are running within Site.js, which is a Node application compiled into a native binary. Here are how the various common directories for Node.js apps will behave:
 
   - `os.homedir()`: __(writable)__ This is the home folder of the account running Site.js. You can write to it to store persistent objects (e.g., save data).
 
@@ -453,11 +809,10 @@ const appPath = require.main.filename.replace('bin/site.js', '')
 
 The code within your JavaScript routes is executed on the server. Exercise the same caution as you would when creating any Node.js app (sanitise input, etc.)
 
-### Intended usage
-
-You shouldn’t use this functionality to create your latest amazing web app. For that, include Site.js as a node module in your project and extend it that way. This is to add tiny bits of dynamic functionality. There is currently only support for `GET` routes. Again, if you need custom modules, extend Site.js using Node.js.
 
 ## API
+
+You can also include Site.js as a Node module into your Node project. This section details the API you can use if you do that.
 
 Site.js’s `createServer` method behaves like the built-in _https_ module’s `createServer` function. Anywhere you use `require('https').createServer`, you can simply replace it with:
 

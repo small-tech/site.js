@@ -19,9 +19,12 @@ const os = require('os')
 const clr = require('./lib/clr')
 
 const express = require('express')
+const bodyParser = require('body-parser')
+const expressWebSocket = require('express-ws')
 const helmet = require('helmet')
 const morgan = require('morgan')
 const redirectHTTPS = require('redirect-https')
+const enableDestroy = require('server-destroy')
 const Graceful = require('node-graceful')
 const httpProxyMiddleware = require('http-proxy-middleware')
 
@@ -31,6 +34,10 @@ const getRoutes = require('@ind.ie/web-routes-from-files')
 const Stats = require('./lib/Stats')
 
 class Site {
+
+  // Emitted when the address the server is trying to use is already in use by a different process on the system.
+  static get EVENT_ADDRESS_ALREADY_IN_USE () { return 'site.js-address-already-in-use' }
+
   // Logs a nicely-formatted version string based on
   // the version set in the package.json file to console.
   // (Only once per Site lifetime.)
@@ -116,7 +123,7 @@ class Site {
       this.configureAppRoutes()
     }
 
-    this.endAppConfiguration()
+    this.endAppConfigurationAndCreateServer()
 
     // If running as child process, notify person.
     process.on('message', (m) => {
@@ -212,10 +219,55 @@ class Site {
   }
 
 
-  // Middleware common to both regular servers and proxy servers
-  // that go at the end of the app configuration.
-  // TODO: Refactor: Break this method up. []
-  endAppConfiguration () {
+  // Finish configuring the app and create the server.
+  // (We need to add the WebSocket (WSS) routes after the server has been created).
+  endAppConfigurationAndCreateServer () {
+
+    // Check for a valid port range
+    // (port above 49,151 are ephemeral ports. See https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic,_private_or_ephemeral_ports)
+    if (this.port < 0 || this.port > 49151) {
+      throw new Error('Error: specified port must be between 0 and 49,151 inclusive.')
+    }
+
+    // Create the server.
+    this.server = this.createServer({global: this.global}, this.app)
+
+    // Enable the ability to destroy the server (close all active connections).
+    enableDestroy(this.server)
+
+    if (!this.isProxyServer) {
+
+      const createWebSocketServer = () => {
+        expressWebSocket(this.app, this.server, { perMessageDeflate: false })
+      }
+
+      // If we need to load dynamic routes from a routesJS file, do it now.
+      if (this.routesJsFile !== undefined) {
+        createWebSocketServer()
+        require(path.resolve(this.routesJsFile))(this.app)
+      }
+
+      // If there are WebSocket routes, create a regular WebSocket server and
+      // add the WebSocket routes (if any) to the app.
+      if (this.wssRoutes !== undefined) {
+        createWebSocketServer()
+        this.wssRoutes.forEach(route => {
+          console.log(` 🐁 Adding WebSocket (WSS) route: ${route.path}`)
+          this.app.ws(route.path, require(route.callback))
+        })
+      }
+    }
+
+    this.server.on('error', error => {
+      console.log('\n 🤯 Error: could not start server.\n')
+      if (error.code === 'EADDRINUSE') {
+        console.log(` 💥 Port ${this.port} is already in use.\n`)
+      }
+      this.server.emit(Site.EVENT_ADDRESS_ALREADY_IN_USE)
+    })
+
+    // The error routes go at the very end.
+
     //
     // 404 (Not Found) support.
     //
@@ -305,39 +357,17 @@ class Site {
       callback = this.isProxyServer ? this.proxyCallback : this.regularCallback
     }
 
-    // Check for a valid port range
-    // (port above 49,151 are ephemeral ports. See https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic,_private_or_ephemeral_ports)
-    if (this.port < 0 || this.port > 49151) {
-      throw new Error('Error: specified port must be between 0 and 49,151 inclusive.')
-    }
-
-    // Create the server and start listening on the requested port.
-    let server = this.createServer({global: this.global}, this.app).listen(this.port, () => {
-      if (this.isProxyServer) {
-        // As we’re using a custom server, manually listen for the http upgrade event
-        // and upgrade the web socket proxy also.
-        // (See https://github.com/chimurai/http-proxy-middleware#external-websocket-upgrade)
-        server.on('upgrade', this.webSocketProxy.upgrade)
-      }
-
-      // Call the overridable callback (the defaults for these are purely informational/cosmetic
-      // so they are safe to override).
-      callback.apply(this, [server])
-    })
-
-    server.on('error', error => {
-      console.log('\n 🤯 Error: could not start server.\n')
-      if (error.code === 'EADDRINUSE') {
-        console.log(` 💥 Port ${port} is already in use.\n`)
-      }
-      server.emit('site.js-address-already-in-use')
-    })
-
     // Handle graceful exit.
     const goodbye = (done) => {
       console.log('\n 💃 Preparing to exit gracefully, please wait…')
-      server.close( () => {
-        // The server close event will be the last one to fire. Let’s say goodbye :)
+
+      // Close all active connections on the server.
+      // (This is so that long-running connections – e.g., WebSockets – do not block the exit.)
+      this.server.destroy()
+
+      // Stop accepting new connections.
+      this.server.close( () => {
+        // OK, it’s time to go :)
         console.log('\n 💖 Goodbye!\n')
         done()
       })
@@ -345,7 +375,21 @@ class Site {
     Graceful.on('SIGINT', goodbye)
     Graceful.on('SIGTERM', goodbye)
 
-    return server
+    // Start the server.
+    this.server.listen(this.port, () => {
+      if (this.isProxyServer) {
+        // As we’re using a custom server, manually listen for the http upgrade event
+        // and upgrade the web socket proxy also.
+        // (See https://github.com/chimurai/http-proxy-middleware#external-websocket-upgrade)
+        this.server.on('upgrade', this.webSocketProxy.upgrade)
+      }
+
+      // Call the overridable callback (the defaults for these are purely informational/cosmetic
+      // so they are safe to override).
+      callback.apply(this, [this.server])
+    })
+
+    return this.server
   }
 
   //
@@ -445,15 +489,133 @@ class Site {
 
   // Add dynamic routes, if any, if a <pathToServe>/.dynamic/ folder exists.
   // If there are errors in any of your dynamic routes, you will get 500 (server) errors.
-  appAddDynamicRoutes () {
-    const dynamicRoutesDirectory = path.join(this.pathToServe, '.dynamic')
-    if (fs.existsSync(dynamicRoutesDirectory)) {
-      const dynamicRoutes = getRoutes(dynamicRoutesDirectory)
+  //
+  // Each of the routing conventions are mutually exclusive and applied according to the following precedence rules:
+  //
+  // 1. Advanced _routes.js_-based advanced routing.
+  //
+  // 2. Separate folders for _.https_ and _.wss_ routes routing (the _.http_ folder itself will apply precedence rules 3 and 4 internally).
+  //
+  // 3. Separate folders for _.get_ and _.post_ routes in HTTPS-only routing.
+  //
+  // 4. GET-only routing.
+  //
+  // For full details, please see the readme file.
 
-      dynamicRoutes.forEach(route => {
-        console.log(` 🐁 Dynamic route loaded: ${route.path}`)
-        this.app.get(route.path, require(route.callback))
-      })
+  appAddDynamicRoutes () {
+
+    // Initially check if a dynamic routes directory exists. If it does not,
+    // we don’t need to take this any further.
+    const dynamicRoutesDirectory = path.join(this.pathToServe, '.dynamic')
+
+    if (fs.existsSync(dynamicRoutesDirectory)) {
+
+      const addBodyParser = () => {
+        this.app.use(bodyParser.json())
+        this.app.use(bodyParser.urlencoded({ extended: true }))
+      }
+
+      // Attempts to load HTTPS routes from the passed directory,
+      // adhering to rules 3 & 4.
+      const loadHttpsRoutesFrom = (httpsRoutesDirectory) => {
+        // Attempts to load HTTPS GET routes from the passed directory.
+        const loadHttpsGetRoutesFrom = (httpsGetRoutesDirectory) => {
+          const httpsGetRoutes = getRoutes(httpsGetRoutesDirectory)
+          httpsGetRoutes.forEach(route => {
+            console.log(` 🐁 Adding HTTPS GET route: ${route.path}`)
+            this.app.get(route.path, require(route.callback))
+          })
+        }
+
+        // Check if separate .get and .post route directories exist.
+        const httpsGetRoutesDirectory = path.join(httpsRoutesDirectory, '.get')
+        const httpsPostRoutesDirectory = path.join(httpsRoutesDirectory, '.post')
+        const httpsGetRoutesDirectoryExists = fs.existsSync(httpsGetRoutesDirectory)
+        const httpsPostRoutesDirectoryExists = fs.existsSync(httpsPostRoutesDirectory)
+
+        //
+        // Rule 3: If a .get or a .post directory exists, attempt to load the dotJS routes from there.
+        // ===========================================================================================
+        //
+
+        if (httpsGetRoutesDirectoryExists || httpsPostRoutesDirectoryExists) {
+          // Either .get or .post routes directories (or both) exist.
+          console.log(' 🐁 Found .get/.post folders. Will load dynamic routes from there.')
+          if (httpsGetRoutesDirectoryExists) {
+            loadHttpsGetRoutesFrom(httpsGetRoutesDirectory)
+          }
+          if (httpsPostRoutesDirectoryExists) {
+            // Load HTTPS POST routes.
+
+            addBodyParser()
+
+            const httpsPostRoutes = getRoutes(httpsPostRoutesDirectory)
+            httpsPostRoutes.forEach(route => {
+              console.log(` 🐁 Adding HTTPS POST route: ${route.path}`)
+              this.app.post(route.path, require(route.callback))
+            })
+          }
+          return
+        }
+
+        //
+        // Rule 4: If all else fails, try to load dotJS GET routes.
+        // ========================================================
+        //
+
+        loadHttpsGetRoutesFrom(httpsRoutesDirectory)
+      }
+
+      //
+      // Rule 1: Check if a routes.js file exists. If it does, we just need to load that in.
+      // ===================================================================================
+      //
+
+      const routesJsFile = path.join(dynamicRoutesDirectory, 'routes.js')
+
+      if (fs.existsSync(routesJsFile)) {
+        console.log(' 🐁 Found routes.js file, will load dynamic routes from there.')
+        // We flag that this needs to be done here and actually require the file
+        // once the server has been created so that WebSocket routes can be added also.
+        this.routesJsFile = routesJsFile
+
+        // Add POST handling in case there are POST routes defined.
+        addBodyParser()
+        return
+      }
+
+      //
+      // Rule 2: Check if .https and/or .wss folders exist. If they do, load the routes from there.
+      // ==========================================================================================
+      //
+
+      const httpsRoutesDirectory = path.join(dynamicRoutesDirectory, '.https')
+      const wssRoutesDirectory = path.join(dynamicRoutesDirectory, '.wss')
+      const httpsRoutesDirectoryExists = fs.existsSync(httpsRoutesDirectory)
+      const wssRoutesDirectoryExists = fs.existsSync(wssRoutesDirectory)
+
+      if (httpsRoutesDirectoryExists || wssRoutesDirectoryExists) {
+        // Either .https or .wss routes directories (or both) exist.
+        console.log(' 🐁 Found .https/.wss folders. Will load dynamic routes from there.')
+        if (httpsRoutesDirectoryExists) {
+          loadHttpsRoutesFrom(httpsRoutesDirectory)
+        }
+        if (wssRoutesDirectoryExists) {
+          // Load WebSocket (WSS) routes.
+          //
+          // Note: we are not adding them to the app here because Express-WS requires a
+          // ===== reference to the server instance that we create manually (in order to
+          //       add its HTTP upgrade handling. Since we don’t have the server instance
+          //       yet, we delay adding the routes until the server is created).
+          this.wssRoutes = getRoutes(wssRoutesDirectory)
+        }
+        return
+      }
+
+      // Fallback behaviour: routes.js file doesn’t exist and we don’t have
+      // separate folders for .https and .wss routes. Attempt to load HTTPS
+      // routes from the dynamic routes directory, while applying rules 3 & 4.
+      loadHttpsRoutesFrom(dynamicRoutesDirectory)
     }
   }
 
