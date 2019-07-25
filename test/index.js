@@ -51,6 +51,7 @@ test('[site.js] createServer method', t => {
   })
 })
 
+
 test('[site.js] Simple dotJS filesystem-based route loading', t => {
 
   t.plan(3)
@@ -79,42 +80,40 @@ test('[site.js] Simple dotJS filesystem-based route loading', t => {
   })
 })
 
+
 test('[site.js] archival cascade', t => {
   t.plan(8)
 
-  const archive1 = path.join(__dirname, 'site-archive-1')
-  const archive2 = path.join(__dirname, 'site-archive-2')
-  fs.mkdirSync(archive1)
-  fs.mkdirSync(archive2)
+  const archivalCascadeRoot = path.join(__dirname, 'archival-cascade')
+
+  const mainSiteIndexPath = path.join(archivalCascadeRoot, 'site', 'index.html')
+  const mainSiteIndexContent = fs.readFileSync(mainSiteIndexPath, 'utf-8')
+
+  const archive1 = path.join(archivalCascadeRoot, 'site-archive-1')
+  const archive2 = path.join(archivalCascadeRoot, 'site-archive-2')
 
   // Older archive
   const archive1Index = path.join(archive1, 'index.html')
   const archive1Unique = path.join(archive1, 'unique-1.html')
   const archive1Override = path.join(archive1, 'override.html')
-  const archive1IndexContent = 'Archive 1 index – this file should be overriden by site'
-  const archive1UniqueContent = 'Archive 1 unique – this file should be served'
-  const archive1OverrideContent = 'Archive 1 – this file should be overriden by Archive 2’s version'
-  fs.writeFileSync(archive1Index, archive1IndexContent, 'utf-8')
-  fs.writeFileSync(archive1Unique, archive1UniqueContent, 'utf-8')
-  fs.writeFileSync(archive1Override, archive1OverrideContent, 'utf-8')
+  const archive1IndexContent = fs.readFileSync(archive1Index, 'utf-8')
+  const archive1UniqueContent = fs.readFileSync(archive1Unique, 'utf-8')
+  const archive1OverrideContent = fs.readFileSync(archive1Override, 'utf-8')
 
   // Newer archive
   const archive2Index = path.join(archive2, 'index.html')
   const archive2Unique = path.join(archive2, 'unique-2.html')
   const archive2Override = path.join(archive2, 'override.html')
-  const archive2IndexContent = 'Archive 2 index – this file should be overriden by site'
-  const archive2UniqueContent = 'Archive 2 unique – this file should be served'
-  const archive2OverrideContent = 'Archive 2 – this file should be served and override Archive 1’s version'
-  fs.writeFileSync(archive2Index, archive2IndexContent, 'utf-8')
-  fs.writeFileSync(archive2Unique, archive2UniqueContent, 'utf-8')
-  fs.writeFileSync(archive2Override, archive2OverrideContent, 'utf-8')
+  const archive2IndexContent = fs.readFileSync(archive2Index, 'utf-8')
+  const archive2UniqueContent = fs.readFileSync(archive2Unique, 'utf-8')
+  const archive2OverrideContent = fs.readFileSync(archive2Override, 'utf-8')
 
   const indexURL = `https://localhost/index.html`
   const unique1URL = `https://localhost/unique-1.html`
   const unique2URL = `https://localhost/unique-2.html`
   const overrideURL = `https://localhost/override.html`
 
-  const server = new Site({path: 'test/site'}).serve(async () => {
+  const server = new Site({path: 'test/archival-cascade/site'}).serve(async () => {
     let responseIndex, responseUnique1, responseUnique2, responseOverride
     try {
       responseIndex = await secureGet(indexURL)
@@ -131,23 +130,13 @@ test('[site.js] archival cascade', t => {
     t.equal(responseUnique2.statusCode, 200, 'requestUnique2 succeeds')
     t.equal(responseOverride.statusCode, 200, 'requestOverride succeeds')
 
-    t.equal(responseIndex.body.replace(/\s/g, ''), fs.readFileSync(path.join(__dirname, 'site', 'index.html'), 'utf-8').replace(/\s/g, ''), 'site index overrides archive indices')
+    t.equal(responseIndex.body, mainSiteIndexContent, 'site index overrides archive indices')
     t.equal(responseUnique1.body, archive1UniqueContent, 'archive 1 unique content loads')
     t.equal(responseUnique2.body, archive2UniqueContent, 'archive 2 unique content loads')
     t.equal(responseOverride.body, archive2OverrideContent, 'archive 2 content overrides archive 1 content')
 
     server.close()
     t.end()
-
-    // Clean up
-    fs.unlinkSync(archive1Index)
-    fs.unlinkSync(archive1Unique)
-    fs.unlinkSync(archive1Override)
-    fs.unlinkSync(archive2Index)
-    fs.unlinkSync(archive2Unique)
-    fs.unlinkSync(archive2Override)
-    fs.rmdirSync(archive1)
-    fs.rmdirSync(archive2)
   })
 })
 
