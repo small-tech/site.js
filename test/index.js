@@ -17,6 +17,11 @@ const https = require('https')
 const fs = require('fs')
 const path = require('path')
 
+const queryString = require('querystring')
+
+function localhost(path) {
+  return `https://localhost${path}`
+}
 
 async function secureGet (url) {
   return new Promise((resolve, reject) => {
@@ -35,6 +40,41 @@ async function secureGet (url) {
         resolve({statusCode, location, body})
       })
     })
+  })
+}
+
+
+async function securePost (hostname, path, data = {}, isJSON = false) {
+  return new Promise((resolve, reject) => {
+
+    const encodedData = isJSON ? JSON.stringify(data) : queryString.stringify(data)
+
+    const options = {
+      hostname,
+      path,
+      port: 443,
+      method: 'POST',
+      headers: {
+        'Content-Type': isJSON ? 'application/json' : 'application/x-www-form-urlencoded',
+        'Content-Length': encodedData.length
+      }
+    }
+
+    const request = https.request(options, response => {
+      const statusCode = response.statusCode
+      let body = ''
+      response.on('data', (data) => {
+        // Note: we should really be parsing querystring data here but our test routes
+        // ===== return plain text at the moment. TODO: Update.
+        decodedData = isJSON ? JSON.parse(data) : data.toString('utf-8') // queryString.parse(data)
+        resolve({statusCode, data: decodedData})
+      })
+    })
+
+    request.on('error', () => reject(error))
+
+    request.write(encodedData)
+    request.end()
   })
 }
 
@@ -78,6 +118,98 @@ test('[site.js] Simple dotJS filesystem-based route loading', t => {
     server.close()
     t.end()
   })
+})
+
+
+test('[site.js] Separate .get and .post folders with dotJS filesystem-based route loading', t => {
+
+  t.plan(32)
+
+  const site = new Site({path: 'test/site-dynamic-dotjs-separate-get-and-post'})
+
+  // Ensure the route is loaded as we expect.
+  const routerStack = site.app._router.stack
+
+  const getFileNameAsRouteNameRoute = routerStack[7].route
+  t.true(getFileNameAsRouteNameRoute.methods.get, 'request method should be GET')
+  t.strictEquals(getFileNameAsRouteNameRoute.path, '/file-name-as-route-name', 'path should be correct')
+
+  const getIndexRoute = routerStack[8].route
+  t.true(getIndexRoute.methods.get, 'request method should be GET')
+  t.strictEquals(getIndexRoute.path, '/', 'path should be correct')
+
+  const getSubRouteFileNameAsRouteNameRoute = routerStack[9].route
+  t.true(getSubRouteFileNameAsRouteNameRoute.methods.get, 'request method should be GET')
+  t.strictEquals(getSubRouteFileNameAsRouteNameRoute.path, '/sub-route/file-name-as-route-name', 'path should be correct')
+
+  const getSubRouteIndexRoute = routerStack[10].route
+  t.true(getSubRouteIndexRoute.methods.get, 'request method should be GET')
+  t.strictEquals(getSubRouteIndexRoute.path, '/sub-route', 'path should be correct')
+
+  // Next two routes are the body parser and JSON parser, so we skip those.
+
+  const postFileNameAsRouteNameRoute = routerStack[13].route
+  t.true(postFileNameAsRouteNameRoute.methods.post, 'request method should be POST')
+  t.strictEquals(postFileNameAsRouteNameRoute.path, '/file-name-as-route-name', 'path should be correct')
+
+  const postIndexRoute = routerStack[14].route
+  t.true(postIndexRoute.methods.post, 'request method should be POST')
+  t.strictEquals(postIndexRoute.path, '/', 'path should be correct')
+
+  const postSubRouteFileNameAsRouteNameRoute = routerStack[15].route
+  t.true(postSubRouteFileNameAsRouteNameRoute.methods.post, 'request method should be POST')
+  t.strictEquals(postSubRouteFileNameAsRouteNameRoute.path, '/sub-route/file-name-as-route-name', 'path should be correct')
+
+  const postSubRouteIndexRoute = routerStack[16].route
+  t.true(postSubRouteIndexRoute.methods.post, 'request method should be POST')
+  t.strictEquals(postSubRouteIndexRoute.path, '/sub-route', 'path should be correct')
+
+  // Hit the routes to ensure we get the responses we expect.
+  const server = site.serve(async () => {
+
+    // So we can access them outside of the try block (scope).
+    let getFileNameAsRouteNameRouteResponse, getIndexRouteResponse, getSubRouteFileNameAsRouteNameRouteResponse, getSubRouteIndexRouteResponse, postFileNameAsRouteNameRouteResponse, postIndexRouteResponse,postSubRouteFileNameAsRouteNameRouteResponse, postSubRouteIndexRouteResponse;
+
+    try {
+      getFileNameAsRouteNameRouteResponse = await secureGet(localhost(getFileNameAsRouteNameRoute.path))
+      getIndexRouteResponse = await secureGet(localhost(getIndexRoute.path))
+      getSubRouteFileNameAsRouteNameRouteResponse = await secureGet(localhost(getSubRouteFileNameAsRouteNameRoute.path))
+      getSubRouteIndexRouteResponse = await secureGet(localhost(getSubRouteIndexRoute.path))
+
+      postFileNameAsRouteNameRouteResponse = await securePost('localhost', postFileNameAsRouteNameRoute.path)
+      postIndexRouteResponse = await securePost('localhost', postIndexRoute.path)
+      postSubRouteFileNameAsRouteNameRouteResponse = await securePost('localhost', postSubRouteFileNameAsRouteNameRoute.path)
+      postSubRouteIndexRouteResponse = await securePost('localhost', postSubRouteIndexRoute.path)
+    } catch (error) {
+      console.log(error)
+      process.exit(1)
+    }
+
+    t.strictEquals(getFileNameAsRouteNameRouteResponse.statusCode, 200, 'request succeeds')
+    t.strictEquals(getIndexRouteResponse.statusCode, 200, 'request succeeds')
+    t.strictEquals(getSubRouteFileNameAsRouteNameRouteResponse.statusCode, 200, 'request succeeds')
+    t.strictEquals(getSubRouteIndexRouteResponse.statusCode, 200, 'request succeeds')
+
+    t.strictEquals(postFileNameAsRouteNameRouteResponse.statusCode, 200, 'request succeeds')
+    t.strictEquals(postIndexRouteResponse.statusCode, 200, 'request succeeds')
+    t.strictEquals(postSubRouteFileNameAsRouteNameRouteResponse.statusCode, 200, 'request succeeds')
+    t.strictEquals(postSubRouteIndexRouteResponse.statusCode, 200, 'request succeeds')
+
+    t.strictEquals(getFileNameAsRouteNameRouteResponse.body, 'GET /file-name-as-route-name', 'route loads')
+    t.strictEquals(getIndexRouteResponse.body, 'GET /', 'route loads')
+    t.strictEquals(getSubRouteFileNameAsRouteNameRouteResponse.body, 'GET /sub-route/file-name-as-route-name', 'route loads')
+    t.strictEquals(getSubRouteIndexRouteResponse.body, 'GET /sub-route', 'route loads')
+
+    t.strictEquals(postFileNameAsRouteNameRouteResponse.data, 'POST /file-name-as-route-name', 'route loads')
+
+    t.strictEquals(postIndexRouteResponse.data, 'POST /', 'route loads')
+    t.strictEquals(postSubRouteFileNameAsRouteNameRouteResponse.data, 'POST /sub-route/file-name-as-route-name', 'route loads')
+    t.strictEquals(postSubRouteIndexRouteResponse.data, 'POST /sub-route', 'route loads')
+
+    server.close()
+    t.end()
+  })
+
 })
 
 
