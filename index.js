@@ -16,8 +16,6 @@ const fs = require('fs')
 const path = require('path')
 const os = require('os')
 
-const EventEmitter = require('events')
-
 const clr = require('./lib/clr')
 
 const express = require('express')
@@ -35,28 +33,7 @@ const nodecert = require('@ind.ie/nodecert')
 const getRoutes = require('@ind.ie/web-routes-from-files')
 const Stats = require('./lib/Stats')
 
-class Site extends EventEmitter {
-
-  //
-  // Events.
-  //
-
-  //
-  // Dynamic route loading related events.
-  //
-  // (Note that …HTTPS_ROUTE_ADDED and …WSS_ROUTE_ADDED will *not* fire for individual routes when a routes.js file
-  // is used to define the routes. Instead the …ROUTES_JS_LOADED event will fire. This is because we have no way of
-  // being notified when custom routes defined by you are loaded and adding such functionality would change the Express/
-  // Express-WS way of defining routes and thus introduce additional functionality for very little – if any – benefit.)
-  //
-
-  static get EVENT_DYNAMIC_HTTPS_ROUTE_ADDED () { return 'site.js-dynamic-https-route-added' }
-  static get EVENT_DYNAMIC_WSS_ROUTE_ADDED () { return 'site.js-dynamic-https-route-added' }
-  static get EVENT_ROUTES_JS_LOADED () { return 'site.js-routes-js-loaded' }
-
-  // Emitted when the address the server is trying to use is already in use by a different process on the system.
-  static get EVENT_ADDRESS_ALREADY_IN_USE () { return 'site.js-address-already-in-use' }
-
+class Site {
   // Logs a nicely-formatted version string based on
   // the version set in the package.json file to console.
   // (Only once per Site lifetime.)
@@ -98,8 +75,6 @@ class Site extends EventEmitter {
   // Note: if you want to run the site on a port < 1024 on Linux, ensure your process has the
   // ===== necessary privileges to bind to such ports. E.g., use require('lib/ensure').weCanBindToPort(port, callback)
   constructor (options) {
-    super()
-
     // Introduce ourselves.
     Site.logAppNameAndVersion()
 
@@ -352,8 +327,6 @@ class Site extends EventEmitter {
       if (this.routesJsFile !== undefined) {
         createWebSocketServer()
         require(path.resolve(this.routesJsFile))(this.app)
-
-        this.emit(Site.EVENT_ROUTES_JS_LOADED)
       }
 
       // If there are WebSocket routes, create a regular WebSocket server and
@@ -361,11 +334,8 @@ class Site extends EventEmitter {
       if (this.wssRoutes !== undefined) {
         createWebSocketServer()
         this.wssRoutes.forEach(route => {
-          const routePath = route.path
-          console.log(` 🐁 Adding WebSocket (WSS) route: ${routePath}`)
-          this.app.ws(routePath, require(route.callback))
-
-          this.emit(Site.EVENT_DYNAMIC_WSS_ROUTE_ADDED, {route: routePath})
+          console.log(` 🐁 Adding WebSocket (WSS) route: ${route.path}`)
+          this.app.ws(route.path, require(route.callback))
         })
       }
     }
@@ -379,7 +349,7 @@ class Site extends EventEmitter {
       if (error.code === 'EADDRINUSE') {
         console.log(` 💥 Port ${port} is already in use.\n`)
       }
-      server.emit(Site.EVENT_ADDRESS_ALREADY_IN_USE)
+      server.emit('site.js-address-already-in-use')
     })
 
     // Handle graceful exit.
@@ -550,12 +520,8 @@ class Site extends EventEmitter {
         const loadHttpsGetRoutesFrom = (httpsGetRoutesDirectory) => {
           const httpsGetRoutes = getRoutes(httpsGetRoutesDirectory)
           httpsGetRoutes.forEach(route => {
-            const routePath = route.path
-            console.log(` 🐁 Adding HTTPS GET route: ${routePath}`)
-            this.app.get(routePath, require(route.callback))
-
-            // Emit dynamic-route-added
-            this.emit(Site.EVENT_DYNAMIC_HTTPS_ROUTE_ADDED, {route: routePath})
+            console.log(` 🐁 Adding HTTPS GET route: ${route.path}`)
+            this.app.get(route.path, require(route.callback))
           })
         }
 
@@ -564,11 +530,6 @@ class Site extends EventEmitter {
         const httpsPostRoutesDirectory = path.join(httpsRoutesDirectory, '.post')
         const httpsGetRoutesDirectoryExists = fs.existsSync(httpsGetRoutesDirectory)
         const httpsPostRoutesDirectoryExists = fs.existsSync(httpsPostRoutesDirectory)
-
-        //
-        // Rule 3: If a .get or a .post directory exists, attempt to load the dotJS routes from there.
-        // ===========================================================================================
-        //
 
         if (httpsGetRoutesDirectoryExists || httpsPostRoutesDirectoryExists) {
           // Either .get or .post routes directories (or both) exist.
@@ -583,29 +544,20 @@ class Site extends EventEmitter {
 
             const httpsPostRoutes = getRoutes(httpsPostRoutesDirectory)
             httpsPostRoutes.forEach(route => {
-              const routePath = route.path
-              console.log(` 🐁 Adding HTTPS POST route: ${routePath}`)
-              this.app.post(routePath, require(route.callback))
-
-              // Emit dynamic-route-added
-              this.emit(Site.EVENT_DYNAMIC_HTTPS_ROUTE_ADDED, {route: routePath})
+              console.log(` 🐁 Adding HTTPS POST route: ${route.path}`)
+              this.app.post(route.path, require(route.callback))
             })
           }
           return
         }
 
-        //
-        // Rule 4: If all else fails, try to load dotJS GET routes.
-        // ========================================================
-        //
-
+        // Separate .get and .post directories do not exist. This is our final fallback
+        // where we try to load HTTPS GET routes directly from the root of the
+        // passed https routes path.
         loadHttpsGetRoutesFrom(httpsRoutesDirectory)
       }
 
-      //
       // Rule 1: Check if a routes.js file exists. If it does, we just need to load that in.
-      // ===================================================================================
-      //
       const routesJsFile = path.join(dynamicRoutesDirectory, 'routes.js')
 
       if (fs.existsSync(routesJsFile)) {
@@ -619,11 +571,8 @@ class Site extends EventEmitter {
         return
       }
 
-      //
-      // Rule 2: Check if .https and/or .wss folders exist. If they do, load the routes from there.
-      // ==========================================================================================
-      //
-
+      // Rule 2: Check if .https and/or .wss folders exist. If they do,
+      // load the routes from there.
       const httpsRoutesDirectory = path.join(dynamicRoutesDirectory, '.https')
       const wssRoutesDirectory = path.join(dynamicRoutesDirectory, '.wss')
       const httpsRoutesDirectoryExists = fs.existsSync(httpsRoutesDirectory)
