@@ -123,6 +123,8 @@ class Site {
       this.configureAppRoutes()
     }
 
+    this.endAppConfigurationAndCreateServer()
+
     // If running as child process, notify person.
     process.on('message', (m) => {
       if (m.IAmYourFather !== undefined) {
@@ -217,10 +219,55 @@ class Site {
   }
 
 
-  // Middleware common to both regular servers and proxy servers
-  // that go at the end of the app configuration.
-  // TODO: Refactor: Break this method up. []
-  endAppConfiguration () {
+  // Finish configuring the app and create the server.
+  // (We need to add the WebSocket (WSS) routes after the server has been created).
+  endAppConfigurationAndCreateServer () {
+
+    // Check for a valid port range
+    // (port above 49,151 are ephemeral ports. See https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic,_private_or_ephemeral_ports)
+    if (this.port < 0 || this.port > 49151) {
+      throw new Error('Error: specified port must be between 0 and 49,151 inclusive.')
+    }
+
+    // Create the server.
+    this.server = this.createServer({global: this.global}, this.app)
+
+    // Enable the ability to destroy the server (close all active connections).
+    enableDestroy(this.server)
+
+    if (!this.isProxyServer) {
+
+      const createWebSocketServer = () => {
+        expressWebSocket(this.app, this.server, { perMessageDeflate: false })
+      }
+
+      // If we need to load dynamic routes from a routesJS file, do it now.
+      if (this.routesJsFile !== undefined) {
+        createWebSocketServer()
+        require(path.resolve(this.routesJsFile))(this.app)
+      }
+
+      // If there are WebSocket routes, create a regular WebSocket server and
+      // add the WebSocket routes (if any) to the app.
+      if (this.wssRoutes !== undefined) {
+        createWebSocketServer()
+        this.wssRoutes.forEach(route => {
+          console.log(` 🐁 Adding WebSocket (WSS) route: ${route.path}`)
+          this.app.ws(route.path, require(route.callback))
+        })
+      }
+    }
+
+    this.server.on('error', error => {
+      console.log('\n 🤯 Error: could not start server.\n')
+      if (error.code === 'EADDRINUSE') {
+        console.log(` 💥 Port ${port} is already in use.\n`)
+      }
+      server.emit(Site.EVENT_ADDRESS_ALREADY_IN_USE)
+    })
+
+    // The error routes go at the very end.
+
     //
     // 404 (Not Found) support.
     //
@@ -310,60 +357,16 @@ class Site {
       callback = this.isProxyServer ? this.proxyCallback : this.regularCallback
     }
 
-    // Check for a valid port range
-    // (port above 49,151 are ephemeral ports. See https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic,_private_or_ephemeral_ports)
-    if (this.port < 0 || this.port > 49151) {
-      throw new Error('Error: specified port must be between 0 and 49,151 inclusive.')
-    }
-
-    // Create the server and start listening on the requested port.
-    let server = this.createServer({global: this.global}, this.app)
-
-    if (!this.isProxyServer) {
-
-      const createWebSocketServer = () => {
-        expressWebSocket(this.app, server, { perMessageDeflate: false })
-      }
-
-      // If we need to load dynamic routes from a routesJS file, do it now.
-      if (this.routesJsFile !== undefined) {
-        createWebSocketServer()
-        require(path.resolve(this.routesJsFile))(this.app)
-      }
-
-      // If there are WebSocket routes, create a regular WebSocket server and
-      // add the WebSocket routes (if any) to the app.
-      if (this.wssRoutes !== undefined) {
-        createWebSocketServer()
-        this.wssRoutes.forEach(route => {
-          console.log(` 🐁 Adding WebSocket (WSS) route: ${route.path}`)
-          this.app.ws(route.path, require(route.callback))
-        })
-      }
-    }
-
-    // We end the app configuration here as the 404 and 500 routes should come at the end.
-    // (otherwise the WebSocket routes are never reached).
-    this.endAppConfiguration()
-
-    server.on('error', error => {
-      console.log('\n 🤯 Error: could not start server.\n')
-      if (error.code === 'EADDRINUSE') {
-        console.log(` 💥 Port ${port} is already in use.\n`)
-      }
-      server.emit(Site.EVENT_ADDRESS_ALREADY_IN_USE)
-    })
-
     // Handle graceful exit.
     const goodbye = (done) => {
       console.log('\n 💃 Preparing to exit gracefully, please wait…')
 
       // Close all active connections on the server.
       // (This is so that long-running connections – e.g., WebSockets – do not block the exit.)
-      server.destroy()
+      this.server.destroy()
 
       // Stop accepting new connections.
-      server.close( () => {
+      this.server.close( () => {
         // OK, it’s time to go :)
         console.log('\n 💖 Goodbye!\n')
         done()
@@ -373,23 +376,20 @@ class Site {
     Graceful.on('SIGTERM', goodbye)
 
     // Start the server.
-    server.listen(this.port, () => {
+    this.server.listen(this.port, () => {
       if (this.isProxyServer) {
         // As we’re using a custom server, manually listen for the http upgrade event
         // and upgrade the web socket proxy also.
         // (See https://github.com/chimurai/http-proxy-middleware#external-websocket-upgrade)
-        server.on('upgrade', this.webSocketProxy.upgrade)
+        this.server.on('upgrade', this.webSocketProxy.upgrade)
       }
 
       // Call the overridable callback (the defaults for these are purely informational/cosmetic
       // so they are safe to override).
-      callback.apply(this, [server])
+      callback.apply(this, [this.server])
     })
 
-    // Enable the ability to destroy the server (close all active connections).
-    enableDestroy(server)
-
-    return server
+    return this.server
   }
 
   //

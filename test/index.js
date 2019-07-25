@@ -100,7 +100,7 @@ test('[site.js] Simple dotJS filesystem-based route loading', t => {
 
   // Ensure the route is loaded as we expect.
   const routerStack = site.app._router.stack
-  t.strictEquals(routerStack[routerStack.length - 2].route.path, '/simple')
+  t.strictEquals(routerStack[7].route.path, '/simple')
 
   // Hit the route to ensure we get the response we expect.
   const server = site.serve(async () => {
@@ -211,6 +211,25 @@ test('[site.js] Separate .get and .post folders with dotJS filesystem-based rout
   })
 
 })
+
+
+// test('[site.js] Separate .https and .wss folders with separate .get and .post folders in the .https folder with dotJS filesystem-based route loading', t => {
+
+//   const site = new Site({path: 'test/site-dynamic-dotjs-separate-https-and-wss-and-separate-get-and-post'})
+
+//   // Ensure the route is loaded as we expect.
+//   const routerStack = site.app._router.stack
+
+//   console.log(routerStack)
+
+//   // const server = site.serve(async () => {
+
+
+//   // })
+
+//   t.end()
+//   process.exit()
+// })
 
 
 test('[site.js] archival cascade', t => {
