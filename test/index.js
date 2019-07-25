@@ -225,13 +225,26 @@ test('[site.js] Separate .get and .post folders with dotJS filesystem-based rout
 
 test('[site.js] Separate .https and .wss folders with separate .get and .post folders in the .https folder with dotJS filesystem-based route loading', t => {
 
-  t.plan(32)
+  t.plan(34)
 
   const site = new Site({path: 'test/site-dynamic-dotjs-separate-https-and-wss-and-separate-get-and-post'})
 
   runDotJsSeparateGetAndPostTests(t, site , () => {
 
     // Run the WSS tests.
+    const routerStack = site.app._router.stack
+
+    // Indices up to 16 have been covered by runDotJsSeparateGetAndPostTests() above.
+    // Index 17 is that static router.
+    // The WSS routes start at index 18.
+
+    const webSocketFileNameAsRouteNameRoute = routerStack[18].route
+    t.true(webSocketFileNameAsRouteNameRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
+    t.strictEquals(webSocketFileNameAsRouteNameRoute.path, '/file-name-as-route-name/.websocket', 'path should be correct')
+
+
+    // console.log(routerStack)
+
     t.end()
   })
 })
