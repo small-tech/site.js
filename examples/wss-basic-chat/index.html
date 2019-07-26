@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Basic WebSocket Chat in DotJS</title>
+</head>
+<body>
+  <h1>Chat room</h1>
+  <p>Status: <span id='status' style="color: red;">Offline</span></p>
+  <form id='messageForm'>
+    <label for='message'>Nickname:</label>
+    <input id='nickname' type='text' name='nickname' value='Anonymous'>
+    <label for='message'>Message:</label>
+    <input id='message' type='text' name='message' value=''>
+    <button id='submitButton' type='submit'>Send</button>
+  </form>
+  <h2>Received messages</h2>
+  <!-- In actual app would use Aria to announce received messages. -->
+  <ul id='received'></ul>
+  <script>
+    window.addEventListener('load', () => {
+
+      // Shorthand for basic DOM lookup.
+      const $ = document.querySelector.bind(document)
+
+      $('#nickname').focus()
+      $('#nickname').select()
+
+      // Disables the submit button if the form isn’t valid.
+      function validateForm () {
+        const formIsValid = $('#nickname').value !== '' && $('#message').value !== ''
+        $('#submitButton').disabled = !formIsValid
+      }
+
+      // Perform initial form validation.
+      validateForm()
+
+      // Initialise the web socket
+      const socket = new WebSocket(`wss://localhost/chat`)
+
+      socket.onopen = _ => { $('#status').innerHTML = '<span style="color: green">Online</span>' }
+      socket.onclose = _ => { $('#status').innerHTML = 'Offline' }
+
+      socket.onmessage = message => {
+        message = JSON.parse(message.data)
+        $('#received').innerHTML += `<li><strong>${message.nickname}: </strong>${message.text}</li>`
+      }
+
+      $('#nickname').addEventListener('input', validateForm)
+      $('#message').addEventListener('input', validateForm)
+
+      $('#messageForm').addEventListener('submit', event => {
+
+        // Prevent the form from being submitted.
+        event.preventDefault()
+
+        // Get the nickname and text.
+        const nickname = $('#nickname').value
+        const text = $('#message').value
+
+        // Clear the message and invalidate the form.
+        $('#message').value = ''
+        validateForm()
+
+        // Send the message
+        socket.send(JSON.stringify({ nickname, text }))
+
+      })
+    })
+  </script>
+</body>
+</html>

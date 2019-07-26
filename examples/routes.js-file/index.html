@@ -18,7 +18,7 @@
   <script>
     window.addEventListener('load', () => {
       // Shorthand for basic DOM lookup.
-      $ = document.querySelector.bind(document)
+      const $ = document.querySelector.bind(document)
 
       // Initialise the web socket
       const socket = new WebSocket(`wss://localhost/echo`)
