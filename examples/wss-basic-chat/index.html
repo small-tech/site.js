@@ -24,9 +24,6 @@
       // Shorthand for basic DOM lookup.
       const $ = document.querySelector.bind(document)
 
-      $('#nickname').focus()
-      $('#nickname').select()
-
       // Disables the submit button if the form isn’t valid.
       function validateForm () {
         const formIsValid = $('#nickname').value !== '' && $('#message').value !== ''
@@ -36,17 +33,24 @@
       // Perform initial form validation.
       validateForm()
 
+      // Set initial focus and select the default nickname for easy replacement.
+      $('#nickname').focus()
+      $('#nickname').select()
+
       // Initialise the web socket
       const socket = new WebSocket(`wss://${window.location.hostname}/chat`)
 
+      // Display the state of the connection.
       socket.onopen = _ => { $('#status').innerHTML = '<span style="color: green">Online</span>' }
       socket.onclose = _ => { $('#status').innerHTML = 'Offline' }
 
+      // Display received messages.
       socket.onmessage = message => {
-        message = JSON.parse(message.data)
+        message = JSON.parseDisplay(message.data)
         $('#received').innerHTML += `<li><strong>${message.nickname}: </strong>${message.text}</li>`
       }
 
+      // Carry out form validation.
       $('#nickname').addEventListener('input', validateForm)
       $('#message').addEventListener('input', validateForm)
 
