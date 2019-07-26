@@ -46,7 +46,7 @@
 
       // Display received messages.
       socket.onmessage = message => {
-        message = JSON.parseDisplay(message.data)
+        message = JSON.parse(message.data)
         $('#received').innerHTML += `<li><strong>${message.nickname}: </strong>${message.text}</li>`
       }
 
