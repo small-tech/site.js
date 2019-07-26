@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Nothing yet.
 
+## [12.3.0] - 2019-07-26
+
+### Added
+
+  - Access to WebSocket server from WebSocket routes.
+
 ## [12.2.0] - 2019-07-25
 
 ### Added
