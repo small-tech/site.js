@@ -10,7 +10,6 @@
 //
 module.exports = function (webSocket, request) {
   webSocket.on('message', message => {
-    console.log('message', message)
     this.getWss('/chat').clients.forEach(client => {
       client.send(message)
     })

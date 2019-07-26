@@ -37,7 +37,7 @@
       validateForm()
 
       // Initialise the web socket
-      const socket = new WebSocket(`wss://localhost/chat`)
+      const socket = new WebSocket(`wss://${window.location.hostname}/chat`)
 
       socket.onopen = _ => { $('#status').innerHTML = '<span style="color: green">Online</span>' }
       socket.onclose = _ => { $('#status').innerHTML = 'Offline' }
