@@ -41,7 +41,7 @@ function help () {
   const optionSyncFrom = option('sync-from')
   const optionSyncTo = option('sync-to')
 
-  const optionEnsureCanSync = option('ensure-sync')
+  const optionEnsureCanSync = option('ensure-can-sync')
   const optionExitOnSync = option('exit-on-sync')
   const optionSyncFolderAndContents = option('sync-folder-and-contents')
 
