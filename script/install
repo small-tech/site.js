@@ -32,7 +32,7 @@ if [[ "$OSTYPE" == "linux-gnu" ]]; then
   wget -q https://sitejs.org/releases/linux/12.2.0.tar.gz
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   # macOS
-  wget -q https://sitejs.org/releases/macos/12.2.0.tar.gz
+  curl -Os https://sitejs.org/releases/macos/12.2.0.tar.gz
 else
   # Unsupported
   echo "\n ❌ Error: this operating system is not supported.\n"
