@@ -8,13 +8,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Nothing yet.
 
-## [12.3.0] - 2019-08-18
+## [12.4.0] - 2019-09-11
+
+### Changed
+
+  - Uses cURL instead of wget to install on macOS
+  - Updated to latest version of our fork of express-ws
+
+## [12.3.1] - 2019-08-18 (unreleased publicly)
 
 ### Fixed
 
   - --ensure-can-sync option displays correctly in help
 
-## [12.3.0] - 2019-07-26
+## [12.3.0] - 2019-07-26  (unreleased publicly)
 
 ### Added
 
