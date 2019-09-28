@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Nothing yet.
 
+## [12.5.0] - 2019-09-28
+
+### Added
+
+  - macOS Catalina support (upgrade to Nodecert 3.1.0, with mkcert 1.4.0 support)
+
 ## [12.4.1] - 2019-09-11
 
 ### Fixed
