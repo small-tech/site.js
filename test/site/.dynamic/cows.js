@@ -21,7 +21,8 @@ function paveTheCowPaths(request, response, next) {
             <pre style="font-size: 24px;">${randomCow}</pre>
           </main>
         </body>
-      </html>`)
+      </html>
+    `)
 }
 
 module.exports = paveTheCowPaths
