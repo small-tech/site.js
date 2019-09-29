@@ -25,6 +25,7 @@
     "@ind.ie/acme-tls": "^2.1.2",
     "@ind.ie/nodecert": "^3.1.0",
     "@ind.ie/web-routes-from-files": "^1.2.1",
+    "@small-tech/cross-platform-hostname": "^1.0.0",
     "ansi-escape-sequences": "^4.1.0",
     "body-parser": "^1.19.0",
     "chokidar": "^2.1.6",

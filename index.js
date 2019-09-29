@@ -16,6 +16,8 @@ const fs = require('fs')
 const path = require('path')
 const os = require('os')
 
+const crossPlatformHostname = require('@small-tech/cross-platform-hostname')
+
 const clr = require('./lib/clr')
 
 const express = require('express')
@@ -37,6 +39,10 @@ class Site {
 
   // Emitted when the address the server is trying to use is already in use by a different process on the system.
   static get EVENT_ADDRESS_ALREADY_IN_USE () { return 'site.js-address-already-in-use' }
+
+  // The cross-platform hostname (os.hostname() on Linux and macOS, special handling on Windows to return
+  // the full computer name, which can be a domain name and thus the equivalent of hostname on Linux and macOS).
+  static get hostname () { return crossPlatformHostname }
 
   // Logs a nicely-formatted version string based on
   // the version set in the package.json file to console.
@@ -98,7 +104,7 @@ class Site {
     this.aliases = Array.isArray(options.aliases) ? options.aliases : []
 
     // The www subdomain is a default alias.
-    this.aliases.push(`www.${os.hostname()}`)
+    this.aliases.push(`www.${Site.hostname}`)
 
     // Has a proxy server been requested? If so, we flag it and save the port
     // we were asked to proxy. In this case, pathToServe is ignored/unused.
@@ -150,7 +156,7 @@ class Site {
     // defined as aliases so that the URL is rewritten). There is always
     // at least one alias (the www. subdomain) for global servers.
     if (this.global) {
-      const mainHostname = os.hostname()
+      const mainHostname = Site.hostname
       this.app.use((request, response, next) => {
         const requestedHost = request.header('host')
         if (requestedHost === mainHostname) {
@@ -401,7 +407,7 @@ class Site {
     if (this.port !== 443) {
       portSuffix = `:${this.port}`
     }
-    return this.global ? `${os.hostname()}${portSuffix}` : `localhost${portSuffix}`
+    return this.global ? `${Site.hostname}${portSuffix}` : `localhost${portSuffix}`
   }
 
 
@@ -704,7 +710,7 @@ class Site {
 
     // Certificates are automatically obtained for the hostname and the www. subdomain of the hostname
     // for the machine that we are running on.
-    const hostname = os.hostname()
+    const hostname = Site.hostname
 
     const acmeTLSOptions = {
       // Note: while testing, you might want to use the staging server at:
@@ -730,7 +736,7 @@ class Site {
       // addresses passed that match the hostname before making the call to the ACME
       // servers. (That module, as it reflects the ACME spec, does _not_ have the email
       // address as a required property.)
-      email: os.hostname(),
+      email: Site.hostname,
 
       // These will be removed altogether soon.
       telemetry: false,

@@ -4,6 +4,10 @@
 //
 // Enables the web server daemon (launches it as a startup daemon).
 //
+// Note: enable is only supported on Linux distributions that have
+// ===== systemd. macOS and Windows are not supported for
+//       production use. Ideally, deploy on Ubuntu 18.04 LTS.
+//
 //////////////////////////////////////////////////////////////////////
 
 const os = require('os')
