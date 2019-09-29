@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Nothing yet.
 
+## [12.5.1] - 2019-09-29
+
+### Fixed
+
+  - Add mime types to dynamic routes in test/site (to avoid Safari 13 downloading
+    them as `.dms` files).
+
 ## [12.5.0] - 2019-09-28
 
 ### Added
