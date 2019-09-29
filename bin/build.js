@@ -35,19 +35,29 @@ console.log(`\n ⚙ Site.js: building native binaries for version ${version}`)
 
 const linuxVersionDirectory = path.join('dist', 'linux', version)
 const macOsVersionDirectory = path.join('dist', 'macos', version)
+const windowsVersionDirectory = path.join('dist', 'windows', version)
 
 fs.mkdirSync(linuxVersionDirectory, {recursive: true})
 fs.mkdirSync(macOsVersionDirectory, {recursive: true})
+fs.mkdirSync(windowsVersionDirectory, {recursive: true})
 
 const linuxVersionBinaryPath = path.join(linuxVersionDirectory, binaryName)
 const macOsVersionBinaryPath = path.join(macOsVersionDirectory, binaryName)
+const windowsVersionBinaryPath = path.join(windowsVersionDirectory, binaryName)
+
+const binaryPaths = {
+  'linux': linuxVersionBinaryPath,
+  'darwin': macOsVersionBinaryPath,
+  'win32': windowsVersionBinaryPath
+}
 
 // Only build for the current platform unless a deployment build is requested via --deploy.
 const platform = os.platform()
 const buildLinuxVersion = commandLineOptions.deploy || commandLineOptions.all || (platform === 'linux')
 const buildMacVersion = commandLineOptions.deploy || commandLineOptions.all || (platform === 'darwin')
+const buildWindowsVersion = commandLineOptions.deploy || commandLineOptions.all || (platform === 'win32')
 
-const currentPlatformBinaryPath = (platform === 'linux') ? linuxVersionBinaryPath : macOsVersionBinaryPath
+const currentPlatformBinaryPath = binaryPaths[['linux', 'darwin', 'win32'].find(_ => _ === platform)]
 
 // Start the build.
 build()
@@ -63,10 +73,9 @@ async function build () {
       input: 'bin/site.js',
       output: linuxVersionBinaryPath,
       target: 'linux-x64-10.15.3',
-      resources: ['package.json', 'bin/commands/*', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.3.0-linux-amd64', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-arm']
+      resources: ['package.json', 'bin/commands/*', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-amd64', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-arm']
     })
   }
-
 
   if (buildMacVersion) {
     console.log('   • Building macOS version…')
@@ -76,6 +85,17 @@ async function build () {
       output: macOsVersionBinaryPath,
       target: 'mac-x64-10.15.3',
       resources: ['package.json', 'bin/commands/*', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-darwin-amd64']
+    })
+  }
+
+  if (buildWindowsVersion) {
+    console.log('   • Building Windows version…')
+
+    await compile({
+      input: 'bin/site.js',
+      output: windowsVersionBinaryPath,
+      target: 'windows-x64-10.15.3',
+      resources: ['package.json', 'bin/commands/*', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-windows-amd64.exe']
     })
   }
 
@@ -103,9 +123,11 @@ async function build () {
     const mainSourceDirectory = path.join(__dirname, '..')
     const linuxVersionWorkingDirectory = path.join(mainSourceDirectory, linuxVersionDirectory)
     const macOsVersionWorkingDirectory = path.join(mainSourceDirectory, macOsVersionDirectory)
+    const windowsVersionWorkingDirectory = path.join(mainSourceDirectory, windowsVersionDirectory)
 
     childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: linuxVersionWorkingDirectory})
     childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: macOsVersionWorkingDirectory})
+    childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: windowsVersionWorkingDirectory})
 
     //
     // Copy Site.js release binaries to the Site.js web site.
@@ -133,14 +155,18 @@ async function build () {
       console.log('   • Copying release binaries to the Site.js web site…')
       const linuxVersionZipFilePath = path.join(linuxVersionWorkingDirectory, zipFileName)
       const macOsVersionZipFilePath = path.join(macOsVersionWorkingDirectory, zipFileName)
+      const windowsVersionZipFilePath = path.join(windowsVersionWorkingDirectory, zipFileName)
       const linuxVersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'linux')
       const macOsVersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'macos')
+      const windowsVersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'windows')
 
       fs.mkdirSync(linuxVersionTargetDirectoryOnSite, {recursive: true})
       fs.mkdirSync(macOsVersionTargetDirectoryOnSite, {recursive: true})
+      fs.mkdirSync(windowsVersionTargetDirectoryOnSite, {recursive: true})
 
       fs.copyFileSync(linuxVersionZipFilePath, path.join(linuxVersionTargetDirectoryOnSite, zipFileName))
       fs.copyFileSync(macOsVersionZipFilePath, path.join(macOsVersionTargetDirectoryOnSite, zipFileName))
+      fs.copyFileSync(windowsVersionZipFilePath, path.join(windowsVersionTargetDirectoryOnSite, zipFileName))
 
       // Write out a dynamic route with the latest version into the site. That endpoint will be used by the
       // auto-update feature to decide whether it needs to update.
