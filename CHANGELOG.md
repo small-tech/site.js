@@ -6,9 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
-## Added
+  - Nothing yet
 
-  - Windows support. Support for Windows 10 under Windows Terminal (Powershell).
+## [12.6.0] - TBA
+
+### Added
+
+  - Native Windows 10 support under Windows Terminal (Powershell).
+
+### Removed
+
+  - Windows Subsystem for Linux (WSL) support.
 
 ## [12.5.1] - 2019-09-29
 

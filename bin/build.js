@@ -30,6 +30,7 @@ if (commandLineOptions._.length !== 0 || commandLineOptions.h || commandLineOpti
 // Get the version from the npm package configuration.
 const version = package.version
 const binaryName = 'site'
+const windowsBinaryName = `${binaryName}.exe`
 
 console.log(`\n ⚙ Site.js: building native binaries for version ${version}`)
 
@@ -43,7 +44,7 @@ fs.mkdirSync(windowsVersionDirectory, {recursive: true})
 
 const linuxVersionBinaryPath = path.join(linuxVersionDirectory, binaryName)
 const macOsVersionBinaryPath = path.join(macOsVersionDirectory, binaryName)
-const windowsVersionBinaryPath = path.join(windowsVersionDirectory, binaryName)
+const windowsVersionBinaryPath = path.join(windowsVersionDirectory, windowsBinaryName)
 
 const binaryPaths = {
   'linux': linuxVersionBinaryPath,
@@ -127,7 +128,7 @@ async function build () {
 
     childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: linuxVersionWorkingDirectory})
     childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: macOsVersionWorkingDirectory})
-    childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: windowsVersionWorkingDirectory})
+    childProcess.execSync(`tar -cvzf ${zipFileName} ${windowsBinaryName}`, {env: process.env, cwd: windowsVersionWorkingDirectory})
 
     //
     // Copy Site.js release binaries to the Site.js web site.
