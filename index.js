@@ -644,7 +644,10 @@ class Site {
   appAddArchiveCascade () {
     const archiveCascade = []
     const absolutePathToServe = path.resolve(this.pathToServe)
-    const pathName = absolutePathToServe.match(/.*\/(.*?)$/)[1]
+
+    // (Windows uses forward slashes in paths so write the RegExp accordingly for that platform.)
+    const pathName = process.platform === 'win32' ? absolutePathToServe.match(/.*\\(.*?)$/)[1] : absolutePathToServe.match(/.*\/(.*?)$/)[1]
+    
     if (pathName !== '') {
       let archiveLevel = 0
       do {
