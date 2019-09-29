@@ -22,7 +22,7 @@
   },
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "@ind.ie/acme-tls": "^2.2.0",
+    "@ind.ie/acme-tls": "^2.2.1",
     "@ind.ie/nodecert": "^3.1.0",
     "@ind.ie/web-routes-from-files": "^1.2.1",
     "@small-tech/cross-platform-hostname": "^1.0.0",
