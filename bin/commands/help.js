@@ -133,7 +133,7 @@ function help () {
     • Serve folder ${argument('demo')} ${emphasised('(shorthand)')}\t\t${prompt} ${appName} ${argument('demo')}
     • Serve folder ${argument('demo')} at port 666\t\t${prompt} ${appName} ${commandServe} ${argument('demo')} ${argument('@localhost:666')}
 
-    • Proxy ${argument('localhost:1313')}🡘 https://localhost\t${prompt} ${appName} ${argument(':1313')}
+    • Proxy ${argument('localhost:1313')} ⇄ https://localhost\t${prompt} ${appName} ${argument(':1313')}
       (shorthand and full)\t\t\t${prompt} ${appName} ${commandServe} ${argument(':1313')} ${argument('@localhost:443')}
     ${ isWindows ? '' : `
     • Serve current folder, sync it to ${argument('my.site')}\t${prompt} ${appName} ${optionSyncTo}=${argument('my.site')}
@@ -164,7 +164,7 @@ function help () {
     • Serve folder ${argument('demo')}\t\t\t\t${prompt} ${appName} ${argument('demo')} ${argument('@hostname')}
       (shorthand and full)\t\t\t${prompt} ${appName} ${commandServe} ${argument('demo')} ${argument('@hostname')}
 
-    • Proxy ${argument('localhost:1313')}🡘 https://hostname\t${prompt} ${appName} ${commandServe} ${argument(':1313')} ${argument('@hostname')}
+    • Proxy ${argument('localhost:1313')} ⇄ https://hostname\t${prompt} ${appName} ${commandServe} ${argument(':1313')} ${argument('@hostname')}
     ${ systemdExists ? `
     Start-up daemon:
 
