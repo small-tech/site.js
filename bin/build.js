@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 
-////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
 //
 // Builds Linux and macOS binaries of Site.js.
 //
+// Note: the build script is only supported on Linux at this time.
+//
 // Run with: npm run build
 //
-////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
 
 const fs = require('fs')
 const path = require('path')
@@ -105,6 +107,7 @@ async function build () {
     //
     // Install.
     //
+
     console.log('   • Installing locally…')
 
     childProcess.execSync(`sudo cp ${currentPlatformBinaryPath} /usr/local/bin`)
@@ -148,7 +151,9 @@ async function build () {
     const pathToWebSite = path.resolve(path.join(__dirname, '../../site/'))
     const pathToReleasesFolder = path.resolve(path.join(pathToWebSite, 'releases/'))
     const pathToDynamicVersionRoute = path.join(pathToWebSite, '.dynamic', 'version.js')
-    const pathToInstallationScriptFolderOnWebSite = path.join(pathToWebSite, 'installation-script', 'install')
+    const pathToInstallationScriptsFolderOnWebSite = path.join(pathToWebSite, 'installation-script')
+    const pathToLinuxAndMacOSInstallationScriptFileOnWebSite = path.join(pathToInstallationScriptsFolderOnWebSite, 'install')
+    const pathToWindowsInstallationScriptFileOnWebSite = path.join(pathToInstallationScriptsFolderOnWebSite, 'windows')
 
     // Check that a local working copy of the Site.js web site exists at the relative location
     // that we expect it to. If it doesn’t skip this step.
@@ -175,14 +180,23 @@ async function build () {
       const versionRoute = `module.exports = (request, response) => { response.end('${package.version}') }\n`
       fs.writeFileSync(pathToDynamicVersionRoute, versionRoute, {encoding: 'utf-8'})
 
-      // Update the install file and deploy it to the Site.js web site.
-      console.log('   • Updating the installation script and deploying it to Site.js web site.')
-      const installScriptFile = path.join(mainSourceDirectory, 'script', 'install')
-      let installScript = fs.readFileSync(installScriptFile, 'utf-8')
-      installScript = installScript.replace(/\d+\.\d+\.\d+/g, package.version)
-      fs.writeFileSync(installScriptFile, installScript)
+      // Update the install file and deploy them to the Site.js web site.
+      console.log('   • Updating the installation scripts and deploying them to Site.js web site.')
 
-      fs.copyFileSync(installScriptFile, pathToInstallationScriptFolderOnWebSite)
+      // Linux and macOS.
+      const linuxAndMacOSInstallScriptFile = path.join(mainSourceDirectory, 'script', 'install')
+      let linuxAndMacOSInstallScript = fs.readFileSync(linuxAndMacOSInstallScriptFile, 'utf-8')
+      linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(/\d+\.\d+\.\d+/g, package.version)
+      fs.writeFileSync(linuxAndMacOSInstallScriptFile, linuxAndMacOSInstallScript)
+      fs.copyFileSync(linuxAndMacOSInstallScriptFile, pathToLinuxAndMacOSInstallationScriptFileOnWebSite)
+
+      // Windows.
+      const windowsInstallScriptFile = path.join(mainSourceDirectory, 'script', 'windows')
+      let windowsInstallScript = fs.readFileSync(windowsInstallScriptFile, 'utf-8')
+      windowsInstallScript = windowsInstallScript.replace(/\d+\.\d+\.\d+/g, package.version)
+      fs.writeFileSync(windowsInstallScriptFile, windowsInstallScript)
+      fs.copyFileSync(windowsInstallScriptFile, pathToWindowsInstallationScriptFileOnWebSite)
+
     } else {
       console.log('   • No local working copy of Site.js web site found. Skipped copy of release binaries.')
     }
