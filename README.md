@@ -4,7 +4,7 @@
 
 ## Develop, test, and deploy your secure static or dynamic personal web site with zero configuration.
 
-__Site.js is an integrated [Small Tech](https://ar.al/2019/03/04/small-technology/) personal web tool for Linux, macOS, and Windows.__
+__Site.js is an integrated [Small Tech](https://ar.al/2019/03/04/small-technology/) personal web tool for Linux, macOS, and Windows 10.__
 
 Most of our tools today are built for the needs of startups and enterprises – Site.js is built for individuals.
 
