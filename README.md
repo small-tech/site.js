@@ -53,7 +53,7 @@ curl -s https://sitejs.org/install | bash
 #### Windows 10 with PowerShell running under Windows Terminal
 
 ```shell
-iex(iwr -UseBasicParsing https://sitejs.org/windows).Content
+iex(iwr -UseBasicParsing https://sitejs.org/install.txt).Content
 ```
 
 ### Node.js
