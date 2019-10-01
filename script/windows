@@ -1,0 +1,149 @@
+################################################################################
+#
+# Site.js v12.6.0 Installer for Windows 10 (PowerShell)
+#
+# To use:
+#
+# iex(iwr -UseBasicParsing 'https://sitejs.org/windows').Content
+#
+# Copyright (c) 2019 Aral Balkan.
+# Released under the AGPL version 3.0 or later license.
+# Made with <3 by Small Technology Foundation (https://small-tech.org)
+# Like this? Fund us! (https://small-tech.org/fund-us)
+#
+################################################################################
+
+# This is where the binary will be installed to.
+$installationDirectory =  'C:\Program Files\site.js'
+
+# The address to download the installation script from.
+$installationScriptUrl = 'https://sitejs.org/windows'
+
+# Installation script local file name.
+$installationScriptFileName = 'install-site.js.ps1'
+
+# The address to download the tar-gzipped archive of the Site.js binary from.
+$archiveUrl = 'https://sitejs.org/releases/windows/12.6.0.tar.gz'
+
+# Emoji encodings (because Powershell is from the Stone Age and cannot handle
+# emoji literals in strings)
+
+$satelliteBytes = 240, 159, 147, 161
+$packageBytes = 240, 159, 147, 166
+$tadaBytes = 240, 159, 142, 137
+$satelliteEmoji = [System.Text.Encoding]::UTF8.GetString($satelliteBytes)
+$packageEmoji = [System.Text.Encoding]::UTF8.GetString($packageBytes)
+$tadaEmoji = [System.Text.Encoding]::UTF8.GetString($tadaBytes)
+$ellipsis = [char]0x2026
+
+# Adds to the specified environment path without creating duplicates.
+# Courtesy of https://gist.github.com/mkropat/c1226e0cc2ca941b23a9
+# Via https://stackoverflow.com/questions/714877/setting-windows-powershell-environment-variables
+function Add-EnvPath {
+  param(
+    [Parameter(Mandatory=$true)]
+    [string] $Path,
+
+    [ValidateSet('Machine', 'User', 'Session')]
+    [string] $Container = 'Session'
+  )
+
+  if ($Container -ne 'Session') {
+    $containerMapping = @{
+      Machine = [EnvironmentVariableTarget]::Machine
+      User = [EnvironmentVariableTarget]::User
+    }
+    $containerType = $containerMapping[$Container]
+
+    $persistedPaths = [Environment]::GetEnvironmentVariable('Path', $containerType) -split ';'
+    if ($persistedPaths -notcontains $Path) {
+      $persistedPaths = $persistedPaths + $Path | Where-Object { $_ }
+      [Environment]::SetEnvironmentVariable('Path', $persistedPaths -join ';', $containerType)
+    }
+  }
+
+  $envPaths = $env:Path -split ';'
+  if ($envPaths -notcontains $Path) {
+    $envPaths = $envPaths + $Path | Where-Object { $_ }
+    $env:Path = $envPaths -join ';'
+  }
+}
+
+# Switch to the temp folder. This is where we will always be working from
+# so as not to pollute any persistent directories.
+Push-Location "~\AppData\Local\Temp\"
+
+# Check if we're running with elevated privileges, if not, start a new
+# PowerShell windows with elevated privileges and continue there.
+if (!([Security.Principal.WindowsPrincipal] `
+  [Security.Principal.WindowsIdentity]::GetCurrent() `
+).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+  #
+  # Installer is running with regular privileges.
+  #
+
+  #
+  # Installer is running with regular privileges. Start a new PowerShell session with elevated privileges.
+  #
+  Write-Output ''
+  Write-Output " $satelliteEmoji Downloading Site.js v12.6.0$ellipsis"
+
+  # We need to start a new PowerShell session with elevated privileges but if we're running in memory
+  # only after being downloaded by the installation command, we don't have a copy of ourselves to run.
+  # So download the latest version of this script and save it there so that we can run it with elevated privileges.
+  Invoke-WebRequest $installationScriptUrl -OutFile $installationScriptFileName
+
+  # Run the downloaded version of ourself with elevated privileges.
+  $currentPath = (Get-Item -Path ".\").FullName
+  Start-Process -Verb RunAs powershell.exe -Wait -ArgumentList "$currentPath/$installationScriptFileName"
+
+  # We're back from the privileged window. Update this window's path immediately so that
+  # the person can use the site command right away from the current session.
+  $env:Path += ";$installationDirectory"
+
+  # Recreate the output from the other window for consistency with other platforms.
+  Write-Output " $packageEmoji Installing$ellipsis"
+  Write-Output " $tadaEmoji Done! "
+  Write-Output ''
+} else {
+  #
+  # Installer is running with elevated privileges.
+  #
+  Write-Output "`n`n`n`n`n`n"
+  Write-Output ' Installing Site.js using administrator privileges...'
+  Write-Output ''
+  Write-Output ' * Downloading Site.js v12.6.0...'
+
+  # Download the latest Site.js archive.
+  Invoke-WebRequest -Uri $archiveUrl -OutFile '12.6.0.tar.gz'
+
+  Write-Output ''
+  Write-Output ' * Extracting binary...'
+
+  # Gunzip and untar the binary.
+  tar -xf 12.6.0.tar.gz
+
+  Write-Output ''
+  Write-Output ' * Installing binary...'
+
+  # Ensure that the folder we want to copy the binary to exists.
+  New-Item -Force -ItemType directory -Path $installationDirectory | Out-Null
+  Copy-Item -Force -Path ./site.exe -Destination $installationDirectory | Out-Null
+
+  Write-Output ''
+  Write-Output ' * Adding to system path...'
+
+  # Persist the installation directory to the system path
+  # (if it doesn't already exist).
+  Add-EnvPath -Container Machine -Path $installationDirectory
+
+  Write-Output ''
+  Write-Output ' * Done!'
+  Write-Output ''
+
+  # Give people a chance to read the output.
+  Start-Sleep -Seconds 1
+}
+
+# Revert to whatever directory the person was in originally.
+Pop-Location
