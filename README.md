@@ -146,6 +146,35 @@ Start serving `http://localhost:1313` and `ws://localhost:1313` at your _hostnam
 $ site :1313 @hostname
 ```
 
+#### macOS notes
+
+To set your hostname under macOS (e.g., to `example.small-tech.org`), run the following command:
+
+```shell
+$ sudo scutil --set HostName example.small-tech.org
+```
+
+#### Windows 10 notes
+
+On Windows 10, you must add quotation marks around `@hostname` and `@localhost`. So the first example, above, would be written in the following way on Windows 10:
+
+```shell
+$ site my-site "@hostname"
+```
+
+Also, Windows 10, unlike Linux and macOS, does not have the concept of a hostname. The closest thing to it is your _full computer name_. Settings your full computer name is a somewhat convoluted process so we’ve documented it here for you.
+
+##### How to set your full computer name on Windows 10
+
+Say you want to set your hostname to `my-windows-laptop.small-tech.org`:
+
+1. Control Panel → System And Security → System → Change Settings link (next to Computer name) → [Change…] Button
+2. Under Computer name, enter your _subdomain_ (`my-windows-laptop`)
+3. [More…] Button → enter your _domain name_ (`small-tech.org`) in the Primary DNS suffix of this computer field.
+4. Press the various [OK] buttons to dismiss the various modal dialogues and restart your computer.
+
+
+
 #### Making your server public
 
 Use a service like [ngrok](https://ngrok.com/) (Pro+) to point a custom domain name to your temporary staging server. Make sure you set your `hostname` file (e.g., in `/etc/hostname` or via `hostnamectl set-hostname <hostname>` or the equivalent for your platform) to match your domain name. The first time you hit your server via your hostname it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
