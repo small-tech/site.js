@@ -57,7 +57,7 @@ function help () {
   const optionExitOnSync = option('exit-on-sync')
   const optionSyncFolderAndContents = option('sync-folder-and-contents')
 
-  const prompt = clr('⯈', 'blue')
+  const prompt = clr('►', 'blue')
 
   Site.logAppNameAndVersion()
 
