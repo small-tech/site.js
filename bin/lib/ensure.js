@@ -17,6 +17,10 @@ const clr = require('../../lib/clr')
 class Ensure {
 
   // Does the passed command exist? Returns: bool.
+  // Note: on Windows this will always fail because which does not exist.
+  // ===== This currently does not appear to have any side-effects but it’s
+  //       worth considering whether we should add special handling for that
+  //       platform here.
   commandExists (command) {
     try {
       childProcess.execFileSync('which', [command], {env: process.env})

@@ -8,13 +8,25 @@
 
 const Site = require('../../index')
 const clr = require('../../lib/clr')
+const ensure = require('../lib/ensure')
 
 const GREEN = 'green'
 const YELLOW = 'yellow'
 const CYAN = 'cyan'
 
+const systemdExists = ensure.commandExists('systemctl')
+const isLinux = process.platform === 'linux'
+const isWindows = process.platform === 'win32'
+const isMac = process.platform === 'darwin'
+
 function command(name) { return clr(name, GREEN) }
-function argument(name) { return clr(name, CYAN) }
+function argument(name) {
+  // On Windows @hostname and @localhost have to be quoted.
+  if (isWindows && name.startsWith('@')) {
+    name = `"${name}"`
+  }
+  return clr(name, CYAN)
+}
 function option(name) { name = `--${name}`; return `${clr(name, YELLOW)}` }
 function heading(title) { return clr(title, 'underline') }
 function emphasised(text) { return clr(text, 'italic') }
@@ -54,7 +66,7 @@ function help () {
 
   ${prompt} ${clr(appName, 'bold')} [${usageCommand}] [${usageFolderOrPort}] [${usageHostAndPort}] [${usageOptions}]
 
-    ${usageCommand}\t\t${commandVersion} | ${commandHelp} | ${commandServe} | ${commandEnable} | ${commandDisable} | ${commandLogs} | ${commandStatus}
+    ${usageCommand}\t\t${commandVersion} | ${commandHelp} | ${commandServe} ${systemdExists ? `| ${commandEnable} | ${commandDisable} | ${commandLogs} | ${commandStatus}` : ''}| ${commandUninstall}
     ${usageFolderOrPort}\tPath of folder to serve (defaults to current folder) or port on localhost to proxy.
     ${usageHostAndPort}\tHost (and, optionally port) to sync. Valid hosts are @localhost and @hostname.
     ${usageOptions}\t\tSettings that alter command behaviour.
@@ -75,18 +87,21 @@ function help () {
     ${commandVersion}\tDisplay version and exit.
     ${commandHelp}\tDisplay this help screen and exit.
     ${commandUninstall}\tUninstall Site.js.
-
-    On Linux distributions with systemd, you can also use:
-
+    ${systemdExists ?
+      `
     ${commandEnable}\tStart server as daemon with globally-trusted certificates and add to startup.
     ${commandDisable}\tStop server daemon and remove from startup.
     ${commandLogs}\tDisplay and tail server logs.
     ${commandStatus}\tDisplay detailed server information.
-
+      ` : ''}
     If ${usageCommand} is omitted, behaviour defaults to ${commandServe}.
 
     ${heading('Options:')}
+    ${ isWindows ? `
+    For ${commandServe} command:
 
+    ${optionAliases}\t\t\tSpecify additional domains to obtain TLS certs for and respond to.
+    ` : `
     For both ${commandServe} and ${commandEnable} commands:
 
     ${optionAliases}\t\t\tSpecify additional domains to obtain TLS certs for and respond to.
@@ -101,7 +116,7 @@ function help () {
     For ${commandEnable} command:
 
     ${optionEnsureCanSync}\t\tEnsure server can rsync via ssh.
-
+    `}
     ${heading('Examples:')}
 
       ${heading('Develop using locally-trusted TLS certificates:')}
@@ -117,7 +132,7 @@ function help () {
 
     • Proxy ${argument('localhost:1313')}🡘 https://localhost\t${prompt} ${appName} ${argument(':1313')}
       (shorthand and full)\t\t\t${prompt} ${appName} ${commandServe} ${argument(':1313')} ${argument('@localhost:443')}
-
+    ${ isWindows ? '' : `
     • Serve current folder, sync it to ${argument('my.site')}\t${prompt} ${appName} ${optionSyncTo}=${argument('my.site')}
       (shorthand and full)\t\t\t${prompt} ${appName} ${commandServe} ${argument('.')} ${argument('@localhost:443')} ${optionSyncTo}=${argument('my.site')}
 
@@ -132,11 +147,13 @@ function help () {
 
     • Sync ${argument('demo')} folder to ${argument('my.site')} and exit\t${prompt} ${appName} ${argument('demo')} ${optionSyncTo}=${argument('my.site')} ${optionExitOnSync}
       (alternative forms)\t\t\t${prompt} ${appName} ${optionSyncFrom}=${argument('demo')} ${optionSyncTo}=${argument('my.site')} ${optionExitOnSync}
-
+    `}${ systemdExists ? `
       ${heading('Stage and deploy using globally-trusted Let’s Encrypt certificates:')}
 
       Regular process:
-
+      ` : `
+      ${heading('Stage using globally-trusted Let’s Encrypt certificates:')}
+      `}
     • Serve current folder\t\t\t${prompt} ${appName} ${argument('@hostname')}
 
     • Serve current folder also at aliases\t${prompt} ${appName} ${argument('@hostname')} ${optionAliases}=${argument('other.site,www.other.site')}
@@ -145,15 +162,30 @@ function help () {
       (shorthand and full)\t\t\t${prompt} ${appName} ${commandServe} ${argument('demo')} ${argument('@hostname')}
 
     • Proxy ${argument('localhost:1313')}🡘 https://hostname\t${prompt} ${appName} ${commandServe} ${argument(':1313')} ${argument('@hostname')}
-
-      Start-up daemon:
+    ${ systemdExists ? `
+    Start-up daemon:
 
     • Serve current folder as daemon\t\t${prompt} ${appName} ${commandEnable}
     • Ditto & also ensure it can rsync via ssh\t${prompt} ${appName} ${commandEnable} ${optionEnsureCanSync}
     • Get status of deamon\t\t\t${prompt} ${appName} ${commandStatus}
     • Display server logs\t\t\t${prompt} ${appName} ${commandLogs}
     • Stop current daemon\t\t\t${prompt} ${appName} ${commandDisable}
+    ` : ''}${ isWindows ? `
+    ${heading('Windows-specific notes:')}
 
+      - Unlike Linux and macOS, you must use quotation marks around @localhost and @hostname.
+      - The sync feature, available on Linux and macOS, is not available on Windows as rsync is not available.
+      - Production use is not available on Windows as it requires Linux with systemd.
+    `: ''}${ isMac ? `
+    ${heading('Mac-specific notes:')}
+
+      - Production use is not available on macOS as it requires Linux with systemd.
+    `: ''}${ isLinux && !systemdExists ? `
+    ${heading('Linux-specific notes:')}
+
+      - Production use is not available on this Linux distribution as systemd does not exist.
+      - For production use, we currently recommend using Ubuntu 18.04 LTS.
+    `: ''}
     ${clr('For further information, please see https://sitejs.org', 'italic')}
   `.replace(/^\n/, '')
 
