@@ -4,9 +4,9 @@
 
 ## Develop, test, and deploy your secure static or dynamic personal web site with zero configuration.
 
-__Site.js is an integrated [Small Tech](https://ar.al/2019/03/04/small-technology/) personal web tool for Linux, macOS, and Windows 10.__
+__Site.js is a [small](https://ar.al/2019/03/04/small-technology/) personal web tool for Linux, macOS, and Windows 10.__
 
-Most of our tools today are built for the needs of startups and enterprises – Site.js is built for individuals.
+Most of our tools today are built for the needs of startups and enterprises – Site.js is built for people.
 
 ## Features
 
@@ -50,7 +50,7 @@ wget -qO- https://sitejs.org/install | bash
 curl -s https://sitejs.org/install | bash
 ```
 
-#### Windows 10 with PowerShell running under Windows terminal
+#### Windows 10 with PowerShell running under Windows Terminal
 
 ```shell
 iex(iwr -UseBasicParsing https://sitejs.org/windows).Content
@@ -66,7 +66,7 @@ npm i -g @small-tech/site.js
 
 ### Linux
 
-Any recent Linux distribution should work. However, Site.js is most thoroughly tested on Ubuntu 19.04/Pop!_OS 19.04 (development and staging) and Ubuntu 18.04 LTS (production) at [Small Technology Foundation](https://small-tech.org)
+Any recent Linux distribution should work. However, Site.js is most thoroughly tested on Ubuntu 19.04/Pop!_OS 19.04 (development and staging) and Ubuntu 18.04 LTS (production) at [Small Technology Foundation](https://small-tech.org).
 
 For production use systemd is required.
 
