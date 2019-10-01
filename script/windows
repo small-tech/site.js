@@ -17,7 +17,7 @@
 $installationDirectory =  'C:\Program Files\site.js'
 
 # The address to download the installation script from.
-$installationScriptUrl = 'https://sitejs.org/windows'
+$installationScriptUrl = 'https://sitejs.org/install.txt'
 
 # Installation script local file name.
 $installationScriptFileName = 'install-site.js.ps1'
