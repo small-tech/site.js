@@ -102,7 +102,13 @@ function serve (args) {
   const _aliases = args.named[ALIASES]
   const aliases = _aliases === undefined ? [] : _aliases.split(',')
 
+  //
   // Sync options.
+  //
+
+  // Sync is not supported on Windows as rsync does not exist in that cursed wasteland.
+  const syncSupported = process.platform !== 'win32'
+
   let syncOptions = null
 
   if (args.named[SYNC_TO] !== undefined) {
@@ -114,8 +120,12 @@ function serve (args) {
   }
 
   if (syncOptions !== null && syncOptions.exit) {
-    // No need to start a server if all we want to do is to sync.
-    sync(syncOptions)
+    if (syncSupported) {
+      // No need to start a server if all we want to do is to sync.
+      sync(syncOptions)
+    } else {
+      console.log(`\n ⚠ [Windows] Sync is not supported on this platform. Exiting…\n`)
+    }
   } else {
     // Start a server and also sync if requested.
     ensure.weCanBindToPort(port, () => {
@@ -146,7 +156,11 @@ function serve (args) {
 
           // Start sync if requested.
           if (syncOptions !== null) {
-            sync(syncOptions)
+            if (syncSupported) {
+              sync(syncOptions)
+            } else {
+              console.log(`\n ⚠ [Windows] Sync is not supported on this platform. Ignoring sync request.`)
+            }
           }
         }
       })
