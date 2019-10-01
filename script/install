@@ -2,14 +2,16 @@
 
 ######################################################################
 #
-# Site.js v12.6.0 Installer
+# Site.js v12.6.0 Installer for Linux and macOS.
 #
 # To use:
 #
 # wget -qO- https://sitejs.org/install | bash
 #
-# This script is only for Linux and macOS.
-# On Windows, please use Windows Subsystem for Linux.
+# Copyright (c) 2019 Aral Balkan.
+# Released under the AGPL version 3.0 or later license.
+# Made with ♥ by Small Technology Foundation (https://small-tech.org)
+# Like this? Fund us! (https://small-tech.org/fund-us)
 #
 ######################################################################
 
