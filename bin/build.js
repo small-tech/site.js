@@ -153,7 +153,7 @@ async function build () {
     const pathToDynamicVersionRoute = path.join(pathToWebSite, '.dynamic', 'version.js')
     const pathToInstallationScriptsFolderOnWebSite = path.join(pathToWebSite, 'installation-scripts')
     const pathToLinuxAndMacOSInstallationScriptFileOnWebSite = path.join(pathToInstallationScriptsFolderOnWebSite, 'install')
-    const pathToWindowsInstallationScriptFileOnWebSite = path.join(pathToInstallationScriptsFolderOnWebSite, 'windows')
+    const pathToWindowsInstallationScriptFileOnWebSite = path.join(pathToInstallationScriptsFolderOnWebSite, 'install.txt')
 
     // Check that a local working copy of the Site.js web site exists at the relative location
     // that we expect it to. If it doesn’t skip this step.
