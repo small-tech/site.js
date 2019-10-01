@@ -4,7 +4,7 @@
 
 ## Develop, test, and deploy your secure static or dynamic personal web site with zero configuration.
 
-__Site.js is an integrated [Small Tech](https://ar.al/2019/03/04/small-technology/) personal web tool for Linux and Linux-like* operating systems.__
+__Site.js is an integrated [Small Tech](https://ar.al/2019/03/04/small-technology/) personal web tool for Linux, macOS, and Windows.__
 
 Most of our tools today are built for the needs of startups and enterprises – Site.js is built for individuals.
 
@@ -24,13 +24,11 @@ Most of our tools today are built for the needs of startups and enterprises – 
 
   - Supports WebSockets (via integrated [express-ws](https://github.com/HenningM/express-ws), which itself wraps [ws](https://github.com/websockets/ws)).
 
-  - Supports PHP-like simple routing for Node.js to quickly prototype and build dynamic sites.
+  - Supports DotJS (PHP-like simple routing for Node.js to quickly prototype and build dynamic sites).
 
-  - Or, for full flexibility, you can define your HTTPS and WebSocket (WSS) routes entirely in code in the traditional way for Express apps.
+  - And, for full flexibility, you can define your HTTPS and WebSocket (WSS) routes entirely in code in the traditional way for Express apps.
 
   <ins>Note:</ins> Live deployments via startup daemons are only supported on Linux distributions with systemd.
-
-  \* Works with Linux, macOS, and Windows Subsystem for Linux.
 
 ## Install
 
@@ -38,10 +36,24 @@ Copy and paste the following commands into your terminal:
 
 ### Native binaries
 
-__Before you pipe any script into your computer, always [view the source code](https://site.js/install) and make sure you understand what it does.__
+__Before you pipe any script into your computer, always view the source code ([Linux and macOS](https://site.js/install), [Windows](https://site.js/windows)) and make sure you understand what it does.__
+
+#### Linux
 
 ```shell
 wget -qO- https://sitejs.org/install | bash
+```
+
+#### macOS
+
+```shell
+curl -s https://sitejs.org/install | bash
+```
+
+#### Windows 10 with PowerShell running under Windows terminal
+
+```shell
+iex(iwr -UseBasicParsing https://sitejs.org/windows).Content
 ```
 
 ### Node.js
@@ -49,6 +61,28 @@ wget -qO- https://sitejs.org/install | bash
 ```shell
 npm i -g @small-tech/site.js
 ```
+
+## System Requirements
+
+### Linux
+
+Any recent Linux distribution should work. However, Site.js is most thoroughly tested on Ubuntu 19.04/Pop!_OS 19.04 (development and staging) and Ubuntu 18.04 LTS (production) at [Small Technology Foundation](https://small-tech.org)
+
+For production use systemd is required.
+
+### macOS
+
+macOS 10.14 Mojave and macOS 10.15 Catalina are supported (the latter as of Site.js 12.5.1).
+
+_Production use is not possible under macOS._
+
+### Windows 10
+
+The current version of Windows 10 is supported with PowerShell running under [Windows Terminal](https://github.com/Microsoft/Terminal).
+
+__Windows Subsystem for Linux is _not_ supported.__
+
+_Production use is not possible under Windows._
 
 ## Dependencies
 
@@ -166,7 +200,7 @@ The above command will result in the following directory structure on the remote
 
 ### Production
 
-__Available on Linux distributions with systemd (most Linux distributions, but [not these ones](https://sysdfree.wordpress.com/2019/03/09/135/) or on macOS).__
+__Available on Linux distributions with systemd (most Linux distributions, but [not these ones](https://sysdfree.wordpress.com/2019/03/09/135/) or on macOS or Windows).__
 
 On your live, public server, you can start serving the _my-site_ directory at your _hostname_ as a daemon that is automatically run at system startup and restarted if it crashes with:
 
@@ -190,7 +224,7 @@ Site.js uses the [systemd](https://freedesktop.org/wiki/Software/systemd/) to st
 
 ## Build and test from source
 
-Site.js is built using and supports the latest Node.js LTS (currently 10.6.0; on October 22nd, 2019, we are scheduled to move to Node 12 LTS when it becomes the active branch).
+Site.js is built using and supports the latest Node.js LTS (currently version 10.15.3; on October 22nd, 2019, we are scheduled to move to Node 12 LTS when it becomes the active branch).
 
 ### Install the source and run tests
 
@@ -918,6 +952,6 @@ Please [let me know how/if it works](https://github.com/small-tech/site.js/issue
 
   * [thagoat](https://github.com/thagoat) for confirming that [installation works on Arch Linux with Pacman](https://github.com/indie-mirror/https-server/issues/1).
 
-  * [Tim Knip](https://github.com/timknip) for confirming that [the module works with 64-bit Windows](https://github.com/indie-mirror/https-server/issues/2) with the following behaviour: “Install pops up a windows dialog to allow adding the cert.” __Note: Site.js is not supported on Windows. Please use Windows Subsystem for Linux.__
+  * [Tim Knip](https://github.com/timknip) for confirming that [the module works with 64-bit Windows](https://github.com/indie-mirror/https-server/issues/2) with the following behaviour: “Install pops up a windows dialog to allow adding the cert.”
 
-  * [Run Rabbit Run](https://hackers.town/@nobody) for [the following information](https://hackers.town/@nobody/101670447262172957) on 64-bit Windows: “Win64: works with the windows cert install popup on server launch. Chrome and ie are ok with the site then. FF 65 still throws the cert warning even after restarting.” __Note: Site.js is not supported on Windows. Please use Windows Subsystem for Linux.__
+  * [Run Rabbit Run](https://hackers.town/@nobody) for [the following information](https://hackers.town/@nobody/101670447262172957) on 64-bit Windows: “Win64: works with the windows cert install popup on server launch. Chrome and ie are ok with the site then. FF 65 still throws the cert warning even after restarting.”
