@@ -57,6 +57,9 @@ function help () {
   const optionExitOnSync = option('exit-on-sync')
   const optionSyncFolderAndContents = option('sync-folder-and-contents')
 
+  // Black right-pointing triangle (U+25B6)
+  // (There are several similar unicode gylphs but this is the one that works well across
+  // Linux, macOS, and Windows).
   const prompt = clr('▶', 'blue')
 
   Site.logAppNameAndVersion()
