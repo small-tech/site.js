@@ -151,7 +151,7 @@ async function build () {
     const pathToWebSite = path.resolve(path.join(__dirname, '../../site/'))
     const pathToReleasesFolder = path.resolve(path.join(pathToWebSite, 'releases/'))
     const pathToDynamicVersionRoute = path.join(pathToWebSite, '.dynamic', 'version.js')
-    const pathToInstallationScriptsFolderOnWebSite = path.join(pathToWebSite, 'installation-script')
+    const pathToInstallationScriptsFolderOnWebSite = path.join(pathToWebSite, 'installation-scripts')
     const pathToLinuxAndMacOSInstallationScriptFileOnWebSite = path.join(pathToInstallationScriptsFolderOnWebSite, 'install')
     const pathToWindowsInstallationScriptFileOnWebSite = path.join(pathToInstallationScriptsFolderOnWebSite, 'windows')
 
