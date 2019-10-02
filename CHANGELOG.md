@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - Nothing yet
 
+## [12.6.1] - 2019-10-02
+
+### Fixed
+
+  - Exits with graceful message instead of an error when sync is requested on Windows.
+
 ## [12.6.0] - 2019-10-01
 
 ### Added
