@@ -106,26 +106,28 @@ function serve (args) {
   // Sync options.
   //
 
+  const syncRequested = args.named[SYNC_TO] !== undefined
+  const exitOnSync = args.named[EXIT_ON_SYNC]
+
   // Sync is not supported on Windows as rsync does not exist in that cursed wasteland.
-  const syncSupported = process.platform !== 'win32'
+  if (syncRequested && process.platform === 'win32') {
+    console.log(`\n 🤯 [Windows] Sync is not supported on this platform.\n`)
+    return
+  }
 
   let syncOptions = null
 
-  if (args.named[SYNC_TO] !== undefined) {
+  if (syncRequested) {
     syncOptions = remoteConnectionInfo(args)
     Object.assign(syncOptions, {
       from: localFolder(args),
-      exit: args.named[EXIT_ON_SYNC] || false,
+      exit: exitOnSync || false,
     })
   }
 
   if (syncOptions !== null && syncOptions.exit) {
-    if (syncSupported) {
-      // No need to start a server if all we want to do is to sync.
-      sync(syncOptions)
-    } else {
-      console.log(`\n ⚠ [Windows] Sync is not supported on this platform. Exiting…\n`)
-    }
+    // No need to start a server if all we want to do is to sync.
+    sync(syncOptions)
   } else {
     // Start a server and also sync if requested.
     ensure.weCanBindToPort(port, () => {
@@ -156,12 +158,14 @@ function serve (args) {
 
           // Start sync if requested.
           if (syncOptions !== null) {
-            if (syncSupported) {
-              sync(syncOptions)
-            } else {
-              console.log(`\n ⚠ [Windows] Sync is not supported on this platform. Ignoring sync request.`)
-            }
+            sync(syncOptions)
           }
+
+          if (!syncRequested && exitOnSync) {
+            // Person has provided the --exit-on-sync option but has not specified where to sync to.
+            // Warn them and continue.
+            console.log (` ⚠ --exit-on-sync option specified without --sync-to option; ignoring.`)
+          }        
         }
       })
     })
