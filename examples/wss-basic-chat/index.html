@@ -15,9 +15,9 @@
     <input id='message' type='text' name='message' value=''>
     <button id='submitButton' type='submit'>Send</button>
   </form>
-  <h2>Received messages</h2>
+  <h2>Messages</h2>
   <!-- In actual app would use Aria to announce received messages. -->
-  <ul id='received'></ul>
+  <ul id='messages'></ul>
   <script>
     window.addEventListener('load', () => {
 
@@ -28,6 +28,10 @@
       function validateForm () {
         const formIsValid = $('#nickname').value !== '' && $('#message').value !== ''
         $('#submitButton').disabled = !formIsValid
+      }
+
+      function displayMessage (message) {
+        $('#messages').innerHTML += `<li><strong>${message.nickname}: </strong>${message.text}</li>`
       }
 
       // Perform initial form validation.
@@ -47,7 +51,7 @@
       // Display received messages.
       socket.onmessage = message => {
         message = JSON.parse(message.data)
-        $('#received').innerHTML += `<li><strong>${message.nickname}: </strong>${message.text}</li>`
+        displayMessage(message)
       }
 
       // Carry out form validation.
@@ -68,8 +72,11 @@
         validateForm()
 
         // Send the message
-        socket.send(JSON.stringify({ nickname, text }))
+        const message = { nickname, text }
+        socket.send(JSON.stringify(message))
 
+        // Update the local display
+        displayMessage(message)
       })
     })
   </script>

@@ -763,6 +763,28 @@ site/
             └ index.js
 ```
 
+Here, for example, is a simple single-room chat app that broadcasts messages to all connected WebSocket clients:
+
+```js
+module.exports = (currentClient, request) {
+  ws.on('message', message => {
+    this.getWss().clients.forEach(client => {
+      client.send(message)
+    })
+  })
+})
+```
+
+To test it out, run Site.js and then open up the JavaScript console in a couple of browser windows and enter the following code into them:
+
+```js
+const socket = new WebSocket('https://localhost/chat')
+socket.onmessage = message => console.log(message.data)
+socket.send('Hello!')
+```
+
+For a slightly more sophisticated example that doesn’t broadcast a client’s own messages to itself and has selective broadcast (so you can create “rooms”), please see the [Basic Chat example](examples/wss-basic-chat).
+
 #### Advanced routing (routes.js file)
 
 File-based routing should get you pretty far for simple use cases but if you need full flexibility in routing, simply define a _routes.js_ in your _.dynamic_ folder:
@@ -777,23 +799,18 @@ The _routes.js_ file should export a function that accepts a reference to the Ex
 
 ```js
 module.exports = app => {
-
-  // HTTPS route with a parameter called id.
-  app.get('/photo/:id', (request, response) {
-    response.type('html').end(`
-      <h1>Photo with ID ${id}</h1>
-      <img src='/photos/${id}'>
-    `)
+  // HTTPS route with a parameter called thing.
+  app.get('/hello/:thing', (request, response) => {
+    response
+      .type('html')
+      .end(`<h1>Hello, ${request.params.thing}!</h1>`)
   })
 
-  // WebSocket route: push a random photo every 30 seconds.
-  app.ws('/random-photos', (webSocket, request) {
-    setInterval(() => {
-      const photoId = Math.round(Math.random()*100)
-      webSocket.send(photoId)
-    }, 30000)
+  // WebSocket route: echos messages back to the client that sent them.
+  app.ws('/echo', (client, request) => {
+  client.on('message', (data) => {
+    client.send(data)
   })
-
 }
 ```
 
