@@ -9,23 +9,9 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 module.exports = function (client, request) {
-  //
-  // A new client connection has been made.
-  //
-  // Persist the client’s room based on the path in the request.
-  //
   client.room = this.setRoom(request)
 
-  console.log(`New client connected to ${client.room}`)
-
   client.on('message', message => {
-    //
-    // A new message has been received from a client.
-    //
-    // Broadcast it to every other client in the same room.
-    //
-    const numberOfRecipients = this.broadcast(client, message)
-
-    console.log(`${client.room} message broadcast to ${numberOfRecipients} recipient${numberOfRecipients === 1 ? '' : 's'}.`)
+    this.broadcast(client, message)
   })
 }

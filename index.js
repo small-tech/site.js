@@ -22,7 +22,7 @@ const clr = require('./lib/clr')
 
 const express = require('express')
 const bodyParser = require('body-parser')
-const expressWebSocket = require('express-ws')
+const expressWebSocket = require('@small-tech/express-ws')
 const helmet = require('helmet')
 const morgan = require('morgan')
 const redirectHTTPS = require('redirect-https')

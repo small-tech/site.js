@@ -8,6 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - Nothing yet
 
+## [12.7.0] - 2019-10-05
+
+### Added
+
+  - Elegant WebSocket room/broadcast support.
+
+### Changed
+
+  - Include express-ws 1.0.0 from our new npm fork (@small-tech/express-ws) instead of from the fork’s git repository.
+
 ## [12.6.1] - 2019-10-02
 
 ### Fixed
