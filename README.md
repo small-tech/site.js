@@ -763,7 +763,17 @@ site/
             └ index.js
 ```
 
-Here, for example, is a simple single-room chat app that broadcasts messages to all connected WebSocket clients:
+Here’s how you would implement a simple echo server that simply returns the same message to the client it received it from:
+
+```js
+module.exports = (client, request) => {
+  client.on('message', (data) => {
+    client.send(data)
+  })
+}
+```
+
+You can also broadcast messages to all or a subset of connected clients. Here, for example, is a naïve single-room chat server implementation that broadcasts messages to all connected WebSocket clients (including the client that originally sent the message):
 
 ```js
 module.exports = (currentClient, request) {
@@ -783,7 +793,25 @@ socket.onmessage = message => console.log(message.data)
 socket.send('Hello!')
 ```
 
-For a slightly more sophisticated example that doesn’t broadcast a client’s own messages to itself and has selective broadcast (so you can create “rooms”), please see the [Basic Chat example](examples/wss-basic-chat).
+For a slightly more sophisticated example that doesn’t broadcast a client’s own messages to itself and has selective broadcast (so you can create “rooms”), see the [Basic Chat example](examples/wss-basic-chat):
+
+```js
+module.exports = function (client, request) {
+  // A new client connection has been made.
+  // Persist the client’s room based on the path in the request.
+  client.room = this.setRoom(request)
+
+  console.log(`New client connected to ${client.room}`)
+
+  client.on('message', message => {
+    // A new message has been received from a client.
+    // Broadcast it to every other client in the same room.
+    const numberOfRecipients = this.broadcast(client, message)
+
+    console.log(`${client.room} message broadcast to ${numberOfRecipients} recipient${numberOfRecipients === 1 ? '' : 's'}.`)
+  })
+}
+```
 
 #### Advanced routing (routes.js file)
 
@@ -814,7 +842,7 @@ module.exports = app => {
 }
 ```
 
-When using the _routes.js_ file, you can use all of the features in [Express](https://expressjs.com/) and [Express-WS](https://github.com/HenningM/express-ws) (which itself wraps [WS](https://github.com/websockets/ws#usage-examples)).
+When using the _routes.js_ file, you can use all of the features in [wxpress](https://expressjs.com/) and [our fork of express-ws](https://github.com/aral/express-ws) (which itself wraps [ws](https://github.com/websockets/ws#usage-examples)).
 
 ### Routing precedence
 
