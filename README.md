@@ -24,7 +24,7 @@ Most of our tools today are built for the needs of startups and enterprises – 
 
   - Supports WebSockets (via integrated [express-ws](https://github.com/HenningM/express-ws), which itself wraps [ws](https://github.com/websockets/ws)).
 
-  - Supports DotJS (PHP-like simple routing for Node.js to quickly prototype and build dynamic sites).
+  - Supports [DotJS](#dotjs) (PHP-like simple routing for Node.js to quickly prototype and build dynamic sites).
 
   - And, for full flexibility, you can define your HTTPS and WebSocket (WSS) routes entirely in code in the traditional way for Express apps.
 
@@ -493,11 +493,13 @@ When creating your own servers (see [API](#API)), you can generate the default e
 
 ## Dynamic sites
 
-You can specify routes with dynamic functionality by specifying HTTPS and WebSocket (WSS) routes in two ways: either using a simple file system routing convention (ala PHP, but for JavaScript) or through code in a _routes.js_ file.
+You can specify routes with dynamic functionality by specifying HTTPS and WebSocket (WSS) routes in two ways: either using DotJS – a simple file system routing convention ala PHP, but for JavaScript – or through code in a _routes.js_ file.
 
 In either case, your dynamic routes go into a directory named _.dynamic_ in the root of your site.
 
-### File System Routing
+### DotJS
+
+DotJS maps JavaScript modules in a file system hierarchy to routes on your web site in a manner that will be familiar to anyone who has ever used PHP.
 
 #### GET-only (simplest approach)
 
@@ -527,7 +529,7 @@ module.exports = (request, response) => {
 
 To test it, run a local server (`site`) and go to `https://localhost`. Refresh the page a couple of times to see the counter increase.
 
-Congratulations, you’ve just made your first dynamic route.
+Congratulations, you’ve just made your first dynamic route using DotJS.
 
 In the above example, _index.js_ is special in that the file name is ignored and the directory that the file is in becomes the name of the route. In this case, since we put it in the root of our site, the route becomes `/`.
 
@@ -813,9 +815,9 @@ module.exports = function (client, request) {
 }
 ```
 
-#### Advanced routing (routes.js file)
+### Advanced routing (routes.js file)
 
-File-based routing should get you pretty far for simple use cases but if you need full flexibility in routing, simply define a _routes.js_ in your _.dynamic_ folder:
+DotJS should get you pretty far, especially for simpler use cases, but if you need full flexibility in routing, simply define a _routes.js_ in your _.dynamic_ folder:
 
 ```
 site/
@@ -879,19 +881,19 @@ Each of the routing conventions are mutually exclusive and applied according to 
 
 1. Advanced _routes.js_-based advanced routing.
 
-2. Separate folders for _.https_ and _.wss_ routes routing (the _.http_ folder itself will apply precedence rules 3 and 4 internally).
+2. DotJS with separate folders for _.https_ and _.wss_ routes routing (the _.http_ folder itself will apply precedence rules 3 and 4 internally).
 
-3. Separate folders for _.get_ and _.post_ routes in HTTPS-only routing.
+3. DotJS with separate folders for _.get_ and _.post_ routes in HTTPS-only routing.
 
-4. GET-only routing.
+4. DotJS with GET-only routing.
 
 So, if Site.js finds a _routes.js_ file in the root folder of your site’s folder, it will only use the routes from that file (it will not apply file-based routing).
 
-If Site.js cannot find a _routes.js_ file, it will look to see if separate _.https_ and _.wss_ folders have been defined (the existence of just one of these is enough) and attempt to load routes from those folders. (If it finds separate _.get_ or _.post_ folders within the _.https_ folder, it will add the relevant routes from those folders; if it can’t it will load GET-only routes from the _.https_ folder and its subfolders.)
+If Site.js cannot find a _routes.js_ file, it will look to see if separate _.https_ and _.wss_ folders have been defined (the existence of just one of these is enough) and attempt to load DotJS routes from those folders. (If it finds separate _.get_ or _.post_ folders within the _.https_ folder, it will add the relevant routes from those folders; if it can’t it will load GET-only routes from the _.https_ folder and its subfolders.)
 
-If separate _.https_ and _.wss_ folders do not exist, Site.js will expect all defined routes to be HTTP and will initially looks for separate _.get_ and _.post_ folders (the existence of either is enough to trigger this mode). If they exist, it will add the relevant routes from those folders and their subfolders.
+If separate _.https_ and _.wss_ folders do not exist, Site.js will expect all defined DotJS routes to be HTTPS and will initially look for separate _.get_ and _.post_ folders (the existence of either is enough to trigger this mode). If they exist, it will add the relevant routes from those folders and their subfolders.
 
-Finally, if Site.js cannot find separate _.get_ and _.post_ folders either, it will assume that any routes it finds in the _.dynamic_ folder are HTTPS GET routes and attempt to add them from there (and any subfolders).
+Finally, if Site.js cannot find separate _.get_ and _.post_ folders either, it will assume that any DotJS routes it finds in the _.dynamic_ folder are HTTPS GET routes and attempt to add them from there (and any subfolders).
 
 ### Directory paths in your application
 
