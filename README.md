@@ -560,9 +560,11 @@ Site.js will load your dynamic route at startup and you can test it by hitting _
 
 __Note:__ You could also have named your route _.dynamic/server-stats/index.js_ and still hit it from _https://localhost/server-stats_. It’s best to keep to one or other convention (either using file names as route names or directory names as route names). Using both in the same app will probably confuse you (see [Precedence](#Precendence), below).
 
-If you need to use custom Node modules, initialise your _.dynamic_ folder using `npm init` and use `npm install` as usual. And modules you require from your routes will be properly loaded and used.
+##### Using node modules
 
-So, for example, if you want to display a random ASCII Cow using the Cows module, create a _package.json_ file in your _.dynamic_ folder (e.g., use `npm init` to create this interactively). Something like:
+Since Site.js contains Node.js, anything you can do with Node.js, you do with Site.js, including using node modules and [npm](https://www.npmjs.com/). To use custom node modules, initialise your _.dynamic_ folder using `npm init` and use `npm install`. Once you’ve done that, any modules you `require()` from your DotJS routes will be properly loaded and used.
+
+Say, for example, that you want to display a random ASCII Cow using the Cows module (because why not?) To do so, create a _package.json_ file in your _.dynamic_ folder (e.g., use `npm init` to create this interactively). Here’s a basic example:
 
 ```json
 {
@@ -575,13 +577,13 @@ So, for example, if you want to display a random ASCII Cow using the Cows module
 }
 ```
 
-Then, install the [cows npm module](https://www.npmjs.com/package/cows):
+Then, install the [cows node module](https://www.npmjs.com/package/cows) using npm:
 
 ```sh
 npm i cows
 ```
 
-This will create a directory called _node_modules_ in your _.dynamic_ folder and install the cows module (and any dependencies it may have) inside it. Now is a good time to also create a `.gitignore` file in the root of your web project and add the _node_modules_ directory to it if you’re using Git for source control so that it is not accidentally checked in. E.g.,
+This will create a directory called _node_modules_ in your _.dynamic_ folder and install the cows module (and any dependencies it may have) inside it. Now is also a good time to create a `.gitignore` file in the root of your web project and add the _node_modules_ directory to it if you’re using Git for source control so that you do not end up accidentally checking in your node modules. Here’s how you would do this using the command-line on Linux-like systems:
 
 ```sh
 echo 'node_modules' >> .gitignore
@@ -595,7 +597,7 @@ Now, let’s create the route. We want it reachable at `https://localhost/cows` 
         └ index.js
 ```
 
-And, finally, the route itself:
+And, finally, here’s the code for the route itself:
 
 ```js
 const cows = require('cows')()
@@ -609,32 +611,35 @@ module.exports = function (request, response) {
     return `#${c()}${c()}${c()}`
   }
 
-  response.end(`
-    <!doctype html>
-    <html lang='en'>
-    <head>
-      <meta charset='utf-8'>
-      <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-      <title>Cows!</title>
-      <style>
-        html { font-family: sans-serif; color: dark-grey; background-color: ${randomColor()}; }
-        body {
-          display: grid; align-items: center; justify-content: center;
-          height: 100vh; vertical-align: top; margin: 0;
-        }
-        pre { font-size: 24px; color: ${randomColor()}; mix-blend-mode: difference;}
-      </style>
-    </head>
-    <body>
-        <pre>${randomCow}</pre>
-    </body>
-    </html>`)
+  response
+    .type('html')
+    .end(`
+      <!doctype html>
+      <html lang='en'>
+      <head>
+        <meta charset='utf-8'>
+        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+        <title>Cows!</title>
+        <style>
+          html { font-family: sans-serif; color: dark-grey; background-color: ${randomColor()}; }
+          body {
+            display: grid; align-items: center; justify-content: center;
+            height: 100vh; vertical-align: top; margin: 0;
+          }
+          pre { font-size: 24px; color: ${randomColor()}; mix-blend-mode: difference;}
+        </style>
+      </head>
+      <body>
+          <pre>${randomCow}</pre>
+      </body>
+      </html>
+    `)
 }
 ```
 
 Now if you run `site` on the root of your web folder (the one that contains the _.dynamic_ folder) and hit `https://localhost/cows`, you should get a random cow in a random colour every time you refresh.
 
-If including HTML and CSS directly in your dynamic route makes you cringe, feel free to `require` your templating library of choice and move them to external files. As hidden folders (directories that begin with a dot) are ignored in the _.dynamic_ folder and its subfolders, you can place any assets (HTML, CSS, images, etc.) into a diretory that starts with a dot and load them in from there.
+If including HTML and CSS directly in your dynamic route makes you cringe, feel free to `require` your templating library of choice and move them to external files. As hidden folders (directories that begin with a dot) are ignored in the _.dynamic_ folder and its subfolders, you can place any assets (HTML, CSS, images, etc.) into a directory that starts with a dot and load them in from there.
 
 For example, if I wanted to move the HTML and CSS into their own files in the example above, I could create the following directory structure:
 
@@ -725,8 +730,7 @@ module.exports = function (request, response) {
 
 After this refactor, if you restart the server and hit `https://localhost/cows` again in your browser, you should see exactly the same behaviour as before.
 
-As you can see, you can create quite a bit of dynamic functionality just by using the most basic file-based routing. However, with this convention you are limited to GET routes. After a quick look at [Precendence](#precedence), below, we will see how you can
-
+As you can see, you can create quite a bit of dynamic functionality just by using DotJS with its most basic file-based routing mode. However, with this convention you are limited to GET routes. To use both GET and POST routes, you have to do a tiny bit more work, as explained in the next section.
 
 #### GET and POST routes
 
@@ -751,7 +755,9 @@ These two routes are enough to cover your needs for dynamic routes and form hand
 
 #### WebSocket (WSS) routes
 
-You can define WebSocket (WSS) routes alongside HTTPS routes. To do so, you need to modify the directory structure so it resembles the one below:
+Site.js is not limited to HTTPS, it also supports secure WebSockets.
+
+To define WebSocket (WSS) routes alongside HTTPS routes, modify your directory structure so it resembles the one below:
 
 ```
 site/
@@ -765,7 +771,9 @@ site/
             └ index.js
 ```
 
-Here’s how you would implement a simple echo server that simply returns the same message to the client it received it from:
+Note that all we’ve done is to move our HTTPS _.get_ and _.post_ directories under a _.https_ directory and we’ve created a separate _.wss_ directory for our WebSocket routes.
+
+Here’s how you would implement a simple echo server that sends a copy of the message it receives from a client to that client:
 
 ```js
 module.exports = (client, request) => {
@@ -775,7 +783,7 @@ module.exports = (client, request) => {
 }
 ```
 
-You can also broadcast messages to all or a subset of connected clients. Here, for example, is a naïve single-room chat server implementation that broadcasts messages to all connected WebSocket clients (including the client that originally sent the message):
+You can also broadcast messages to all or a subset of connected clients. Here, for example, is a naïve single-room chat server implementation that broadcasts messages to all connected WebSocket clients (including the client that originally sent the message and any other clients that might be connected to different WebSocket routes on the same server):
 
 ```js
 module.exports = (currentClient, request) {
@@ -795,7 +803,7 @@ socket.onmessage = message => console.log(message.data)
 socket.send('Hello!')
 ```
 
-For a slightly more sophisticated example that doesn’t broadcast a client’s own messages to itself and has selective broadcast (so you can create “rooms”), see the [Basic Chat example](examples/wss-basic-chat):
+For a slightly more sophisticated example that doesn’t broadcast a client’s own messages to itself and selectively broadcasts to only the clients in the same “rooms”, see the [Basic Chat example](examples/wss-basic-chat). Here’s the code for the server component of that example:
 
 ```js
 module.exports = function (client, request) {
@@ -817,7 +825,7 @@ module.exports = function (client, request) {
 
 ### Advanced routing (routes.js file)
 
-DotJS should get you pretty far, especially for simpler use cases, but if you need full flexibility in routing, simply define a _routes.js_ in your _.dynamic_ folder:
+DotJS should get you pretty far for simpler use cases, but if you need full flexibility in routing (to use regular expressions in defining route paths, for example, or for initialising global objects that need to survive for the lifetime of the server), simply define a _routes.js_ in your _.dynamic_ folder:
 
 ```
 site/
