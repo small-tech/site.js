@@ -1,6 +1,6 @@
 {
   "name": "@small-tech/site.js",
-  "version": "12.7.0",
+  "version": "12.8.0",
   "description": "Develop, test, and deploy your secure static or dynamic personal web site with zero configuration.",
   "main": "index.js",
   "bin": "bin/site.js",

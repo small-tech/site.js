@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - Nothing yet
 
+## [12.8.0]- 2019-10-10
+
+### Changed
+
+  - Updated the chat example to match the one in the upcoming [Build a simple chat app with Site.js tutorial](https://localhost/2019/10/10/build-a-simple-chat-app-with-site.js).
+
 ## [12.7.0] - 2019-10-05
 
 ### Added
