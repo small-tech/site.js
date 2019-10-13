@@ -45,6 +45,11 @@ fi
 echo " 📦 Installing…"
 gzip -d 12.7.0.tar.gz
 tar -xvf 12.7.0.tar > /dev/null 2>&1
+
+# Ensure that the /usr/local/bin directory exists (it does not by default on macOS)
+sudo mkdir -p /usr/local/bin/
+
+# Move the site binary there.
 sudo mv site /usr/local/bin/
 
 cleanUp

@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [12.7.1] - 2019-10-13
+
+### Fixed
+
+  - Fixed [install script failure on macOS](https://source.ind.ie/site.js/app/issues/128) if person didn’t already have a /usr/local/bin directory. (On macOS, this directory does not exist by default.)
+
 ### Changed
 
   - Updated the chat example to match the one in the upcoming [Build a simple chat app with Site.js tutorial](https://localhost/2019/10/10/build-a-simple-chat-app-with-site.js).
