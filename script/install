@@ -2,7 +2,7 @@
 
 ######################################################################
 #
-# Site.js v12.7.0 Installer for Linux and macOS.
+# Site.js v12.7.1 Installer for Linux and macOS.
 #
 # To use:
 #
@@ -17,7 +17,7 @@
 
 set -e
 echo
-echo " 📡 Downloading Site.js v12.7.0…"
+echo " 📡 Downloading Site.js v12.7.1…"
 
 function cleanUp {
   popd > /dev/null
@@ -31,10 +31,10 @@ pushd /tmp/sitejs.org > /dev/null
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
   # Linux
-  wget -q https://sitejs.org/releases/linux/12.7.0.tar.gz
+  wget -q https://sitejs.org/releases/linux/12.7.1.tar.gz
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   # macOS
-  curl -Os https://sitejs.org/releases/macos/12.7.0.tar.gz
+  curl -Os https://sitejs.org/releases/macos/12.7.1.tar.gz
 else
   # Unsupported
   echo "\n ❌ Error: this operating system is not supported.\n"
@@ -43,8 +43,8 @@ else
 fi
 
 echo " 📦 Installing…"
-gzip -d 12.7.0.tar.gz
-tar -xf 12.7.0.tar
+gzip -d 12.7.1.tar.gz
+tar -xf 12.7.1.tar
 
 # Ensure that the /usr/local/bin directory exists (it does not by default on macOS)
 sudo mkdir -p /usr/local/bin/
