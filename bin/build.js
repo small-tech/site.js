@@ -29,6 +29,18 @@ if (commandLineOptions._.length !== 0 || commandLineOptions.h || commandLineOpti
   process.exit()
 }
 
+// Check for build attempt on arm and fail with helpful message.
+
+if (os.arch() === 'arm') {
+  console.log(`The build script is currently not supported on ARM processors. To build a binary for Linux on ARM (e.g., Raspberry Pi, etc.), use the following command after cloning the repository and switching to its directory on the device itself:
+
+  node_modules/nexe/index.js bin/site.js --build --verbose -r package.json -r "bin/commands/*" -r "node_modules/le-store-certbot/renewal.conf.tpl" -r "node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-arm" -o dist/site
+
+  Note that this will build Node.js from source and that might take a while.
+  `)
+  process.exit()
+}
+
 // Get the version from the npm package configuration.
 const version = package.version
 const binaryName = 'site'
@@ -36,23 +48,27 @@ const windowsBinaryName = `${binaryName}.exe`
 
 console.log(`\n ⚙ Site.js: building native binaries for version ${version}`)
 
-const linuxVersionDirectory = path.join('dist', 'linux', version)
-const macOsVersionDirectory = path.join('dist', 'macos', version)
-const windowsVersionDirectory = path.join('dist', 'windows', version)
+const linuxDirectory = path.join('dist', 'linux', version)
+const macOsDirectory = path.join('dist', 'macos', version)
+const windowsDirectory = path.join('dist', 'windows', version)
 
-fs.mkdirSync(linuxVersionDirectory, {recursive: true})
-fs.mkdirSync(macOsVersionDirectory, {recursive: true})
-fs.mkdirSync(windowsVersionDirectory, {recursive: true})
+fs.mkdirSync(linuxDirectory, {recursive: true})
+fs.mkdirSync(macOsDirectory, {recursive: true})
+fs.mkdirSync(windowsDirectory, {recursive: true})
 
-const linuxVersionBinaryPath = path.join(linuxVersionDirectory, binaryName)
-const macOsVersionBinaryPath = path.join(macOsVersionDirectory, binaryName)
-const windowsVersionBinaryPath = path.join(windowsVersionDirectory, windowsBinaryName)
+const linuxBinaryPath = path.join(linuxDirectory, binaryName)
+const macOsBinaryPath = path.join(macOsDirectory, binaryName)
+const windowsBinaryPath = path.join(windowsDirectory, windowsBinaryName)
 
 const binaryPaths = {
-  'linux': linuxVersionBinaryPath,
-  'darwin': macOsVersionBinaryPath,
-  'win32': windowsVersionBinaryPath
+  'linux': linuxBinaryPath,
+  'darwin': macOsBinaryPath,
+  'win32': windowsBinaryPath
 }
+
+const linuxTarget = 'linux-x64-10.16.3'
+const macOsTarget = 'mac-x64-10.16.3'
+const windowsTarget = 'windows-x64-10.16.3'
 
 // Only build for the current platform unless a deployment build is requested via --deploy.
 const platform = os.platform()
@@ -62,7 +78,45 @@ const buildWindowsVersion = commandLineOptions.deploy || commandLineOptions.all 
 
 const currentPlatformBinaryPath = binaryPaths[['linux', 'darwin', 'win32'].find(_ => _ === platform)]
 
+//
+// Resources
+//
+// These are assets and code that are necessary for Site.js to work but which
+// Nexe’s automatic dependency analyser cannot find as they’re either non-code assets
+// or code that’s not required/conditionally required by the main script. By adding
+// them here, we tell Nexe to copy them into the binary regardless so they are
+// available at runtime.
+//
+
+// Common resources.
+const resources = [
+  'package.json',    // Used to get the app’s version at runtime.
+  'bin/commands/*',   // Conditionally required based on command-line argument.
+  'node_modules/le-store-certbot/renewal.conf.tpl',  // Template used to write out the Let’s Encrypt renewal config.
+]
+
+//
+// Platform-specific resources.
+//
+
+const linuxResources = resources.concat([
+  'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-amd64'         // mkcert binary used by nodecert.
+])
+
+const macOsResources = resources.concat([
+  'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-darwin-amd64'       // mkcert binary used by nodecert.
+])
+
+const windowsResources = resources.push([
+  'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-windows-amd64.exe'  // mkcert binary used by nodecert.
+])
+
+const input = 'bin/site.js'
+
+//
 // Start the build.
+//
+
 build()
 
 async function build () {
@@ -73,10 +127,10 @@ async function build () {
     console.log('   • Building Linux version…')
 
     await compile({
-      input: 'bin/site.js',
-      output: linuxVersionBinaryPath,
-      target: 'linux-x64-10.15.3',
-      resources: ['package.json', 'bin/commands/*', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-amd64', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-arm']
+      input,
+      output    : linuxBinaryPath,
+      target    : linuxTarget,
+      resources : linuxResources
     })
   }
 
@@ -84,10 +138,10 @@ async function build () {
     console.log('   • Building macOS version…')
 
     await compile({
-      input: 'bin/site.js',
-      output: macOsVersionBinaryPath,
-      target: 'mac-x64-10.15.3',
-      resources: ['package.json', 'bin/commands/*', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-darwin-amd64']
+      input,
+      output    : macOsBinaryPath,
+      target    : macOsTarget,
+      resources : macOsResources
     })
   }
 
@@ -95,10 +149,10 @@ async function build () {
     console.log('   • Building Windows version…')
 
     await compile({
-      input: 'bin/site.js',
-      output: windowsVersionBinaryPath,
-      target: 'windows-x64-10.15.3',
-      resources: ['package.json', 'bin/commands/*', 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-windows-amd64.exe']
+      input,
+      output    : windowsBinaryPath,
+      target    : windowsTarget,
+      resources : windowsResources
     })
   }
 
@@ -125,13 +179,13 @@ async function build () {
     // gzip directly as that does not maintain the executable flag on the binary.
     const zipFileName = `${version}.tar.gz`
     const mainSourceDirectory = path.join(__dirname, '..')
-    const linuxVersionWorkingDirectory = path.join(mainSourceDirectory, linuxVersionDirectory)
-    const macOsVersionWorkingDirectory = path.join(mainSourceDirectory, macOsVersionDirectory)
-    const windowsVersionWorkingDirectory = path.join(mainSourceDirectory, windowsVersionDirectory)
+    const linuxWorkingDirectory = path.join(mainSourceDirectory, linuxDirectory)
+    const macOsWorkingDirectory = path.join(mainSourceDirectory, macOsDirectory)
+    const windowsWorkingDirectory = path.join(mainSourceDirectory, windowsDirectory)
 
-    childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: linuxVersionWorkingDirectory})
-    childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: macOsVersionWorkingDirectory})
-    childProcess.execSync(`tar -cvzf ${zipFileName} ${windowsBinaryName}`, {env: process.env, cwd: windowsVersionWorkingDirectory})
+    childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: linuxWorkingDirectory})
+    childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: macOsWorkingDirectory})
+    childProcess.execSync(`tar -cvzf ${zipFileName} ${windowsBinaryName}`, {env: process.env, cwd: windowsWorkingDirectory})
 
     //
     // Copy Site.js release binaries to the Site.js web site.
@@ -159,9 +213,9 @@ async function build () {
     // that we expect it to. If it doesn’t skip this step.
     if (fs.existsSync(pathToWebSite)) {
       console.log('   • Copying release binaries to the Site.js web site…')
-      const linuxVersionZipFilePath = path.join(linuxVersionWorkingDirectory, zipFileName)
-      const macOsVersionZipFilePath = path.join(macOsVersionWorkingDirectory, zipFileName)
-      const windowsVersionZipFilePath = path.join(windowsVersionWorkingDirectory, zipFileName)
+      const linuxVersionZipFilePath = path.join(linuxWorkingDirectory, zipFileName)
+      const macOsVersionZipFilePath = path.join(macOsWorkingDirectory, zipFileName)
+      const windowsVersionZipFilePath = path.join(windowsWorkingDirectory, zipFileName)
       const linuxVersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'linux')
       const macOsVersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'macos')
       const windowsVersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'windows')
