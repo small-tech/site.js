@@ -34,10 +34,9 @@ if (commandLineOptions._.length !== 0 || commandLineOptions.h || commandLineOpti
 if (os.arch() === 'arm') {
   console.log(`The build script is currently not supported on ARM processors. To build a binary for Linux on ARM (e.g., Raspberry Pi, etc.), use the following command after cloning the repository and switching to its directory on the device itself:
 
-  node_modules/nexe/index.js bin/site.js --build --verbose -r package.json -r "bin/commands/*" -r "node_modules/le-store-certbot/renewal.conf.tpl" -r "node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-arm" -o dist/site
+node_modules/nexe/index.js bin/site.js --build --verbose -r package.json -r "bin/commands/*" -r "node_modules/le-store-certbot/renewal.conf.tpl" -r "node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-arm" -o dist/site
 
-  Note that this will build Node.js from source and that might take a while.
-  `)
+Note that this will build Node.js from source and that might take a while.`)
   process.exit()
 }
 
