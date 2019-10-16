@@ -36,7 +36,9 @@ if (os.arch() === 'arm') {
 
 node_modules/nexe/index.js bin/site.js --build --verbose -r package.json -r "bin/commands/*" -r "node_modules/le-store-certbot/renewal.conf.tpl" -r "node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-arm" -o dist/site
 
-Note that this will build Node.js from source and that might take a while.`)
+Note that this will build Node.js from source and that might take a while.
+
+`)
   process.exit()
 }
 
