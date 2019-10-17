@@ -2,11 +2,14 @@
 
 //////////////////////////////////////////////////////////////////////
 //
-// Builds Linux and macOS binaries of Site.js.
+// Builds Linux x86 & ARM, macOS, and Windows 10 binaries of Site.js.
 //
-// Note: the build script is only supported on Linux at this time.
+// Note: the build script is only supported on Linux on ARM at the
+// ===== moment as that’s the only platform we cannot cross-compile
+//       for using Nexe.
 //
 // Run with: npm run build
+//       or: npm run deploy
 //
 //////////////////////////////////////////////////////////////////////
 
