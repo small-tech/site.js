@@ -29,7 +29,7 @@ rm -rf /tmp/sitejs.org
 mkdir -p /tmp/sitejs.org
 pushd /tmp/sitejs.org > /dev/null
 
-if [[ "$OSTYPE" == "linux-gnu" ]]; then
+if [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux-gnueabihf" ]]; then
   cpuArchitecture=`uname -m`
   if [[ "$cpuArchitecture" == "x86_64" ]]; then
     # Linux on x64
