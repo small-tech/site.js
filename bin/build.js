@@ -94,7 +94,7 @@ const buildMacVersion = commandLineOptions.deploy || commandLineOptions.all || (
 const buildWindowsVersion = commandLineOptions.deploy || commandLineOptions.all || (platform === 'win32')
 
 let currentPlatformBinaryPath = binaryPaths[['linux', 'darwin', 'win32'].find(_ => _ === platform)]
-if (platfrom === 'linux' && cpuArchitecture === 'arm') currentPlatformBinaryPath = linuxArmBinaryPath
+if (platform === 'linux' && cpuArchitecture === 'arm') currentPlatformBinaryPath = linuxArmBinaryPath
 
 //
 // Resources
