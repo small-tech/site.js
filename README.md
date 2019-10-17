@@ -68,6 +68,8 @@ npm i -g @small-tech/site.js
 
 Any recent Linux distribution should work. However, Site.js is most thoroughly tested on Ubuntu 19.04/Pop!_OS 19.04 (development and staging) and Ubuntu 18.04 LTS (production) at [Small Technology Foundation](https://small-tech.org).
 
+There are builds available for x64 and ARM.
+
 For production use systemd is required.
 
 ### macOS
@@ -173,8 +175,6 @@ Say you want to set your hostname to `my-windows-laptop.small-tech.org`:
 3. [More…] Button → enter your _domain name_ (`small-tech.org`) in the Primary DNS suffix of this computer field.
 4. Press the various [OK] buttons to dismiss the various modal dialogues and restart your computer.
 
-
-
 #### Making your server public
 
 Use a service like [ngrok](https://ngrok.com/) (Pro+) to point a custom domain name to your temporary staging server. Make sure you set your `hostname` file (e.g., in `/etc/hostname` or via `hostnamectl set-hostname <hostname>` or the equivalent for your platform) to match your domain name. The first time you hit your server via your hostname it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
@@ -253,7 +253,7 @@ Site.js uses the [systemd](https://freedesktop.org/wiki/Software/systemd/) to st
 
 ## Build and test from source
 
-Site.js is built using and supports the latest Node.js LTS (currently version 10.15.3; on October 22nd, 2019, we are scheduled to move to Node 12 LTS when it becomes the active branch).
+Site.js is built using and supports the latest Node.js LTS (currently version 10.16.3; on October 22nd, 2019, we are scheduled to move to Node 12 LTS when it becomes the active branch).
 
 ### Install the source and run tests
 
@@ -293,9 +293,9 @@ site test/site
 __Note:__ for commands that require root privileges (i.e., `enable` and `disable`), Site.js will automatically restart itself using sudo and Node must be available for the root account. If you’re using [nvm](https://github.com/creationix/nvm), you can enable this via:
 
 ```shell
-# Replace v10.15.3 with the version of node you want to make available globally.
-sudo ln -s "$NVM_DIR/versions/node/v10.15.3/bin/node" "/usr/local/bin/node"
-sudo ln -s "$NVM_DIR/versions/node/v10.15.3/bin/npm" "/usr/local/bin/npm"
+# Replace v10.16.3 with the version of node you want to make available globally.
+sudo ln -s "$NVM_DIR/versions/node/v10.16.3/bin/node" "/usr/local/bin/node"
+sudo ln -s "$NVM_DIR/versions/node/v10.16.3/bin/npm" "/usr/local/bin/npm"
 ```
 
 ### Native binaries
@@ -308,8 +308,8 @@ After you install the source and run tests:
 npm run build
 
 # Serve the test site (visit https://localhost to view).
-# e.g., To run the version 12.0.0 Linux binary:
-dist/linux/12.0.0/web-server test/site
+# e.g., To Linux binary:
+dist/linux/12.8.0/site test/site
 ```
 
 ### Build and install native binary locally
@@ -320,11 +320,26 @@ After you install the source and run tests:
 npm run install-locally
 ```
 
+### Building for Linux on ARM (Raspberry Pi, etc.)
+
+You cannot currently [cross-compile for ARM](https://github.com/nexe/nexe/issues/424) so you must build Site.js on an ARM device. The release build is built on a Raspberry Pi 3B+. Note that [Aral had issues compiling it on a Pi 4](https://github.com/nexe/nexe/issues/685). To build the Site.js binary (e.g., version 12.8.0) on an ARM device, do:
+
+```shell
+mkdir -p dist/linux-arm/12.8.0
+node_modules/nexe/index.js bin/site.js --build --verbose -r package.json -r "bin/commands/*" -r "node_modules/le-store-certbot/renewal.conf.tpl" -r "node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-arm" -o dist/linux-arm/12.8.0/site
+```
+
+You can then find the `site` binary in your `dist/linux-arm/12.8.0/` folder. To install it, do:
+
+```shell
+sudo cp dist/linux-arm/12.8.0/site /usr/local/bin
+```
+
 ### Deployment
 
 ```shell
-# To build binaries for both linux and macOS and also to
-# copy them over to the Site.js web Site for deployment.
+# To cross-compile binaries for Linux (x64), macOS, and Windows
+# and also copy them over to the Site.js web Site for deployment.
 # (You will most likely not need to do this.)
 npm run deploy
 ```

@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [12.8.0] - 2019-01-17
+
+### Added
+
+  - Linux on ARM support (Raspberry Pi, etc.).
+
+### Fixed
+
+  - Let’s Encrypt renewal template added to the binary.
+
 ## [12.7.1] - 2019-10-13
 
 ### Fixed
