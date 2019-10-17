@@ -154,6 +154,8 @@ async function build () {
       target    : linuxX64Target,
       resources : linuxX64Resources
     })
+
+    console.log('     ✔\n')
   }
 
   if (buildLinuxArmVersion) {
@@ -165,6 +167,8 @@ async function build () {
       resources : linuxArmResources,
       build: true
     })
+
+    console.log('     ✔\n')
   }
 
   if (buildMacVersion) {
@@ -176,6 +180,8 @@ async function build () {
       target    : macOsTarget,
       resources : macOsResources
     })
+
+    console.log('     ✔\n')
   }
 
   if (buildWindowsVersion) {
@@ -187,6 +193,8 @@ async function build () {
       target    : windowsTarget,
       resources : windowsResources
     })
+
+    console.log('     ✔\n')
   }
 
   // Install the build for the current platform if requested.
