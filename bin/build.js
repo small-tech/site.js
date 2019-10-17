@@ -129,7 +129,7 @@ const macOsResources = resources.concat([
   'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-darwin-amd64'       // mkcert binary used by nodecert.
 ])
 
-const windowsResources = resources.push([
+const windowsResources = resources.concat([
   'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-windows-amd64.exe'  // mkcert binary used by nodecert.
 ])
 
