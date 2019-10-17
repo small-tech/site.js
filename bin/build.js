@@ -32,9 +32,9 @@ if (commandLineOptions._.length !== 0 || commandLineOptions.h || commandLineOpti
 }
 
 // Check for deployment attempt on non-ARM processor and fail with helpful message.
-if (commandLineOptions.deploy && cpuArchitecture !== 'arm') {
+if ((commandLineOptions.deploy || commandLineOptions.all) && cpuArchitecture !== 'arm') {
   console.log(`
- 🤯 Error: Deployment is currently only supported on ARM processors.
+ 🤯 Error: Deployment and building for all platforms is currently only supported on ARM processors.
   
  (Nexe cannot cross-compile to ARM yet so it’s the only platform where we can build for all supported platforms. As of version 12.8.0, all official builds of Site.js are compiled on a Raspberry Pi 3B+. This restriction will be removed once cross-compilation support for ARM is added to Nexe.)
 
