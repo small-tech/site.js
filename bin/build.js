@@ -43,6 +43,12 @@ if ((commandLineOptions.deploy || commandLineOptions.all) && cpuArchitecture !==
   process.exit()
 }
 
+// Check for supported CPU architectures (currently only x86 and ARM)
+if (cpuArchitecture !== 'x86' && cpuArchitecture !== 'arm') {
+  console.log(`🤯 Error: The build script is currently only supported on x86 and ARM architectures.`)
+  process.exit()
+}
+
 // Get the version from the npm package configuration.
 const version = package.version
 const binaryName = 'site'
@@ -51,35 +57,41 @@ const windowsBinaryName = `${binaryName}.exe`
 console.log(`\n ⚙ Site.js: building native binaries for version ${version}`)
 
 const linuxX64Directory = path.join('dist', 'linux', version)
+const linuxArmDirectory = path.join('dist', 'linux-arm', version)
 const macOsDirectory = path.join('dist', 'macos', version)
 const windowsDirectory = path.join('dist', 'windows', version)
 
 fs.mkdirSync(linuxX64Directory, {recursive: true})
+fs.mkdirSync(linuxArmDirectory, {recursive: true})
 fs.mkdirSync(macOsDirectory, {recursive: true})
 fs.mkdirSync(windowsDirectory, {recursive: true})
 
 const linuxX64BinaryPath = path.join(linuxX64Directory, binaryName)
+const linuxArmBinaryPath = path.join(linuxArmDirectory, binaryName)
 const macOsBinaryPath = path.join(macOsDirectory, binaryName)
 const windowsBinaryPath = path.join(windowsDirectory, windowsBinaryName)
 
 const binaryPaths = {
   'linux': linuxX64BinaryPath,
+  // We have a special check for Linux on ARM, later.
   'darwin': macOsBinaryPath,
   'win32': windowsBinaryPath
 }
 
 const linuxX64Target = 'linux-x64-10.16.3'
+// Linux on ARM doesn’t have a target as we build Node from source.
 const macOsTarget = 'mac-x64-10.16.3'
 const windowsTarget = 'windows-x64-10.16.3'
 
 // Only build for the current platform unless a deployment build is requested via --deploy.
 const platform = os.platform()
 const buildLinuxX64Version = commandLineOptions.deploy || commandLineOptions.all || (platform === 'linux' && cpuArchitecture === 'x64')
+const buildLinuxArmVersion = commandLineOptions.deploy || commandLineOptions.all || (platform === 'linux' && cpuArchitecture === 'arm')
 const buildMacVersion = commandLineOptions.deploy || commandLineOptions.all || (platform === 'darwin')
 const buildWindowsVersion = commandLineOptions.deploy || commandLineOptions.all || (platform === 'win32')
 
-// TODO: UPDATE!!! x64 / ARM
-const currentPlatformBinaryPath = binaryPaths[['linux', 'darwin', 'win32'].find(_ => _ === platform)]
+let currentPlatformBinaryPath = binaryPaths[['linux', 'darwin', 'win32'].find(_ => _ === platform)]
+if (platfrom === 'linux' && cpuArchitecture === 'arm') currentPlatformBinaryPath = linuxArmBinaryPath
 
 //
 // Resources
@@ -106,6 +118,10 @@ const linuxX64Resources = resources.concat([
   'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-amd64'         // mkcert binary used by nodecert.
 ])
 
+const linuxArmResources = resources.concat([
+  'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-arm'         // mkcert binary used by nodecert.
+])
+
 const macOsResources = resources.concat([
   'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-darwin-amd64'       // mkcert binary used by nodecert.
 ])
@@ -127,13 +143,24 @@ async function build () {
   // Build.
   //
   if (buildLinuxX64Version) {
-    console.log('   • Building Linux version…')
+    console.log('   • Building Linux version (x86)…')
 
     await compile({
       input,
       output    : linuxX64BinaryPath,
       target    : linuxX64Target,
       resources : linuxX64Resources
+    })
+  }
+
+  if (buildLinuxArmVersion) {
+    console.log('   • Building Linux version (ARM)…')
+
+    await compile({
+      input,
+      output    : linuxArmBinaryPath,
+      resources : linuxArmResources,
+      build: true
     })
   }
 
@@ -183,10 +210,12 @@ async function build () {
     const zipFileName = `${version}.tar.gz`
     const mainSourceDirectory = path.join(__dirname, '..')
     const linuxX64WorkingDirectory = path.join(mainSourceDirectory, linuxX64Directory)
+    const linuxArmWorkingDirectory = path.join(mainSourceDirectory, linuxArmDirectory)
     const macOsWorkingDirectory = path.join(mainSourceDirectory, macOsDirectory)
     const windowsWorkingDirectory = path.join(mainSourceDirectory, windowsDirectory)
 
     childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: linuxX64WorkingDirectory})
+    childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: linuxArmWorkingDirectory})
     childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: macOsWorkingDirectory})
     childProcess.execSync(`tar -cvzf ${zipFileName} ${windowsBinaryName}`, {env: process.env, cwd: windowsWorkingDirectory})
 
@@ -217,17 +246,21 @@ async function build () {
     if (fs.existsSync(pathToWebSite)) {
       console.log('   • Copying release binaries to the Site.js web site…')
       const linuxX64VersionZipFilePath = path.join(linuxX64WorkingDirectory, zipFileName)
+      const linuxArmVersionZipFilePath = path.join(linuxArmWorkingDirectory, zipFileName)
       const macOsVersionZipFilePath = path.join(macOsWorkingDirectory, zipFileName)
       const windowsVersionZipFilePath = path.join(windowsWorkingDirectory, zipFileName)
       const linuxX64VersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'linux')
+      const linuxArmVersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'linux-arm')
       const macOsVersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'macos')
       const windowsVersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'windows')
 
       fs.mkdirSync(linuxX64VersionTargetDirectoryOnSite, {recursive: true})
+      fs.mkdirSync(linuxArmVersionTargetDirectoryOnSite, {recursive: true})
       fs.mkdirSync(macOsVersionTargetDirectoryOnSite, {recursive: true})
       fs.mkdirSync(windowsVersionTargetDirectoryOnSite, {recursive: true})
 
       fs.copyFileSync(linuxX64VersionZipFilePath, path.join(linuxX64VersionTargetDirectoryOnSite, zipFileName))
+      fs.copyFileSync(linuxArmVersionZipFilePath, path.join(linuxArmVersionTargetDirectoryOnSite, zipFileName))
       fs.copyFileSync(macOsVersionZipFilePath, path.join(macOsVersionTargetDirectoryOnSite, zipFileName))
       fs.copyFileSync(windowsVersionZipFilePath, path.join(windowsVersionTargetDirectoryOnSite, zipFileName))
 
