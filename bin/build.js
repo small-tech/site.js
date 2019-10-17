@@ -20,6 +20,8 @@ const minimist = require('minimist')
 
 const package = require('../package.json')
 
+const cpuArchitecture = os.arch()
+
 // Parse the commandline arguments.
 const commandLineOptions = minimist(process.argv.slice(2), {boolean: true})
 
@@ -29,15 +31,15 @@ if (commandLineOptions._.length !== 0 || commandLineOptions.h || commandLineOpti
   process.exit()
 }
 
-// Check for build attempt on arm and fail with helpful message.
+// Check for deployment attempt on non-ARM processor and fail with helpful message.
+if (commandLineOptions.deploy && cpuArchitecture !== 'arm') {
+  console.log(`
+ 🤯 Error: Deployment is currently only supported on ARM processors.
+  
+ (Nexe cannot cross-compile to ARM yet so it’s the only platform where we can build for all supported platforms. As of version 12.8.0, all official builds of Site.js are compiled on a Raspberry Pi 3B+. This restriction will be removed once cross-compilation support for ARM is added to Nexe.)
 
-if (os.arch() === 'arm') {
-  console.log(`The build script is currently not supported on ARM processors. To build a binary for Linux on ARM (e.g., Raspberry Pi, etc.), use the following command after cloning the repository and switching to its directory on the device itself:
-
-node_modules/nexe/index.js bin/site.js --build --verbose -r package.json -r "bin/commands/*" -r "node_modules/le-store-certbot/renewal.conf.tpl" -r "node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-arm" -o dist/site
-
-Note that this will build Node.js from source and that might take a while.
-`)
+ More info: https://github.com/nexe/nexe/issues/424
+  `)
   process.exit()
 }
 
@@ -48,34 +50,35 @@ const windowsBinaryName = `${binaryName}.exe`
 
 console.log(`\n ⚙ Site.js: building native binaries for version ${version}`)
 
-const linuxDirectory = path.join('dist', 'linux', version)
+const linuxX64Directory = path.join('dist', 'linux', version)
 const macOsDirectory = path.join('dist', 'macos', version)
 const windowsDirectory = path.join('dist', 'windows', version)
 
-fs.mkdirSync(linuxDirectory, {recursive: true})
+fs.mkdirSync(linuxX64Directory, {recursive: true})
 fs.mkdirSync(macOsDirectory, {recursive: true})
 fs.mkdirSync(windowsDirectory, {recursive: true})
 
-const linuxBinaryPath = path.join(linuxDirectory, binaryName)
+const linuxX64BinaryPath = path.join(linuxX64Directory, binaryName)
 const macOsBinaryPath = path.join(macOsDirectory, binaryName)
 const windowsBinaryPath = path.join(windowsDirectory, windowsBinaryName)
 
 const binaryPaths = {
-  'linux': linuxBinaryPath,
+  'linux': linuxX64BinaryPath,
   'darwin': macOsBinaryPath,
   'win32': windowsBinaryPath
 }
 
-const linuxTarget = 'linux-x64-10.16.3'
+const linuxX64Target = 'linux-x64-10.16.3'
 const macOsTarget = 'mac-x64-10.16.3'
 const windowsTarget = 'windows-x64-10.16.3'
 
 // Only build for the current platform unless a deployment build is requested via --deploy.
 const platform = os.platform()
-const buildLinuxVersion = commandLineOptions.deploy || commandLineOptions.all || (platform === 'linux')
+const buildLinuxX64Version = commandLineOptions.deploy || commandLineOptions.all || (platform === 'linux' && cpuArchitecture === 'x64')
 const buildMacVersion = commandLineOptions.deploy || commandLineOptions.all || (platform === 'darwin')
 const buildWindowsVersion = commandLineOptions.deploy || commandLineOptions.all || (platform === 'win32')
 
+// TODO: UPDATE!!! x64 / ARM
 const currentPlatformBinaryPath = binaryPaths[['linux', 'darwin', 'win32'].find(_ => _ === platform)]
 
 //
@@ -99,7 +102,7 @@ const resources = [
 // Platform-specific resources.
 //
 
-const linuxResources = resources.concat([
+const linuxX64Resources = resources.concat([
   'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-amd64'         // mkcert binary used by nodecert.
 ])
 
@@ -123,14 +126,14 @@ async function build () {
   //
   // Build.
   //
-  if (buildLinuxVersion) {
+  if (buildLinuxX64Version) {
     console.log('   • Building Linux version…')
 
     await compile({
       input,
-      output    : linuxBinaryPath,
-      target    : linuxTarget,
-      resources : linuxResources
+      output    : linuxX64BinaryPath,
+      target    : linuxX64Target,
+      resources : linuxX64Resources
     })
   }
 
@@ -179,11 +182,11 @@ async function build () {
     // gzip directly as that does not maintain the executable flag on the binary.
     const zipFileName = `${version}.tar.gz`
     const mainSourceDirectory = path.join(__dirname, '..')
-    const linuxWorkingDirectory = path.join(mainSourceDirectory, linuxDirectory)
+    const linuxX64WorkingDirectory = path.join(mainSourceDirectory, linuxX64Directory)
     const macOsWorkingDirectory = path.join(mainSourceDirectory, macOsDirectory)
     const windowsWorkingDirectory = path.join(mainSourceDirectory, windowsDirectory)
 
-    childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: linuxWorkingDirectory})
+    childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: linuxX64WorkingDirectory})
     childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: macOsWorkingDirectory})
     childProcess.execSync(`tar -cvzf ${zipFileName} ${windowsBinaryName}`, {env: process.env, cwd: windowsWorkingDirectory})
 
@@ -213,18 +216,18 @@ async function build () {
     // that we expect it to. If it doesn’t skip this step.
     if (fs.existsSync(pathToWebSite)) {
       console.log('   • Copying release binaries to the Site.js web site…')
-      const linuxVersionZipFilePath = path.join(linuxWorkingDirectory, zipFileName)
+      const linuxX64VersionZipFilePath = path.join(linuxX64WorkingDirectory, zipFileName)
       const macOsVersionZipFilePath = path.join(macOsWorkingDirectory, zipFileName)
       const windowsVersionZipFilePath = path.join(windowsWorkingDirectory, zipFileName)
-      const linuxVersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'linux')
+      const linuxX64VersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'linux')
       const macOsVersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'macos')
       const windowsVersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'windows')
 
-      fs.mkdirSync(linuxVersionTargetDirectoryOnSite, {recursive: true})
+      fs.mkdirSync(linuxX64VersionTargetDirectoryOnSite, {recursive: true})
       fs.mkdirSync(macOsVersionTargetDirectoryOnSite, {recursive: true})
       fs.mkdirSync(windowsVersionTargetDirectoryOnSite, {recursive: true})
 
-      fs.copyFileSync(linuxVersionZipFilePath, path.join(linuxVersionTargetDirectoryOnSite, zipFileName))
+      fs.copyFileSync(linuxX64VersionZipFilePath, path.join(linuxX64VersionTargetDirectoryOnSite, zipFileName))
       fs.copyFileSync(macOsVersionZipFilePath, path.join(macOsVersionTargetDirectoryOnSite, zipFileName))
       fs.copyFileSync(windowsVersionZipFilePath, path.join(windowsVersionTargetDirectoryOnSite, zipFileName))
 
