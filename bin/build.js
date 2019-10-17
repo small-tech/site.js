@@ -57,7 +57,7 @@ const version = package.version
 const binaryName = 'site'
 const windowsBinaryName = `${binaryName}.exe`
 
-console.log(`\n ⚙ Site.js: building native binaries for version ${version}`)
+console.log(`\n ⚙ Site.js: building native binaries for version ${version}\n`)
 
 const linuxX64Directory = path.join('dist', 'linux', version)
 const linuxArmDirectory = path.join('dist', 'linux-arm', version)
@@ -81,10 +81,10 @@ const binaryPaths = {
   'win32': windowsBinaryPath
 }
 
-const linuxX64Target = 'linux-x64-10.16.3'
+const linuxX64Target = 'linux-x64-10.16.0'
 // Linux on ARM doesn’t have a target as we build Node from source.
-const macOsTarget = 'mac-x64-10.16.3'
-const windowsTarget = 'windows-x64-10.16.3'
+const macOsTarget = 'mac-x64-10.16.0'
+const windowsTarget = 'windows-x64-10.16.0'
 
 // Only build for the current platform unless a deployment build is requested via --deploy.
 const platform = os.platform()
@@ -155,7 +155,7 @@ async function build () {
       resources : linuxX64Resources
     })
 
-    console.log('     ✔\n')
+    console.log('     Done ✔\n')
   }
 
   if (buildLinuxArmVersion) {
@@ -168,7 +168,7 @@ async function build () {
       build: true
     })
 
-    console.log('     ✔\n')
+    console.log('     Done ✔\n')
   }
 
   if (buildMacVersion) {
@@ -181,7 +181,7 @@ async function build () {
       resources : macOsResources
     })
 
-    console.log('     ✔\n')
+    console.log('     Done ✔\n')
   }
 
   if (buildWindowsVersion) {
@@ -194,7 +194,7 @@ async function build () {
       resources : windowsResources
     })
 
-    console.log('     ✔\n')
+    console.log('     Done ✔\n')
   }
 
   // Install the build for the current platform if requested.
