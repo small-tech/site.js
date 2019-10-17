@@ -30,7 +30,7 @@ mkdir -p /tmp/sitejs.org
 pushd /tmp/sitejs.org > /dev/null
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
-  cpuArchicture=`uname -m`
+  cpuArchitecture=`uname -m`
   if [[ "$cpuArchitecture" == "x86_64" ]]; then
     # Linux on x64
     wget -q https://sitejs.org/releases/linux/12.8.0.tar.gz
