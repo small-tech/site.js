@@ -39,14 +39,26 @@ function help () {
   const usageHostAndPort = argument('@host[:port]')
   const usageOptions = option('options')
 
-  const commandVersion = command('version')
-  const commandHelp = command('help')
-  const commandUninstall = command('uninstall')
+  //
+  // Commands.
+  //
+
   const commandServe = command('serve')
+
   const commandEnable = command('enable')
   const commandDisable = command('disable')
   const commandLogs = command('logs')
   const commandStatus = command('status')
+
+  const commandUpdate = command('update')
+  const commandUninstall = command('uninstall')
+
+  const commandVersion = command('version')
+  const commandHelp = command('help')
+
+  //
+  // Options.
+  //
 
   const optionAliases = option('aliases')
 
@@ -69,7 +81,7 @@ function help () {
 
   ${prompt} ${clr(appName, 'bold')} [${usageCommand}] [${usageFolderOrPort}] [${usageHostAndPort}] [${usageOptions}]
 
-    ${usageCommand}\t\t${commandVersion} | ${commandHelp} | ${commandServe} ${systemdExists ? `| ${commandEnable} | ${commandDisable} | ${commandLogs} | ${commandStatus}` : ''}| ${commandUninstall}
+    ${usageCommand}\t\t${commandServe}${systemdExists ? ` | ${commandEnable} | ${commandDisable} | ${commandLogs} | ${commandStatus}` : ''} | ${commandUpdate} | ${commandUninstall} | ${commandVersion} | ${commandHelp}
     ${usageFolderOrPort}\tPath of folder to serve (defaults to current folder) or port on localhost to proxy.
     ${usageHostAndPort}\tHost (and, optionally port) to sync. Valid hosts are @localhost and @hostname.
     ${usageOptions}\t\tSettings that alter command behaviour.
@@ -93,9 +105,11 @@ function help () {
     ${commandLogs}\tDisplay and tail server logs.
     ${commandStatus}\tDisplay detailed server information.
       ` : ''}
+    ${commandUpdate}\tCheck for Site.js updates and update if new version is found.
+    ${commandUninstall}\tUninstall Site.js.
+
     ${commandVersion}\tDisplay version and exit.
     ${commandHelp}\tDisplay this help screen and exit.
-    ${commandUninstall}\tUninstall Site.js.
 
     If ${usageCommand} is omitted, behaviour defaults to ${commandServe}.
 
