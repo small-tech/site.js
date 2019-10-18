@@ -86,10 +86,6 @@ function help () {
     \t      ${prompt} ${appName} ${commandServe} ${argument('my-folder')} ${argument('@localhost')}
 
     \t\tIf a port (e.g., ${argument(':1313')}) is specified instead of ${argument('my-folder')}, start an HTTP/WebSocket proxy.
-
-    ${commandVersion}\tDisplay version and exit.
-    ${commandHelp}\tDisplay this help screen and exit.
-    ${commandUninstall}\tUninstall Site.js.
     ${systemdExists ?
       `
     ${commandEnable}\tStart server as daemon with globally-trusted certificates and add to startup.
@@ -97,6 +93,10 @@ function help () {
     ${commandLogs}\tDisplay and tail server logs.
     ${commandStatus}\tDisplay detailed server information.
       ` : ''}
+    ${commandVersion}\tDisplay version and exit.
+    ${commandHelp}\tDisplay this help screen and exit.
+    ${commandUninstall}\tUninstall Site.js.
+
     If ${usageCommand} is omitted, behaviour defaults to ${commandServe}.
 
     ${heading('Options:')}
