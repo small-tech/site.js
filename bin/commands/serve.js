@@ -15,6 +15,7 @@ const sync = require('../lib/sync')
 
 const Site = require('../../index')
 const ensure = require('../lib/ensure')
+const status = require('../lib/status')
 const tcpPortUsed = require('tcp-port-used')
 const clr = require('../../lib/clr')
 
@@ -134,6 +135,19 @@ function serve (args) {
       tcpPortUsed.check(port)
       .then(inUse => {
         if (inUse) {
+          // Check to see if the problem is that Site.js is running as a daemon and
+          // display a more specific error message if so. (Remember that daemons are
+          // only supported on port 443 at the moment.)
+          if (port === 443) {
+            if (ensure.commandExists('systemctl')) {
+              if ({ isActive } = status()) {
+                console.log(`\n 🤯 Error: Cannot start server. Site.js is already running as a daemon on port ${clr(port.toString(), 'cyan')}. Use the ${clr('stop', 'green')} command to stop it.\n`)
+                process.exit(1)
+              }
+            }
+          }
+
+          // Generic port-in-use error message.
           console.log(`\n 🤯 Error: Cannot start server. Port ${clr(port.toString(), 'cyan')} is already in use.\n`)
           process.exit(1)
         } else {

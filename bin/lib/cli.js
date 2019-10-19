@@ -18,14 +18,21 @@ class CommandLineInterface {
     // ===== these are frequently used, even though version and help are commands and not options.
     //       We do not accept this form for any other command, however.
     const commands = [
-      ['version', options.version === true || options.v === true || arg0 === 'version'],
-      ['uninstall', arg0 === 'uninstall'],
-      ['help', options.h === true || options.help === true || arg0 === 'help'],
       ['serve', arg0 === 'serve'],
+
       ['enable', arg0 === 'enable'],
       ['disable', arg0 === 'disable'],
+      ['start', arg0 === 'start'],
+      ['stop', arg0 === 'stop'],
+      ['restart', arg0 === 'restart'],
       ['logs', arg0 === 'logs'],
       ['status', arg0 === 'status'],
+
+      ['update', arg0 === 'update'],
+      ['uninstall', arg0 === 'uninstall'],
+
+      ['version', options.version === true || options.v === true || arg0 === 'version'],
+      ['help', options.h === true || options.help === true || arg0 === 'help'],
     ]
 
     const command = commands.find(i => i[1])

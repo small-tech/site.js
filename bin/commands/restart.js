@@ -1,28 +1,27 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Command: disable
+// Command: restart
 //
-// Disables the Site.js daemon (stops it and removes it
-// from startup items).
+// Restarts the Site.js daemon.
 //
 //////////////////////////////////////////////////////////////////////
 
-const _disable = require('../lib/disable')
+const _restart = require('../lib/restart')
 const ensure = require('../lib/ensure')
 const Site = require('../../index')
 
-function disable () {
+function restart () {
   ensure.systemctl()
-  ensure.root('disable')
+  ensure.root('restart')
 
   Site.logAppNameAndVersion()
 
   try {
-    // Disable and stop the web server.
-    _disable()
+    // Start the web server.
+    _restart()
   } catch (error) {
     process.exit(1)
   }
 }
 
-module.exports = disable
+module.exports = restart

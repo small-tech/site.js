@@ -6,7 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
-## [12.8.0] - 2019-01-17
+## [12.9.0] - 2019-10-19
+
+### Added
+
+  - New command: update – checks for Site.js updates and updates to latest version if there is one.
+  - New command: start – starts the Site.js daemon.
+  - New command: stop – stops the Site.js daemon.
+  - New command: restart – restarts the Site.js daemon.
+
+## [12.8.0] - 2019-10-17
 
 ### Added
 
