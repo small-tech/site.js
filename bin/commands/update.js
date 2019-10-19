@@ -17,9 +17,10 @@ const concat = require('concat-stream')
 
 const Site = require('../../index')
 const ensure = require('../lib/ensure')
+const getStatus = require('../lib/status')
 
 async function update () {
-  ensure.root()
+  ensure.root('update')
 
   Site.logAppNameAndVersion()
 
@@ -95,11 +96,26 @@ async function update () {
 
     await extract(latestRelease)
 
-    console.log(' 🎉 Done!\n')
+    //
+    // Check if the server daemon is running. If so, we must first stop
+    // it before we can install the binary otherwise we will get the
+    // error Error: ETXTBSY: text file is busy, open '/usr/local/bin/site'.
+    //
+    // We will restart the server using the latest version of Site.js
+    // after a successful install.
+    //
+    if (ensure.commandExists('systemctl')) {
+      const { isActive } = getStatus()
+      if (isActive) {
+        console.log(' 😈 Site.js daemon is active. Stopping it before installing latest version… ')
+        console.log('TODO')
+      } else {
+        // Debug
+        console.log('Server daemon is not active; no need to attempt restart.')
+      }
+    }
 
-    // TODO: Check if the server daemon is running. If so, restart it
-    // ===== so that it starts running the latest version.
-    // NOTE: Only do it if ensure.commandExists('systemctl')
+    console.log(' 🎉 Done!\n')
 
   } else {
     console.log(' 😁👍 You’re running the latest version of Site.js!\n')

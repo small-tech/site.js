@@ -350,7 +350,7 @@ npm run deploy
 site [command] [folder|:port] [@host[:port]] [--options]
 ```
 
-  - `command`: version | help | serve | enable | disable | logs | status
+  - `command`: serve | enable | disable | start | stop | logs | status | update | uninstall | version | help
   - `folder|:port`: Path of folder to serve (defaults to current folder) or port on localhost to proxy.
   - `@host[:port]`: Host (and, optionally port) to sync. Valid hosts are @localhost and @hostname.
   - `--options`: Settings that alter command behaviour.
@@ -368,19 +368,23 @@ __Key:__ `[]` = optional &nbsp;&nbsp;`|` = or
 
     If a port (e.g., `:1313`) is specified instead of my-folder, start an HTTP/WebSocket proxy.
 
-  - `version`: Display version and exit.
-  - `help`: Display help screen and exit.
-  - `uninstall`: Uninstall Site.js.
-
-On Linux distributions with systemd, you can also use:
-
   - `enable`: Start server as daemon with globally-trusted certificates and add to startup.
 
   - `disable`: Stop server daemon and remove from startup.
 
+  - `start`: Start server as daemon with globally-trusted certificates.
+
+  - `stop`: Stop server daemon.
+
   - `logs`: Display and tail server logs.
 
   - `status`: Display detailed server information.
+
+  - `update`: Check for Site.js updates and update if new version is found.
+  - `uninstall`: Uninstall Site.js.
+
+  - `version`: Display version and exit.
+  - `help`: Display help screen and exit.
 
 If `command` is omitted, behaviour defaults to `serve`.
 

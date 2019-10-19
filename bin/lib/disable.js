@@ -19,21 +19,13 @@ function throwError(errorMessage) {
   throw new Error(errorMessage)
 }
 
-
+// Note: Ensure that systemctl exists and app is root before calling this function.
 function disable () {
-
-  ensure.systemctl()
-
   const { isActive, isEnabled } = status()
 
   if (!isEnabled) {
-    Site.logAppNameAndVersion()
     throwError('Site.js server is not enabled. Nothing to disable.')
   }
-
-  ensure.root('disable')
-
-  Site.logAppNameAndVersion()
 
   try {
     // Disable and stop the web server.

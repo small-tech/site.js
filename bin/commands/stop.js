@@ -1,28 +1,27 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Command: disable
+// Command: stop
 //
-// Disables the web server daemon (stops it and removes it
-// from startup items).
+// Stops the web server daemon.
 //
 //////////////////////////////////////////////////////////////////////
 
-const _disable = require('../lib/disable')
+const _stop = require('../lib/stop')
 const ensure = require('../lib/ensure')
 const Site = require('../../index')
 
-function disable () {
+function stop () {
   ensure.systemctl()
-  ensure.root('disable')
+  ensure.root('stop')
 
   Site.logAppNameAndVersion()
 
   try {
-    // Disable and stop the web server.
-    _disable()
+    // Stop the web server.
+    _stop()
   } catch (error) {
     process.exit(1)
   }
 }
 
-module.exports = disable
+module.exports = stop
