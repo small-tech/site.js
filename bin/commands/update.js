@@ -74,7 +74,7 @@ async function update () {
     }[platform]
 
     if (platformPath === 'linux' && cpuArchitecture === 'arm') {
-      platform = `${platformPath}-arm`
+      platformPath = `${platformPath}-arm`
     }
 
     let binaryUrl = `https://sitejs.org/releases/${platformPath}/${latestVersion}.tar.gz`
