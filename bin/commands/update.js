@@ -13,7 +13,7 @@ const { Readable } = require('stream')
 
 const tar = require('tar-stream')
 const gunzip = require('gunzip-maybe')
-const contact = require('concat-stream')
+const concat = require('concat-stream')
 
 const Site = require('../../index')
 const ensure = require('../lib/ensure')
@@ -76,14 +76,17 @@ async function update () {
 
     console.log(` 📡 Downloading Site.js version ${latestVersion}…`)
 
-    let latestRelease
+    let latestReleaseResponse
     try {
-      latestRelease = await secureGetBinary(binaryUrl)
+      console.log(`About to download ${binaryUrl}`)
+      latestReleaseResponse = await secureGetBinary(binaryUrl)
     } catch (error) {
       console.log(' 🤯 Error: Could not download update.\n')
       console.log(error)
       process.exit(1)
     }
+
+    const latestRelease = latestReleaseResponse.body
 
     console.log(' 📦 Installing…')
 
@@ -112,9 +115,9 @@ module.exports = update
 
 async function extract (release) {
   return new Promise((resolve, reject) => {
-    const extract = tar.extract()
+    const extractTar = tar.extract()
 
-    extract.on('entry', (header, stream, next) => {
+    extractTar.on('entry', (header, stream, next) => {
       // There should be only one file in the archive and it should be called site.
       if (header.name === 'site') {
         stream.pipe(concat(executable => {
@@ -128,12 +131,12 @@ async function extract (release) {
       }
     })
 
-    extract.on('finish', () => {
+    extractTar.on('finish', () => {
       console.log('Extraction completed.') // Debug
       resolve()
     })
 
-    bufferToStream(release).pipe(gunzip()).pipe(extract)
+    bufferToStream(release).pipe(gunzip()).pipe(extractTar)
   })
 }
 
