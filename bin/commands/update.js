@@ -22,7 +22,15 @@ const start = require('../lib/start')
 const stop = require('../lib/stop')
 
 async function update () {
-  ensure.root('update')
+  const platform = os.platform()
+  const cpuArchitecture = os.arch()
+
+  // On Linux, we might need to update the status of the Site.js daemon and
+  // for that we need to be root.
+  const isLinux = platform === 'linux'
+  if (isLinux) {
+    ensure.root('update')
+  }
 
   Site.logAppNameAndVersion()
 
@@ -43,10 +51,6 @@ async function update () {
   const currentVersion = Site.versionNumber()
   const [currentMajor, currentMinor, currentPatch] = currentVersion.split('.')
 
-  // Debug.
-  // console.log(`Latest version: ${latestVersion} ${latestMajor} ${latestMinor} ${latestPatch}`)
-  // console.log(`Current version: ${currentVersion} ${currentMajor} ${currentMinor} ${currentPatch}`)
-
   if (currentVersion !== latestVersion) {
     // Are we running a newer (development or beta) version than the latest release version?
     if (currentMajor > latestMajor || (currentMajor === latestMajor && currentMinor > latestMinor) || (currentMajor === latestMajor && currentMinor === latestMinor && currentPatch > latestPatch)) {
@@ -62,8 +66,6 @@ async function update () {
     //
     // Compose the right binary URL for the platform and architecture.
     //
-    const platform = os.platform()
-    const cpuArchitecture = os.arch()
 
     let platformPath = {
       'linux': 'linux',
@@ -101,20 +103,22 @@ async function update () {
     // after a successful install.
     //
     let weStoppedTheDaemon = false
-    if (ensure.commandExists('systemctl')) {
-      const { isActive } = status()
-      if (isActive) {
-        console.log('\n 😈 Site.js daemon is active. Stopping it before installing latest version… ')
+    if (isLinux) {
+      if (ensure.commandExists('systemctl')) {
+        const { isActive } = status()
+        if (isActive) {
+          console.log('\n 😈 Site.js daemon is active. Stopping it before installing latest version… ')
 
-        try {
-          stop()
-        } catch (error) {
-          console.log(' 🤯 Error: Could not stop the Site.js daemon.\n')
-          console.log(error)
-          process.exit(1)
+          try {
+            stop()
+          } catch (error) {
+            console.log(' 🤯 Error: Could not stop the Site.js daemon.\n')
+            console.log(error)
+            process.exit(1)
+          }
+
+          weStoppedTheDaemon = true
         }
-
-        weStoppedTheDaemon = true
       }
     }
 
