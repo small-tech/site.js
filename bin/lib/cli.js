@@ -24,6 +24,7 @@ class CommandLineInterface {
       ['disable', arg0 === 'disable'],
       ['start', arg0 === 'start'],
       ['stop', arg0 === 'stop'],
+      ['restart', arg0 === 'restart'],
       ['logs', arg0 === 'logs'],
       ['status', arg0 === 'status'],
 

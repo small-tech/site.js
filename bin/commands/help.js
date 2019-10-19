@@ -49,6 +49,7 @@ function help () {
   const commandDisable = command('disable')
   const commandStart = command('start')
   const commandStop = command('stop')
+  const commandRestart = command('restart')
   const commandLogs = command('logs')
   const commandStatus = command('status')
 
@@ -83,7 +84,7 @@ function help () {
 
   ${prompt} ${clr(appName, 'bold')} [${usageCommand}] [${usageFolderOrPort}] [${usageHostAndPort}] [${usageOptions}]
 
-    ${usageCommand}\t\t${commandServe}${systemdExists ? ` | ${commandEnable} | ${commandDisable} | ${commandStart} | ${commandStop} | ${commandLogs} | ${commandStatus}` : ''} | ${commandUpdate} | ${commandUninstall} | ${commandVersion} | ${commandHelp}
+    ${usageCommand}\t\t${commandServe}${systemdExists ? ` | ${commandEnable} | ${commandDisable} | ${commandStart} | ${commandStop} | ${commandRestart} | ${commandLogs} | ${commandStatus}` : ''} | ${commandUpdate} | ${commandUninstall} | ${commandVersion} | ${commandHelp}
     ${usageFolderOrPort}\tPath of folder to serve (defaults to current folder) or port on localhost to proxy.
     ${usageHostAndPort}\tHost (and, optionally port) to sync. Valid hosts are @localhost and @hostname.
     ${usageOptions}\t\tSettings that alter command behaviour.
@@ -106,6 +107,7 @@ function help () {
     ${commandDisable}\tStop server daemon and remove from startup.
     ${commandStart}\tStart server as daemon with globally-trusted certificates.
     ${commandStop}\tStop server daemon.
+    ${commandRestart}\tRestart server daemon.
     ${commandLogs}\tDisplay and tail server logs.
     ${commandStatus}\tDisplay detailed server information.
       ` : ''}

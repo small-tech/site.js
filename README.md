@@ -376,6 +376,8 @@ __Key:__ `[]` = optional &nbsp;&nbsp;`|` = or
 
   - `stop`: Stop server daemon.
 
+  - `restart`: Restart server daemon.
+
   - `logs`: Display and tail server logs.
 
   - `status`: Display detailed server information.
