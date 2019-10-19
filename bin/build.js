@@ -21,6 +21,9 @@ const childProcess = require('child_process')
 const { compile } = require('nexe')
 const minimist = require('minimist')
 
+const status = require('./lib/status')
+const stop = require('./lib/stop')
+const start = require('./lib/start')
 const package = require('../package.json')
 
 const cpuArchitecture = os.arch()
@@ -38,7 +41,7 @@ if (commandLineOptions._.length !== 0 || commandLineOptions.h || commandLineOpti
 if ((commandLineOptions.deploy || commandLineOptions.all) && cpuArchitecture !== 'arm') {
   console.log(`
  🤯 Error: Deployment and building for all platforms is currently only supported on ARM processors.
-  
+
  (Nexe cannot cross-compile to ARM yet so it’s the only platform where we can build for all supported platforms. As of version 12.8.0, all official builds of Site.js are compiled on a Raspberry Pi 3B+. This restriction will be removed once cross-compilation support for ARM is added to Nexe.)
 
  More info: https://github.com/nexe/nexe/issues/424
@@ -47,8 +50,9 @@ if ((commandLineOptions.deploy || commandLineOptions.all) && cpuArchitecture !==
 }
 
 // Check for supported CPU architectures (currently only x86 and ARM)
-if (cpuArchitecture !== 'x86' && cpuArchitecture !== 'arm') {
-  console.log(`🤯 Error: The build script is currently only supported on x86 and ARM architectures.`)
+console.log(cpuArchitecture)
+if (cpuArchitecture !== 'x64' && cpuArchitecture !== 'arm') {
+  console.log(`🤯 Error: The build script is currently only supported on x64 and ARM architectures.`)
   process.exit()
 }
 
@@ -146,7 +150,7 @@ async function build () {
   // Build.
   //
   if (buildLinuxX64Version) {
-    console.log('   • Building Linux version (x86)…')
+    console.log('   • Building Linux version (x64)…')
 
     await compile({
       input,
@@ -205,7 +209,19 @@ async function build () {
 
     console.log('   • Installing locally…')
 
+    let weStoppedTheDaemon = false
+    if ( { isActive } = status() ) {
+      console.log('     • Site.js daemon is active: stopping before installing new build locally…')
+      stop()
+      weStoppedTheDaemon = true
+    }
+
     childProcess.execSync(`sudo cp ${currentPlatformBinaryPath} /usr/local/bin`)
+
+    if (weStoppedTheDaemon) {
+      console.log('     • Restarting Site.js daemon after installing new build locally…')
+      start()
+    }
   }
 
   // Only zip and copy files to the Indie Web Site if explicitly asked to.
