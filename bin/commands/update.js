@@ -17,7 +17,9 @@ const concat = require('concat-stream')
 
 const Site = require('../../index')
 const ensure = require('../lib/ensure')
-const getStatus = require('../lib/status')
+const status = require('../lib/status')
+const start = require('../lib/start')
+const stop = require('../lib/stop')
 
 async function update () {
   ensure.root('update')
@@ -38,7 +40,7 @@ async function update () {
   const latestVersion = response.body
   const [latestMajor, latestMinor, latestPatch] = latestVersion.split('.')
 
-  const currentVersion = '12.7.9' // Site.versionNumber()
+  const currentVersion = Site.versionNumber()
   const [currentMajor, currentMinor, currentPatch] = currentVersion.split('.')
 
   // Debug.
@@ -91,12 +93,6 @@ async function update () {
     console.log(' 📦 Installing…')
 
     //
-    // Extract the latest release in memory from the gzipped tarball.
-    //
-
-    await extract(latestRelease)
-
-    //
     // Check if the server daemon is running. If so, we must first stop
     // it before we can install the binary otherwise we will get the
     // error Error: ETXTBSY: text file is busy, open '/usr/local/bin/site'.
@@ -104,15 +100,36 @@ async function update () {
     // We will restart the server using the latest version of Site.js
     // after a successful install.
     //
+    let weStoppedTheDaemon = false
     if (ensure.commandExists('systemctl')) {
-      const { isActive } = getStatus()
+      const { isActive } = status()
       if (isActive) {
-        console.log(' 😈 Site.js daemon is active. Stopping it before installing latest version… ')
-        console.log('TODO')
-      } else {
-        // Debug
-        console.log('Server daemon is not active; no need to attempt restart.')
+        console.log('\n 😈 Site.js daemon is active. Stopping it before installing latest version… ')
+
+        try {
+          stop()
+        } catch (error) {
+          console.log(' 🤯 Error: Could not stop the Site.js daemon.\n')
+          console.log(error)
+          process.exit(1)
+        }
+
+        weStoppedTheDaemon = true
       }
+    }
+
+    //
+    // Extract the latest release in memory from the gzipped tarball.
+    //
+
+    await extract(latestRelease)
+
+    //
+    // If we stopped the daemon, restart it.
+    //
+    if (weStoppedTheDaemon) {
+      console.log(` 😈 Restarting the daemon using Site.js v${latestVersion}…`)
+      start()
     }
 
     console.log(' 🎉 Done!\n')
