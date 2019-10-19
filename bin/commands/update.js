@@ -8,27 +8,19 @@
 
 const https = require('https')
 const os = require('os')
+const fs = require('fs')
+const { Readable } = require('stream')
+
+const tar = require('tar-stream')
+const gunzip = require('gunzip-maybe')
+const contact = require('concat-stream')
+
 const Site = require('../../index')
-
-async function secureGet (url) {
-  return new Promise((resolve, reject) => {
-    https.get(url, response => {
-      const code = response.statusCode
-
-      if (code !== 200) {
-        reject({code})
-      }
-
-      let body = ''
-      response.on('data', _ => body += _)
-      response.on('end', () => {
-        resolve({code, body})
-      })
-    })
-  })
-}
+const ensure = require('../lib/ensure')
 
 async function update () {
+  ensure.root()
+
   Site.logAppNameAndVersion()
 
   console.log(' 🧐 Checking for updates…\n')
@@ -84,18 +76,116 @@ async function update () {
 
     console.log(` 📡 Downloading Site.js version ${latestVersion}…`)
 
-    // TODO
+    let latestRelease
+    try {
+      latestRelease = await secureGetBinary(binaryUrl)
+    } catch (error) {
+      console.log(' 🤯 Error: Could not download update.\n')
+      console.log(error)
+      process.exit(1)
+    }
 
     console.log(' 📦 Installing…')
 
-    // TODO
+    //
+    // Extract the latest release in memory from the gzipped tarball.
+    //
+
+    await extract(latestRelease)
 
     console.log(' 🎉 Done!\n')
 
-    // TODO
+    // TODO: Check if the server daemon is running. If so, restart it
+    // ===== so that it starts running the latest version.
+    // NOTE: Only do it if ensure.commandExists('systemctl')
+
   } else {
     console.log(' 😁👍 You’re running the latest version of Site.js!\n')
   }
 }
 
 module.exports = update
+
+//
+// Helpers.
+//
+
+async function extract (release) {
+  return new Promise((resolve, reject) => {
+    const extract = tar.extract()
+
+    extract.on('entry', (header, stream, next) => {
+      // There should be only one file in the archive and it should be called site.
+      if (header.name === 'site') {
+        stream.pipe(concat(executable => {
+          console.log('About to save the site executable.') // Debug
+          const binaryPath = os.platform() === 'windows' ? 'C:\\Program Files\\site.js\\site' : '/usr/local/bin/site'
+          fs.writeFileSync(binaryPath, executable, { mode: 0o755 })
+        }))
+      } else {
+        console.log(` 🤯 Error: Unknown file encountered: ${header.name}`)
+        reject()
+      }
+    })
+
+    extract.on('finish', () => {
+      console.log('Extraction completed.') // Debug
+      resolve()
+    })
+
+    bufferToStream(release).pipe(gunzip()).pipe(extract)
+  })
+}
+
+
+async function secureGet (url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, response => {
+      const code = response.statusCode
+
+      if (code !== 200) {
+        reject({code})
+      }
+
+      let body = ''
+      response.on('data', _ => body += _)
+      response.on('end', () => {
+        resolve({code, body})
+      })
+    })
+  })
+}
+
+
+async function secureGetBinary (url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, (response) => {
+      const code = response.statusCode
+
+      if (code !== 200) {
+        reject({code})
+      }
+
+      let chunks = []
+      response.on('data', _ => chunks.push(_))
+      response.on('end', () => {
+        const body = Buffer.concat(chunks)
+        resolve({code, body})
+      })
+    })
+  })
+}
+
+
+// Takes a binary buffer and returns a Readable instance stream.
+// Courtesy: https://stackoverflow.com/a/54136803
+ function bufferToStream(binary) {
+  const readableInstanceStream = new Readable({
+    read() {
+      this.push(binary)
+      this.push(null)
+    }
+  })
+
+  return readableInstanceStream
+}
