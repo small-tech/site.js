@@ -78,7 +78,6 @@ async function update () {
 
     let latestReleaseResponse
     try {
-      console.log(`About to download ${binaryUrl}`)
       latestReleaseResponse = await secureGetBinary(binaryUrl)
     } catch (error) {
       console.log(' 🤯 Error: Could not download update.\n')
@@ -121,19 +120,14 @@ async function extract (release) {
       // There should be only one file in the archive and it should be called site.
       if (header.name === 'site') {
         stream.pipe(concat(executable => {
-          console.log('About to save the site executable.') // Debug
           const binaryPath = os.platform() === 'windows' ? 'C:\\Program Files\\site.js\\site' : '/usr/local/bin/site'
           fs.writeFileSync(binaryPath, executable, { mode: 0o755 })
+          resolve()
         }))
       } else {
         console.log(` 🤯 Error: Unknown file encountered: ${header.name}`)
         reject()
       }
-    })
-
-    extractTar.on('finish', () => {
-      console.log('Extraction completed.') // Debug
-      resolve()
     })
 
     bufferToStream(release).pipe(gunzip()).pipe(extractTar)
