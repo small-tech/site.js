@@ -10,7 +10,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+const argv0 = process.argv0
+
 module.exports = {
-  isNode: process.argv0 === 'node',
-  isBinary: process.argv0 === 'site'
+  isNode: argv0.endsWith('node') || argv0.endsWith('node.exe'),
+  isBinary: argv0.endsWith('site') || argv0.endsWith('site.exe')
 }

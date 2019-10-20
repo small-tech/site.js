@@ -14,6 +14,7 @@ const { Readable } = require('stream')
 const tar = require('tar-stream')
 const gunzip = require('gunzip-maybe')
 const concat = require('concat-stream')
+const pressAnyKey = require('press-any-key')
 
 const Site = require('../../index')
 const ensure = require('../lib/ensure')
@@ -23,13 +24,9 @@ const restart = require('../lib/restart')
 async function update () {
   const platform = os.platform()
   const cpuArchitecture = os.arch()
-
-  // On Linux, we might need to update the status of the Site.js daemon and
-  // for that we need to be root.
   const isLinux = platform === 'linux'
-  if (isLinux) {
-    ensure.root('update')
-  }
+
+  ensure.root('update')
 
   Site.logAppNameAndVersion()
 
@@ -47,7 +44,7 @@ async function update () {
   const latestVersion = response.body
   const [latestMajor, latestMinor, latestPatch] = latestVersion.split('.')
 
-  const currentVersion = '12.9.2' // Site.versionNumber()
+  const currentVersion = Site.versionNumber()
   const [currentMajor, currentMinor, currentPatch] = currentVersion.split('.')
 
   if (currentVersion !== latestVersion) {
@@ -124,6 +121,12 @@ async function update () {
   } else {
     console.log(' 😁👍 You’re running the latest version of Site.js!\n')
   }
+
+  // On Windows, any messages will have output in the Administrative window that popped up
+  // so ask the person to press a key to continue so they know what happened.
+  if (platform === 'win32') {
+    await pressAnyKey()
+  }
 }
 
 module.exports = update
@@ -141,8 +144,9 @@ async function extract (release) {
     const extractTar = tar.extract()
 
     extractTar.on('entry', (header, stream, next) => {
-      // There should be only one file in the archive and it should be called site.
-      if (header.name === 'site') {
+      // There should be only one file in the archive and it should either be called site (Linuxesque)
+      // or site.exe (Windows).
+      if (header.name === 'site' || header.name === 'site.exe') {
         stream.pipe(concat(executable => {
           fs.writeFileSync(binaryPath(), executable, { mode: 0o755 })
           resolve()
