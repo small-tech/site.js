@@ -5,9 +5,9 @@
   "main": "index.js",
   "bin": "bin/site.js",
   "scripts": {
-    "build": "bin/build.js",
+    "build": "node bin/build.js",
     "deploy": "bin/build.js --deploy",
-    "install-locally": "bin/build.js --install",
+    "install-locally": "node bin/build.js --install",
     "test": "tape test/*.js | tap-spec",
     "coverage": "nyc tape test/*.js | tap-spec"
   },
