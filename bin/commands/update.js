@@ -14,7 +14,6 @@ const { Readable } = require('stream')
 const tar = require('tar-stream')
 const gunzip = require('gunzip-maybe')
 const concat = require('concat-stream')
-const pressAnyKey = require('press-any-key')
 
 const Site = require('../../index')
 const ensure = require('../lib/ensure')
@@ -120,12 +119,6 @@ async function update () {
 
   } else {
     console.log(' 😁👍 You’re running the latest version of Site.js!\n')
-  }
-
-  // On Windows, any messages will have output in the Administrative window that popped up
-  // so ask the person to press a key to continue so they know what happened.
-  if (platform === 'win32') {
-    await pressAnyKey()
   }
 }
 
