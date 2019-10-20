@@ -37,28 +37,21 @@ class Ensure {
   }
 
   rootOnWindows () {
-    console.log('Ensure root on Windows.')
-
     const isAdministrator = (childProcess.execSync('powershell.exe -Command ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)')).toString().trim() === 'True'
 
     if (!isAdministrator) {
-      console.log('Not root')
-
       let commonArguments = process.argv.slice(2).map(_ => `"${_}"`).join(', ')
       let binaryName
       let theArguments
       try {
         if (runtime.isNode) {
-          console.log('isNode')
           binaryName = 'node.exe'
           theArguments = `"${path.join(__dirname, '..', 'site.js')}", ${commonArguments}`
         } else {
-          console.log('isNotNode')
           binaryName = 'site.exe'
           theArguments = commonArguments
         }
         const command = `powershell.exe -noexit -Command Start-Process "${binaryName}" -ArgumentList ${theArguments} -Verb RunAs`
-        console.log(`Command: >${command}<`)
         const options = {env: process.env, stdio: 'inherit'}
         childProcess.execSync(command)
       } catch (error) {
