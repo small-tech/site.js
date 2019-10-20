@@ -18,8 +18,7 @@ const concat = require('concat-stream')
 const Site = require('../../index')
 const ensure = require('../lib/ensure')
 const status = require('../lib/status')
-const start = require('../lib/start')
-const stop = require('../lib/stop')
+const restart = require('../lib/restart')
 
 async function update () {
   const platform = os.platform()
@@ -48,7 +47,7 @@ async function update () {
   const latestVersion = response.body
   const [latestMajor, latestMinor, latestPatch] = latestVersion.split('.')
 
-  const currentVersion = Site.versionNumber()
+  const currentVersion = '12.9.2' // Site.versionNumber()
   const [currentMajor, currentMinor, currentPatch] = currentVersion.split('.')
 
   if (currentVersion !== latestVersion) {
@@ -94,46 +93,30 @@ async function update () {
 
     console.log(' 📦 Installing…')
 
-    //
-    // Check if the server daemon is running. If so, we must first stop
-    // it before we can install the binary otherwise we will get the
-    // error Error: ETXTBSY: text file is busy, open '/usr/local/bin/site'.
-    //
-    // We will restart the server using the latest version of Site.js
-    // after a successful install.
-    //
-    let weStoppedTheDaemon = false
+    // Unlink the old file. This will succeed even if the executable is
+    // currently running.
+    fs.unlinkSync(binaryPath())
+
+    // Extract the latest release in memory from the gzipped tarball.
+    await extract(latestRelease)
+
+    // Check if the server daemon is running. If so, restart it so it uses
+    // the latest version of Site.js.
     if (isLinux) {
       if (ensure.commandExists('systemctl')) {
         const { isActive } = status()
         if (isActive) {
-          console.log('\n 😈 Site.js daemon is active. Stopping it before installing latest version… ')
+          console.log(` 😈 Daemon is running on old version. Restarting it using Site.js v${latestVersion}…`)
 
           try {
-            stop()
+            restart()
           } catch (error) {
-            console.log(' 🤯 Error: Could not stop the Site.js daemon.\n')
+            console.log(' 🤯 Error: Could not restart the Site.js daemon.\n')
             console.log(error)
             process.exit(1)
           }
-
-          weStoppedTheDaemon = true
         }
       }
-    }
-
-    //
-    // Extract the latest release in memory from the gzipped tarball.
-    //
-
-    await extract(latestRelease)
-
-    //
-    // If we stopped the daemon, restart it.
-    //
-    if (weStoppedTheDaemon) {
-      console.log(` 😈 Restarting the daemon using Site.js v${latestVersion}…`)
-      start()
     }
 
     console.log(' 🎉 Done!\n')
@@ -149,6 +132,10 @@ module.exports = update
 // Helpers.
 //
 
+function binaryPath () {
+  return os.platform() === 'windows' ? 'C:\\Program Files\\site.js\\site' : '/usr/local/bin/site'
+}
+
 async function extract (release) {
   return new Promise((resolve, reject) => {
     const extractTar = tar.extract()
@@ -157,8 +144,7 @@ async function extract (release) {
       // There should be only one file in the archive and it should be called site.
       if (header.name === 'site') {
         stream.pipe(concat(executable => {
-          const binaryPath = os.platform() === 'windows' ? 'C:\\Program Files\\site.js\\site' : '/usr/local/bin/site'
-          fs.writeFileSync(binaryPath, executable, { mode: 0o755 })
+          fs.writeFileSync(binaryPath(), executable, { mode: 0o755 })
           resolve()
         }))
       } else {
