@@ -9,6 +9,7 @@
 const https = require('https')
 const os = require('os')
 const fs = require('fs')
+const path = require('path')
 const { Readable } = require('stream')
 
 const tar = require('tar-stream')
@@ -43,7 +44,7 @@ async function update () {
   const latestVersion = response.body
   const [latestMajor, latestMinor, latestPatch] = latestVersion.split('.')
 
-  const currentVersion = Site.versionNumber()
+  const currentVersion = '12.9.2' //Site.versionNumber()
   const [currentMajor, currentMinor, currentPatch] = currentVersion.split('.')
 
   if (currentVersion !== latestVersion) {
@@ -120,6 +121,19 @@ async function update () {
   } else {
     console.log(' 😁👍 You’re running the latest version of Site.js!\n')
   }
+
+  if (platform === 'win32') {
+    process.stdout.write('This window will close in 3…')
+    // On Windows, a new window pops up with Administrator privileges. Wait a few seconds so the
+    // person can see the output in it before it closes.
+    setTimeout(_=>{
+      process.stdout.write(' 2…')
+      setTimeout(_=>{
+        process.stdout.write(' 1…')
+        setTimeout(_=>{}, 1000)
+      }, 1000)
+    }, 1000)
+  }
 }
 
 module.exports = update
@@ -129,7 +143,7 @@ module.exports = update
 //
 
 function binaryPath () {
-  return os.platform() === 'win32' ? 'C:\\Program Files\\site.js\\site.exe' : '/usr/local/bin/site'
+  return os.platform() === 'win32' ? path.join('C:', 'Program Files', 'site.js', 'site.exe') : '/usr/local/bin/site'
 }
 
 async function extract (release) {

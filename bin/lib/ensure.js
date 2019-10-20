@@ -51,12 +51,13 @@ class Ensure {
           binaryName = 'site.exe'
           theArguments = commonArguments
         }
-        const command = `powershell.exe -noexit -Command Start-Process "${binaryName}" -ArgumentList ${theArguments} -Verb RunAs`
+        const command = `powershell.exe -Command Start-Process "${binaryName}" -ArgumentList ${theArguments} -Verb RunAs`
         const options = {env: process.env, stdio: 'inherit'}
-        childProcess.execSync(command)
+        childProcess.execSync(command, options)
       } catch (error) {
         process.exit(1)        
       }
+      process.exit(0)
     }
   }
 
