@@ -2,7 +2,7 @@
 
 ######################################################################
 #
-# Site.js v12.9.2 Installer for Linux (x86 and armv7l) and macOS.
+# Site.js v12.9.3 Installer for Linux (x86 and armv7l) and macOS.
 #
 # To use:
 #
@@ -17,7 +17,7 @@
 
 set -e
 echo
-echo " 📡 Downloading Site.js v12.9.2…"
+echo " 📡 Downloading Site.js v12.9.3…"
 
 function cleanUp {
   popd > /dev/null
@@ -33,9 +33,9 @@ if [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux-gnueabihf" ]]; then
   cpuArchitecture=`uname -m`
   if [[ "$cpuArchitecture" == "x86_64" ]]; then
     # Linux on x64
-    wget -q https://sitejs.org/releases/linux/12.9.2.tar.gz
+    wget -q https://sitejs.org/releases/linux/12.9.3.tar.gz
   elif [[ "$cpuArchitecture" == "armv7l" ]]; then
-    wget -q https://sitejs.org/releases/linux-arm/12.9.2.tar.gz
+    wget -q https://sitejs.org/releases/linux-arm/12.9.3.tar.gz
   else
     # Unsupported
     echo "\n ❌ Error: this architecture is not supported on Linux (only x86_64 and armv7l are).\n"
@@ -44,7 +44,7 @@ if [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux-gnueabihf" ]]; then
   fi
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   # macOS
-  curl -Os https://sitejs.org/releases/macos/12.9.2.tar.gz
+  curl -Os https://sitejs.org/releases/macos/12.9.3.tar.gz
 else
   # Unsupported
   echo "\n ❌ Error: this operating system is not supported.\n"
@@ -53,8 +53,8 @@ else
 fi
 
 echo " 📦 Installing…"
-gzip -d 12.9.2.tar.gz
-tar -xf 12.9.2.tar
+gzip -d 12.9.3.tar.gz
+tar -xf 12.9.3.tar
 
 # Ensure that the /usr/local/bin directory exists (it does not by default on macOS)
 sudo mkdir -p /usr/local/bin/
