@@ -207,21 +207,12 @@ async function build () {
     // Install.
     //
 
+    // TODO: Implement the same logic as in update.js for handling
+    // ===== the existing binary (on Windows) and for handling an
+    //       active daemon.
+
     console.log('   • Installing locally…')
-
-    let weStoppedTheDaemon = false
-    if ( { isActive } = status() ) {
-      console.log('     • Site.js daemon is active: stopping before installing new build locally…')
-      stop()
-      weStoppedTheDaemon = true
-    }
-
     childProcess.execSync(`sudo cp ${currentPlatformBinaryPath} /usr/local/bin`)
-
-    if (weStoppedTheDaemon) {
-      console.log('     • Restarting Site.js daemon after installing new build locally…')
-      start()
-    }
   }
 
   // Only zip and copy files to the Indie Web Site if explicitly asked to.
