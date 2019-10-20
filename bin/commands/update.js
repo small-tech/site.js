@@ -133,7 +133,7 @@ module.exports = update
 //
 
 function binaryPath () {
-  return os.platform() === 'win32' ? 'C:\\Program Files\\site.js\\site' : '/usr/local/bin/site'
+  return os.platform() === 'win32' ? 'C:\\Program Files\\site.js\\site.exe' : '/usr/local/bin/site'
 }
 
 async function extract (release) {
