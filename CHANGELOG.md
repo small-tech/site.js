@@ -8,7 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [12.9.4] - 2019-10-20
 
-  - Reimplement update command logic and get it working properly on Windows.
+### Fixed
+
+  - Reimplemented update command logic and got it working properly on Windows.
 
 ## [12.9.3] - 2019-10-20
 

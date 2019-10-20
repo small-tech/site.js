@@ -38,20 +38,22 @@ async function update () {
   } catch (error) {
     console.log(' 🤯 Error: Could not check for updates.\n')
     console.log(error)
-    process.exit(1)
+    exitGracefully(1)
+    return
   }
 
   const latestVersion = response.body
   const [latestMajor, latestMinor, latestPatch] = latestVersion.split('.')
 
-  const currentVersion = '12.9.2' //Site.versionNumber()
+  const currentVersion = Site.versionNumber()
   const [currentMajor, currentMinor, currentPatch] = currentVersion.split('.')
 
   if (currentVersion !== latestVersion) {
     // Are we running a newer (development or beta) version than the latest release version?
     if (currentMajor > latestMajor || (currentMajor === latestMajor && currentMinor > latestMinor) || (currentMajor === latestMajor && currentMinor === latestMinor && currentPatch > latestPatch)) {
       console.log(` 🤓 You are running a newer version (${currentVersion}) than the latest released version (${latestVersion}).\n`)
-      process.exit()
+      exitGracefully()
+      return
     }
 
     // The current version is not newer than the latest version and we know
@@ -83,16 +85,33 @@ async function update () {
     } catch (error) {
       console.log(' 🤯 Error: Could not download update.\n')
       console.log(error)
-      process.exit(1)
+      exitGracefully(1)
+      return
     }
 
     const latestRelease = latestReleaseResponse.body
 
     console.log(' 📦 Installing…')
 
-    // Unlink the old file. This will succeed even if the executable is
-    // currently running.
-    fs.unlinkSync(binaryPath())
+    if (platform === 'win32') {
+      // Windows cannot reference count (aww, bless), so, of course, we have
+      // to do something special for it. In this case, while unlinking fails
+      // with an EPERM error, we can rename the file and that works.
+      const backupFilePath = path.join('C:', 'Program Files', 'site.js', 'old-site.exe')
+      
+      // If a backup file exists from the last time we did an update, mark
+      // it for deletion. 
+      if (fs.existsSync(backupFilePath)) {
+        fs.unlinkSync(backupFilePath)
+      }
+
+      // Rename the current version.
+      fs.renameSync(binaryPath(), backupFilePath)
+    } else {
+      // On Linux-like systems, unlink the old file. This will succeed even if
+      // the executable is currently running.
+      fs.unlinkSync(binaryPath())
+    }
 
     // Extract the latest release in memory from the gzipped tarball.
     await extract(latestRelease)
@@ -110,30 +129,18 @@ async function update () {
           } catch (error) {
             console.log(' 🤯 Error: Could not restart the Site.js daemon.\n')
             console.log(error)
-            process.exit(1)
+            exitGracefully(1)
+            return
           }
         }
       }
     }
-
     console.log(' 🎉 Done!\n')
-
   } else {
     console.log(' 😁👍 You’re running the latest version of Site.js!\n')
   }
-
-  if (platform === 'win32') {
-    process.stdout.write('This window will close in 3…')
-    // On Windows, a new window pops up with Administrator privileges. Wait a few seconds so the
-    // person can see the output in it before it closes.
-    setTimeout(_=>{
-      process.stdout.write(' 2…')
-      setTimeout(_=>{
-        process.stdout.write(' 1…')
-        setTimeout(_=>{}, 1000)
-      }, 1000)
-    }, 1000)
-  }
+  exitGracefully()
+  return
 }
 
 module.exports = update
@@ -142,9 +149,34 @@ module.exports = update
 // Helpers.
 //
 
+// Note: since this does not exit immediately on Windows, follow all calls to this
+// ===== function with a return as the expectation will be that execution of the
+//       current function should stop immediately even if the exit is delayed.
+function exitGracefully(code = 0) {
+  if (os.platform() === 'win32') {
+    // On Windows, a new window pops up with Administrator privileges. Wait a few seconds so the
+    // person can see the output in it before it closes.
+    process.stdout.write('This window will close in 3…')
+    setTimeout(_=>{
+      process.stdout.write(' 2…')
+      setTimeout(_=>{
+        process.stdout.write(' 1…')
+        setTimeout(_=>{
+          process.exit(code)
+        }, 1000)
+      }, 1000)
+    }, 1000)
+  } else {
+    // All other proper operating systems may exit immediately.
+    process.exit(code)
+  }
+}
+
+
 function binaryPath () {
   return os.platform() === 'win32' ? path.join('C:', 'Program Files', 'site.js', 'site.exe') : '/usr/local/bin/site'
 }
+
 
 async function extract (release) {
   return new Promise((resolve, reject) => {
