@@ -32,13 +32,14 @@ pushd /tmp/sitejs.org > /dev/null
 if [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux-gnueabihf" ]]; then
   cpuArchitecture=`uname -m`
   if [[ "$cpuArchitecture" == "x86_64" ]]; then
-    # Linux on x64
+    # Linux on x64.
     wget -q https://sitejs.org/releases/linux/12.9.5.tar.gz
-  elif [[ "$cpuArchitecture" == "armv7l" ]]; then
+  elif [[ "$cpuArchitecture" == "armv7l" || "$cpuArchitecture" == "armv6l" ]]; then
+    # Linux on ARM. Tested on Raspberry Pi Zero W (armv6l), 3B+ and 4B (both reporting armv7l).
     wget -q https://sitejs.org/releases/linux-arm/12.9.5.tar.gz
   else
     # Unsupported
-    echo "\n ❌ Error: this architecture is not supported on Linux (only x86_64 and armv7l are).\n"
+    echo "\n ❌ Error: this architecture is not supported on Linux (only x86_64, armv6l, and armv7l are).\n"
     cleanUp
     exit 1
   fi
