@@ -255,8 +255,8 @@ The automatic TLS certificate provisioning will get certificates for the naked d
 
 When the server is enabled, you can also use the following commands:
 
-  - `stop`: Stop server.
   - `start`: Start server.
+  - `stop`: Stop server.
   - `restart`: Restart server.
   - `disable`: Stop server and remove from startup.
   - `logs`: Display and tail server logs.
