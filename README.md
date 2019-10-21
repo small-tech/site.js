@@ -97,6 +97,16 @@ If it turns out that any of these are a widespread reason for first-run breakage
 
 Of course, you will need `wget` (or `curl`) installed to download the install script. You can install `wget` via your distribution’s package manager (e.g., `sudo apt install wget` on Ubuntu-like systems).
 
+## Update (as of v12.9.5)
+
+To seamlessly update the native binary if a newer version exists:
+
+```shell
+site update
+```
+
+This command will automatically restart a running Site.js daemon if one exists. If you are running Site.js as a regular process, it will continue to run and you will run the newer version the next time you launch a regular Site.js process.
+
 ## Uninstall
 
 To uninstall the native binary (and any created artifacts, like TLS certificates, systemd services, etc.):
@@ -245,6 +255,9 @@ The automatic TLS certificate provisioning will get certificates for the naked d
 
 When the server is enabled, you can also use the following commands:
 
+  - `stop`: Stop server.
+  - `start`: Start server.
+  - `restart`: Restart server.
   - `disable`: Stop server and remove from startup.
   - `logs`: Display and tail server logs.
   - `status`: Display detailed server information (press ‘q’ to exit).
@@ -459,8 +472,18 @@ When you `serve` a site at `@hostname` or use the `enable` command, globally-tru
 | Serve current folder as daemon            | site enable                                                   |
 | Ditto & also ensure it can rsync via ssh  | site enable --ensure-can-sync                                 |
 | Get status of daemon                      | site status                                                   |
+| Start server                              | site start                                                    |
+| Stop server                               | site stop                                                     |
+| Restart server                            | site restart                                                  |
 | Display server logs                       | site logs                                                     |
 | Stop current daemon                       | site disable                                                  |
+
+#### General:
+
+| Goal                                      | Command                                                       |
+| ----------------------------------------- | ------------------------------------------------------------- |
+| Check for updates and update if found     | site update                                                   |
+
 
 \* _Alternative, equivalent forms listed (some commands have shorthands)._
 
