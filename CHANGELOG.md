@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [12.9.5] - 2019-10-21
+
+### Added
+
+  - Updated changelog. This release will be used to test the update mechanism in the wild.
+
 ## [12.9.4] - 2019-10-20
 
 ### Fixed
