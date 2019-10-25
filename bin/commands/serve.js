@@ -179,7 +179,7 @@ function serve (args) {
             // Person has provided the --exit-on-sync option but has not specified where to sync to.
             // Warn them and continue.
             console.log (` ⚠ --exit-on-sync option specified without --sync-to option; ignoring.`)
-          }        
+          }
         }
       })
     })
