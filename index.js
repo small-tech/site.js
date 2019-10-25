@@ -30,6 +30,8 @@ const enableDestroy = require('server-destroy')
 const Graceful = require('node-graceful')
 const httpProxyMiddleware = require('http-proxy-middleware')
 
+const instant = require('instant')
+
 const AcmeTLS = require('@ind.ie/acme-tls')
 const nodecert = require('@ind.ie/nodecert')
 const getRoutes = require('@ind.ie/web-routes-from-files')
@@ -489,7 +491,7 @@ class Site {
   // Add static routes.
   // (Note: directories that begin with a dot (hidden directories) will be ignored.)
   appAddStaticRoutes () {
-    this.app.use(express.static(this.pathToServe))
+    this.app.use(instant(this.pathToServe))
   }
 
 
@@ -653,7 +655,7 @@ class Site {
 
     // (Windows uses forward slashes in paths so write the RegExp accordingly for that platform.)
     const pathName = process.platform === 'win32' ? absolutePathToServe.match(/.*\\(.*?)$/)[1] : absolutePathToServe.match(/.*\/(.*?)$/)[1]
-    
+
     if (pathName !== '') {
       let archiveLevel = 0
       do {
@@ -674,6 +676,8 @@ class Site {
     }
 
     // Serve the archive cascade (if there is one).
+    // Note: for the archive cascade, we use express.static instead of instant as, by the
+    // ===== nature of it being an archive, live reload should not be a requirement.
     let archiveNumber = 0
     archiveCascade.forEach(archivePath => {
       archiveNumber++
