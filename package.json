@@ -37,7 +37,7 @@
     "gunzip-maybe": "^1.4.1",
     "helmet": "^3.20.0",
     "http-proxy-middleware": "^0.19.1",
-    "instant": "^1.10.1",
+    "instant": "file:../forks/instant",
     "minimist": "^1.2.0",
     "morgan": "^1.9.1",
     "node-graceful": "^2.0.1",
