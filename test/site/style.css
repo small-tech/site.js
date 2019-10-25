@@ -1,0 +1,24 @@
+html {
+  font-family: sans-serif;
+  background-color: seagreen;
+}
+
+body {
+  display: grid;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  vertical-align: top;
+  margin: 0;
+}
+
+main {
+  padding-left: 2vw;
+  padding-right: 2vw;
+  display: grid;
+  justify-items: center;
+}
+
+p {
+  text-align: center;
+}
