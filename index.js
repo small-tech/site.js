@@ -502,7 +502,9 @@ class Site {
   // Add static routes.
   // (Note: directories that begin with a dot (hidden directories) will be ignored.)
   appAddStaticRoutes () {
-    this.app.__instant = instant(this.pathToServe)
+    this.app.__instant = instant(this.pathToServe, {
+      watch: ['html', 'js', 'css', 'svg', 'png', 'jpg', 'jpeg']
+    })
     this.app.use(this.app.__instant)
   }
 
