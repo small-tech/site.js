@@ -30,7 +30,7 @@ const enableDestroy = require('server-destroy')
 const Graceful = require('node-graceful')
 const httpProxyMiddleware = require('http-proxy-middleware')
 
-const instant = require('instant')
+const instant = require('@small-tech/instant')
 
 const AcmeTLS = require('@ind.ie/acme-tls')
 const nodecert = require('@ind.ie/nodecert')
@@ -274,6 +274,13 @@ class Site {
       this.server.emit(Site.EVENT_ADDRESS_ALREADY_IN_USE)
     })
 
+    this.server.on('close', () => {
+      // Ensure that the static route file watchers are removed.
+      this.app.__instant.cleanUp(() => {
+        console.log(' 🚮 File system watchers removed on server close.')
+      })
+    })
+
     // The error routes go at the very end.
 
     //
@@ -368,6 +375,10 @@ class Site {
     // Handle graceful exit.
     const goodbye = (done) => {
       console.log('\n 💃 Preparing to exit gracefully, please wait…')
+      // Ensure that the static route file watchers are removed.
+      this.app.__instant.cleanUp(() => {
+        console.log(' 🚮 File system watchers removed on app exit.')
+      })
 
       // Close all active connections on the server.
       // (This is so that long-running connections – e.g., WebSockets – do not block the exit.)
@@ -491,7 +502,8 @@ class Site {
   // Add static routes.
   // (Note: directories that begin with a dot (hidden directories) will be ignored.)
   appAddStaticRoutes () {
-    this.app.use(instant(this.pathToServe))
+    this.app.__instant = instant(this.pathToServe)
+    this.app.use(this.app.__instant)
   }
 
 
