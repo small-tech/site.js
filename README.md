@@ -99,7 +99,7 @@ If it turns out that any of these are a widespread reason for first-run breakage
 
 Of course, you will need `wget` (or `curl`) installed to download the install script. You can install `wget` via your distribution’s package manager (e.g., `sudo apt install wget` on Ubuntu-like systems).
 
-## Update (as of v12.9.5)
+## Update (as of v12.9.5; properly functioning as of v12.9.6)
 
 To seamlessly update the native binary if a newer version exists:
 
@@ -108,6 +108,8 @@ site update
 ```
 
 This command will automatically restart a running Site.js daemon if one exists. If you are running Site.js as a regular process, it will continue to run and you will run the newer version the next time you launch a regular Site.js process.
+
+__Note:__ There is a bug in the semantic version comparison in the original release (v12.9.5) that would prevent upgrades between minor versions (e.g., between 12.9.x and 12.10.x). This is fixed in v12.9.6. If you’re on v12.9.5 and you’re reading this after we’ve moved to 12.10.x and beyond, please reinstall Site.js to update.
 
 ## Uninstall
 
