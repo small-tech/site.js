@@ -28,6 +28,8 @@ Most of our tools today are built for the needs of startups and enterprises – 
 
   - And, for full flexibility, you can define your HTTPS and WebSocket (WSS) routes entirely in code in the traditional way for Express apps.
 
+  - Live reload on static pages.
+
   <ins>Note:</ins> Live deployments via startup daemons are only supported on Linux distributions with systemd.
 
 ## Install
@@ -68,7 +70,7 @@ npm i -g @small-tech/site.js
 
 Any recent Linux distribution should work. However, Site.js is most thoroughly tested on Ubuntu 19.04/Pop!_OS 19.04 (development and staging) and Ubuntu 18.04 LTS (production) at [Small Technology Foundation](https://small-tech.org).
 
-There are builds available for x64 and ARM.
+There are builds available for x64 and ARM (tested and supported on armv6l and armv7l only. Tested on Rasperry Pi Zero W, 3B+, 4B).
 
 For production use systemd is required.
 
@@ -88,7 +90,7 @@ _Production use is not possible under Windows._
 
 ## Dependencies
 
-Site.js is tries to install the dependencies it needs seamlessly while running. That said, there are certain basic components it expects on a Linux-like system. These are:
+Site.js tries to install the dependencies it needs seamlessly while running. That said, there are certain basic components it expects on a Linux-like system. These are:
 
   - `sudo`
   - `libcap2-bin` (we use `setcap` to escalate privileges on the binary as necessary)
@@ -127,12 +129,38 @@ Start serving the current directory at https://localhost as a regular process us
 $ site
 ```
 
+This is a shorthand for the full form of the `serve` command which, for the above example, is:
+
+```shell
+$ site serve . @localhost:443
+```
+
+#### To serve on a different port
+
+Just specify the port explicitly as in the following example:
+
+```shell
+$ site @localhost:666
+```
+
+That, again, is shorthand for the full version of the command, which is:
+
+```shell
+$ site serve . @localhost:666
+```
+
 #### Proxy server
 
 You can use Site.js as a development-time reverse proxy for HTTP and WebSocket connections. For example, if you use [Hugo](https://gohugo.io/) and you’re running `hugo server` on the default HTTP port 1313. You can run a HTTPS reverse proxy at https://localhost [with LiveReload support](https://source.ind.ie/hypha/tools/web-server/blob/master/bin/web-server.js#L237) using:
 
 ```shell
 $ site :1313
+```
+
+Again, this is a convenient shortcut. The full form of this command is:
+
+```shell
+$ site serve :1313 @localhost:443
 ```
 
 This will create and serve the following proxies:
@@ -174,7 +202,7 @@ On Windows 10, you must add quotation marks around `@hostname` and `@localhost`.
 $ site my-site "@hostname"
 ```
 
-Also, Windows 10, unlike Linux and macOS, does not have the concept of a hostname. The closest thing to it is your _full computer name_. Settings your full computer name is a somewhat convoluted process so we’ve documented it here for you.
+Also, Windows 10, unlike Linux and macOS, does not have the concept of a hostname. The closest thing to it is your _full computer name_. Setting your full computer name is a somewhat convoluted process so we’ve documented it here for you.
 
 ##### How to set your full computer name on Windows 10
 
