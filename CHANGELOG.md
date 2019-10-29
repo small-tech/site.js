@@ -6,11 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
-## [12.10.0] - 2019-10-22
+## [12.9.6] - 2019-10-29
 
 ### Added
 
   - Live reload for static pages.
+
+### Fixed
+
+  - Error in update command semantic version comparison that would have prevented upgrades from 12.9.x to 12.10.x.
 
 ## [12.9.5] - 2019-10-21
 

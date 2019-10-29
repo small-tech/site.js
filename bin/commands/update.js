@@ -43,10 +43,10 @@ async function update () {
   }
 
   const latestVersion = response.body
-  const [latestMajor, latestMinor, latestPatch] = latestVersion.split('.')
+  const [latestMajor, latestMinor, latestPatch] = latestVersion.split('.').map(string => parseInt(string))
 
   const currentVersion = Site.versionNumber()
-  const [currentMajor, currentMinor, currentPatch] = currentVersion.split('.')
+  const [currentMajor, currentMinor, currentPatch] = currentVersion.split('.').map(string => parseInt(string))
 
   if (currentVersion !== latestVersion) {
     // Are we running a newer (development or beta) version than the latest release version?
