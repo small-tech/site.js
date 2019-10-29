@@ -30,6 +30,8 @@ const enableDestroy = require('server-destroy')
 const Graceful = require('node-graceful')
 const httpProxyMiddleware = require('http-proxy-middleware')
 
+const instant = require('@small-tech/instant')
+
 const AcmeTLS = require('@ind.ie/acme-tls')
 const nodecert = require('@ind.ie/nodecert')
 const getRoutes = require('@ind.ie/web-routes-from-files')
@@ -272,6 +274,13 @@ class Site {
       this.server.emit(Site.EVENT_ADDRESS_ALREADY_IN_USE)
     })
 
+    this.server.on('close', () => {
+      // Ensure that the static route file watchers are removed.
+      this.app.__instant.cleanUp(() => {
+        console.log(' 🚮 File system watchers removed on server close.')
+      })
+    })
+
     // The error routes go at the very end.
 
     //
@@ -366,6 +375,10 @@ class Site {
     // Handle graceful exit.
     const goodbye = (done) => {
       console.log('\n 💃 Preparing to exit gracefully, please wait…')
+      // Ensure that the static route file watchers are removed.
+      this.app.__instant.cleanUp(() => {
+        console.log(' 🚮 File system watchers removed on app exit.')
+      })
 
       // Close all active connections on the server.
       // (This is so that long-running connections – e.g., WebSockets – do not block the exit.)
@@ -489,7 +502,10 @@ class Site {
   // Add static routes.
   // (Note: directories that begin with a dot (hidden directories) will be ignored.)
   appAddStaticRoutes () {
-    this.app.use(express.static(this.pathToServe))
+    this.app.__instant = instant(this.pathToServe, {
+      watch: ['html', 'js', 'css', 'svg', 'png', 'jpg', 'jpeg']
+    })
+    this.app.use(this.app.__instant)
   }
 
 
@@ -653,7 +669,7 @@ class Site {
 
     // (Windows uses forward slashes in paths so write the RegExp accordingly for that platform.)
     const pathName = process.platform === 'win32' ? absolutePathToServe.match(/.*\\(.*?)$/)[1] : absolutePathToServe.match(/.*\/(.*?)$/)[1]
-    
+
     if (pathName !== '') {
       let archiveLevel = 0
       do {
@@ -674,6 +690,8 @@ class Site {
     }
 
     // Serve the archive cascade (if there is one).
+    // Note: for the archive cascade, we use express.static instead of instant as, by the
+    // ===== nature of it being an archive, live reload should not be a requirement.
     let archiveNumber = 0
     archiveCascade.forEach(archivePath => {
       archiveNumber++
@@ -705,8 +723,6 @@ class Site {
 
   _createTLSServerWithGloballyTrustedCertificate (options, requestListener = undefined) {
     console.log(' 🌍 [Site.js] Using globally-trusted certificates.')
-
-    console.log('options', options)
 
     // Certificates are automatically obtained for the hostname and the www. subdomain of the hostname
     // for the machine that we are running on.
