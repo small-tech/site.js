@@ -98,9 +98,9 @@ async function update () {
       // to do something special for it. In this case, while unlinking fails
       // with an EPERM error, we can rename the file and that works.
       const backupFilePath = path.join('C:', 'Program Files', 'site.js', 'old-site.exe')
-      
+
       // If a backup file exists from the last time we did an update, mark
-      // it for deletion. 
+      // it for deletion.
       if (fs.existsSync(backupFilePath)) {
         fs.unlinkSync(backupFilePath)
       }
