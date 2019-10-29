@@ -724,8 +724,6 @@ class Site {
   _createTLSServerWithGloballyTrustedCertificate (options, requestListener = undefined) {
     console.log(' 🌍 [Site.js] Using globally-trusted certificates.')
 
-    console.log('options', options)
-
     // Certificates are automatically obtained for the hostname and the www. subdomain of the hostname
     // for the machine that we are running on.
     const hostname = Site.hostname
