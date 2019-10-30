@@ -541,12 +541,17 @@ class Site {
     const dynamicRoutesDirectory = path.join(this.pathToServe, '.dynamic')
 
     if (fs.existsSync(dynamicRoutesDirectory)) {
-
       // Watch .dynamic directory (recursively) so we can restart server when code changes.
-      this.app.__dynamicFileWatcher = chokidar.watch(path.join(dynamicRoutesDirectory, '**'), {
+      // Windows-style slashes are not part of the glob standard so we have to ensure all
+      // slashes are forward slashes to ensure correct functioning on Windows 10
+      // (see https://github.com/paulmillr/chokidar#api).
+      const watchPath = `${dynamicRoutesDirectory.replace(/\\/g, '/')}/**`
+
+      this.app.__dynamicFileWatcher = chokidar.watch(watchPath, {
         persistent: true,
         ignoreInitial: true
       })
+
       this.app.__dynamicFileWatcher.on ('all', (event, file) => {
         console.log(`\n 🐁 ${clr('Code updated', 'green')} in ${clr(file, 'cyan')}!`)
         console.log(' 🐁 Requesting restart…\n')
