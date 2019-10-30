@@ -4,10 +4,10 @@ function markdown (request, response, next) {
   const html = md.render(`
   # Markdown
 
-    - Is
-    - Lots
-    - Of
-    - Fun!
+  - Is
+  - __Loads__
+  - Of
+  - Fun!
   `)
   response
     .type('html')

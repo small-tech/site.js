@@ -9,15 +9,8 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-const _path = require('path')
-
-const sync = require('../lib/sync')
-
-const Site = require('../../index')
-const ensure = require('../lib/ensure')
-const status = require('../lib/status')
-const tcpPortUsed = require('tcp-port-used')
-const clr = require('../../lib/clr')
+// Note: requires are at the bottom to avoid a circular reference as ../../index (Site)
+// ===== also requires this module.
 
 const ALIASES = 'aliases'
 const SYNC_TO = 'sync-to'
@@ -31,6 +24,13 @@ let path = null
 let proxyPort = null
 
 function serve (args) {
+
+  // We repeat the assignment to null here to ensure these variables are null
+  // in case the server was restarted and the module itself was cached.
+  global = null
+  port = null
+  path = null
+  proxyPort = null
 
   if (args.positional.length > 2) {
     syntaxError('Serve command has maximum of two arguments (what to serve and where to serve it).')
@@ -349,3 +349,16 @@ function remoteConnectionInfo (args) {
 }
 
 module.exports = serve
+
+// Note: requires are at the bottom to avoid a circular reference as ../../index (Site)
+// ===== also requires this module.
+
+const _path = require('path')
+
+const sync = require('../lib/sync')
+
+const Site = require('../../index')
+const ensure = require('../lib/ensure')
+const status = require('../lib/status')
+const tcpPortUsed = require('tcp-port-used')
+const clr = require('../../lib/clr')

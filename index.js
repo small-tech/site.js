@@ -32,10 +32,17 @@ const httpProxyMiddleware = require('http-proxy-middleware')
 
 const instant = require('@small-tech/instant')
 
+const cli = require('./bin/lib/cli')
+const restartDaemon = require('./bin/lib/restart')
+const serve = require('./bin/commands/serve')
+const chokidar = require('chokidar')
+const decache = require('decache')
+
 const AcmeTLS = require('@ind.ie/acme-tls')
 const nodecert = require('@ind.ie/nodecert')
 const getRoutes = require('@ind.ie/web-routes-from-files')
 const Stats = require('./lib/Stats')
+
 
 class Site {
 
@@ -423,7 +430,7 @@ class Site {
 
 
   showStatisticsUrl (location) {
-    console.log(` 📊 For statistics, see https://${location}${this.stats.route}\n`)
+    console.log(` 📊 For statistics, see https://${location}${this.stats.route}`)
   }
 
   // Callback used in regular servers.
@@ -530,6 +537,40 @@ class Site {
 
     if (fs.existsSync(dynamicRoutesDirectory)) {
 
+      // Watch .dynamic directory (recursively) so we can restart server when code changes.
+      this.app.__dynamicFileWatcher = chokidar.watch(path.join(dynamicRoutesDirectory, '**'), {
+        persistent: true,
+        ignoreInitial: true
+      })
+      this.app.__dynamicFileWatcher.on ('all', (event, file) => {
+        console.log(`\n 🐁 ${clr('Code updated', 'green')} in ${clr(file, 'cyan')}!`)
+        console.log(' 🐁 Requesting restart…\n')
+
+        // Remove all watchers.
+        this.app.__dynamicFileWatcher.close()
+        console.log (` 🚮 Removed dynamic file watchers.`)
+
+        if (process.env.NODE_ENV === 'production') {
+          // We’re running production, restart the daemon.
+          restartDaemon() // throws
+          console.log('\n 🐁 Restarted daemon.\n')
+        } else {
+          // We’re running as a regular process. Just restart the server, not the whole process.
+
+          // Destroy the current server (so we do not get a port conflict on restart before
+          // we’ve had a chance to terminate our own process).
+          this.server.destroy()
+
+          // Stop accepting new connections.
+          this.server.close(() => {
+            // Restart the server.
+            const {commandPath, args} = cli.initialise(process.argv.slice(2))
+            serve(args)
+            console.log('\n 🐁 Restarted server.\n')
+          })
+        }
+      })
+
       const addBodyParser = () => {
         this.app.use(bodyParser.json())
         this.app.use(bodyParser.urlencoded({ extended: true }))
@@ -543,6 +584,8 @@ class Site {
           const httpsGetRoutes = getRoutes(httpsGetRoutesDirectory)
           httpsGetRoutes.forEach(route => {
             console.log(` 🐁 Adding HTTPS GET route: ${route.path}`)
+            // Ensure we are loading a fresh copy in case it has changed.
+            decache(route.callback)
             this.app.get(route.path, require(route.callback))
           })
         }
