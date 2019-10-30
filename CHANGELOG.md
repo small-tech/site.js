@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+### Fixed
+
+  - Error on exit of proxy server due to `instant` instance `cleanUp()` method being undefined (https://source.ind.ie/site.js/app/issues/139)
+
 ## [12.9.6] - 2019-10-29
 
 ### Added

@@ -276,9 +276,11 @@ class Site {
 
     this.server.on('close', () => {
       // Ensure that the static route file watchers are removed.
-      this.app.__instant.cleanUp(() => {
-        console.log(' 🚮 File system watchers removed on server close.')
-      })
+      if (this.app.__instant !== undefined) {
+        this.app.__instant.cleanUp(() => {
+          console.log(' 🚮 Live reload file system watchers removed on server close.')
+        })
+      }
     })
 
     // The error routes go at the very end.
@@ -375,10 +377,6 @@ class Site {
     // Handle graceful exit.
     const goodbye = (done) => {
       console.log('\n 💃 Preparing to exit gracefully, please wait…')
-      // Ensure that the static route file watchers are removed.
-      this.app.__instant.cleanUp(() => {
-        console.log(' 🚮 File system watchers removed on app exit.')
-      })
 
       // Close all active connections on the server.
       // (This is so that long-running connections – e.g., WebSockets – do not block the exit.)
