@@ -281,6 +281,12 @@ class Site {
     })
 
     this.server.on('close', () => {
+      // Ensure dynamic route watchers are removed.
+      if (this.app.__dynamicFileWatcher !== undefined) {
+        this.app.__dynamicFileWatcher.close()
+        console.log (` 🚮 Removed dynamic file watchers.`)
+      }
+
       // Ensure that the static route file watchers are removed.
       if (this.app.__instant !== undefined) {
         this.app.__instant.cleanUp(() => {
@@ -381,7 +387,7 @@ class Site {
     }
 
     // Handle graceful exit.
-    const goodbye = (done) => {
+    this.goodbye = (done) => {
       console.log('\n 💃 Preparing to exit gracefully, please wait…')
 
       // Close all active connections on the server.
@@ -395,8 +401,8 @@ class Site {
         done()
       })
     }
-    Graceful.on('SIGINT', goodbye)
-    Graceful.on('SIGTERM', goodbye)
+    Graceful.on('SIGINT', this.goodbye)
+    Graceful.on('SIGTERM', this.goodbye)
 
     // Start the server.
     this.server.listen(this.port, () => {
@@ -545,16 +551,16 @@ class Site {
         console.log(`\n 🐁 ${clr('Code updated', 'green')} in ${clr(file, 'cyan')}!`)
         console.log(' 🐁 Requesting restart…\n')
 
-        // Remove all watchers.
-        this.app.__dynamicFileWatcher.close()
-        console.log (` 🚮 Removed dynamic file watchers.`)
-
         if (process.env.NODE_ENV === 'production') {
           // We’re running production, to restart the daemon, just exit.
           // (We let ourselves fall, knowing that systemd will catch us.) ;)
           process.exit()
         } else {
           // We’re running as a regular process. Just restart the server, not the whole process.
+
+          // Do some housekeeping.
+          Graceful.off('SIGINT', this.goodbye)
+          Graceful.off('SIGTERM', this.goodbye)
 
           // Destroy the current server (so we do not get a port conflict on restart before
           // we’ve had a chance to terminate our own process).
@@ -563,6 +569,8 @@ class Site {
           // Stop accepting new connections.
           this.server.close(() => {
             // Restart the server.
+            this.server.removeAllListeners('close')
+            this.server.removeAllListeners('error')
             const {commandPath, args} = cli.initialise(process.argv.slice(2))
             serve(args)
             console.log('\n 🐁 Restarted server.\n')
