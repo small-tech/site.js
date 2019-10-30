@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [12.9.7] - 2019-10-30
+
+### Added
+
+  - Automatic server reload when source code in your dynamic routes or any of their dependencies changes. (This will improve your development experience and it means that when you sync changes to dynamic routes to a production server, your production server will automatically restart and start serving the freshest content.)
+
 ### Fixed
 
   - Error on exit of proxy server due to `instant` instance `cleanUp()` method being undefined (https://source.ind.ie/site.js/app/issues/139)
