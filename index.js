@@ -33,7 +33,6 @@ const httpProxyMiddleware = require('http-proxy-middleware')
 const instant = require('@small-tech/instant')
 
 const cli = require('./bin/lib/cli')
-const restartDaemon = require('./bin/lib/restart')
 const serve = require('./bin/commands/serve')
 const chokidar = require('chokidar')
 const decache = require('decache')
@@ -551,9 +550,9 @@ class Site {
         console.log (` 🚮 Removed dynamic file watchers.`)
 
         if (process.env.NODE_ENV === 'production') {
-          // We’re running production, restart the daemon.
-          restartDaemon() // throws
-          console.log('\n 🐁 Restarted daemon.\n')
+          // We’re running production, to restart the daemon, just exit.
+          // (We let ourselves fall, knowing that systemd will catch us.) ;)
+          process.exit()
         } else {
           // We’re running as a regular process. Just restart the server, not the whole process.
 
