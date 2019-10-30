@@ -30,6 +30,8 @@ Most of our tools today are built for the needs of startups and enterprises – 
 
   - Live reload on static pages.
 
+  - Automatic server reload when the source code of your dynamic routes change.
+
   <ins>Note:</ins> Live deployments via startup daemons are only supported on Linux distributions with systemd.
 
 ## Install
@@ -802,7 +804,7 @@ module.exports = function (request, response) {
 }
 ```
 
-After this refactor, if you restart the server and hit `https://localhost/cows` again in your browser, you should see exactly the same behaviour as before.
+When you save this update, Site.js will automatically reload the server with your new code (version 12.9.7 onwards). When you refresh in your browser, you should see exactly the same behaviour as before.
 
 As you can see, you can create quite a bit of dynamic functionality just by using DotJS with its most basic file-based routing mode. However, with this convention you are limited to GET routes. To use both GET and POST routes, you have to do a tiny bit more work, as explained in the next section.
 
@@ -1001,7 +1003,6 @@ const appPath = require.main.filename.replace('bin/site.js', '')
 
 The code within your JavaScript routes is executed on the server. Exercise the same caution as you would when creating any Node.js app (sanitise input, etc.)
 
-
 ## API
 
 You can also include Site.js as a Node module into your Node project. This section details the API you can use if you do that.
@@ -1087,7 +1088,6 @@ Start a proxy server to proxy local port 1313 at your hostname:
 const Site = require('@small-tech/site.js')
 const server = new Site().serve({proxyPort: 1313, global: true})
 ```
-
 
 ## Contributing
 
