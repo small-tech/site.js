@@ -55,7 +55,7 @@ class Ensure {
         const options = {env: process.env, stdio: 'inherit'}
         childProcess.execSync(command, options)
       } catch (error) {
-        process.exit(1)        
+        process.exit(1)
       }
       process.exit(0)
     }
@@ -159,7 +159,7 @@ class Ensure {
         }
       }
     } else {
-      // This is only relevant for Linux, which is the last major platform to 
+      // This is only relevant for Linux, which is the last major platform to
       // carry forward the archaic security theatre of privileged ports. On other
       // Linux-like platforms (notably, macOS), just call the callback.
       callback()

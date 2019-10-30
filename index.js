@@ -32,10 +32,16 @@ const httpProxyMiddleware = require('http-proxy-middleware')
 
 const instant = require('@small-tech/instant')
 
+const cli = require('./bin/lib/cli')
+const serve = require('./bin/commands/serve')
+const chokidar = require('chokidar')
+const decache = require('decache')
+
 const AcmeTLS = require('@ind.ie/acme-tls')
 const nodecert = require('@ind.ie/nodecert')
 const getRoutes = require('@ind.ie/web-routes-from-files')
 const Stats = require('./lib/Stats')
+
 
 class Site {
 
@@ -275,6 +281,12 @@ class Site {
     })
 
     this.server.on('close', () => {
+      // Ensure dynamic route watchers are removed.
+      if (this.app.__dynamicFileWatcher !== undefined) {
+        this.app.__dynamicFileWatcher.close()
+        console.log (` 🚮 Removed dynamic file watchers.`)
+      }
+
       // Ensure that the static route file watchers are removed.
       if (this.app.__instant !== undefined) {
         this.app.__instant.cleanUp(() => {
@@ -375,7 +387,7 @@ class Site {
     }
 
     // Handle graceful exit.
-    const goodbye = (done) => {
+    this.goodbye = (done) => {
       console.log('\n 💃 Preparing to exit gracefully, please wait…')
 
       // Close all active connections on the server.
@@ -389,8 +401,8 @@ class Site {
         done()
       })
     }
-    Graceful.on('SIGINT', goodbye)
-    Graceful.on('SIGTERM', goodbye)
+    Graceful.on('SIGINT', this.goodbye)
+    Graceful.on('SIGTERM', this.goodbye)
 
     // Start the server.
     this.server.listen(this.port, () => {
@@ -423,7 +435,7 @@ class Site {
 
 
   showStatisticsUrl (location) {
-    console.log(` 📊 For statistics, see https://${location}${this.stats.route}\n`)
+    console.log(` 📊 For statistics, see https://${location}${this.stats.route}`)
   }
 
   // Callback used in regular servers.
@@ -529,6 +541,47 @@ class Site {
     const dynamicRoutesDirectory = path.join(this.pathToServe, '.dynamic')
 
     if (fs.existsSync(dynamicRoutesDirectory)) {
+      // Watch .dynamic directory (recursively) so we can restart server when code changes.
+      // Windows-style slashes are not part of the glob standard so we have to ensure all
+      // slashes are forward slashes to ensure correct functioning on Windows 10
+      // (see https://github.com/paulmillr/chokidar#api).
+      const watchPath = `${dynamicRoutesDirectory.replace(/\\/g, '/')}/**`
+
+      this.app.__dynamicFileWatcher = chokidar.watch(watchPath, {
+        persistent: true,
+        ignoreInitial: true
+      })
+
+      this.app.__dynamicFileWatcher.on ('all', (event, file) => {
+        console.log(`\n 🐁 ${clr('Code updated', 'green')} in ${clr(file, 'cyan')}!`)
+        console.log(' 🐁 Requesting restart…\n')
+
+        if (process.env.NODE_ENV === 'production') {
+          // We’re running production, to restart the daemon, just exit.
+          // (We let ourselves fall, knowing that systemd will catch us.) ;)
+          process.exit()
+        } else {
+          // We’re running as a regular process. Just restart the server, not the whole process.
+
+          // Do some housekeeping.
+          Graceful.off('SIGINT', this.goodbye)
+          Graceful.off('SIGTERM', this.goodbye)
+
+          // Destroy the current server (so we do not get a port conflict on restart before
+          // we’ve had a chance to terminate our own process).
+          this.server.destroy()
+
+          // Stop accepting new connections.
+          this.server.close(() => {
+            // Restart the server.
+            this.server.removeAllListeners('close')
+            this.server.removeAllListeners('error')
+            const {commandPath, args} = cli.initialise(process.argv.slice(2))
+            serve(args)
+            console.log('\n 🐁 Restarted server.\n')
+          })
+        }
+      })
 
       const addBodyParser = () => {
         this.app.use(bodyParser.json())
@@ -543,6 +596,8 @@ class Site {
           const httpsGetRoutes = getRoutes(httpsGetRoutesDirectory)
           httpsGetRoutes.forEach(route => {
             console.log(` 🐁 Adding HTTPS GET route: ${route.path}`)
+            // Ensure we are loading a fresh copy in case it has changed.
+            decache(route.callback)
             this.app.get(route.path, require(route.callback))
           })
         }
