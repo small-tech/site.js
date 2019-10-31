@@ -37,6 +37,8 @@ const serve = require('./bin/commands/serve')
 const chokidar = require('chokidar')
 const decache = require('decache')
 
+const childProcess = require('child_process')
+
 const AcmeTLS = require('@ind.ie/acme-tls')
 const nodecert = require('@ind.ie/nodecert')
 const getRoutes = require('@ind.ie/web-routes-from-files')
@@ -136,12 +138,16 @@ class Site {
         childProcess.execSync('site update', options)
       } catch (error) {
         console.log('!!!! [Site daemon] Could not check for updates.')
+        console.log(error)
       }
     }
 
     if (process.env.NODE_ENV === 'production') {
       console.log('Setting up auto updates')
-      this.autoUpdateCheckInterval = setInterval(checkForUpdates, 10000 /* TODO: Increase */)
+      this.autoUpdateCheckInterval = setInterval(checkForUpdates, 30000 /* TODO: Increase */)
+
+      // And perform an initial check at startup.
+      checkForUpdates()
     }
 
     //
