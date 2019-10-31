@@ -438,6 +438,7 @@ class Site {
     console.log(` 📊 For statistics, see https://${location}${this.stats.route}`)
   }
 
+
   // Callback used in regular servers.
   regularCallback (server) {
     const location = this.prettyLocation()
@@ -463,6 +464,7 @@ class Site {
     if (this.hasCustom404) {
       this.custom404 = fs.readFileSync(custom404Path, 'utf-8')
     }
+
 
     // Check if a custom 500 page exists at the conventional path. If it does, load it for use later.
     const custom500Path = path.join(this.pathToServe, '500', 'index.html')
