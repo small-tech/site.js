@@ -131,19 +131,19 @@ class Site {
     // updates and perform them if necessary.
 
     function checkForUpdates () {
-      console.log('>>>> Checking for updates')
+      console.log(' 🛰 Running auto-update…')
 
       const options = {env: process.env, stdio: 'inherit'}
       try {
         childProcess.execSync('site update', options)
       } catch (error) {
-        console.log('!!!! [Site daemon] Could not check for updates.')
+        console.log(' 😱 Error: Could not check for updates.')
         console.log(error)
       }
     }
 
     if (process.env.NODE_ENV === 'production') {
-      console.log('Setting up auto updates')
+      console.log(' ⏰ Setting up auto-update check interval.')
       this.autoUpdateCheckInterval = setInterval(checkForUpdates, 30000 /* TODO: Increase */)
 
       // And perform an initial check at startup.
