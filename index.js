@@ -123,6 +123,27 @@ class Site {
       this.proxyPort = options.proxyPort
     }
 
+    // Auto updates.
+    //
+    // If we’re running in production, set up a timer to periodically check for
+    // updates and perform them if necessary.
+
+    function checkForUpdates () {
+      console.log('>>>> Checking for updates')
+
+      const options = {env: process.env, stdio: 'inherit'}
+      try {
+        childProcess.execSync('site update', options)
+      } catch (error) {
+        console.log('!!!! [Site daemon] Could not check for updates.')
+      }
+    }
+
+    if (process.env.NODE_ENV === 'production') {
+      console.log('Setting up auto updates')
+      this.autoUpdateCheckInterval = setInterval(checkForUpdates, 10000 /* TODO: Increase */)
+    }
+
     //
     // Configure the Express app.
     //

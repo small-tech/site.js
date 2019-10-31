@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [12.10.0] - 2019-10-31
+
+### Added
+
+  - Auto updates. Production servers will regularly check for updates and update themselves as necessary. This is a primary security feature given that Site.js is meant for use by individuals, not startups or enterprises with operations teams who can (in theory, at least) maintain servers with the latest updates.
+
 ## [12.9.7] - 2019-10-30
 
 ### Added
