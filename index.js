@@ -144,7 +144,7 @@ class Site {
 
     if (process.env.NODE_ENV === 'production') {
       console.log(' ⏰ Setting up auto-update check interval.')
-      this.autoUpdateCheckInterval = setInterval(checkForUpdates, 30000 /* TODO: Increase */)
+      this.autoUpdateCheckInterval = setInterval(checkForUpdates, /* every */ 5 /* hours */ * 60 * 60 * 1000)
 
       // And perform an initial check at startup.
       checkForUpdates()
