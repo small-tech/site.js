@@ -4,9 +4,9 @@
 
 ## Develop, test, and deploy your secure static or dynamic personal web site with zero configuration.
 
-__Site.js is a [small](https://ar.al/2019/03/04/small-technology/) personal web tool for Linux, macOS, and Windows 10.__
+__Site.js is a [small](https://small-tech.org/about#small-technology) personal web tool for Linux, macOS, and Windows 10.__
 
-Most of our tools today are built for the needs of startups and enterprises – Site.js is built for people.
+Most tools today are built for startups and enterprises. Site.js is built for people.
 
 ## Features
 
@@ -32,7 +32,9 @@ Most of our tools today are built for the needs of startups and enterprises – 
 
   - Automatic server reload when the source code of your dynamic routes change.
 
-  <ins>Note:</ins> Live deployments via startup daemons are only supported on Linux distributions with systemd.
+  - Auto updates of production servers.
+
+  <ins>Note:</ins> Production use via startup daemon is only supported on Linux distributions with systemd.
 
 ## Install
 
@@ -74,7 +76,7 @@ Any recent Linux distribution should work. However, Site.js is most thoroughly t
 
 There are builds available for x64 and ARM (tested and supported on armv6l and armv7l only. Tested on Rasperry Pi Zero W, 3B+, 4B).
 
-For production use systemd is required.
+For production use, systemd is required.
 
 ### macOS
 
@@ -97,11 +99,13 @@ Site.js tries to install the dependencies it needs seamlessly while running. Tha
   - `sudo`
   - `libcap2-bin` (we use `setcap` to escalate privileges on the binary as necessary)
 
-If it turns out that any of these are a widespread reason for first-run breakage, we can look into having them installed automatically in the future. Please open an issue if any of these is an issue in your deployments or everyday usage.
+For production use, passwordless sudo is required. On systems where the sudo configuration directory is set to `/etc/sudoers.d`, Site.js will automatically install this rule. On other systems, you might have to set it up yourself.
+
+If it turns out that any of these prerequisites are a widespread reason for first-run breakage, we can look into having them installed automatically in the future. Please open an issue if any of these is an issue in your deployments or everyday usage.
 
 Of course, you will need `wget` (or `curl`) installed to download the install script. You can install `wget` via your distribution’s package manager (e.g., `sudo apt install wget` on Ubuntu-like systems).
 
-## Update (as of v12.9.5; properly functioning as of v12.9.6)
+## Update (as of version 12.9.5; properly functioning as of version 12.9.6)
 
 To seamlessly update the native binary if a newer version exists:
 
@@ -111,7 +115,13 @@ site update
 
 This command will automatically restart a running Site.js daemon if one exists. If you are running Site.js as a regular process, it will continue to run and you will run the newer version the next time you launch a regular Site.js process.
 
-__Note:__ There is a bug in the semantic version comparison in the original release (v12.9.5) that would prevent upgrades between minor versions (e.g., between 12.9.x and 12.10.x). This is fixed in v12.9.6. If you’re on v12.9.5 and you’re reading this after we’ve moved to 12.10.x and beyond, please reinstall Site.js to update.
+__Note:__ There is a bug in the semantic version comparison in the original release with the update feature (version 12.9.5) that will prevent upgrades between minor versions (i.e., between 12.9.5 and 12.10.x and beyond). This was fixed in version 12.9.6. If you’re still on 12.9.5 and you’re reading this after we’ve moved to 12.10.0 and beyond, please stop Site.js if it’s running and [install the latest Site.js](#install) manually.
+
+## Automatic updates in production (as of version 12.10.0)
+
+[Production servers](#production) started with the `enable` command will automatically check for updates on first launch and then again at a set interval (currently every 5 hours) and update themselves as and when necessary.
+
+This is a primary security feature given that Site.js is meant for use by individuals, not startups or enterprises with operations teams that can (in theory, at least) maintain servers with the latest updates.
 
 ## Uninstall
 
