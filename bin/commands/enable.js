@@ -49,7 +49,6 @@ function enable (args) {
         console.log(`\n 🤯 Error: Cannot start daemon. Port 443 is already in use.\n`)
         process.exit(1)
       } else {
-
         // Ensure we are root (we do this here instead of before the asynchronous call to
         // avoid any timing-related issues around a restart and a port-in-use error).
         ensure.root()
@@ -91,7 +90,7 @@ function enable (args) {
         let accountName
         try {
           // Courtesy: https://www.unix.com/302402784-post4.html
-          accountName = childProcess.execSync(`awk -v val=${accountUID} -F ":" '$3==val{print $1}' /etc/passwd`, {env: process.env, stdio: 'pipe'}).toString()
+          accountName = childProcess.execSync(`awk -v val=${accountUID} -F ":" '$3==val{print $1}' /etc/passwd`, {env: process.env, stdio: 'pipe'}).toString().replace('\n', '')
         } catch (error) {
           console.error(`\n 👿 Error: could not get account name \n${error}.`)
           process.exit(1)
@@ -117,7 +116,67 @@ function enable (args) {
         WantedBy=multi-user.target
         `
 
+        //
+        // Ensure passwordless sudo is set up before installing and activating the
+        // service (or else automatic updates will fail).
+        //
+
+        try {
+          // The following command will fail if passwordless sudo is not set up.
+          childProcess.execSync(`sudo --user=${accountName} sudo --reset-timestamp --non-interactive cat /etc/sudoers`, {env: process.env})
+        } catch {
+          // Passwordless sudo is not set up.
+          console.log(' 🔐 Passwordless sudo is required for automatic server updates. Attempting to set up…')
+
+          // Sanity check: ensure the /etc/sudoers file exists.
+          if (!fs.existsSync('/etc/sudoers')) {
+            console.error('\n 👿 Sorry, could not find /etc/sudoers file. Cannot set up Site.js daemon.\n')
+            process.exit(1)
+          }
+
+          // Sanity check: ensure the /etc/sudoers.d directory exists as this is where we
+          // need to put our sudo rule to allow passwordless sudo.
+          if (!fs.existsSync('/etc/sudoers.d')) {
+            console.error('\n 👿 Sorry, could not find /etc/sudoers.d directory. Cannot set up Site.js daemon.\n')
+            process.exit(1)
+          }
+
+          // Sanity check: ensure sudo is set up to read sudo rules from /etc/sudoers.d directory.
+          const sudoers = fs.readFileSync('/etc/sudoers', 'utf-8')
+          if (!sudoers.includes('#includedir /etc/sudoers.d')) {
+            console.error(`\n 👿 Sorry, cannot set up passwordless sudo as /etc/sudoers.d is not included from /etc/sudoers.\n`)
+            console.error('   Add this line to the end of that file using visudo to fix:\n')
+            console.error('   #includedir /etc/sudoers.d\n')
+            process.exit(1)
+          }
+
+          // Create our passwordless sudo configuration file in the temporary folder.
+          fs.writeFileSync('/tmp/sitejs-passwordless-sudo', `${accountName} ALL=(ALL:ALL) NOPASSWD: ALL\n`)
+
+          // Check the syntax to ensure that we don’t mess up the system and lock the account out.
+          // (You can never be too careful when updating the sudo rules as one mistake and you could
+          // lock a person out of their account.)
+          try {
+            childProcess.execSync(`visudo -c -f /tmp/sitejs-passwordless-sudo`)
+          } catch (error) {
+            console.log('\n 👿 Error: could not verify that our attempt to set up passwordless sudo would succeed. Aborting.\n${error}')
+            process.exit(1)
+          }
+
+          // OK, the file is valid, copy it to the actual directory so it takes effect.
+          try {
+            childProcess.execSync('sudo cp /tmp/sitejs-passwordless-sudo /etc/sudoers.d/')
+          } catch (error) {
+            console.log('\n 👿 Error: could not install the passwordless sudo rule. Aborting.\n${error}')
+            process.exit(1)
+          }
+
+          console.log(' 🔐 Passwordless sudo successfully set up.')
+        }
+
+        //
         // Save the systemd service unit.
+        //
         fs.writeFileSync('/etc/systemd/system/site.js.service', unit, 'utf-8')
 
         //
