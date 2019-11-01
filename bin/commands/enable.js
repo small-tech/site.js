@@ -171,7 +171,7 @@ function enable (args) {
             process.exit(1)
           }
 
-          console.log(' 🔐 Passwordless sudo successfully set up.')
+          console.log(' 🔐 Passwordless sudo successfully set up.\n')
         }
 
         //
