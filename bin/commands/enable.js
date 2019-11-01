@@ -123,7 +123,7 @@ function enable (args) {
 
         try {
           // The following command will fail if passwordless sudo is not set up.
-          childProcess.execSync(`sudo --user=${accountName} sudo --reset-timestamp --non-interactive cat /etc/sudoers`, {env: process.env})
+          childProcess.execSync(`sudo --user=${accountName} sudo --reset-timestamp --non-interactive cat /etc/sudoers > /dev/null 2>&1`, {env: process.env})
         } catch {
           // Passwordless sudo is not set up.
           console.log(' 🔐 Passwordless sudo is required for automatic server updates. Attempting to set up…')
