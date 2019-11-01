@@ -127,7 +127,7 @@ function serve (args) {
   }
 
   if (syncOptions !== null && syncOptions.exit) {
-    // No need to start a server if all we want to do is to sync.
+    // No need to start a server if all we want to do is sync.
     sync(syncOptions)
   } else {
     // Start a server and also sync if requested.

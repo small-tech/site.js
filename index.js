@@ -37,6 +37,8 @@ const serve = require('./bin/commands/serve')
 const chokidar = require('chokidar')
 const decache = require('decache')
 
+const childProcess = require('child_process')
+
 const AcmeTLS = require('@ind.ie/acme-tls')
 const nodecert = require('@ind.ie/nodecert')
 const getRoutes = require('@ind.ie/web-routes-from-files')
@@ -121,6 +123,31 @@ class Site {
     if (typeof options.proxyPort === 'number') {
       this.isProxyServer = true
       this.proxyPort = options.proxyPort
+    }
+
+    // Auto updates.
+    //
+    // If we’re running in production, set up a timer to periodically check for
+    // updates and perform them if necessary.
+
+    function checkForUpdates () {
+      console.log(' 🛰 Running auto-update…')
+
+      const options = {env: process.env, stdio: 'inherit'}
+      try {
+        childProcess.execSync('site update', options)
+      } catch (error) {
+        console.log(' 😱 Error: Could not check for updates.')
+        console.log(error)
+      }
+    }
+
+    if (process.env.NODE_ENV === 'production') {
+      console.log(' ⏰ Setting up auto-update check interval.')
+      this.autoUpdateCheckInterval = setInterval(checkForUpdates, /* every */ 5 /* hours */ * 60 * 60 * 1000)
+
+      // And perform an initial check at startup.
+      checkForUpdates()
     }
 
     //
@@ -438,6 +465,7 @@ class Site {
     console.log(` 📊 For statistics, see https://${location}${this.stats.route}`)
   }
 
+
   // Callback used in regular servers.
   regularCallback (server) {
     const location = this.prettyLocation()
@@ -463,6 +491,7 @@ class Site {
     if (this.hasCustom404) {
       this.custom404 = fs.readFileSync(custom404Path, 'utf-8')
     }
+
 
     // Check if a custom 500 page exists at the conventional path. If it does, load it for use later.
     const custom500Path = path.join(this.pathToServe, '500', 'index.html')
