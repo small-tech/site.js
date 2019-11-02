@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [12.10.2] - 2019-11-02
+
+### Fixed
+
+  - Auto update check no longer blocks main thread.
+
 ## [12.10.1] - 2019-11-02
 
 ### Fixed

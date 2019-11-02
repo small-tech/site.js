@@ -431,15 +431,16 @@ class Site {
       if (process.env.NODE_ENV === 'production') {
 
         function checkForUpdates () {
-          console.log(' 🛰 Running auto-update…')
+          console.log(' 🛰 Running auto update check…')
 
           const options = {env: process.env, stdio: 'inherit'}
-          try {
-            childProcess.execSync('site update', options)
-          } catch (error) {
-            console.log(' 😱 Error: Could not check for updates.')
-            console.log(error)
-          }
+          childProcess.exec('site update', options, (error, stdout, stderr) => {
+            if (error !== null) {
+              console.log(' 😱 Error: Could not check for updates.')
+            } else {
+              console.log(stdout)
+            }
+          })
         }
 
         console.log(' ⏰ Setting up auto-update check interval.')
