@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [12.10.1] - 2019-11-02
+
+### fixes
+
+  - Update command now correctly exits with an error if SiteJS.org is unreachable. Also implements a short timeout.
+
 ## [12.10.0] - 2019-11-01
 
 ### Added

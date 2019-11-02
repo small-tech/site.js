@@ -445,8 +445,8 @@ class Site {
         console.log(' ⏰ Setting up auto-update check interval.')
         this.autoUpdateCheckInterval = setInterval(checkForUpdates, /* every */ 5 /* hours */ * 60 * 60 * 1000)
 
-        // And perform an initial check at startup.
-        setTimeout(checkForUpdates, 5000)
+        // And perform an initial check a few seconds after startup.
+        setTimeout(checkForUpdates, 3000)
       }
     })
 
