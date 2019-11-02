@@ -37,7 +37,6 @@ async function update () {
     response = await secureGet('https://sitejs.org/version')
   } catch (error) {
     console.log(' 🤯 Error: Could not check for updates.\n')
-    console.log(error)
     exitGracefully(1)
     return
   }
@@ -203,7 +202,7 @@ async function extract (release) {
 
 async function secureGet (url) {
   return new Promise((resolve, reject) => {
-    https.get(url, response => {
+    const request = https.get(url, {timeout: 10 /* seconds */ * 1000}, response => {
       const code = response.statusCode
 
       if (code !== 200) {
@@ -215,6 +214,25 @@ async function secureGet (url) {
       response.on('end', () => {
         resolve({code, body})
       })
+    })
+
+    request.on('timeout', () => {
+      request.abort()
+    })
+
+    request.on('error', (error) => {
+      if (error.code === "ECONNRESET") {
+        console.log(' 😱 Connection timed out while attempting to check for updates.')
+        reject()
+        return
+      } else if (error.code === 'ECONNREFUSED') {
+        console.log(` 😱 Connection was refused. Site might be down. ${error}`)
+        reject()
+      } else {
+        // Catch-all. Just display the error.
+        console.log(` 🤯 ${error}`)
+        reject()
+      }
     })
   })
 }

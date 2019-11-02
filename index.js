@@ -125,30 +125,6 @@ class Site {
       this.proxyPort = options.proxyPort
     }
 
-    // Auto updates.
-    //
-    // If we’re running in production, set up a timer to periodically check for
-    // updates and perform them if necessary.
-
-    function checkForUpdates () {
-      console.log(' 🛰 Running auto-update…')
-
-      const options = {env: process.env, stdio: 'inherit'}
-      try {
-        childProcess.execSync('site update', options)
-      } catch (error) {
-        console.log(' 😱 Error: Could not check for updates.')
-        console.log(error)
-      }
-    }
-
-    if (process.env.NODE_ENV === 'production') {
-      console.log(' ⏰ Setting up auto-update check interval.')
-      this.autoUpdateCheckInterval = setInterval(checkForUpdates, /* every */ 5 /* hours */ * 60 * 60 * 1000)
-
-      // And perform an initial check at startup.
-      checkForUpdates()
-    }
 
     //
     // Configure the Express app.
@@ -308,6 +284,10 @@ class Site {
     })
 
     this.server.on('close', () => {
+      // Clear the auto update check interval.
+      clearInterval(this.autoUpdateCheckInterval)
+      console.log(' ⏰ Cleared auto-update check interval.')
+
       // Ensure dynamic route watchers are removed.
       if (this.app.__dynamicFileWatcher !== undefined) {
         this.app.__dynamicFileWatcher.close()
@@ -443,6 +423,31 @@ class Site {
       // Call the overridable callback (the defaults for these are purely informational/cosmetic
       // so they are safe to override).
       callback.apply(this, [this.server])
+
+      // Auto updates.
+      //
+      // If we’re running in production, set up a timer to periodically check for
+      // updates and perform them if necessary.
+      if (process.env.NODE_ENV === 'production') {
+
+        function checkForUpdates () {
+          console.log(' 🛰 Running auto-update…')
+
+          const options = {env: process.env, stdio: 'inherit'}
+          try {
+            childProcess.execSync('site update', options)
+          } catch (error) {
+            console.log(' 😱 Error: Could not check for updates.')
+            console.log(error)
+          }
+        }
+
+        console.log(' ⏰ Setting up auto-update check interval.')
+        this.autoUpdateCheckInterval = setInterval(checkForUpdates, /* every */ 5 /* hours */ * 60 * 60 * 1000)
+
+        // And perform an initial check a few seconds after startup.
+        setTimeout(checkForUpdates, 3000)
+      }
     })
 
     return this.server
