@@ -1,6 +1,6 @@
 ################################################################################
 #
-# Site.js v12.10.0 Installer for Windows 10 (PowerShell)
+# Site.js v12.10.1 Installer for Windows 10 (PowerShell)
 #
 # To use:
 #
@@ -23,7 +23,7 @@ $installationScriptUrl = 'https://sitejs.org/install.txt'
 $installationScriptFileName = 'install-site.js.ps1'
 
 # The address to download the tar-gzipped archive of the Site.js binary from.
-$archiveUrl = 'https://sitejs.org/releases/windows/12.10.0.tar.gz'
+$archiveUrl = 'https://sitejs.org/releases/windows/12.10.1.tar.gz'
 
 # Emoji encodings (because Powershell is from the Stone Age and cannot handle
 # emoji literals in strings)
@@ -86,7 +86,7 @@ if (!([Security.Principal.WindowsPrincipal] `
   # Installer is running with regular privileges. Start a new PowerShell session with elevated privileges.
   #
   Write-Output ''
-  Write-Output " $satelliteEmoji Downloading Site.js v12.10.0$ellipsis"
+  Write-Output " $satelliteEmoji Downloading Site.js v12.10.1$ellipsis"
 
   # We need to start a new PowerShell session with elevated privileges but if we're running in memory
   # only after being downloaded by the installation command, we don't have a copy of ourselves to run.
@@ -112,16 +112,16 @@ if (!([Security.Principal.WindowsPrincipal] `
   Write-Output "`n`n`n`n`n`n"
   Write-Output ' Installing Site.js using administrator privileges...'
   Write-Output ''
-  Write-Output ' * Downloading Site.js v12.10.0...'
+  Write-Output ' * Downloading Site.js v12.10.1...'
 
   # Download the latest Site.js archive.
-  Invoke-WebRequest -Uri $archiveUrl -OutFile '12.10.0.tar.gz'
+  Invoke-WebRequest -Uri $archiveUrl -OutFile '12.10.1.tar.gz'
 
   Write-Output ''
   Write-Output ' * Extracting binary...'
 
   # Gunzip and untar the binary.
-  tar -xf 12.10.0.tar.gz
+  tar -xf 12.10.1.tar.gz
 
   Write-Output ''
   Write-Output ' * Installing binary...'
