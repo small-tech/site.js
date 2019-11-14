@@ -817,6 +817,11 @@ class Site {
     const hostname = Site.hostname
 
     const acmeTLSOptions = {
+      //
+      // Debug version.
+      //
+      debug: true,
+
       // Note: while testing, you might want to use the staging server at:
       // ===== https://acme-staging-v02.api.letsencrypt.org/directory
       server: 'https://acme-v02.api.letsencrypt.org/directory',
