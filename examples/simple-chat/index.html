@@ -94,7 +94,7 @@
         justify-content: flex-start;
         align-content: stretch;
         align-items: flex-start;
-        height: calc(100vh - 1em);
+        height: calc(var(--vh, 1vh) * 100 - 1em);
       }
 
       form {
@@ -124,6 +124,12 @@
 
       // Shorthand for basic DOM lookup via CSS selectors.
       const element = document.querySelector.bind(document)
+
+      // Fix on mobile so interface takes up full-screen.
+      // Courtesy css-trick.com (the trick to viewport units on mobile)
+
+      let vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`)
 
       // Helper: display a message object.
       function displayMessage (message) {
@@ -161,7 +167,7 @@
 
       // Display the state of the connection.
       socket.onopen = _ => {
-        element('#status').innerHTML = 
+        element('#status').innerHTML =
           '<span style="color: green">Online</span>'
       }
 
