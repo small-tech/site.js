@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [12.10.3] - 2019-11-24
+
+### Fixed
+
+  - __Security:__ sync was setting execute permissions on transferred files (`chmod 755`). Removed this.
+
+### Changed
+
   - Update chat example to match the one in [the Simple Chat Tutorial](https://ar.al/2019/10/11/build-a-simple-chat-app-with-site.js/).
 
 ## [12.10.2] - 2019-11-02
