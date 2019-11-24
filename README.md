@@ -889,7 +889,9 @@ socket.onmessage = message => console.log(message.data)
 socket.send('Hello!')
 ```
 
-For a slightly more sophisticated example that doesn’t broadcast a client’s own messages to itself and selectively broadcasts to only the clients in the same “rooms”, see the [Basic Chat example](examples/wss-basic-chat). Here’s the code for the server component of that example:
+For a slightly more sophisticated example that doesn’t broadcast a client’s own messages to itself and selectively broadcasts to only the clients in the same “rooms”, see the [Simple Chat example](examples/simple-chat). And here’s [a step-by-step tutorial](https://ar.al/2019/10/11/build-a-simple-chat-app-with-site.js/) that takes you through how to build it.
+
+Here’s a simplified listing of the code for the server component of this example:
 
 ```js
 module.exports = function (client, request) {

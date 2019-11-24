@@ -40,7 +40,6 @@ function sync (options) {
       ],
       'rsyncOptions': {
         'archive': null,
-        'chmod': '755',
         'verbose': null,
         'human-readable': null,
         'delete': null,
