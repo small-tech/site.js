@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [12.10.4] - TBA
+
+### Changed
+
+  - (Refactor) Now uses @small-tech/https module instead of @ind.ie/acme-tls and @ind.ie/nodecert directly.
+
 ## [12.10.3] - 2019-11-24
 
 ### Fixed

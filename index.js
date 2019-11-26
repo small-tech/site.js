@@ -10,8 +10,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-const http = require('http')
-const https = require('https')
+const https = require('@small-tech/https')
 const fs = require('fs')
 const path = require('path')
 const os = require('os')
@@ -25,7 +24,6 @@ const bodyParser = require('body-parser')
 const expressWebSocket = require('@small-tech/express-ws')
 const helmet = require('helmet')
 const morgan = require('morgan')
-const redirectHTTPS = require('redirect-https')
 const enableDestroy = require('server-destroy')
 const Graceful = require('node-graceful')
 const httpProxyMiddleware = require('http-proxy-middleware')
@@ -39,8 +37,6 @@ const decache = require('decache')
 
 const childProcess = require('child_process')
 
-const AcmeTLS = require('@ind.ie/acme-tls')
-const nodecert = require('@ind.ie/nodecert')
 const getRoutes = require('@ind.ie/web-routes-from-files')
 const Stats = require('./lib/Stats')
 
@@ -48,7 +44,7 @@ const Stats = require('./lib/Stats')
 class Site {
 
   // Emitted when the address the server is trying to use is already in use by a different process on the system.
-  static get EVENT_ADDRESS_ALREADY_IN_USE () { return 'site.js-address-already-in-use' }
+  static get SMALL_TECH_ORG_ERROR_HTTP_SERVER () { return 'small-tech.org-error-http-server' }
 
   // The cross-platform hostname (os.hostname() on Linux and macOS, special handling on Windows to return
   // the full computer name, which can be a domain name and thus the equivalent of hostname on Linux and macOS).
@@ -275,12 +271,16 @@ class Site {
       }
     }
 
+    // Provide access to the error constant on the server instance itself
+    // as consuming objects may not have access to the class itself.
+    this.server.SMALL_TECH_ORG_ERROR_HTTP_SERVER = Site.SMALL_TECH_ORG_ERROR_HTTP_SERVER
+
     this.server.on('error', error => {
       console.log('\n 🤯 Error: could not start server.\n')
       if (error.code === 'EADDRINUSE') {
         console.log(` 💥 Port ${this.port} is already in use.\n`)
       }
-      this.server.emit(Site.EVENT_ADDRESS_ALREADY_IN_USE)
+      this.server.emit(Site.SMALL_TECH_ORG_ERROR_HTTP_SERVER)
     })
 
     this.server.on('close', () => {
@@ -361,25 +361,44 @@ class Site {
   }
 
 
-  // Returns an https server instance – the same as you’d get with
-  // require('https').createServer() – configured with your locally-trusted nodecert
+  // Returns an https server instance configured with your locally-trusted nodecert
   // certificates by default. If you pass in {global: true} in the options object,
   // globally-trusted TLS certificates are obtained from Let’s Encrypt.
   //
   // Note: if you pass in a key and cert in the options object, they will not be
   // ===== used and will be overwritten.
   createServer (options = {}, requestListener = undefined) {
-    // Let’s be nice and not continue to pollute the options object
-    // with our custom property (global).
     const requestsGlobalCertificateScope = options.global === true
-    if (options.global !== undefined) { delete options.global }
 
     if (requestsGlobalCertificateScope) {
-      return this._createTLSServerWithGloballyTrustedCertificate (options, requestListener)
+      console.log(' 🌍 [Site.js] Using globally-trusted certificates.')
+
+      // Let’s be nice and not continue to pollute the options object
+      // with our custom property (global).
+      delete options.global
+
+      // Certificates are automatically obtained for the hostname and the www. subdomain of the hostname
+      // for the machine that we are running on.
+      let domains = [Site.hostname]
+
+      // If additional aliases have been specified, add those to the domains list.
+      domains = domains.concat(this.aliases)
+      options.domains = domains
+
+      // Display aliases we’re responding to.
+      const listOfAliases = this.aliases.reduce((prev, current) => {
+        return `${prev}${current}, `
+      }, '').slice(0, -2)
+      console.log(` 👉 [Site.js] Aliases: also responding for ${listOfAliases}.`)
     } else {
-      // Default to using local certificates.
-      return this._createTLSServerWithLocallyTrustedCertificate(options, requestListener)
+      console.log(' 🚧 [Site.js] Using locally-trusted certificates.')
     }
+
+    // Specify custom certificate directory for Site.js.
+    options.certificateDirectory = path.join(os.homedir(), '.small-tech.org', 'site.js', 'tls')
+
+    // Create and return the HTTPS server.
+    return https.createServer(options, requestListener)
   }
 
 
@@ -786,104 +805,6 @@ class Site {
       console.log(` 🌱 [Site.js] Evergreen web: serving archive #${archiveNumber}`)
       this.app.use(express.static(archivePath))
     })
-  }
-
-
-  _createTLSServerWithLocallyTrustedCertificate (options, requestListener = undefined) {
-    console.log(' 🚧 [Site.js] Using locally-trusted certificates.')
-
-    // Ensure that locally-trusted certificates exist.
-    nodecert()
-
-    const nodecertDirectory = path.join(os.homedir(), '.nodecert')
-
-    const defaultOptions = {
-      key: fs.readFileSync(path.join(nodecertDirectory, 'localhost-key.pem')),
-      cert: fs.readFileSync(path.join(nodecertDirectory, 'localhost.pem'))
-    }
-
-    Object.assign(options, defaultOptions)
-
-    // Note: calling method will add the error handler.
-    return https.createServer(options, requestListener)
-  }
-
-
-  _createTLSServerWithGloballyTrustedCertificate (options, requestListener = undefined) {
-    console.log(' 🌍 [Site.js] Using globally-trusted certificates.')
-
-    // Certificates are automatically obtained for the hostname and the www. subdomain of the hostname
-    // for the machine that we are running on.
-    const hostname = Site.hostname
-
-    const acmeTLSOptions = {
-      // Note: while testing, you might want to use the staging server at:
-      // ===== https://acme-staging-v02.api.letsencrypt.org/directory
-      server: 'https://acme-v02.api.letsencrypt.org/directory',
-
-      version: 'draft-11',
-
-      // Certificates are stored in ~/.acme-tls/<hostname>
-      configDir: `~/.acme-tls/${hostname}/`,
-
-      approvedDomains: [hostname],
-      agreeTos: true,
-
-      // Instead of an email address, we pass the hostname. ACME TLS is based on
-      // Greenlock.js and those folks decided to make email addresses a requirement
-      // instead of an optional element as is the case with Let’s Encrypt. This has deep
-      // architectural knock-ons including to the way certificates are stored in
-      // the le-store-certbot storage strategy, etc. Instead of forking and gutting
-      // multiple modules (I’ve already had to fork a number to remove the telemetry),
-      // we are using the hostname in place of the email address as a local identifier.
-      // Our fork of acme-v02 is aware of this and will simply disregard any email
-      // addresses passed that match the hostname before making the call to the ACME
-      // servers. (That module, as it reflects the ACME spec, does _not_ have the email
-      // address as a required property.)
-      email: Site.hostname,
-
-      // These will be removed altogether soon.
-      telemetry: false,
-      communityMember: false,
-    }
-
-    // If additional aliases have been specified, add those to the approved domains list.
-    acmeTLSOptions.approvedDomains = acmeTLSOptions.approvedDomains.concat(this.aliases)
-    const listOfAliases = this.aliases.reduce((prev, current) => {
-      return `${prev}${current}, `
-    }, '').slice(0, -2)
-    console.log(` 👉 [Site.js] Aliases: also responding for ${listOfAliases}.`)
-
-    const acmeTLS = AcmeTLS.create(acmeTLSOptions)
-
-    // Create an HTTP server to handle redirects for the Let’s Encrypt ACME HTTP-01 challenge method that we use.
-    const httpsRedirectionMiddleware = redirectHTTPS()
-
-    const httpServer = http.createServer(acmeTLS.middleware(httpsRedirectionMiddleware))
-
-    httpServer.on('error', error => {
-      console.log('\n 🤯 Error: could not start HTTP server for ACME TLS.\n')
-      if (error.code === 'EADDRINUSE') {
-        console.log(` 💥 Port 80 is already in use.\n`)
-      }
-      // We emit this on the httpsServer that is returned so that the calling
-      // party can listen for the event on the returned server instance. (We do
-      // not return the httpServer instance and hence there is no purpose in
-      // emitting the event on that server.)
-      httpsServer.emit('site.js-address-already-in-use')
-    })
-
-    httpServer.listen(80, () => {
-      console.log(' 👉 [Site.js] HTTP → HTTPS redirection active.')
-    })
-
-    // Add the TLS options from ACME TLS to any existing options that might have been passed in.
-    Object.assign(options, acmeTLS.tlsOptions)
-
-    // Create and return the HTTPS server.
-    // Note: calling method will add the error handler.
-    const httpsServer = https.createServer(options, requestListener)
-    return httpsServer
   }
 }
 

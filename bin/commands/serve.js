@@ -166,7 +166,7 @@ function serve (args) {
 
           // Exit on known errors as we have already logged them to console.
           // (Otherwise, the stack trace will be output for debugging purposes.)
-          server.on('site.js-address-already-in-use', () => {
+          server.on(server.SMALL_TECH_ORG_ERROR_HTTP_SERVER, () => {
             process.exit(1)
           })
 
