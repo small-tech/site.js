@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 const https = require('@small-tech/https')
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 const os = require('os')
 
@@ -40,7 +40,6 @@ const childProcess = require('child_process')
 const getRoutes = require('@ind.ie/web-routes-from-files')
 const Stats = require('./lib/Stats')
 
-
 class Site {
 
   // Emitted when the address the server is trying to use is already in use by a different process on the system.
@@ -49,6 +48,9 @@ class Site {
   // The cross-platform hostname (os.hostname() on Linux and macOS, special handling on Windows to return
   // the full computer name, which can be a domain name and thus the equivalent of hostname on Linux and macOS).
   static get hostname () { return crossPlatformHostname }
+
+  // This is the directory that settings and other persistent data is stored for Site.js.
+  static get settingsDirectory () { return path.join(os.homedir(), '.small-tech.org', 'site.js') }
 
   // Logs a nicely-formatted version string based on
   // the version set in the package.json file to console.
@@ -95,11 +97,7 @@ class Site {
     Site.logAppNameAndVersion()
 
     // Ensure that the settings directory exists and create it if it doesn’t.
-    this.settingsDirectory = path.join(os.homedir(), '.site.js')
-
-    if (!fs.existsSync(this.settingsDirectory)) {
-      fs.mkdirSync(this.settingsDirectory)
-    }
+    fs.ensureDirSync(Site.settingsDirectory)
 
     // The options parameter object and all supported properties on the options parameter
     // object are optional. Check and populate the defaults.
@@ -356,7 +354,7 @@ class Site {
 
 
   initialiseStatistics () {
-    const statisticsRouteSettingFile = path.join(this.settingsDirectory, 'statistics-route')
+    const statisticsRouteSettingFile = path.join(Site.settingsDirectory, 'statistics-route')
     return new Stats(statisticsRouteSettingFile)
   }
 

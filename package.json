@@ -23,9 +23,9 @@
   "license": "AGPL-3.0-or-later",
   "dependencies": {
     "@ind.ie/web-routes-from-files": "^1.2.1",
-    "@small-tech/https": "^1.0.6",
     "@small-tech/cross-platform-hostname": "^1.0.0",
     "@small-tech/express-ws": "^1.0.0",
+    "@small-tech/https": "^1.0.6",
     "@small-tech/instant": "^1.0.6",
     "ansi-escape-sequences": "^4.1.0",
     "body-parser": "^1.19.0",
@@ -35,6 +35,7 @@
     "debounce": "^1.2.0",
     "decache": "^4.5.1",
     "express": "^4.17.1",
+    "fs-extra": "^8.1.0",
     "gunzip-maybe": "^1.4.1",
     "helmet": "^3.20.0",
     "http-proxy-middleware": "^0.19.1",
