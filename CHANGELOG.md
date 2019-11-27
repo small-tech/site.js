@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
-## [12.10.4] - TBA
+## [12.10.4] - 2019-11-27
 
 ### Changed
 
@@ -16,7 +16,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-  - Windows support to the `uninstall` command.
+  - Improved support for `uninstall` command on Windows.
+  - Improved `install-locally` npm task support on Windows.
 
 ## [12.10.3] - 2019-11-24
 
