@@ -59,8 +59,12 @@ class WarningBox {
 
 
 async function uninstall (options) {
-  ensure.systemctl()
-  ensure.root('uninstall')
+  const isWindows = process.platform === 'win32'
+
+  if (!isWindows) {
+    ensure.systemctl()
+    ensure.root('uninstall')
+  }
 
   Site.logAppNameAndVersion()
 
@@ -137,20 +141,30 @@ async function uninstall (options) {
     }
 
     // Remove the Site.js binary itself.
-    const isWindows = process.platform === 'win32'
     const siteBinary = isWindows ? 'C:\\Program Files\\site.js' : '/usr/local/bin/site'
-    if (fs.existsSync(siteBinary))
-    try {
-      fs.removeSync(siteBinary)
-      console.log(' ✔ Site.js binary removed.')
-    } catch (error) {
-      console.log(`\n ❌ Could not remove the Site.js binary (${error}).\n`)
-      process.exit(1)
+    if (fs.existsSync(siteBinary)) {
+      if (isWindows) {
+        // Windows cannot reference count (aww, bless), so we can't uninstall ourselves
+        // while running. Ask the person to manually remove it.
+        console.log('\n ℹ IMPORTANT: We cannot remove a running process under Windows. Please consider using an operating system that actually works (like Linux) in the future. In the meanwhile, please run the following command manually under a PowerShell account with adminstrative privileges to remove the binary: ')
+        console.log(`\n rm -r -fo "${siteBinary}"`)
+      } else {
+        // Linux-like systems. Ah, the bliss of systems that actually work as they should.
+        try {
+          fs.removeSync(siteBinary)
+          console.log(' ✔ Site.js binary removed.')
+        } catch (error) {
+          console.log(`\n ❌ Could not remove the Site.js binary (${error}).\n`)
+          process.exit(1)
+        } 
+      }
     } else {
       console.log(' ℹ Site binary does not exist; ignoring.')
     }
 
-    console.log(`\n 🎉 Site.js uninstalled.`)
+    if (!isWindows) {
+      console.log(`\n 🎉 Site.js uninstalled.`)
+    }
     console.log('\n💖 Goodbye!\n')
     Graceful.exit()
   }
