@@ -12,6 +12,13 @@ const childProcess = require('child_process')
 
 function status () {
 
+  const isWindows = process.platform === 'win32'
+  if (isWindows) {
+    // Daemons are not supported on Windows so we know for sure that it is
+    // neither active nor enabled :)
+    return { isActive: false, isEnabled: false }
+  }
+
   // Note: do not call ensure.systemctl() here as it will
   // ===== create a cyclic dependency. Instead, check for
   //       systemctl support manually before calling status().
