@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [12.10.4] - 2019-11-27
+
+### Changed
+
+  - (Refactor) Now uses @small-tech/https module instead of @ind.ie/acme-tls and @ind.ie/nodecert directly.
+
+  - Consolidates all settings under `~/.small-tech.org/site.js` and cleans up everything on uninstall. You can safely delete the `~/.nodecert` and `~/.acme-tls` folders from your machine once you’ve updated to this version if you’re not using those dependencies directly elsewhere. Note that this means that new Let’s Encrypt certificates will be provisioned for you and placed in the new location when you update to this version.
+
+### Added
+
+  - Improved support for `uninstall` command on Windows.
+  - Improved `install-locally` npm task support on Windows.
+
 ## [12.10.3] - 2019-11-24
 
 ### Fixed

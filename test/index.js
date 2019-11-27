@@ -81,9 +81,9 @@ async function securePost (hostname, path, data = {}, isJSON = false) {
 }
 
 
-test('[site.js] createServer method', t => {
+test('[site.js] constructor', t => {
   t.plan(2)
-  const server = new Site().createServer()
+  const server = new Site().server
   t.ok(server instanceof https.Server, 'is https.Server')
 
   server.listen(443, () => {
