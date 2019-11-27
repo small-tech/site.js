@@ -50,7 +50,6 @@ if ((commandLineOptions.deploy || commandLineOptions.all) && cpuArchitecture !==
 }
 
 // Check for supported CPU architectures (currently only x86 and ARM)
-console.log(cpuArchitecture)
 if (cpuArchitecture !== 'x64' && cpuArchitecture !== 'arm') {
   console.log(`🤯 Error: The build script is currently only supported on x64 and ARM architectures.`)
   process.exit()
@@ -212,7 +211,19 @@ async function build () {
     //       active daemon.
 
     console.log('   • Installing locally…')
-    childProcess.execSync(`sudo cp ${currentPlatformBinaryPath} /usr/local/bin`)
+    const isWindows = process.platform === 'win32'
+    if (isWindows) {
+      const windowsInstallationDirectory =  'C:\\Program Files\\site.js'
+      // Output instructions for installing
+      console.log('\nTo install the binary on Windows, open a PowerShell window with administrator privileges and paste the following commands into it:\n')
+      // Ensure the installation directory exists.
+      console.log(`New-Item -Force -ItemType directory -Path "${windowsInstallationDirectory}"`)
+      // Copy the binary into it.
+      console.log(`Copy-Item -Force -Path "${path.resolve(currentPlatformBinaryPath)}" -Destination "${windowsInstallationDirectory}"`)
+      console.log(`\nDont forget to add ${windowsInstallationDirectory} to your path.\n`)
+    } else {      
+      childProcess.execSync(`sudo cp ${currentPlatformBinaryPath} /usr/local/bin`)
+    }
   }
 
   // Only zip and copy files to the Indie Web Site if explicitly asked to.
