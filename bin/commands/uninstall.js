@@ -115,7 +115,7 @@ async function uninstall (options) {
     if (serverIsEnabled) {
       try {
         disableServer()
-        console.log(' ✔ Server disabled.\n')
+        console.log(' ✔ Server disabled.')
       } catch (error) {
         process.exit(1)
       }
