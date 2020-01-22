@@ -1,6 +1,6 @@
 {
   "name": "@small-tech/site.js",
-  "version": "12.10.4",
+  "version": "12.10.5",
   "description": "Develop, test, and deploy your secure static or dynamic personal web site with zero configuration.",
   "main": "index.js",
   "bin": "bin/site.js",
@@ -29,7 +29,7 @@
     "@small-tech/instant": "^1.0.6",
     "ansi-escape-sequences": "^4.1.0",
     "body-parser": "^1.19.0",
-    "chokidar": "^2.1.8",
+    "chokidar": "^3.3.0",
     "concat-stream": "^2.0.0",
     "copy-concurrently": "^1.0.5",
     "debounce": "^1.2.0",
