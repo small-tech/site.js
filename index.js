@@ -616,22 +616,21 @@ class Site {
 
     this.app.use(tamper((request, response) => {
 
-      console.log('((( TAMPERING )))', response.getHeader('Content-Type'))
+      // Note: this is not enough. We don’t want to add the includes to any
+      // ===== html file (e.g., one returned by a dynamic route), only to ones
+      //       handled by the static renderer (instant -> serve). TODO [ ].
+      const contentType = response.getHeader('Content-Type')
+      if (response.statusCode !== 200 || contentType === undefined || !response.getHeader('Content-Type').includes('text/html')) {
+        return
+      }
+
+      console.log('((( TAMPERING )))', response.statusCode)
 
       let pageId = `site${request.url.replace('index.html', '').replace(/\//g, '-')}`
       if (pageId.endsWith('-')) {
         pageId = pageId.slice(0, pageId.length-1)
       }
       console.log('Page ID: ', pageId)
-
-      const contentType = response.getHeader('Content-Type')
-
-      // Note: this is not enough. We don’t want to add the includes to any
-      // ===== html file (e.g., one returned by a dynamic route), only to ones
-      //       handled by the static renderer (instant -> serve). TODO [ ].
-      if (contentType === undefined || !response.getHeader('Content-Type').includes('text/html')) {
-        return
-      }
 
       console.log('((( About to add header and footer to the body )))')
 
