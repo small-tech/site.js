@@ -28,6 +28,9 @@ const enableDestroy = require('server-destroy')
 const Graceful = require('node-graceful')
 const httpProxyMiddleware = require('http-proxy-middleware')
 
+const onHeaders = require('on-headers')
+const tamper = require('tamper')
+
 const instant = require('@small-tech/instant')
 
 const cli = require('./bin/lib/cli')
@@ -43,20 +46,20 @@ const Stats = require('./lib/Stats')
 class Site {
 
   // Emitted when the address the server is trying to use is already in use by a different process on the system.
-  static get SMALL_TECH_ORG_ERROR_HTTP_SERVER () { return 'small-tech.org-error-http-server' }
+  static get SMALL_TECH_ORG_ERROR_HTTP_SERVER() { return 'small-tech.org-error-http-server' }
 
   // The cross-platform hostname (os.hostname() on Linux and macOS, special handling on Windows to return
   // the full computer name, which can be a domain name and thus the equivalent of hostname on Linux and macOS).
-  static get hostname () { return crossPlatformHostname }
+  static get hostname() { return crossPlatformHostname }
 
   // This is the directory that settings and other persistent data is stored for Site.js.
-  static get settingsDirectory () { return path.join(os.homedir(), '.small-tech.org', 'site.js') }
+  static get settingsDirectory() { return path.join(os.homedir(), '.small-tech.org', 'site.js') }
 
   // Logs a nicely-formatted version string based on
   // the version set in the package.json file to console.
   // (Only once per Site lifetime.)
   // (Synchronous.)
-  static logAppNameAndVersion () {
+  static logAppNameAndVersion() {
     if (!Site.appNameAndVersionAlreadyLogged && !process.argv.includes('--dont-log-app-name-and-version')) {
       console.log(`\n 💖 Site.js v${Site.versionNumber()} ${clr(`(running on Node ${process.version})`, 'italic')}\n`)
       Site.appNameAndVersionAlreadyLogged = true
@@ -64,7 +67,7 @@ class Site {
   }
 
   // Calculate and cache version number from package.json on first call.
-  static versionNumber () {
+  static versionNumber() {
     if (Site._versionNumber === null) {
       Site._versionNumber = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json'), 'utf-8')).version
     }
@@ -92,7 +95,7 @@ class Site {
   //
   // Note: if you want to run the site on a port < 1024 on Linux, ensure your process has the
   // ===== necessary privileges to bind to such ports. E.g., use require('lib/ensure').weCanBindToPort(port, callback)
-  constructor (options) {
+  constructor(options) {
     // Introduce ourselves.
     Site.logAppNameAndVersion()
 
@@ -180,13 +183,24 @@ class Site {
 
   // Middleware and routes that are unique to regular sites
   // (not used on proxy servers).
-  configureAppRoutes () {
+  configureAppRoutes() {
+
+    // // Note: move this out of here.
+    // this.app.use((request, response, next) => {
+    //   onHeaders(response, function () {
+    //     // Note: do this only if rendered by static handler.
+    //     this.removeHeader('ETag')
+    //   })
+    //   next()
+    // })
+
     this.add4042302Support()
     this.addCustomErrorPagesSupport()
 
     // Add routes
     this.appAddTest500ErrorPage()
     this.appAddDynamicRoutes()
+    this.appAddRuntimeIncludes()
     this.appAddStaticRoutes()
     this.appAddArchiveCascade()
   }
@@ -194,23 +208,23 @@ class Site {
 
   // Middleware unique to proxy servers.
   // TODO: Refactor: Break this method up. []
-  configureProxyRoutes () {
+  configureProxyRoutes() {
 
     const proxyHttpUrl = `http://localhost:${this.proxyPort}`
     const proxyWebSocketUrl = `ws://localhost:${this.proxyPort}`
 
-    function prettyLog (message) {
+    function prettyLog(message) {
       console.log(` 🔁 ${message}`)
     }
 
-    const logProvider = function(provider) {
+    const logProvider = function (provider) {
       return { log: prettyLog, debug: prettyLog, info: prettyLog, warn: prettyLog, error: prettyLog }
     }
 
     const webSocketProxy = httpProxyMiddleware({
       target: proxyWebSocketUrl,
       ws: true,
-      changeOrigin:false,
+      changeOrigin: false,
       logProvider,
       logLevel: 'info'
     })
@@ -232,7 +246,7 @@ class Site {
 
   // Finish configuring the app and create the server.
   // (We need to add the WebSocket (WSS) routes after the server has been created).
-  endAppConfigurationAndCreateServer () {
+  endAppConfigurationAndCreateServer() {
 
     // Check for a valid port range
     // (port above 49,151 are ephemeral ports. See https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic,_private_or_ephemeral_ports)
@@ -241,7 +255,7 @@ class Site {
     }
 
     // Create the server.
-    this.server = this.createServer({global: this.global}, this.app)
+    this.server = this.createServer({ global: this.global }, this.app)
 
     // Enable the ability to destroy the server (close all active connections).
     enableDestroy(this.server)
@@ -289,7 +303,7 @@ class Site {
       // Ensure dynamic route watchers are removed.
       if (this.app.__dynamicFileWatcher !== undefined) {
         this.app.__dynamicFileWatcher.close()
-        console.log (` 🚮 Removed dynamic file watchers.`)
+        console.log(` 🚮 Removed dynamic file watchers.`)
       }
 
       // Ensure that the static route file watchers are removed.
@@ -353,7 +367,7 @@ class Site {
   }
 
 
-  initialiseStatistics () {
+  initialiseStatistics() {
     const statisticsRouteSettingFile = path.join(Site.settingsDirectory, 'statistics-route')
     return new Stats(statisticsRouteSettingFile)
   }
@@ -365,7 +379,7 @@ class Site {
   //
   // Note: if you pass in a key and cert in the options object, they will not be
   // ===== used and will be overwritten.
-  createServer (options = {}, requestListener = undefined) {
+  createServer(options = {}, requestListener = undefined) {
     const requestsGlobalCertificateScope = options.global === true
 
     if (requestsGlobalCertificateScope) {
@@ -404,7 +418,7 @@ class Site {
   //   • callback: (function) the callback to call once the server is ready (defaults are provided).
   //
   // Can throw.
-  serve (callback) {
+  serve(callback) {
 
     if (typeof callback !== 'function') {
       callback = this.isProxyServer ? this.proxyCallback : this.regularCallback
@@ -419,7 +433,7 @@ class Site {
       this.server.destroy()
 
       // Stop accepting new connections.
-      this.server.close( () => {
+      this.server.close(() => {
         // OK, it’s time to go :)
         console.log('\n 💖 Goodbye!\n')
         done()
@@ -447,10 +461,10 @@ class Site {
       // updates and perform them if necessary.
       if (process.env.NODE_ENV === 'production') {
 
-        function checkForUpdates () {
+        function checkForUpdates() {
           console.log(' 🛰 Running auto update check…')
 
-          const options = {env: process.env, stdio: 'inherit'}
+          const options = { env: process.env, stdio: 'inherit' }
           childProcess.exec('site update', options, (error, stdout, stderr) => {
             if (error !== null) {
               console.log(' 😱 Error: Could not check for updates.')
@@ -475,7 +489,7 @@ class Site {
   // Private.
   //
 
-  prettyLocation () {
+  prettyLocation() {
     let portSuffix = ''
     if (this.port !== 443) {
       portSuffix = `:${this.port}`
@@ -484,13 +498,13 @@ class Site {
   }
 
 
-  showStatisticsUrl (location) {
+  showStatisticsUrl(location) {
     console.log(` 📊 For statistics, see https://${location}${this.stats.route}`)
   }
 
 
   // Callback used in regular servers.
-  regularCallback (server) {
+  regularCallback(server) {
     const location = this.prettyLocation()
     console.log(`\n 🎉 Serving ${clr(this.pathToServe, 'cyan')} on ${clr(`https://${location}`, 'green')}\n`)
     this.showStatisticsUrl(location)
@@ -498,7 +512,7 @@ class Site {
 
 
   // Callback used in proxy servers.
-  proxyCallback (server) {
+  proxyCallback(server) {
     const location = this.prettyLocation()
     console.log(`\n 🚚 [Site.js] Proxying: HTTP/WS on localhost:${this.proxyPort} ←→ HTTPS/WSS on ${location}\n`)
     this.showStatisticsUrl(location)
@@ -506,7 +520,7 @@ class Site {
 
 
   // Adds custom error page support for 404 and 500 errors.
-  addCustomErrorPagesSupport () {
+  addCustomErrorPagesSupport() {
     // Check if a custom 404 page exists at the conventional path. If it does, load it for use later.
     const custom404Path = path.join(this.pathToServe, '404', 'index.html')
     this.hasCustom404 = fs.existsSync(custom404Path)
@@ -533,7 +547,7 @@ class Site {
   // Just make your 404s into 302s.
   //
   // Find out more at https://4042302.org/
-  add4042302Support () {
+  add4042302Support() {
     const _4042302Path = path.join(this.pathToServe, '4042302')
 
     // TODO: We should really be checking that this is a file, not that it
@@ -550,7 +564,7 @@ class Site {
 
 
   // To test a 500 error, hit /test-500-error
-  appAddTest500ErrorPage () {
+  appAddTest500ErrorPage() {
     this.app.use((request, response, next) => {
       if (request.path === '/test-500-error') {
         throw new Error('Bad things have happened.')
@@ -563,11 +577,72 @@ class Site {
 
   // Add static routes.
   // (Note: directories that begin with a dot (hidden directories) will be ignored.)
-  appAddStaticRoutes () {
+  appAddStaticRoutes() {
     this.app.__instant = instant(this.pathToServe, {
-      watch: ['html', 'js', 'css', 'svg', 'png', 'jpg', 'jpeg']
+      watch: ['html', 'js', 'css', 'svg', 'png', 'jpg', 'jpeg'],
+      etag: false
     })
     this.app.use(this.app.__instant)
+  }
+
+
+  // Add runtime includes. Initially, support for a static header and footer
+  // that’s added to static routes if an .includes folder is found.
+  appAddRuntimeIncludes() {
+    const includesFolder = path.join(this.pathToServe, '.includes')
+    const useIncludes = fs.existsSync(includesFolder)
+
+    // Includes are only activated if there is an .includes folder in the site root.
+    if (!useIncludes) return
+
+    // For now we only support a header and a footer. We expect them to be located at:
+    // <site root>/.includes/header.html
+    // <site root>/.includes/footer.html
+    const headerFile = path.join(includesFolder, 'header.html')
+    const footerFile = path.join(includesFolder, 'footer.html')
+
+    let header = ''
+    let footer = ''
+
+    if (fs.existsSync(headerFile)) {
+      header = fs.readFileSync(headerFile)
+      console.log (` >> Added header to static routes from ${headerFile}`)
+    }
+
+    if (fs.existsSync(footerFile)) {
+      footer = fs.readFileSync(footerFile)
+      console.log (` >> Added footer to static routes from ${footerFile}`)
+    }
+
+    this.app.use(tamper((request, response) => {
+
+      console.log('((( TAMPERING )))', response.getHeader('Content-Type'))
+
+      let pageId = `site${request.url.replace('index.html', '').replace(/\//g, '-')}`
+      if (pageId.endsWith('-')) {
+        pageId = pageId.slice(0, pageId.length-1)
+      }
+      console.log('Page ID: ', pageId)
+
+      const contentType = response.getHeader('Content-Type')
+
+      // Note: this is not enough. We don’t want to add the includes to any
+      // ===== html file (e.g., one returned by a dynamic route), only to ones
+      //       handled by the static renderer (instant -> serve). TODO [ ].
+      if (contentType === undefined || !response.getHeader('Content-Type').includes('text/html')) {
+        return
+      }
+
+      console.log('((( About to add header and footer to the body )))')
+
+      return body => {
+        // console.log(`>${body}<`)
+        const withHeaderAndFooter = `${header}${body}${footer}`
+        const withBodyId = withHeaderAndFooter.replace('<body', `<body id ="${pageId}" `)
+
+        return withBodyId
+      }
+    }))
   }
 
 
@@ -586,7 +661,7 @@ class Site {
   //
   // For full details, please see the readme file.
 
-  appAddDynamicRoutes () {
+  appAddDynamicRoutes() {
 
     // Initially check if a dynamic routes directory exists. If it does not,
     // we don’t need to take this any further.
@@ -604,7 +679,7 @@ class Site {
         ignoreInitial: true
       })
 
-      this.app.__dynamicFileWatcher.on ('all', (event, file) => {
+      this.app.__dynamicFileWatcher.on('all', (event, file) => {
         console.log(`\n 🐁 ${clr('Code updated', 'green')} in ${clr(file, 'cyan')}!`)
         console.log(' 🐁 Requesting restart…\n')
 
@@ -628,7 +703,7 @@ class Site {
             // Restart the server.
             this.server.removeAllListeners('close')
             this.server.removeAllListeners('error')
-            const {commandPath, args} = cli.initialise(process.argv.slice(2))
+            const { commandPath, args } = cli.initialise(process.argv.slice(2))
             serve(args)
             console.log('\n 🐁 Restarted server.\n')
           })
@@ -768,7 +843,7 @@ class Site {
   // convention. If the folder that is being served is called
   // my-lovely-site, then the archive folders we would look for are
   // my-lovely-site-archive-1, etc.
-  appAddArchiveCascade () {
+  appAddArchiveCascade() {
     const archiveCascade = []
     const absolutePathToServe = path.resolve(this.pathToServe)
 
