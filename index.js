@@ -624,8 +624,10 @@ class Site {
         return
       }
 
-      console.log('((( TAMPERING )))', response.statusCode)
+      console.log('((( TAMPERING )))', request.url)
 
+      // Calculate a unique page ID to include in the body tag.
+      // This is useful, for example, for styling navigation, etc.
       let pageId = `site${request.url.replace('index.html', '').replace(/\//g, '-')}`
       if (pageId.endsWith('-')) {
         pageId = pageId.slice(0, pageId.length-1)
