@@ -7,17 +7,24 @@
 //////////////////////////////////////////////////////////////////////
 
 const Site = require('../../index')
+const MessageBox = require('../../lib/MessageBox')
 const clr = require('../../lib/clr')
 const ensure = require('../lib/ensure')
+
+const EMULATE = 'emulate'
+const WINDOWS = 'windows'
+const MAC = 'mac'
+const LINUX_WITH_SYSTEMD = 'linux-with-systemd'
+const LINUX_WITHOUT_SYSTEMD = 'linux-without-systemd'
 
 const GREEN = 'green'
 const YELLOW = 'yellow'
 const CYAN = 'cyan'
 
-const systemdExists = ensure.commandExists('systemctl')
-const isLinux = process.platform === 'linux'
-const isWindows = process.platform === 'win32'
-const isMac = process.platform === 'darwin'
+let systemdExists = ensure.commandExists('systemctl')
+let isLinux = process.platform === 'linux'
+let isWindows = process.platform === 'win32'
+let isMac = process.platform === 'darwin'
 
 function command(name) { return clr(name, GREEN) }
 function argument(name) {
@@ -31,7 +38,58 @@ function option(name) { name = `--${name}`; return `${clr(name, YELLOW)}` }
 function heading(title) { return clr(title, 'underline') }
 function emphasised(text) { return clr(text, 'italic') }
 
-function help () {
+function help(args) {
+  // For easy debugging purposes, if the emulate flag is passed, the output
+  // will emulate the requested platform.
+  function checkForDebugEmulationRequest() {
+    const platformToEmulate = args.named[EMULATE]
+    if (platformToEmulate !== undefined) {
+      switch (platformToEmulate) {
+        case WINDOWS:
+          systemdExists = false
+          isLinux = false
+          isWindows = true
+          isMac = false
+          break
+
+        case MAC:
+          systemdExists = false
+          isLinux = false
+          isWindows = false
+          isMac = true
+          break
+
+        case LINUX_WITH_SYSTEMD:
+          systemdExists = true
+          isLinux = true
+          isWindows = false
+          isMac = false
+          break
+
+        case LINUX_WITHOUT_SYSTEMD:
+          systemdExists = false
+          isLinux = true
+          isWindows = false
+          isMac = false
+          break
+
+        default:
+          console.log('')
+          const messageBox = new MessageBox()
+          messageBox.line(`${clr('Unknown platform (', YELLOW)}${clr(`${platformToEmulate}`, GREEN)}${clr(') not emulating.', YELLOW)}`)
+          messageBox.emptyLine()
+          messageBox.line(`${clr('Valid platforms are:', YELLOW)} ${clr(`${MAC}, ${WINDOWS}, ${LINUX_WITHOUT_SYSTEMD}, ${LINUX_WITH_SYSTEMD}`, GREEN)}`)
+          messageBox.print()
+          return
+      }
+      console.log('')
+      const messageBox = new MessageBox()
+      messageBox.line(`${' '.repeat(10)}${clr('[DEBUG]', YELLOW)} ${clr(`Help output is emulating ${platformToEmulate}`, GREEN)}${' '.repeat(10)}`)
+      messageBox.print()
+    }
+  }
+  checkForDebugEmulationRequest()
+
   const appName = 'site'
 
   const usageCommand = command('command')
@@ -64,6 +122,8 @@ function help () {
   //
 
   const optionAliases = option('aliases')
+
+  const optionFallthrough = option('fallthrough')
 
   const optionSyncFrom = option('sync-from')
   const optionSyncTo = option('sync-to')
@@ -120,26 +180,22 @@ function help () {
     If ${usageCommand} is omitted, behaviour defaults to ${commandServe}.
 
     ${heading('Options:')}
-    ${ isWindows ? `
-    For ${commandServe} command:
-
-    ${optionAliases}\t\t\tSpecify additional domains to obtain TLS certs for and respond to.
-    ` : `
+    ${systemdExists ? `
     For both ${commandServe} and ${commandEnable} commands:
-
-    ${optionAliases}\t\t\tSpecify additional domains to obtain TLS certs for and respond to.
-
+    ` : `
     For ${commandServe} command:
-
+    `}
+    ${optionAliases}\t\t\tSpecify additional domains to obtain TLS certs for and respond to.
+    ${systemdExists ? `
+    For ${commandServe} command:
+    `: ''}
+    ${optionFallthrough}\t\tFor proxy servers, if resource is 404 at source, search in current folder.\n${isWindows ? '' : `
     ${optionSyncTo}\t\t\tThe host to sync to.
     ${optionSyncFrom}\t\t\tThe folder to sync from (only relevant if ${optionSyncTo} is specified).
     ${optionExitOnSync}\t\tExit once the first sync has occurred. Useful in deployment scripts.
-    ${optionSyncFolderAndContents}\tSync local folder and contents (default is to sync the folder’s contents only).
+    ${optionSyncFolderAndContents}\tSync local folder and contents (default is to sync the folder’s contents only).\n`}${systemdExists ? `\n    For ${commandEnable} command:
 
-    For ${commandEnable} command:
-
-    ${optionEnsureCanSync}\t\tEnsure server can rsync via ssh.
-    `}
+    ${optionEnsureCanSync}\t\tEnsure server can rsync via ssh.\n` : ''}
     ${heading('Examples:')}
 
       ${heading('Develop using locally-trusted TLS certificates:')}
@@ -170,7 +226,7 @@ function help () {
 
     • Sync ${argument('demo')} folder to ${argument('my.site')} and exit\t${prompt} ${appName} ${argument('demo')} ${optionSyncTo}=${argument('my.site')} ${optionExitOnSync}
       (alternative forms)\t\t\t${prompt} ${appName} ${optionSyncFrom}=${argument('demo')} ${optionSyncTo}=${argument('my.site')} ${optionExitOnSync}
-    `}${ systemdExists ? `
+    `}${systemdExists ? `
       ${heading('Stage and deploy using globally-trusted Let’s Encrypt certificates:')}
 
       Regular process:
@@ -193,17 +249,17 @@ function help () {
     • Get status of deamon\t\t\t${prompt} ${appName} ${commandStatus}
     • Display server logs\t\t\t${prompt} ${appName} ${commandLogs}
     • Stop current daemon\t\t\t${prompt} ${appName} ${commandDisable}
-    ` : ''}${ isWindows ? `
+    ` : ''}${isWindows ? `
     ${heading('Windows-specific notes:')}
 
       - Unlike Linux and macOS, you must use quotation marks around @localhost and @hostname.
       - The sync feature, available on Linux and macOS, is not available on Windows as rsync is not available.
       - Production use is not available on Windows as it requires Linux with systemd.
-    `: ''}${ isMac ? `
+    `: ''}${isMac ? `
     ${heading('Mac-specific notes:')}
 
       - Production use is not available on macOS as it requires Linux with systemd.
-    `: ''}${ isLinux && !systemdExists ? `
+    `: ''}${isLinux && !systemdExists ? `
     ${heading('Linux-specific notes:')}
 
       - Production use is not available on this Linux distribution as systemd does not exist.
