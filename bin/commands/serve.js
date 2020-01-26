@@ -13,6 +13,7 @@
 // ===== also requires this module.
 
 const ALIASES = 'aliases'
+const FALLTHROUGH = 'fallthrough'
 const SYNC_TO = 'sync-to'
 const SYNC_FROM = 'sync-from'
 const EXIT_ON_SYNC = 'exit-on-sync'
@@ -103,6 +104,10 @@ function serve (args) {
   const _aliases = args.named[ALIASES]
   const aliases = _aliases === undefined ? [] : _aliases.split(',')
 
+  // Should we implement fallthrough to the rest of the Express middleware
+  // chain when we encounter a 404 return code from the proxy source?
+  const proxyFallthrough = (proxyPort !== null && args.named[FALLTHROUGH])
+
   //
   // Sync options.
   //
@@ -157,6 +162,7 @@ function serve (args) {
             port,
             global,
             proxyPort,
+            proxyFallthrough,
             aliases
           }
 

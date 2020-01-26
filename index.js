@@ -130,6 +130,11 @@ class Site {
 
     if (this.isProxyServer) {
       this.configureProxyRoutes()
+      if (options.proxyFallthrough) {
+        // TODO: Add a mechanism to provide a separate fall-through path.
+        console.log(` ⏬ [Site.js] Proxy fall-through to ${clr(this.pathToServe, 'yellow')} on proxy 404 response.`)
+        this.configureAppRoutes()
+      }
     } else {
       this.configureAppRoutes()
     }
@@ -485,7 +490,7 @@ class Site {
 
 
   showStatisticsUrl (location) {
-    console.log(` 📊 For statistics, see https://${location}${this.stats.route}`)
+    console.log(` 📊 [Site.js] For statistics, see https://${location}${this.stats.route}`)
   }
 
 
