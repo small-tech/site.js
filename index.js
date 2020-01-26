@@ -129,7 +129,7 @@ class Site {
     this.startAppConfiguration()
 
     if (this.isProxyServer) {
-      this.configureProxyRoutes()
+      this.configureProxyRoutes(options)
       if (options.proxyFallthrough) {
         // TODO: Add a mechanism to provide a separate fall-through path.
         console.log(` ⏬ [Site.js] Proxy fall-through to ${clr(this.pathToServe, 'yellow')} on proxy 404 response.`)
@@ -199,7 +199,7 @@ class Site {
 
   // Middleware unique to proxy servers.
   // TODO: Refactor: Break this method up. []
-  configureProxyRoutes () {
+  configureProxyRoutes (options) {
 
     const proxyHttpUrl = `http://localhost:${this.proxyPort}`
     const proxyWebSocketUrl = `ws://localhost:${this.proxyPort}`
@@ -212,20 +212,28 @@ class Site {
       return { log: prettyLog, debug: prettyLog, info: prettyLog, warn: prettyLog, error: prettyLog }
     }
 
-    const webSocketProxy = httpProxyMiddleware({
+    const webSocketProxyOptions = {
       target: proxyWebSocketUrl,
       ws: true,
       changeOrigin:false,
       logProvider,
       logLevel: 'info'
-    })
+    }
+    if (options.proxyFallthrough) {
+      webSocketProxyOptions.fallthrough = true
+    }
+    const webSocketProxy = httpProxyMiddleware(webSocketProxyOptions)
 
-    const httpsProxy = httpProxyMiddleware({
+    const httpsProxyOptions = {
       target: proxyHttpUrl,
       changeOrigin: true,
       logProvider,
       logLevel: 'info',
-    })
+    }
+    if (options.proxyFallthrough) {
+      httpsProxyOptions.fallthrough = true
+    }
+    const httpsProxy = httpProxyMiddleware(httpsProxyOptions)
 
     this.app.use(httpsProxy)
     this.app.use(webSocketProxy)
