@@ -4,13 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## Unreleased (preparation for [12.11.0] - TBA (proxy-extensions branch))
+
+  - Add `--fallthrough` option to enable proxy server extensions. This means that you can extend the behaviour of the server being proxied by having 404 responses fall through to the main middleware chain.
 
 ## [12.10.5] - 2020-01-22
 
 ### Changed
 
-  - Automatic server relead on source code changes now picks up changes in nested hidden directories (e.g., when using separate `.get/` and `.post/` folders for your routes).
+  - Automatic server reload on source code changes now picks up changes in nested hidden directories (e.g., when using separate `.get/` and `.post/` folders for your routes).
 
 ## [12.10.4] - 2019-11-27
 
