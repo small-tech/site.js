@@ -405,7 +405,7 @@ npm run deploy
 site [command] [folder|:port] [@host[:port]] [--options]
 ```
 
-  - `command`: serve | enable | disable | start | stop | logs | status | update | uninstall | version | help
+  - `command`: serve | enable | disable | start | stop | restart | logs | status | update | uninstall | version | help
   - `folder|:port`: Path of folder to serve (defaults to current folder) or port on localhost to proxy.
   - `@host[:port]`: Host (and, optionally port) to sync. Valid hosts are @localhost and @hostname.
   - `--options`: Settings that alter command behaviour.
@@ -452,6 +452,8 @@ If `command` is omitted, behaviour defaults to `serve`.
   - `--aliases`: Comma-separated list of additional domains to obtain TLS certificates for and respond to.
 
 #### For the `serve` command:
+
+  - `--fallthrough`: For proxy servers, if resource is 404 at source, search in current folder.
 
   - `--sync-to`: The host to sync to.
 
