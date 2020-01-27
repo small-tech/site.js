@@ -38,7 +38,7 @@
     "fs-extra": "^8.1.0",
     "gunzip-maybe": "^1.4.1",
     "helmet": "^3.20.0",
-    "http-proxy-middleware": "../forks/http-proxy-middleware/",
+    "@small-tech/http-proxy-middleware-with-fallthrough": "^1.0.0",
     "minimist": "^1.2.0",
     "morgan": "^1.9.1",
     "node-graceful": "^2.0.1",

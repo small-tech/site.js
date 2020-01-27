@@ -26,7 +26,7 @@ const helmet = require('helmet')
 const morgan = require('morgan')
 const enableDestroy = require('server-destroy')
 const Graceful = require('node-graceful')
-const httpProxyMiddleware = require('http-proxy-middleware')
+const httpProxyMiddleware = require('@small-tech/http-proxy-middleware-with-fallthrough')
 
 const instant = require('@small-tech/instant')
 
