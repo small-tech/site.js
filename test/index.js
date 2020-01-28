@@ -573,23 +573,31 @@ test('[site.js] serve method', t => {
   })
 
   test('[site.js] serve method (proxy server)', t => {
-    t.plan(3)
+    t.plan(5)
 
     const sourceServer = http.createServer((request, response) => {
       response.writeHead(200)
-      response.end('From source server')
+      response.end('from source server')
     })
     sourceServer.listen(4242, async () => {
-      t.ok(true, 'source server is created')
+      t.ok(true, 'proxy source server is successfully created')
 
       // Sanity check: test that source server is behaving correctly.
       const response = await insecureGet('http://localhost:4242')
-      t.strictEquals(response.statusCode, 200, 'proxy source server ')
-      t.strictEquals(response.body, 'From source server')
+      t.strictEquals(response.statusCode, 200, 'proxy source server response code is correct')
+      t.strictEquals(response.body, 'from source server', 'proxy source server response body is correct')
 
-      sourceServer.close()
+      // Create a regular Site.js proxy server (without fallthrough)
+      const basicProxyServer = new Site({proxyPort: 4242}).serve(async () => {
+        const basicProxyResponse = await secureGet('https://localhost')
+        t.strictEquals(response.statusCode, 200, 'proxied response code is correct')
+        t.strictEquals(response.body, 'from source server', 'proxied response body is correct')
 
-      t.end()
+        sourceServer.close()
+        basicProxyServer.close()
+
+        t.end()
+      })
     })
   })
 
