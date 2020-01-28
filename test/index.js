@@ -12,6 +12,7 @@
 const test = require('tape')
 
 const Site = require('../index.js')
+const http = require('http')
 const https = require('https')
 
 const fs = require('fs')
@@ -23,6 +24,26 @@ const WebSocket = require('ws')
 
 function localhost(path) {
   return `https://localhost${path}`
+}
+
+async function insecureGet (url) {
+  return new Promise((resolve, reject) => {
+    http.get(url, (response) => {
+      const statusCode = response.statusCode
+      const location = response.headers.location
+
+      // Reject if it’s not one of the status codes we are testing.
+      if (statusCode !== 200 && statusCode !== 404 && statusCode !== 500 && statusCode !== 302) {
+        reject({statusCode})
+      }
+
+      let body = ''
+      response.on('data', _ => body += _)
+      response.on('end', () => {
+        resolve({statusCode, location, body})
+      })
+    })
+  })
 }
 
 async function secureGet (url) {
@@ -550,4 +571,26 @@ test('[site.js] serve method', t => {
 
     server.close()
   })
+
+  test('[site.js] serve method (proxy server)', t => {
+    t.plan(3)
+
+    const sourceServer = http.createServer((request, response) => {
+      response.writeHead(200)
+      response.end('From source server')
+    })
+    sourceServer.listen(4242, async () => {
+      t.ok(true, 'source server is created')
+
+      // Sanity check: test that source server is behaving correctly.
+      const response = await insecureGet('http://localhost:4242')
+      t.strictEquals(response.statusCode, 200, 'proxy source server ')
+      t.strictEquals(response.body, 'From source server')
+
+      sourceServer.close()
+
+      t.end()
+    })
+  })
+
 })
