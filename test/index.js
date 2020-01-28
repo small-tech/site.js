@@ -573,25 +573,34 @@ test('[site.js] serve method', t => {
   })
 
   test('[site.js] serve method (proxy server)', t => {
-    t.plan(5)
+    t.plan(7)
 
     const sourceServer = http.createServer((request, response) => {
-      response.writeHead(200)
-      response.end('from source server')
+      if (request.url === '/exists') {
+        response.writeHead(200)
+        response.end('exists')
+      } else {
+        response.writeHead(404)
+        response.end('does-not-exist')
+      }
     })
     sourceServer.listen(4242, async () => {
       t.ok(true, 'proxy source server is successfully created')
 
       // Sanity check: test that source server is behaving correctly.
-      const response = await insecureGet('http://localhost:4242')
+      const response = await insecureGet('http://localhost:4242/exists')
       t.strictEquals(response.statusCode, 200, 'proxy source server response code is correct')
-      t.strictEquals(response.body, 'from source server', 'proxy source server response body is correct')
+      t.strictEquals(response.body, 'exists', 'proxy source server response body is correct')
 
       // Create a regular Site.js proxy server (without fallthrough)
       const basicProxyServer = new Site({proxyPort: 4242}).serve(async () => {
-        const basicProxyResponse = await secureGet('https://localhost')
-        t.strictEquals(response.statusCode, 200, 'proxied response code is correct')
-        t.strictEquals(response.body, 'from source server', 'proxied response body is correct')
+        const basicProxyResponse = await secureGet('https://localhost/exists')
+        t.strictEquals(basicProxyResponse.statusCode, 200, 'proxied response code is correct')
+        t.strictEquals(basicProxyResponse.body, 'exists', 'proxied response body is correct')
+
+        const basic404ProxyResponse = await secureGet('https://localhost/does-not-exist')
+        t.strictEquals(basic404ProxyResponse.statusCode, 404, 'proxied response code is 404 as expected')
+        t.strictEquals(basic404ProxyResponse.body, 'does-not-exist', 'proxied response body is correct')
 
         sourceServer.close()
         basicProxyServer.close()
