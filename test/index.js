@@ -573,7 +573,7 @@ test('[site.js] serve method', t => {
   })
 
   test('[site.js] serve method (proxy server)', t => {
-    t.plan(11)
+    t.plan(13)
 
     const sourceServer = http.createServer((request, response) => {
       if (request.url === '/exists/') {
@@ -613,11 +613,29 @@ test('[site.js] serve method', t => {
           // Ask for a static route that we know for certain does not exist on the source server
           // but we know exists in our Site.js server extension.
           const staticFallthroughResponse = await secureGet('https://localhost/does-not-exist/')
-          t.strictEquals(staticFallthroughResponse.statusCode, 200, 'proxy server with fallthrough (does not exist at source): fallthrough response code is correct')
-          t.strictEquals(staticFallthroughResponse.body, 'actually, it exists, because 404 fallthrough works', 'proxy server with fallthrough (does not exist at source): fallthrough response body is correct')
+          t.strictEquals(staticFallthroughResponse.statusCode, 200, 'proxy server with fallthrough (does not exist at source): static route fallthrough response code is correct')
+          t.strictEquals(staticFallthroughResponse.body, 'actually, it exists, because 404 fallthrough works', 'proxy server with fallthrough (does not exist at source): static route fallthrough response body is correct')
+
+          // TODO: Write test to see how 301 redirects are handled during a fall-through. (maybe)
+
+          // Ask for a dynamic route that we know for certain does not exist on the source server
+          // but we know exists in our Site.js server extension.
+          const dynamicFallthroughResponse = await secureGet('https://localhost/dynamic-fallthrough/')
+          t.strictEquals(dynamicFallthroughResponse.statusCode, 200, 'proxy server with fallthrough (does not exist at source): dynamic route fallthrough response code is correct')
+          t.strictEquals(dynamicFallthroughResponse.body, 'fallthrough to dynamic route', 'proxy server with fallthrough (does not exist at source): dynamic route fallthrough response body is correct')
+
+          // TODO: Narrow down why dynamic route fallthrough is not working on Small Tech web site and write a test to cover that. Could a 301 redirect be causing this? Or…
+
+          // TODO: Write a test to cover dynamic route fallthrough with routes.js, as well as separate .get and .set routes.
+
+          // TODO: Write test for route that is 404 both at route and at Site.js document root.
 
           // '<!doctype html><html lang="en" style="font-family: sans-serif; background-color: #eae7e1"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error 404: Not found</title></head><body style="display: grid; align-items: center; justify-content: center; height: 100vh; vertical-align: top; margin: 0;"><main><h1 style="font-size: 16vw; color: black; text-align:center; line-height: 0.25">4🤭4</h1><p style="font-size: 4vw; text-align: center; padding-left: 2vw; padding-right: 2vw;"><span>Could not find</span> <span style="color: grey;">/does-not-exist-either</span></p></main>  <script src="/instant/client/bundle.js"></script>\n' +
           // '</body></html>'
+
+          // TODO: Test web socket server proxying and fallthrough.
+
+          // TODO: Test livereload (our implementation) and fallthrough.
 
           // Close the source server and signal the end of the proxy tests.
           proxyServerWithFallthrough.close()
