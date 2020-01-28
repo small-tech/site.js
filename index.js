@@ -83,12 +83,13 @@ class Site {
   // Creates a Site instance. Customise it by passing an options object with the
   // following properties (all optional):
   //
-  // •      path: (string)    the path to serve (defaults to the current working directory).
-  // •      port: (integer)   the port to bind to (between 0 - 49,151; the default is 443).
-  // •    global: (boolean)   if true, automatically provision an use Let’s Encrypt TLS certificates.
-  // • proxyPort: (number)    if provided, a proxy server will be created for the port (and path will be ignored)
-  // •   aliases: (string)    comma-separated list of domains that we should get TLS certs
-  //                          for and serve.
+  // •      path: (string)          the path to serve (defaults to the current working directory).
+  // •      port: (integer)         the port to bind to (between 0 - 49,151; the default is 443).
+  // •    global: (boolean)         if true, automatically provision an use Let’s Encrypt TLS certificates.
+  // • proxyPort: (number)          if provided, a proxy server will be created for the port (and path will be ignored)
+  // • proxyFallthrough: (boolean)  should 404 errors on proxy source fall through to the Site.js document root?
+  // •   aliases: (string)          comma-separated list of domains that we should get TLS certs
+  //                                for and serve.
   //
   // Note: if you want to run the site on a port < 1024 on Linux, ensure your process has the
   // ===== necessary privileges to bind to such ports. E.g., use require('lib/ensure').weCanBindToPort(port, callback)

@@ -573,10 +573,10 @@ test('[site.js] serve method', t => {
   })
 
   test('[site.js] serve method (proxy server)', t => {
-    t.plan(7)
+    t.plan(11)
 
     const sourceServer = http.createServer((request, response) => {
-      if (request.url === '/exists') {
+      if (request.url === '/exists/') {
         response.writeHead(200)
         response.end('exists')
       } else {
@@ -588,24 +588,42 @@ test('[site.js] serve method', t => {
       t.ok(true, 'proxy source server is successfully created')
 
       // Sanity check: test that source server is behaving correctly.
-      const response = await insecureGet('http://localhost:4242/exists')
-      t.strictEquals(response.statusCode, 200, 'proxy source server response code is correct')
-      t.strictEquals(response.body, 'exists', 'proxy source server response body is correct')
+      const response = await insecureGet('http://localhost:4242/exists/')
+      t.strictEquals(response.statusCode, 200, 'proxy source server: response code is correct')
+      t.strictEquals(response.body, 'exists', 'proxy source server: response body is correct')
 
       // Create a regular Site.js proxy server (without fallthrough)
       const basicProxyServer = new Site({proxyPort: 4242}).serve(async () => {
-        const basicProxyResponse = await secureGet('https://localhost/exists')
-        t.strictEquals(basicProxyResponse.statusCode, 200, 'proxied response code is correct')
-        t.strictEquals(basicProxyResponse.body, 'exists', 'proxied response body is correct')
+        const basicProxyResponse = await secureGet('https://localhost/exists/')
+        t.strictEquals(basicProxyResponse.statusCode, 200, 'basic proxy server: proxied response code is correct')
+        t.strictEquals(basicProxyResponse.body, 'exists', 'basic proxy server: proxied response body is correct')
 
-        const basic404ProxyResponse = await secureGet('https://localhost/does-not-exist')
-        t.strictEquals(basic404ProxyResponse.statusCode, 404, 'proxied response code is 404 as expected')
-        t.strictEquals(basic404ProxyResponse.body, 'does-not-exist', 'proxied response body is correct')
+        const basic404ProxyResponse = await secureGet('https://localhost/does-not-exist/')
+        t.strictEquals(basic404ProxyResponse.statusCode, 404, 'basic 404 proxy response code is 404 as expected')
+        t.strictEquals(basic404ProxyResponse.body, 'does-not-exist', 'basic 404 proxy response body is correct')
 
-        sourceServer.close()
         basicProxyServer.close()
 
-        t.end()
+        const proxyServerWithFallthrough = new Site({proxyPort: 4242, path: 'test/proxy-extensions', proxyFallthrough: true}).serve(async () => {
+
+          const basicProxyResponse = await secureGet('https://localhost/exists/')
+          t.strictEquals(basicProxyResponse.statusCode, 200, 'proxy server with fallthrough (exists at source): proxied response code is correct')
+          t.strictEquals(basicProxyResponse.body, 'exists', 'proxy server with fallthrough (exists at source): proxied response body is correct')
+
+          // Ask for a static route that we know for certain does not exist on the source server
+          // but we know exists in our Site.js server extension.
+          const staticFallthroughResponse = await secureGet('https://localhost/does-not-exist/')
+          t.strictEquals(staticFallthroughResponse.statusCode, 200, 'proxy server with fallthrough (does not exist at source): fallthrough response code is correct')
+          t.strictEquals(staticFallthroughResponse.body, 'actually, it exists, because 404 fallthrough works', 'proxy server with fallthrough (does not exist at source): fallthrough response body is correct')
+
+          // '<!doctype html><html lang="en" style="font-family: sans-serif; background-color: #eae7e1"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error 404: Not found</title></head><body style="display: grid; align-items: center; justify-content: center; height: 100vh; vertical-align: top; margin: 0;"><main><h1 style="font-size: 16vw; color: black; text-align:center; line-height: 0.25">4🤭4</h1><p style="font-size: 4vw; text-align: center; padding-left: 2vw; padding-right: 2vw;"><span>Could not find</span> <span style="color: grey;">/does-not-exist-either</span></p></main>  <script src="/instant/client/bundle.js"></script>\n' +
+          // '</body></html>'
+
+          // Close the source server and signal the end of the proxy tests.
+          proxyServerWithFallthrough.close()
+          sourceServer.close()
+          t.end()
+        })
       })
     })
   })
