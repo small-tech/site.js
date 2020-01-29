@@ -120,6 +120,9 @@ class Site {
       this.proxyPort = options.proxyPort
     }
 
+    // Is this a proxy server with fallthrough?
+    this.isProxyServerWithFallthrough = this.isProxyServer && options.proxyFallthrough
+    this.servesRegularNonProxyRoutes = !this.isProxyServer || this.isProxyServerWithFallthrough
 
     //
     // Configure the Express app.
@@ -260,8 +263,7 @@ class Site {
     // Enable the ability to destroy the server (close all active connections).
     enableDestroy(this.server)
 
-    if (!this.isProxyServer) {
-
+    if (this.servesRegularNonProxyRoutes) {
       const createWebSocketServer = () => {
         expressWebSocket(this.app, this.server, { perMessageDeflate: false })
       }
