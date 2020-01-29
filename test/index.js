@@ -22,6 +22,12 @@ const queryString = require('querystring')
 
 const WebSocket = require('ws')
 
+function default404ResponseBodyDeflatedForRoute (route) {
+  return `<!doctypehtml><htmllang="en"style="font-family:sans-serif;background-color:#eae7e1"><head><metacharset="utf-8"><metaname="viewport"content="width=device-width,initial-scale=1.0"><title>Error404:Notfound</title></head><bodystyle="display:grid;align-items:center;justify-content:center;height:100vh;vertical-align:top;margin:0;"><main><h1style="font-size:16vw;color:black;text-align:center;line-height:0.25">4🤭4</h1><pstyle="font-size:4vw;text-align:center;padding-left:2vw;padding-right:2vw;"><span>Couldnotfind</span><spanstyle="color:grey;">${route}</span></p></main><scriptsrc="/instant/client/bundle.js"></script></body></html>`.replace(/\s/g, '')
+}
+
+const DEFAULT_500_RESPONSE_BODY_DEFLATED = '<!doctype html><html lang="en" style="font-family: sans-serif; background-color: #eae7e1"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error 500: Internal Server Error</title></head><body style="display: grid; align-items: center; justify-content: center; height: 100vh; vertical-align: top; margin: 0;"><main><h1 style="font-size: 16vw; color: black; text-align:center; line-height: 0.25">5🔥😱</h1><p style="font-size: 4vw; text-align: center; padding-left: 2vw; padding-right: 2vw;"><span>Internal Server Error</span><br><br><span style="color: grey;">Bad things have happened.</span></p></main></body></html>'.replace(/\s/g, '')
+
 function localhost(path) {
   return `https://localhost${path}`
 }
@@ -474,18 +480,17 @@ test('[site.js] serve method default 404 and 500 responses', t => {
     //
     // Test default 404 error.
     //
+    const missingRoute = '/this-page-does-not-exist'
     let responseDefault404
     try {
-      responseDefault404 = await secureGet('https://localhost/this-page-does-not-exist')
+      responseDefault404 = await secureGet(`https://localhost${missingRoute}`)
     } catch (error) {
       console.log(error)
       process.exit(1)
     }
 
-    const expectedDefault404ResponseBodyDeflated = '<!doctypehtml><htmllang="en"style="font-family:sans-serif;background-color:#eae7e1"><head><metacharset="utf-8"><metaname="viewport"content="width=device-width,initial-scale=1.0"><title>Error404:Notfound</title></head><bodystyle="display:grid;align-items:center;justify-content:center;height:100vh;vertical-align:top;margin:0;"><main><h1style="font-size:16vw;color:black;text-align:center;line-height:0.25">4🤭4</h1><pstyle="font-size:4vw;text-align:center;padding-left:2vw;padding-right:2vw;"><span>Couldnotfind</span><spanstyle="color:grey;">/this-page-does-not-exist</span></p></main><scriptsrc="/instant/client/bundle.js"></script></body></html>'.replace(/\s/g, '')
-
     t.equal(responseDefault404.statusCode, 404, 'response status code is 404')
-    t.equal(responseDefault404.body.replace(/\s/g, ''), expectedDefault404ResponseBodyDeflated, 'default 404 response body is as expected')
+    t.equal(responseDefault404.body.replace(/\s/g, ''), default404ResponseBodyDeflatedForRoute(missingRoute), 'default 404 response body is as expected')
 
     //
     // Test default 500 error.
@@ -499,10 +504,8 @@ test('[site.js] serve method default 404 and 500 responses', t => {
       process.exit(1)
     }
 
-    const expectedDefault500ResponseBodyDeflated = '<!doctype html><html lang="en" style="font-family: sans-serif; background-color: #eae7e1"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error 500: Internal Server Error</title></head><body style="display: grid; align-items: center; justify-content: center; height: 100vh; vertical-align: top; margin: 0;"><main><h1 style="font-size: 16vw; color: black; text-align:center; line-height: 0.25">5🔥😱</h1><p style="font-size: 4vw; text-align: center; padding-left: 2vw; padding-right: 2vw;"><span>Internal Server Error</span><br><br><span style="color: grey;">Bad things have happened.</span></p></main></body></html>'.replace(/\s/g, '')
-
     t.equal(responseDefault500.statusCode, 500, 'response status code is 500')
-    t.equal(responseDefault500.body.replace(/\s/g, ''), expectedDefault500ResponseBodyDeflated, 'default 500 response body is as expected')
+    t.equal(responseDefault500.body.replace(/\s/g, ''), DEFAULT_500_RESPONSE_BODY_DEFLATED, 'default 500 response body is as expected')
 
     t.end()
 
@@ -573,7 +576,7 @@ test('[site.js] serve method', t => {
   })
 
   test('[site.js] serve method (proxy server)', t => {
-    t.plan(13)
+    t.plan(15)
 
     const sourceServer = http.createServer((request, response) => {
       if (request.url === '/exists/') {
@@ -630,8 +633,11 @@ test('[site.js] serve method', t => {
 
           // TODO: Write test for route that is 404 both at route and at Site.js document root.
 
-          // '<!doctype html><html lang="en" style="font-family: sans-serif; background-color: #eae7e1"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error 404: Not found</title></head><body style="display: grid; align-items: center; justify-content: center; height: 100vh; vertical-align: top; margin: 0;"><main><h1 style="font-size: 16vw; color: black; text-align:center; line-height: 0.25">4🤭4</h1><p style="font-size: 4vw; text-align: center; padding-left: 2vw; padding-right: 2vw;"><span>Could not find</span> <span style="color: grey;">/does-not-exist-either</span></p></main>  <script src="/instant/client/bundle.js"></script>\n' +
-          // '</body></html>'
+          const routeThatDoesNotExistOnEitherServer = '/does-not-exist-on-either-server'
+          const doesNotExistOnEitherServerResponse = await secureGet(`https://localhost${routeThatDoesNotExistOnEitherServer}`)
+
+          t.strictEquals(doesNotExistOnEitherServerResponse.statusCode, 404, 'route that does not exist on either server returns status code 404')
+          t.strictEquals(doesNotExistOnEitherServerResponse.body.replace(/\s/g, ''), default404ResponseBodyDeflatedForRoute(routeThatDoesNotExistOnEitherServer), 'the server response body is the default Site.js 404 message')
 
           // TODO: Test web socket server proxying and fallthrough.
 
