@@ -239,11 +239,11 @@ class Site {
     }
     const httpsProxy = httpProxyMiddleware(httpsProxyOptions)
 
-    this.app.use(httpsProxy)
     this.app.use(webSocketProxy)
+    this.app.use(httpsProxy)
 
-    this.httpsProxy = httpsProxy
     this.webSocketProxy = webSocketProxy
+    this.httpsProxy = httpsProxy
   }
 
 
@@ -265,6 +265,18 @@ class Site {
 
     if (this.servesRegularNonProxyRoutes) {
       const createWebSocketServer = () => {
+
+        // Add middleware to modify the url for express-ws to work (but without
+        // polluting the entire middleware chain).
+        this.app.use((request, response, next) => {
+          console.log('[Site.js] Checking if we need to rewrite express-ws url')
+          if (request.websocketUrl !== null && request.websocketUrl !== undefined) {
+            console.log('[Site.js] Rewriting express-ws url')
+            request.url = request.websocketUrl
+          }
+          next()
+        })
+
         expressWebSocket(this.app, this.server, { perMessageDeflate: false })
       }
 
