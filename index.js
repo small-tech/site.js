@@ -40,6 +40,8 @@ const childProcess = require('child_process')
 const getRoutes = require('@ind.ie/web-routes-from-files')
 const Stats = require('./lib/Stats')
 
+const errors = require('./lib/errors')
+
 class Site {
 
   // Emitted when the address the server is trying to use is already in use by a different process on the system.
@@ -103,6 +105,7 @@ class Site {
     // object are optional. Check and populate the defaults.
     if (options === undefined) options = {}
     this.pathToServe = typeof options.path === 'string' ? options.path : '.'
+    this.absolutePathToServe = path.resolve(this.pathToServe)
     this.port = typeof options.port === 'number' ? options.port : 443
     this.global = typeof options.global === 'boolean' ? options.global : false
     this.aliases = Array.isArray(options.aliases) ? options.aliases : []
@@ -181,6 +184,11 @@ class Site {
   // Middleware and routes that are unique to regular sites
   // (not used on proxy servers).
   configureAppRoutes () {
+    // Ensure that the requested path to serve actually exists.
+    if (!fs.existsSync(this.absolutePathToServe)) {
+      throw new errors.InvalidPathToServeError(`Path ${this.pathToServe} does not exist.`)
+    }
+
     this.add4042302Support()
     this.addCustomErrorPagesSupport()
 
@@ -770,7 +778,7 @@ class Site {
   // my-lovely-site-archive-1, etc.
   appAddArchiveCascade () {
     const archiveCascade = []
-    const absolutePathToServe = path.resolve(this.pathToServe)
+    const absolutePathToServe = this.absolutePathToServe
 
     // (Windows uses forward slashes in paths so write the RegExp accordingly for that platform.)
     const pathName = process.platform === 'win32' ? absolutePathToServe.match(/.*\\(.*?)$/)[1] : absolutePathToServe.match(/.*\/(.*?)$/)[1]

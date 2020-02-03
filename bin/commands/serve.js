@@ -152,6 +152,7 @@ function serve (args) {
           process.exit(1)
         } else {
 
+
           const options = {
             path,
             port,
@@ -161,7 +162,19 @@ function serve (args) {
           }
 
           // Start serving the site.
-          const site = new Site(options)
+          let site
+          try {
+            site = new Site(options)
+          } catch (error) {
+            if (error instanceof errors.InvalidPathToServeError) {
+              console.log(` 🤯 ${clr('Error:', 'red')} The path to serve ${clr(options.path, 'yellow')} does not exist.\n`)
+              process.exit(1)
+            } else {
+              // Rethrow
+              throwError(error)
+            }
+          }
+
           const server = site.serve()
 
           // Exit on known errors as we have already logged them to console.
@@ -362,3 +375,4 @@ const ensure = require('../lib/ensure')
 const status = require('../lib/status')
 const tcpPortUsed = require('tcp-port-used')
 const clr = require('../../lib/clr')
+const errors = require('../../lib/errors')
