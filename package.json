@@ -24,7 +24,8 @@
   "dependencies": {
     "@ind.ie/web-routes-from-files": "^1.2.1",
     "@small-tech/cross-platform-hostname": "^1.0.0",
-    "@small-tech/express-ws": "^1.0.0",
+    "@small-tech/express-ws": "^1.0.1",
+    "@small-tech/http-proxy-middleware-with-fallthrough": "^1.0.0",
     "@small-tech/https": "^1.0.6",
     "@small-tech/instant": "^1.0.6",
     "ansi-escape-sequences": "^4.1.0",
@@ -38,7 +39,6 @@
     "fs-extra": "^8.1.0",
     "gunzip-maybe": "^1.4.1",
     "helmet": "^3.20.0",
-    "@small-tech/http-proxy-middleware-with-fallthrough": "^1.0.0",
     "minimist": "^1.2.0",
     "morgan": "^1.9.1",
     "node-graceful": "^2.0.1",

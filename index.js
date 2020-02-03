@@ -269,15 +269,33 @@ class Site {
         // Add middleware to modify the url for express-ws to work (but without
         // polluting the entire middleware chain).
         this.app.use((request, response, next) => {
-          console.log('[Site.js] Checking if we need to rewrite express-ws url')
+          console.log('[Site.js] Checking if we need to rewrite express-ws url', request.url)
           if (request.websocketUrl !== null && request.websocketUrl !== undefined) {
-            console.log('[Site.js] Rewriting express-ws url')
+            console.log('[Site.js] Rewriting express-ws url', request.url)
             request.url = request.websocketUrl
+
+            const dummyResponse = new http.ServerResponse(request);
+
+            dummyResponse.writeHead = function writeHead(statusCode) {
+              if (statusCode > 200) {
+                /* Something in the middleware chain signalled an error. */
+                dummyResponse._header = ''; // eslint-disable-line no-underscore-dangle
+                response.ws.close();
+              }
+            };
+
+            this.app.handle(request, dummyResponse, () => {
+              if (!request.wsHandled) {
+                /* There was no matching WebSocket-specific route for this request. We'll close
+                 * the connection, as no endpoint was able to handle the request anyway... */
+                response.ws.close();
+              }
+            });
           }
           next()
         })
 
-        expressWebSocket(this.app, this.server, { perMessageDeflate: false })
+        expressWebSocket(this.app, this.server, { perMessageDeflate: false, leaveRouterUntouched: true })
       }
 
       // If we need to load dynamic routes from a routesJS file, do it now.
@@ -462,6 +480,7 @@ class Site {
         // As we’re using a custom server, manually listen for the http upgrade event
         // and upgrade the web socket proxy also.
         // (See https://github.com/chimurai/http-proxy-middleware#external-websocket-upgrade)
+        console.log('[Site.js] Upgrade received. Telling web socket proxy to upgrade')
         this.server.on('upgrade', this.webSocketProxy.upgrade)
       }
 
