@@ -580,12 +580,12 @@ class Site {
     const roots = []
 
     // Native Hugo static site generator support:
-    // Check if there is a .hugo-build directory in the path to serve and
+    // Check if there is a .hugo-public directory in the path to serve and
     // add serve it statically with live reload if there is.
-    const hugoBuildDirectory = path.join(this.pathToServe, '.hugo-build')
-    if (fs.existsSync(hugoBuildDirectory)) {
+    const hugoPublicDirectory = path.join(this.pathToServe, '.hugo-public')
+    if (fs.existsSync(hugoPublicDirectory)) {
       console.log(` 🔧 ${Site.HUGO_STRING} detected; serving generated static site.`)
-      roots.push(hugoBuildDirectory)
+      roots.push(hugoPublicDirectory)
     }
 
     // Add the regular static web root.
