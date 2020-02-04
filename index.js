@@ -47,6 +47,9 @@ class Site {
   // Emitted when the address the server is trying to use is already in use by a different process on the system.
   static get SMALL_TECH_ORG_ERROR_HTTP_SERVER () { return 'small-tech.org-error-http-server' }
 
+  // String constant for pretty printing HUGO in the HUGO logo colours.
+  static get HUGO_STRING () { return `${clr('H', ['bg-magenta', 'black'])}${clr('U', ['bg-blue', 'black'])}${clr('G', ['bg-green', 'black'])}${clr('O', ['bg-yellow', 'black'])}`}
+
   // The cross-platform hostname (os.hostname() on Linux and macOS, special handling on Windows to return
   // the full computer name, which can be a domain name and thus the equivalent of hostname on Linux and macOS).
   static get hostname () { return crossPlatformHostname }
@@ -301,9 +304,9 @@ class Site {
       }
 
       // Ensure that the static route file watchers are removed.
-      if (this.app.__instant !== undefined) {
-        this.app.__instant.cleanUp(() => {
-          console.log(' 🚮 Live reload file system watchers removed on server close.')
+      if (this.app.__staticRoutes !== undefined) {
+        this.app.__staticRoutes.cleanUp(() => {
+          console.log(' 🚮 Live reload file system watchers removed from static web routes on server close.')
         })
       }
     })
@@ -572,10 +575,24 @@ class Site {
   // Add static routes.
   // (Note: directories that begin with a dot (hidden directories) will be ignored.)
   appAddStaticRoutes () {
-    this.app.__instant = instant(this.pathToServe, {
-      watch: ['html', 'js', 'css', 'svg', 'png', 'jpg', 'jpeg']
-    })
-    this.app.use(this.app.__instant)
+    const instantOptions = { watch: ['html', 'js', 'css', 'svg', 'png', 'jpg', 'jpeg'] }
+
+    const roots = []
+
+    // Native Hugo static site generator support:
+    // Check if there is a .hugo-build directory in the path to serve and
+    // add serve it statically with live reload if there is.
+    const hugoBuildDirectory = path.join(this.pathToServe, '.hugo-build')
+    if (fs.existsSync(hugoBuildDirectory)) {
+      console.log(` 🔧 ${Site.HUGO_STRING} detected; serving generated static site.`)
+      roots.push(hugoBuildDirectory)
+    }
+
+    // Add the regular static web root.
+    roots.push(this.pathToServe)
+
+    this.app.__staticRoutes = instant(roots, instantOptions)
+    this.app.use(this.app.__staticRoutes)
   }
 
 
