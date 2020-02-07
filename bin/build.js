@@ -117,23 +117,27 @@ const resources = [
 ]
 
 //
-// Platform-specific resources.
+// Platform-specific resources (mkcert, used by nodecert and hugo, used by node-hugo)
 //
 
 const linuxX64Resources = resources.concat([
-  'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-amd64'         // mkcert binary used by nodecert.
+  'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-amd64',
+  'node_modules/@small-tech/node-hugo/hugo-bin/hugo-v0.64.0-linux-amd64'
 ])
 
 const linuxArmResources = resources.concat([
-  'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-arm'         // mkcert binary used by nodecert.
+  'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-arm',
+  'node_modules/@small-tech/node-hugo/hugo-bin/hugo-v0.64.0-linux-arm'
 ])
 
 const macOsResources = resources.concat([
-  'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-darwin-amd64'       // mkcert binary used by nodecert.
+  'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-darwin-amd64',
+  'node_modules/@small-tech/node-hugo/hugo-bin/hugo-v0.64.0-darwin-amd64'
 ])
 
 const windowsResources = resources.concat([
-  'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-windows-amd64.exe'  // mkcert binary used by nodecert.
+  'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-windows-amd64.exe',
+  'node_modules/@small-tech/node-hugo/hugo-bin/hugo-v0.64.0-windows-amd64.exe'
 ])
 
 const input = 'bin/site.js'
