@@ -215,7 +215,7 @@ class Site {
       const baseURL = this.global ? ((process.env.NODE_ENV === 'production') ? 'https://unimplemented-for-now' : `https://${Site.hostname}`) : 'https://localhost'
 
       // Start the server and await the end of the build process.
-      const { process: hugoServerProcess, output: hugoBuildOutput } = await this.hugo.serve(sourcePath, destinationPath, baseURL)
+      const { hugoServerProcess, hugoBuildOutput } = await this.hugo.serve(sourcePath, destinationPath, baseURL)
 
       // At this point, the build process is complete and the .hugo-public folder should exist.
 
