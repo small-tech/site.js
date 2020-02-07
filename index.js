@@ -210,17 +210,32 @@ class Site {
 
       this.hugo = new Hugo(path.join(Site.settingsDirectory, 'node-hugo'))
 
-      // TODO: Add custom event to hugo server to notify us when the build is complete
-      // ===== so we don’t have to build twice.
       const sourcePath = path.join(this.pathToServe, '.hugo-source')
       const destinationPath = path.join('../.hugo-public')
       const baseURL = this.global ? ((process.env.NODE_ENV === 'production') ? 'https://unimplemented-for-now' : `https://${Site.hostname}`) : 'https://localhost'
 
-      let output = null
+      // Start the server and await the end of the build process.
+      const { process: hugoServerProcess, output: hugoBuildOutput } = await this.hugo.serve(sourcePath, destinationPath, baseURL)
 
-      output = await this.hugo.build(sourcePath, destinationPath, baseURL)
+      // At this point, the build process is complete and the .hugo-public folder should exist.
 
-      output.split('\n').forEach(line => {
+      // Listen for standard output and error output on the server instance.
+      hugoServerProcess.stdout.on('data', (data) => {
+        const lines = data.toString('utf-8').split('\n')
+        lines.forEach(line => console.log(` ${Site.HUGO_STRING} ${line}`))
+      })
+
+      hugoServerProcess.stderr.on('data', (data) => {
+        const lines = data.toString('utf-8').split('\n')
+        lines.forEach(line => console.log(` ${Site.HUGO_STRING} [ERROR] ${line}`))
+      })
+
+      // Save a reference to the hugo server process so we can
+      // close it later and perform other cleanup.
+      this.hugoServerProcess = hugoServerProcess
+
+      // Print the output received so far.
+      hugoBuildOutput.split('\n').forEach(line => {
         console.log(` ${Site.HUGO_STRING} ${line}`)
       })
     }
