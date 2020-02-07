@@ -13,7 +13,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 const os = require('os')
 const childProcess = require('child_process')
@@ -120,25 +120,25 @@ const resources = [
 // Platform-specific resources (mkcert, used by nodecert and hugo, used by node-hugo)
 //
 
-const linuxX64Resources = resources.concat([
-  'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-amd64',
-  'node_modules/@small-tech/node-hugo/hugo-bin/hugo-v0.64.0-linux-amd64'
-])
+// const linuxX64Resources = resources.concat([
+//   // 'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-amd64',
+//   // 'node_modules/@small-tech/node-hugo/hugo-bin/hugo-v0.64.0-linux-amd64'
+// ])
 
-const linuxArmResources = resources.concat([
-  'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-arm',
-  'node_modules/@small-tech/node-hugo/hugo-bin/hugo-v0.64.0-linux-arm'
-])
+// const linuxArmResources = resources.concat([
+//   'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-arm',
+//   'node_modules/@small-tech/node-hugo/hugo-bin/hugo-v0.64.0-linux-arm'
+// ])
 
-const macOsResources = resources.concat([
-  'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-darwin-amd64',
-  'node_modules/@small-tech/node-hugo/hugo-bin/hugo-v0.64.0-darwin-amd64'
-])
+// const macOsResources = resources.concat([
+//   'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-darwin-amd64',
+//   'node_modules/@small-tech/node-hugo/hugo-bin/hugo-v0.64.0-darwin-amd64'
+// ])
 
-const windowsResources = resources.concat([
-  'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-windows-amd64.exe',
-  'node_modules/@small-tech/node-hugo/hugo-bin/hugo-v0.64.0-windows-amd64.exe'
-])
+// const windowsResources = resources.concat([
+//   'node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-windows-amd64.exe',
+//   'node_modules/@small-tech/node-hugo/hugo-bin/hugo-v0.64.0-windows-amd64.exe'
+// ])
 
 const input = 'bin/site.js'
 
@@ -152,14 +152,77 @@ async function build () {
   //
   // Build.
   //
+
+  // Move all the third-party binaries out of the node_modules folders so they
+  // are not all included in the various builds.
+  // fs.moveSync()
+  const nodeModulesPath = path.resolve(__dirname, '..', 'node_modules')
+
+  const mkcertBinaryPath = path.join(nodeModulesPath, '@ind.ie', 'nodecert', 'mkcert-bin')
+  const hugoBinaryPath = path.join(nodeModulesPath, '@small-tech', 'node-hugo', 'hugo-bin')
+
+  const mkcertTemporaryPath = '/tmp/mkcert-bin/'
+  const hugoTemporaryPath = '/tmp/hugo-bin/'
+  fs.mkdirpSync(mkcertBinaryPath)
+  fs.mkdirpSync(hugoBinaryPath)
+
+  function removeMkcertBinary(platform) {
+    const fileName = `mkcert-v1.4.0-${platform}`
+    fs.moveSync(path.join(mkcertBinaryPath, fileName), path.join(mkcertTemporaryPath, fileName))
+  }
+
+  function removeHugoBinary(platform) {
+    const fileName = `hugo-v0.64.0-${platform}`
+    fs.moveSync(path.join(hugoBinaryPath, fileName), path.join(hugoTemporaryPath, fileName))
+  }
+
+  function restoreMkcertBinary(platform) {
+    const fileName = `mkcert-v1.4.0-${platform}`
+    fs.moveSync(path.join(mkcertTemporaryPath, fileName), path.join(mkcertBinaryPath, fileName))
+  }
+
+  function restoreHugoBinary(platform) {
+    const fileName = `hugo-v0.64.0-${platform}`
+    fs.moveSync(path.join(hugoTemporaryPath, fileName), path.join(hugoBinaryPath, fileName))
+  }
+
+  const platforms = ['darwin-amd64', 'linux-amd64', 'linux-arm', 'windows-amd64.exe']
+
+  function removeAllMkcertPlatforms () {
+    platforms.forEach(platform => {
+      if (fs.existsSync(path.join(mkcertBinaryPath, `mkcert-v1.4.0-${platform}`))) {
+        removeMkcertBinary(platform)
+      }
+    })
+  }
+
+  function removeAllHugoPlatforms () {
+    platforms.forEach(platform => {
+      if (fs.existsSync(path.join(hugoBinaryPath, `hugo-v0.64.0-${platform}`))) {
+        removeHugoBinary(platform)
+      }
+    })
+  }
+
+  function stripForPlatform (platform) {
+    console.log('Adding platform', platform)
+    removeAllMkcertPlatforms(platform)
+    removeAllHugoPlatforms(platform)
+    restoreMkcertBinary(platform)
+    restoreHugoBinary(platform)
+  }
+
+
   if (buildLinuxX64Version) {
     console.log('   • Building Linux version (x64)…')
+
+    stripForPlatform('linux-amd64')
 
     await compile({
       input,
       output    : linuxX64BinaryPath,
       target    : linuxX64Target,
-      resources : linuxX64Resources
+      resources
     })
 
     console.log('     Done ✔\n')
@@ -168,10 +231,12 @@ async function build () {
   if (buildLinuxArmVersion) {
     console.log('   • Building Linux version (ARM)…')
 
+    stripForPlatform('linux-arm')
+
     await compile({
       input,
       output    : linuxArmBinaryPath,
-      resources : linuxArmResources,
+      resources,
       build: true
     })
 
@@ -181,11 +246,13 @@ async function build () {
   if (buildMacVersion) {
     console.log('   • Building macOS version…')
 
+    stripForPlatform('darwin-amd64')
+
     await compile({
       input,
       output    : macOsBinaryPath,
       target    : macOsTarget,
-      resources : macOsResources
+      resources
     })
 
     console.log('     Done ✔\n')
@@ -194,11 +261,13 @@ async function build () {
   if (buildWindowsVersion) {
     console.log('   • Building Windows version…')
 
+    stripForPlatform('windows-amd64.exe')
+
     await compile({
       input,
       output    : windowsBinaryPath,
       target    : windowsTarget,
-      resources : windowsResources
+      resources
     })
 
     console.log('     Done ✔\n')
@@ -225,7 +294,7 @@ async function build () {
       // Copy the binary into it.
       console.log(`Copy-Item -Force -Path "${path.resolve(currentPlatformBinaryPath)}" -Destination "${windowsInstallationDirectory}"`)
       console.log(`\nDont forget to add ${windowsInstallationDirectory} to your path.\n`)
-    } else {      
+    } else {
       childProcess.execSync(`sudo cp ${currentPlatformBinaryPath} /usr/local/bin`)
     }
   }
