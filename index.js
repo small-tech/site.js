@@ -220,7 +220,9 @@ class Site {
 
       output = await this.hugo.build(sourcePath, destinationPath, baseURL)
 
-      console.log(output)
+      output.split('\n').forEach(line => {
+        console.log(` ${Site.HUGO_STRING} ${line}`)
+      })
     }
 
     // Continue configuring the rest of the app routes.
@@ -621,7 +623,7 @@ class Site {
     // add serve it statically with live reload if there is.
     const hugoPublicDirectory = path.join(this.pathToServe, '.hugo-public')
     if (fs.existsSync(hugoPublicDirectory)) {
-      console.log(` 🔧 ${Site.HUGO_STRING} detected; serving generated static site.`)
+      console.log(` ${Site.HUGO_STRING} public folder detected; serving generated static site.`)
       roots.push(hugoPublicDirectory)
     }
 
