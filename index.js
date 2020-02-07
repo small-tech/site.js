@@ -30,6 +30,8 @@ const httpProxyMiddleware = require('http-proxy-middleware')
 
 const instant = require('@small-tech/instant')
 
+const Hugo = require('@small-tech/node-hugo')
+
 const cli = require('./bin/lib/cli')
 const serve = require('./bin/commands/serve')
 const chokidar = require('chokidar')
@@ -94,6 +96,7 @@ class Site {
   // • proxyPort: (number)    if provided, a proxy server will be created for the port (and path will be ignored)
   // •   aliases: (string)    comma-separated list of domains that we should get TLS certs
   //                          for and serve.
+  // • serverCallback
   //
   // Note: if you want to run the site on a port < 1024 on Linux, ensure your process has the
   // ===== necessary privileges to bind to such ports. E.g., use require('lib/ensure').weCanBindToPort(port, callback)
@@ -125,22 +128,14 @@ class Site {
       this.proxyPort = options.proxyPort
     }
 
-
     //
-    // Configure the Express app.
+    // Create the Express app. We will configure it later.
     //
     this.stats = this.initialiseStatistics()
     this.app = express()
 
-    this.startAppConfiguration()
-
-    if (this.isProxyServer) {
-      this.configureProxyRoutes()
-    } else {
-      this.configureAppRoutes()
-    }
-
-    this.endAppConfigurationAndCreateServer()
+    // Create the HTTPS server.
+    this.createServer()
 
     // If running as child process, notify person.
     process.on('message', (m) => {
@@ -148,6 +143,21 @@ class Site {
         process.stdout.write(`\n 👶 Running as child process.`)
       }
     })
+  }
+
+  // The app configuration is handled in an asynchronous method
+  // as there is a chance that we will have to wait for a Hugo
+  // build to complete.
+  async configureApp () {
+    this.startAppConfiguration()
+
+    if (this.isProxyServer) {
+      this.configureProxyRoutes()
+    } else {
+      await this.configureAppRoutes()
+    }
+
+    this.endAppConfiguration()
   }
 
 
@@ -186,12 +196,34 @@ class Site {
 
   // Middleware and routes that are unique to regular sites
   // (not used on proxy servers).
-  configureAppRoutes () {
+  async configureAppRoutes () {
     // Ensure that the requested path to serve actually exists.
     if (!fs.existsSync(this.absolutePathToServe)) {
       throw new errors.InvalidPathToServeError(`Path ${this.pathToServe} does not exist.`)
     }
 
+    // Auto detect and support Hugo if it exists.
+    const hugoSourceDirectory = path.join(this.absolutePathToServe, '.hugo-source')
+    if (fs.existsSync(hugoSourceDirectory)) {
+
+      console.log(` ${Site.HUGO_STRING} source detected. Starting Hugo build and server.`)
+
+      this.hugo = new Hugo(path.join(Site.settingsDirectory, 'node-hugo'))
+
+      // TODO: Add custom event to hugo server to notify us when the build is complete
+      // ===== so we don’t have to build twice.
+      const sourcePath = path.join(this.pathToServe, '.hugo-source')
+      const destinationPath = path.join('../.hugo-public')
+      const baseURL = this.global ? ((process.env.NODE_ENV === 'production') ? 'https://unimplemented-for-now' : `https://${Site.hostname}`) : 'https://localhost'
+
+      let output = null
+
+      output = await this.hugo.build(sourcePath, destinationPath, baseURL)
+
+      console.log(output)
+    }
+
+    // Continue configuring the rest of the app routes.
     this.add4042302Support()
     this.addCustomErrorPagesSupport()
 
@@ -240,11 +272,14 @@ class Site {
     this.webSocketProxy = webSocketProxy
   }
 
+  // Creates a web socket server.
+  createWebSocketServer () {
+    expressWebSocket(this.app, this.server, { perMessageDeflate: false })
+  }
 
-  // Finish configuring the app and create the server.
-  // (We need to add the WebSocket (WSS) routes after the server has been created).
-  endAppConfigurationAndCreateServer () {
-
+  // Create the server. Use this first to create the server and add the routes later
+  // so that you can support asynchronous tasks (e.g., generating a Hugo site).
+  createServer () {
     // Check for a valid port range
     // (port above 49,151 are ephemeral ports. See https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic,_private_or_ephemeral_ports)
     if (this.port < 0 || this.port > 49151) {
@@ -252,33 +287,10 @@ class Site {
     }
 
     // Create the server.
-    this.server = this.createServer({global: this.global}, this.app)
+    this.server = this._createServer({global: this.global}, this.app)
 
     // Enable the ability to destroy the server (close all active connections).
     enableDestroy(this.server)
-
-    if (!this.isProxyServer) {
-
-      const createWebSocketServer = () => {
-        expressWebSocket(this.app, this.server, { perMessageDeflate: false })
-      }
-
-      // If we need to load dynamic routes from a routesJS file, do it now.
-      if (this.routesJsFile !== undefined) {
-        createWebSocketServer()
-        require(path.resolve(this.routesJsFile))(this.app)
-      }
-
-      // If there are WebSocket routes, create a regular WebSocket server and
-      // add the WebSocket routes (if any) to the app.
-      if (this.wssRoutes !== undefined) {
-        createWebSocketServer()
-        this.wssRoutes.forEach(route => {
-          console.log(` 🐁 Adding WebSocket (WSS) route: ${route.path}`)
-          this.app.ws(route.path, require(route.callback))
-        })
-      }
-    }
 
     // Provide access to the error constant on the server instance itself
     // as consuming objects may not have access to the class itself.
@@ -310,6 +322,26 @@ class Site {
         })
       }
     })
+  }
+
+  // Finish configuring the app. These are the routes that come at the end.
+  // (We need to add the WebSocket (WSS) routes after the server has been created).
+  endAppConfiguration () {
+    // If we need to load dynamic routes from a routesJS file, do it now.
+    if (this.routesJsFile !== undefined) {
+      this.createWebSocketServer()
+      require(path.resolve(this.routesJsFile))(this.app)
+    }
+
+    // If there are WebSocket routes, create a regular WebSocket server and
+    // add the WebSocket routes (if any) to the app.
+    if (this.wssRoutes !== undefined) {
+      this.createWebSocketServer()
+      this.wssRoutes.forEach(route => {
+        console.log(` 🐁 Adding WebSocket (WSS) route: ${route.path}`)
+        this.app.ws(route.path, require(route.callback))
+      })
+    }
 
     // The error routes go at the very end.
 
@@ -376,7 +408,7 @@ class Site {
   //
   // Note: if you pass in a key and cert in the options object, they will not be
   // ===== used and will be overwritten.
-  createServer (options = {}, requestListener = undefined) {
+  _createServer (options = {}, requestListener = undefined) {
     const requestsGlobalCertificateScope = options.global === true
 
     if (requestsGlobalCertificateScope) {
@@ -415,7 +447,12 @@ class Site {
   //   • callback: (function) the callback to call once the server is ready (defaults are provided).
   //
   // Can throw.
-  serve (callback) {
+  async serve (callback) {
+
+    // Before starting the server, we have to configure the app. We do this here
+    // instead of in the constructor since the process might have to wait for the
+    // Hugo build process to complete.
+    await this.configureApp()
 
     if (typeof callback !== 'function') {
       callback = this.isProxyServer ? this.proxyCallback : this.regularCallback

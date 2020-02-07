@@ -175,7 +175,10 @@ function serve (args) {
             }
           }
 
-          const server = site.serve()
+          // Start serving.
+          site.serve()
+
+          const server = site.server
 
           // Exit on known errors as we have already logged them to console.
           // (Otherwise, the stack trace will be output for debugging purposes.)
