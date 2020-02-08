@@ -112,7 +112,7 @@ function serve (args) {
 
   // Sync is not supported on Windows as rsync does not exist in that cursed wasteland.
   if (syncRequested && process.platform === 'win32') {
-    console.log(`\n 🤯 [Windows] Sync is not supported on this platform.\n`)
+    console.log(`\n   🤯    Sync is not supported on Windows.\n`)
     return
   }
 
@@ -141,14 +141,14 @@ function serve (args) {
           if (port === 443) {
             if (ensure.commandExists('systemctl')) {
               if ({ isActive } = status()) {
-                console.log(`\n 🤯 Error: Cannot start server. Site.js is already running as a daemon on port ${clr(port.toString(), 'cyan')}. Use the ${clr('stop', 'green')} command to stop it.\n`)
+                console.log(`\n   🤯    Error: Cannot start server. Site.js is already running as a daemon on port ${clr(port.toString(), 'cyan')}. Use the ${clr('stop', 'green')} command to stop it.\n`)
                 process.exit(1)
               }
             }
           }
 
           // Generic port-in-use error message.
-          console.log(`\n 🤯 Error: Cannot start server. Port ${clr(port.toString(), 'cyan')} is already in use.\n`)
+          console.log(`\n   🤯    Error: Cannot start server. Port ${clr(port.toString(), 'cyan')} is already in use.\n`)
           process.exit(1)
         } else {
 
@@ -167,7 +167,7 @@ function serve (args) {
             site = new Site(options)
           } catch (error) {
             if (error instanceof errors.InvalidPathToServeError) {
-              console.log(` 🤯 ${clr('Error:', 'red')} The path to serve ${clr(options.path, 'yellow')} does not exist.\n`)
+              console.log(`   🤯    ${clr('Error:', 'red')} The path to serve ${clr(options.path, 'yellow')} does not exist.\n`)
               process.exit(1)
             } else {
               // Rethrow
@@ -194,7 +194,7 @@ function serve (args) {
           if (!syncRequested && exitOnSync) {
             // Person has provided the --exit-on-sync option but has not specified where to sync to.
             // Warn them and continue.
-            console.log (` ⚠ --exit-on-sync option specified without --sync-to option; ignoring.`)
+            console.log (`   ⚠    --exit-on-sync option specified without --sync-to option; ignoring.`)
           }
         }
       })
@@ -211,7 +211,7 @@ function syntaxError(message = null) {
 
 // Throw a general error.
 function throwError(errorMessage) {
-  console.log(`\n 🤯 ${errorMessage}\n`)
+  console.log(`\n   🤯    ${errorMessage}\n`)
   throw new Error(errorMessage)
 }
 
