@@ -14,7 +14,7 @@ function restart () {
   ensure.systemctl()
   ensure.root('restart')
 
-  Site.logAppNameAndVersion()
+  Site.logAppNameAndVersion(/* compact = */ true)
 
   try {
     // Start the web server.

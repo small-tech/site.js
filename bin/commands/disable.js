@@ -15,7 +15,7 @@ function disable () {
   ensure.systemctl()
   ensure.root('disable')
 
-  Site.logAppNameAndVersion()
+  Site.logAppNameAndVersion(/* compact = */ true)
 
   try {
     // Disable and stop the web server.

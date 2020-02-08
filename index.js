@@ -62,9 +62,11 @@ class Site {
   // the version set in the package.json file to console.
   // (Only once per Site lifetime.)
   // (Synchronous.)
-  static logAppNameAndVersion () {
+  static logAppNameAndVersion (compact = false) {
     if (!Site.appNameAndVersionAlreadyLogged && !process.argv.includes('--dont-log-app-name-and-version')) {
-      console.log(`\n   💕    Site.js v${Site.versionNumber()} ${clr(`(running on Node ${process.version})`, 'italic')}\n`)
+      let appNameAndVersion = `\n   💕    Site.js v${Site.versionNumber()} ${clr(`(running on Node ${process.version})`, 'italic')}\n`
+      if (compact) { appNameAndVersion = appNameAndVersion.replace('   💕    ', ' 💕 ')}
+      console.log(appNameAndVersion)
       Site.appNameAndVersionAlreadyLogged = true
     }
   }
@@ -171,26 +173,75 @@ class Site {
 
     // Logging.
     this.app.use(morgan(function (tokens, req, res) {
+      let hasWarning = false
+
       let method = tokens.method(req, res)
       if (method === 'GET') method = '↓ GET'
       if (method === 'POST') method = '↑ POST'
 
-      let duration = `${parseFloat(tokens['response-time'](req, res)).toFixed(1)} ms`
+      let durationWarning = ''
+      let duration = parseFloat(tokens['response-time'](req, res)).toFixed(1)
+      if (duration > 500) { durationWarning = ' !'}
+      if (duration > 1000) { durationWarning = ' !!'}
+      if (durationWarning !== '') {
+        hasWarning = true
+      }
 
-      let size = (tokens.res(req, res, 'content-length')/1024).toFixed(1) + ' kb'
-      if (size === 'NaN kb') size = '   -   '
+      duration = `${duration} ms${clr(durationWarning, 'yellow')}`
+
+      let sizeWarning = ''
+      let size = (tokens.res(req, res, 'content-length')/1024).toFixed(1)
+      if (size > 500) { sizeWarning = ' !' }
+      if (size > 1000) { sizeWarning = ' !!'}
+      if (sizeWarning !== '') {
+        hasWarning = true
+      }
+
+      size = `${size} kb${clr(sizeWarning, 'yellow')}`
+      if (size === 'NaN kb') { size = '   -   ' }
+
+      let url = tokens.url(req, res)
+
+      if (url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg') || url.endsWith('.svg') || url.endsWith('.gif')) {
+        url = `🌌 ${url}`
+      } else if (url.endsWith('.ico')) {
+        url = `💠 ${url}`
+      }
+      else if (url.endsWith('css')) {
+        url = `🎨 ${url}`
+      } else if (url === '/instant/client/bundle.js') {
+        url = `⚡ Live reload script load`
+      } else if (url.endsWith('js')) {
+        url = `⚡ ${url}`
+      } else if (url === '/instant/events') {
+        url = `✨ Live reload event`
+      } else {
+        url = `📄 ${url}`
+      }
+
+      let status = tokens.status(req, res)
+
+      const statusToTextColour = {
+        '404': 'red',
+        '304': 'cyan',
+        '200': 'green',
+      }
+
+      let textColour = statusToTextColour[status]
+      if (hasWarning) { textColour = 'yellow'}
 
       const log = [
-        method,
+        clr(method, textColour),
         '\t',
-        tokens.status(req, res),
+        clr(status, textColour),
         '\t',
-        duration,
+        clr(duration, textColour),
         '\t',
-        size,
+        clr(size, textColour),
         '\t',
-        tokens.url(req, res),
+        clr(url, textColour),
       ].join(' ')
+
       return `   💞    ${log}`
     }))
 

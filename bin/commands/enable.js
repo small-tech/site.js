@@ -185,7 +185,7 @@ function enable (args) {
         try {
           // Start.
           childProcess.execSync('sudo systemctl start site.js', {env: process.env, stdio: 'pipe'})
-          Site.logAppNameAndVersion()
+          Site.logAppNameAndVersion(/* compact = */ true)
           console.log(` 😈 Launched as daemon on ${clr(`https://${os.hostname()}`, 'green')} serving ${clr(pathToServe, 'cyan')}\n`)
 
           // Enable.
@@ -228,8 +228,8 @@ function displayConnectionInformation(pathToServe) {
 
     const syncToValue = `${account}@${hostname}:${absolutePathToServe}`
 
-    console.log(` 💞 [Sync] To sync from your local machine, from within your site’s folder, use:`)
-    console.log(` 💞 [Sync] site --sync-to=${syncToValue} --exit-on-sync\n`)
+    console.log(` 💫 [Sync] To sync from your local machine, from within your site’s folder, use:`)
+    console.log(` 💫 [Sync] site --sync-to=${syncToValue} --exit-on-sync\n`)
   } catch (error) {
     console.error(error, `\n 👿 Error: could not get connection information.\n`)
     process.exit(1)
@@ -241,12 +241,12 @@ function displayConnectionInformation(pathToServe) {
 // our rsync calls will take place via ssh as they should.)
 function disableInsecureRsyncDaemon() {
   try {
-    process.stdout.write(' 💞 [Sync] Securing Rsync… ')
+    process.stdout.write(' 💫 [Sync] Securing Rsync… ')
     childProcess.execSync('sudo systemctl stop rsync', {env: process.env, stdio: 'pipe'})
     childProcess.execSync('sudo systemctl disable rsync', {env: process.env, stdio: 'pipe'})
     childProcess.execSync('sudo systemctl mask rsync', {env: process.env, stdio: 'pipe'})
     console.log('done!')
-    console.log(` 💞 [Sync] Rsync set up to only allow secure access via ssh.\n`)
+    console.log(` 💫 [Sync] Rsync set up to only allow secure access via ssh.\n`)
   } catch (error) {
     console.error(error, `\n 👿 Error: could not disable insecure rsync daemon.\n`)
     process.exit(1)
