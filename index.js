@@ -501,7 +501,7 @@ class Site {
     const requestsGlobalCertificateScope = options.global === true
 
     if (requestsGlobalCertificateScope) {
-      console.log(' 🌍 [Site.js] Using globally-trusted certificates.')
+      console.log('   🌍    [Site.js] Using globally-trusted certificates.')
 
       // Let’s be nice and not continue to pollute the options object
       // with our custom property (global).
@@ -519,7 +519,7 @@ class Site {
       const listOfAliases = this.aliases.reduce((prev, current) => {
         return `${prev}${current}, `
       }, '').slice(0, -2)
-      console.log(` 👉 [Site.js] Aliases: also responding for ${listOfAliases}.`)
+      console.log(`   👉    [Site.js] Aliases: also responding for ${listOfAliases}.`)
     } else {
       console.log('   🚧    [Site.js] Using locally-trusted certificates.')
     }
@@ -637,7 +637,7 @@ class Site {
   // Callback used in proxy servers.
   proxyCallback (server) {
     const location = this.prettyLocation()
-    console.log(`\n 🚚 [Site.js] Proxying: HTTP/WS on localhost:${this.proxyPort} ←→ HTTPS/WSS on ${location}\n`)
+    console.log(`\n   🚚    [Site.js] Proxying: HTTP/WS on localhost:${this.proxyPort} ←→ HTTPS/WSS on ${location}\n`)
     this.showStatisticsUrl(location)
   }
 
@@ -756,8 +756,8 @@ class Site {
       })
 
       this.app.__dynamicFileWatcher.on ('all', (event, file) => {
-        console.log(`\n 🐁 ${clr('Code updated', 'green')} in ${clr(file, 'cyan')}!`)
-        console.log(' 🐁 Requesting restart…\n')
+        console.log(`\n   🐁    ${clr('Code updated', 'green')} in ${clr(file, 'cyan')}!`)
+        console.log('   🐁    Requesting restart…\n')
 
         if (process.env.NODE_ENV === 'production') {
           // We’re running production, to restart the daemon, just exit.
@@ -781,7 +781,7 @@ class Site {
             this.server.removeAllListeners('error')
             const {commandPath, args} = cli.initialise(process.argv.slice(2))
             serve(args)
-            console.log('\n 🐁 Restarted server.\n')
+            console.log('\n   🐁    Restarted server.\n')
           })
         }
       })
@@ -798,7 +798,7 @@ class Site {
         const loadHttpsGetRoutesFrom = (httpsGetRoutesDirectory) => {
           const httpsGetRoutes = getRoutes(httpsGetRoutesDirectory)
           httpsGetRoutes.forEach(route => {
-            console.log(` 🐁 Adding HTTPS GET route: ${route.path}`)
+            console.log(`   🐁    Adding HTTPS GET route: ${route.path}`)
             // Ensure we are loading a fresh copy in case it has changed.
             decache(route.callback)
             this.app.get(route.path, require(route.callback))
@@ -818,7 +818,7 @@ class Site {
 
         if (httpsGetRoutesDirectoryExists || httpsPostRoutesDirectoryExists) {
           // Either .get or .post routes directories (or both) exist.
-          console.log(' 🐁 Found .get/.post folders. Will load dynamic routes from there.')
+          console.log('   🐁    Found .get/.post folders. Will load dynamic routes from there.')
           if (httpsGetRoutesDirectoryExists) {
             loadHttpsGetRoutesFrom(httpsGetRoutesDirectory)
           }
@@ -829,7 +829,7 @@ class Site {
 
             const httpsPostRoutes = getRoutes(httpsPostRoutesDirectory)
             httpsPostRoutes.forEach(route => {
-              console.log(` 🐁 Adding HTTPS POST route: ${route.path}`)
+              console.log(`   🐁    Adding HTTPS POST route: ${route.path}`)
               this.app.post(route.path, require(route.callback))
             })
           }
@@ -874,7 +874,7 @@ class Site {
 
       if (httpsRoutesDirectoryExists || wssRoutesDirectoryExists) {
         // Either .https or .wss routes directories (or both) exist.
-        console.log(' 🐁 Found .https/.wss folders. Will load dynamic routes from there.')
+        console.log('   🐁    Found .https/.wss folders. Will load dynamic routes from there.')
         if (httpsRoutesDirectoryExists) {
           loadHttpsRoutesFrom(httpsRoutesDirectory)
         }
@@ -951,7 +951,7 @@ class Site {
     let archiveNumber = 0
     archiveCascade.forEach(archivePath => {
       archiveNumber++
-      console.log(` 🌱 [Site.js] Evergreen web: serving archive #${archiveNumber}`)
+      console.log(`   🌱    [Site.js] Evergreen web: serving archive #${archiveNumber}`)
       this.app.use(express.static(archivePath))
     })
   }

@@ -134,7 +134,7 @@ class Ensure {
 
           Site.logAppNameAndVersion()
 
-          console.log(' 😇 [Site.js] First run on Linux: got privileges to bind to ports < 1024.\n')
+          console.log('   😇    [Site.js] First run on Linux: got privileges to bind to ports < 1024.')
 
           // Fork a new instance of the server so that it is launched with the privileged Node.js.
           const newArgs = process.argv.slice(2)
