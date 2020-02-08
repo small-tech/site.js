@@ -419,7 +419,9 @@ class Site {
     // If we need to load dynamic routes from a routesJS file, do it now.
     if (this.routesJsFile !== undefined) {
       this.createWebSocketServer()
-      require(path.resolve(this.routesJsFile))(this.app)
+      const routesJSFilePath = path.resolve(this.routesJsFile)
+      decache(routesJSFilePath)
+      require(routesJSFilePath)(this.app)
     }
 
     // If there are WebSocket routes, create a regular WebSocket server and
@@ -428,6 +430,7 @@ class Site {
       this.createWebSocketServer()
       this.wssRoutes.forEach(route => {
         console.log(` 🐁 Adding WebSocket (WSS) route: ${route.path}`)
+        decache(route.callback)
         this.app.ws(route.path, require(route.callback))
       })
     }
@@ -550,6 +553,11 @@ class Site {
     // Handle graceful exit.
     this.goodbye = (done) => {
       console.log('\n   💃    Preparing to exit gracefully, please wait…')
+
+      if (this.hugoServerProcess) {
+        console.log('\n   🚮    Killing Hugo server process.')
+        this.hugoServerProcess.kill()
+      }
 
       // Close all active connections on the server.
       // (This is so that long-running connections – e.g., WebSockets – do not block the exit.)
@@ -769,6 +777,11 @@ class Site {
           // Do some housekeeping.
           Graceful.off('SIGINT', this.goodbye)
           Graceful.off('SIGTERM', this.goodbye)
+
+          if (this.hugoServerProcess) {
+            console.log('\n   🚮    Killing Hugo server process.')
+            this.hugoServerProcess.kill()
+          }
 
           // Destroy the current server (so we do not get a port conflict on restart before
           // we’ve had a chance to terminate our own process).
