@@ -212,7 +212,6 @@ async function build () {
     restoreHugoBinary(platform)
   }
 
-
   if (buildLinuxX64Version) {
     console.log('   • Building Linux version (x64)…')
 
