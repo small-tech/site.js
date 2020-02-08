@@ -44,13 +44,12 @@ const Stats = require('./lib/Stats')
 
 const errors = require('./lib/errors')
 
+const HUGO_LOGO = `${clr('🅷', 'magenta')} ${clr('🆄', 'blue')} ${clr('🅶', 'green')} ${clr('🅾', 'yellow')} `
+
 class Site {
 
   // Emitted when the address the server is trying to use is already in use by a different process on the system.
   static get SMALL_TECH_ORG_ERROR_HTTP_SERVER () { return 'small-tech.org-error-http-server' }
-
-  // String constant for pretty printing HUGO in the HUGO logo colours.
-  static get HUGO_STRING () { return `${clr('H', ['bg-magenta', 'black'])}${clr('U', ['bg-blue', 'black'])}${clr('G', ['bg-green', 'black'])}${clr('O', ['bg-yellow', 'black'])}`}
 
   // The cross-platform hostname (os.hostname() on Linux and macOS, special handling on Windows to return
   // the full computer name, which can be a domain name and thus the equivalent of hostname on Linux and macOS).
@@ -65,7 +64,7 @@ class Site {
   // (Synchronous.)
   static logAppNameAndVersion () {
     if (!Site.appNameAndVersionAlreadyLogged && !process.argv.includes('--dont-log-app-name-and-version')) {
-      console.log(`\n 💖 Site.js v${Site.versionNumber()} ${clr(`(running on Node ${process.version})`, 'italic')}\n`)
+      console.log(`\n   💕    Site.js v${Site.versionNumber()} ${clr(`(running on Node ${process.version})`, 'italic')}\n`)
       Site.appNameAndVersionAlreadyLogged = true
     }
   }
@@ -171,7 +170,29 @@ class Site {
     this.app.use(this.stats.middleware)
 
     // Logging.
-    this.app.use(morgan('tiny'))
+    this.app.use(morgan(function (tokens, req, res) {
+      let method = tokens.method(req, res)
+      if (method === 'GET') method = '↓ GET'
+      if (method === 'POST') method = '↑ POST'
+
+      let duration = `${parseFloat(tokens['response-time'](req, res)).toFixed(1)} ms`
+
+      let size = (tokens.res(req, res, 'content-length')/1024).toFixed(1) + ' kb'
+      if (size === 'NaN kb') size = '   -   '
+
+      const log = [
+        method,
+        '\t',
+        tokens.status(req, res),
+        '\t',
+        duration,
+        '\t',
+        size,
+        '\t',
+        tokens.url(req, res),
+      ].join(' ')
+      return `   💞    ${log}`
+    }))
 
     // Add domain aliases support (add 302 redirects for any domains
     // defined as aliases so that the URL is rewritten). There is always
@@ -206,7 +227,7 @@ class Site {
     const hugoSourceDirectory = path.join(this.absolutePathToServe, '.hugo-source')
     if (fs.existsSync(hugoSourceDirectory)) {
 
-      console.log(` ${Site.HUGO_STRING} source detected. Starting Hugo build and server.`)
+      console.log(`${HUGO_LOGO} source detected. Starting Hugo build and server.`)
 
       this.hugo = new Hugo(path.join(Site.settingsDirectory, 'node-hugo'))
 
@@ -222,12 +243,12 @@ class Site {
       // Listen for standard output and error output on the server instance.
       hugoServerProcess.stdout.on('data', (data) => {
         const lines = data.toString('utf-8').split('\n')
-        lines.forEach(line => console.log(` ${Site.HUGO_STRING} ${line}`))
+        lines.forEach(line => console.log(`${HUGO_LOGO} ${line}`))
       })
 
       hugoServerProcess.stderr.on('data', (data) => {
         const lines = data.toString('utf-8').split('\n')
-        lines.forEach(line => console.log(` ${Site.HUGO_STRING} [ERROR] ${line}`))
+        lines.forEach(line => console.log(`${HUGO_LOGO} [ERROR] ${line}`))
       })
 
       // Save a reference to the hugo server process so we can
@@ -236,7 +257,7 @@ class Site {
 
       // Print the output received so far.
       hugoBuildOutput.split('\n').forEach(line => {
-        console.log(` ${Site.HUGO_STRING} ${line}`)
+        console.log(`${HUGO_LOGO} ${line}`)
       })
     }
 
@@ -324,18 +345,18 @@ class Site {
     this.server.on('close', () => {
       // Clear the auto update check interval.
       clearInterval(this.autoUpdateCheckInterval)
-      console.log(' ⏰ Cleared auto-update check interval.')
+      console.log('   ⏰    Cleared auto-update check interval.')
 
       // Ensure dynamic route watchers are removed.
       if (this.app.__dynamicFileWatcher !== undefined) {
         this.app.__dynamicFileWatcher.close()
-        console.log (` 🚮 Removed dynamic file watchers.`)
+        console.log (`   🚮    Removed dynamic file watchers.`)
       }
 
       // Ensure that the static route file watchers are removed.
       if (this.app.__staticRoutes !== undefined) {
         this.app.__staticRoutes.cleanUp(() => {
-          console.log(' 🚮 Live reload file system watchers removed from static web routes on server close.')
+          console.log('   🚮    Live reload file system watchers removed from static web routes on server close.')
         })
       }
     })
@@ -449,7 +470,7 @@ class Site {
       }, '').slice(0, -2)
       console.log(` 👉 [Site.js] Aliases: also responding for ${listOfAliases}.`)
     } else {
-      console.log(' 🚧 [Site.js] Using locally-trusted certificates.')
+      console.log('   🚧    [Site.js] Using locally-trusted certificates.')
     }
 
     // Specify custom certificate directory for Site.js.
@@ -477,7 +498,7 @@ class Site {
 
     // Handle graceful exit.
     this.goodbye = (done) => {
-      console.log('\n 💃 Preparing to exit gracefully, please wait…')
+      console.log('\n   💃    Preparing to exit gracefully, please wait…')
 
       // Close all active connections on the server.
       // (This is so that long-running connections – e.g., WebSockets – do not block the exit.)
@@ -486,7 +507,7 @@ class Site {
       // Stop accepting new connections.
       this.server.close( () => {
         // OK, it’s time to go :)
-        console.log('\n 💖 Goodbye!\n')
+        console.log('\n   💕    Goodbye!\n')
         done()
       })
     }
@@ -550,14 +571,14 @@ class Site {
 
 
   showStatisticsUrl (location) {
-    console.log(` 📊 For statistics, see https://${location}${this.stats.route}`)
+    console.log(`   📊    For statistics, see https://${location}${this.stats.route}`)
   }
 
 
   // Callback used in regular servers.
   regularCallback (server) {
     const location = this.prettyLocation()
-    console.log(`\n 🎉 Serving ${clr(this.pathToServe, 'cyan')} on ${clr(`https://${location}`, 'green')}\n`)
+    console.log(`   🎉    Serving ${clr(this.pathToServe, 'cyan')} on ${clr(`https://${location}`, 'green')}`)
     this.showStatisticsUrl(location)
   }
 
@@ -638,7 +659,7 @@ class Site {
     // add serve it statically with live reload if there is.
     const hugoPublicDirectory = path.join(this.pathToServe, '.hugo-public')
     if (fs.existsSync(hugoPublicDirectory)) {
-      console.log(` ${Site.HUGO_STRING} public folder detected; serving generated static site.`)
+      console.log(`${HUGO_LOGO} public folder detected; serving generated static site.`)
       roots.push(hugoPublicDirectory)
     }
 
@@ -780,7 +801,7 @@ class Site {
       const routesJsFile = path.join(dynamicRoutesDirectory, 'routes.js')
 
       if (fs.existsSync(routesJsFile)) {
-        console.log(' 🐁 Found routes.js file, will load dynamic routes from there.')
+        console.log('   🐁    Found routes.js file, will load dynamic routes from there.')
         // We flag that this needs to be done here and actually require the file
         // once the server has been created so that WebSocket routes can be added also.
         this.routesJsFile = routesJsFile
