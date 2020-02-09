@@ -238,14 +238,16 @@ class Site {
       } else if (url.endsWith('.ico')) {
         url = `💠 ${url}`
       }
-      else if (url.endsWith('css')) {
+      else if (url.endsWith('.css')) {
         url = `🎨 ${url}`
+      } else if (url.includes('.css?v=')) {
+        url = `✨ Live reload (CSS) ${url}`
       } else if (url === '/instant/client/bundle.js') {
         url = `⚡ Live reload script load`
       } else if (url.endsWith('js')) {
         url = `⚡ ${url}`
       } else if (url === '/instant/events') {
-        url = `✨ Live reload event`
+        url = `✨ Live reload`
       } else {
         url = `📄 ${url}`
       }
