@@ -25,7 +25,7 @@
     "@ind.ie/web-routes-from-files": "^1.2.1",
     "@small-tech/cross-platform-hostname": "^1.0.0",
     "@small-tech/express-ws": "^1.0.0",
-    "@small-tech/https": "^1.0.6",
+    "@small-tech/https": "^1.0.9",
     "@small-tech/instant": "^1.1.0",
     "@small-tech/node-hugo": "^1.0.0",
     "ansi-escape-sequences": "^4.1.0",
