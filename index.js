@@ -192,6 +192,7 @@ class Site {
     // Logging.
     this.app.use(morgan(function (tokens, req, res) {
       let hasWarning = false
+      let hasError = false
 
       let method = tokens.method(req, res)
       if (method === 'GET') method = '↓ GET'
@@ -206,6 +207,18 @@ class Site {
       }
 
       duration = `${duration} ms${clr(durationWarning, 'yellow')}`
+
+      if (duration === 'NaN ms') {
+        //
+        // I’ve only encountered this once (in response to what seems to
+        // be a client-side issue with Firefox on Linux possibly related to
+        // server-sent events:
+        //
+        // https://bugzilla.mozilla.org/show_bug.cgi?id=1077089)
+        //
+        duration = '   -   !'
+        hasError = true
+      }
 
       let sizeWarning = ''
       let size = (tokens.res(req, res, 'content-length')/1024).toFixed(1)
@@ -246,7 +259,8 @@ class Site {
       }
 
       let textColour = statusToTextColour[status]
-      if (hasWarning) { textColour = 'yellow'}
+      if (hasWarning) { textColour = 'yellow' }
+      if (hasError) { textColour = 'red' }
 
       const log = [
         clr(method, textColour),
