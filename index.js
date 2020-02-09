@@ -5,8 +5,14 @@
 // Develop, test, and deploy your secure static or dynamic personal web site
 // with zero configuration.
 //
-// Copyright ⓒ 2019 Aral Balkan. Licensed under AGPLv3 or later.
+// Includes and has automatic support for the Hugo static site generator
+// (https://gohugo.io). Just add your source to a folder called .hugo-source
+//
+// Copyright ⓒ 2019-2020 Aral Balkan. Licensed under AGPLv3 or later.
 // Shared with ♥ by the Small Technology Foundation.
+//
+// Like this? Fund us!
+// https://small-tech.org/fund-us
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -461,7 +467,7 @@ class Site {
       // replaced with the current request path before it is returned.)
       if (this.has4042302) {
         const forwardingURL = `${this._4042302}${request.url}`
-        console.log(`404 → 302: Forwarding to ${forwardingURL}`)
+        console.log(`   ♻    ❨Site.js❩ 404 → 302: Forwarding to ${forwardingURL}`)
         response.redirect(forwardingURL)
       } else if (this.hasCustom404) {
         // Enable basic template support for including the missing path.
@@ -566,10 +572,10 @@ class Site {
 
     // Handle graceful exit.
     this.goodbye = (done) => {
-      console.log('\n   💃    ❨Site.js❩ Preparing to exit gracefully, please wait…')
+      console.log('\n   💃    ❨Site.js❩ Preparing to exit gracefully, please wait…\n')
 
       if (this.hugoServerProcess) {
-        console.log('\n   🚮    ❨Site.js❩ Killing Hugo server process.')
+        console.log('   🚮    ❨Site.js❩ Killing Hugo server process.')
         this.hugoServerProcess.kill()
       }
 
@@ -778,7 +784,7 @@ class Site {
       })
 
       this.app.__dynamicFileWatcher.on ('all', (event, file) => {
-        console.log(`\n   🐁    ❨Site.js❩ ${clr('Code updated', 'green')} in ${clr(file, 'cyan')}!`)
+        console.log(`   🐁    ❨Site.js❩ ${clr('Code updated', 'green')} in ${clr(file, 'cyan')}!`)
         console.log('   🐁    ❨Site.js❩ Requesting restart…\n')
 
         if (process.env.NODE_ENV === 'production') {
@@ -793,7 +799,7 @@ class Site {
           Graceful.off('SIGTERM', this.goodbye)
 
           if (this.hugoServerProcess) {
-            console.log('\n   🚮    ❨Site.js❩ Killing Hugo server process.')
+            console.log('   🚮    ❨Site.js❩ Killing Hugo server process.')
             this.hugoServerProcess.kill()
           }
 
@@ -808,7 +814,7 @@ class Site {
             this.server.removeAllListeners('error')
             const {commandPath, args} = cli.initialise(process.argv.slice(2))
             serve(args)
-            console.log('\n   🐁    ❨Site.js❩ Restarted server.\n')
+            console.log('   🐁    ❨Site.js❩ Restarted server.\n')
           })
         }
       })
