@@ -168,12 +168,12 @@ async function build () {
 
   function removeMkcertBinary(platform) {
     const fileName = `mkcert-v1.4.0-${platform}`
-    fs.moveSync(path.join(mkcertBinaryPath, fileName), path.join(mkcertTemporaryPath, fileName))
+    fs.moveSync(path.join(mkcertBinaryPath, fileName), path.join(mkcertTemporaryPath, fileName), {overwrite: true})
   }
 
   function removeHugoBinary(platform) {
     const fileName = `hugo-v0.64.0-${platform}`
-    fs.moveSync(path.join(hugoBinaryPath, fileName), path.join(hugoTemporaryPath, fileName))
+    fs.moveSync(path.join(hugoBinaryPath, fileName), path.join(hugoTemporaryPath, fileName), {overwrite: true})
   }
 
   function restoreMkcertBinary(platform) {
