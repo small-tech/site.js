@@ -115,7 +115,6 @@ class Site {
   // • proxyPort: (number)    if provided, a proxy server will be created for the port (and path will be ignored)
   // •   aliases: (string)    comma-separated list of domains that we should get TLS certs
   //                          for and serve.
-  // • serverCallback
   //
   // Note: if you want to run the site on a port < 1024 on Linux, ensure your process has the
   // ===== necessary privileges to bind to such ports. E.g., use require('lib/ensure').weCanBindToPort(port, callback)
