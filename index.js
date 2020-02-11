@@ -317,12 +317,9 @@ class Site {
 
         const hugoSourceDirectory = path.join(this.absolutePathToServe, file)
 
-        console.log('Hugo source directory found at', hugoSourceDirectory)
-
         let mountPath = '/'
         // Check for custom mount path naming convention.
         if (hugoSourceDirectory.includes('--')) {
-          console.log('Custom mount path requested in hugo source directory name')
           // Double dashes are translated into forward slashes.
           const fragments = hugoSourceDirectory.split('--')
 
@@ -335,11 +332,11 @@ class Site {
 
           mountPath = _mountPath
         }
-        console.log('Mount path', mountPath)
 
         if (fs.existsSync(hugoSourceDirectory)) {
 
-          console.log(`   🎠    Starting Hugo server (Hugo source detected in ${file}).`)
+          const serverDetails = clr(`${file}${path.sep}`, 'green') + clr(' → ', 'cyan') + clr(`https://${this.prettyLocation()}${mountPath}`, 'green')
+          console.log(`   🎠    ❨Site.js❩ Starting Hugo server (${serverDetails})`)
 
           if (this.hugo === null || this.hugo === undefined) {
             this.hugo = new Hugo(path.join(Site.settingsDirectory, 'node-hugo'))
@@ -348,14 +345,9 @@ class Site {
           const sourcePath = path.join(this.pathToServe, file)
           const destinationPath = `../.generated${mountPath}`
 
-          console.log('sourcePath', sourcePath)
-          console.log('destinationPath', destinationPath)
-
-          // Ensure that the destination path exists.
-          // (TODO: Does node-hugo already do this? Is it necessary that we do?) [ ]
-          // fs.mkdirpSync(destinationPath)
-
-          const baseURL = this.global ? ((process.env.NODE_ENV === 'production') ? 'https://unimplemented-for-now' : `https://${Site.hostname}${mountPath}`) : `https://localhost${mountPath}`
+          const localBaseURL = `https://localhost${mountPath}`
+          const globalBaseURL = `https://${Site.hostname}${mountPath}`
+          const baseURL = this.global ? globalBaseURL : localBaseURL
 
           // Start the server and await the end of the build process.
           const { hugoServerProcess, hugoBuildOutput } = await this.hugo.serve(sourcePath, destinationPath, baseURL)
