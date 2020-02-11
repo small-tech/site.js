@@ -310,7 +310,7 @@ class Site {
     // to forward slashes when determining the mount path).
     const hugoSourceFolderPrefixRegExp = /^.hugo(--)?/
 
-    const files = fs.readdirSync(this.pathToServe)
+    const files = fs.readdirSync(this.absolutePathToServe)
 
     for (const file of files) {
       if (file.match(hugoSourceFolderPrefixRegExp)) {
