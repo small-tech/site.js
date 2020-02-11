@@ -6,7 +6,9 @@
 // with zero configuration.
 //
 // Includes and has automatic support for the Hugo static site generator
-// (https://gohugo.io). Just add your source to a folder called .hugo-source
+// (https://gohugo.io). Just add your source to a folder called .hugo (to mount
+// onto a path other than the root, name the folder with the path you want
+// e.g., .hugo-docs will be mounted on https://<your.site>/docs).
 //
 // Copyright ⓒ 2019-2020 Aral Balkan. Licensed under AGPLv3 or later.
 // Shared with ♥ by the Small Technology Foundation.
@@ -299,6 +301,94 @@ class Site {
   }
 
 
+  // Auto detect and support hugo source directories if they exist.
+  async addHugoSupport() {
+
+    // Hugo source folder names must begin with either
+    // .hugo or .hugo--. Anything after the first double-dash
+    // specifies a custom mount path (double dashes are converted
+    // to forward slashes when determining the mount path).
+    const hugoSourceFolderPrefixRegExp = /^.hugo(--)?/
+
+    const files = fs.readdirSync(this.pathToServe)
+
+    for (const file of files) {
+      if (file.match(hugoSourceFolderPrefixRegExp)) {
+
+        const hugoSourceDirectory = path.join(this.absolutePathToServe, file)
+
+        console.log('Hugo source directory found at', hugoSourceDirectory)
+
+        let mountPath = '/'
+        // Check for custom mount path naming convention.
+        if (hugoSourceDirectory.includes('--')) {
+          console.log('Custom mount path requested in hugo source directory name')
+          // Double dashes are translated into forward slashes.
+          const fragments = hugoSourceDirectory.split('--')
+
+          // Discard the first '.hugo' bit.
+          fragments.shift()
+
+          const _mountPath = fragments.reduce((accumulator, currentValue) => {
+            return accumulator += `/${currentValue}`
+          }, /* initial value = */ '')
+
+          mountPath = _mountPath
+        }
+        console.log('Mount path', mountPath)
+
+        if (fs.existsSync(hugoSourceDirectory)) {
+
+          console.log(`   🎠    Starting Hugo server (Hugo source detected in ${file}).`)
+
+          if (this.hugo === null || this.hugo === undefined) {
+            this.hugo = new Hugo(path.join(Site.settingsDirectory, 'node-hugo'))
+          }
+
+          const sourcePath = path.join(this.pathToServe, file)
+          const destinationPath = `../.generated${mountPath}`
+
+          console.log('sourcePath', sourcePath)
+          console.log('destinationPath', destinationPath)
+
+          // Ensure that the destination path exists.
+          // (TODO: Does node-hugo already do this? Is it necessary that we do?) [ ]
+          // fs.mkdirpSync(destinationPath)
+
+          const baseURL = this.global ? ((process.env.NODE_ENV === 'production') ? 'https://unimplemented-for-now' : `https://${Site.hostname}${mountPath}`) : `https://localhost${mountPath}`
+
+          // Start the server and await the end of the build process.
+          const { hugoServerProcess, hugoBuildOutput } = await this.hugo.serve(sourcePath, destinationPath, baseURL)
+
+          // At this point, the build process is complete and the .generated folder should exist.
+
+          // Listen for standard output and error output on the server instance.
+          hugoServerProcess.stdout.on('data', (data) => {
+            const lines = data.toString('utf-8').split('\n')
+            lines.forEach(line => console.log(`${HUGO_LOGO} ${line}`))
+          })
+
+          hugoServerProcess.stderr.on('data', (data) => {
+            const lines = data.toString('utf-8').split('\n')
+            lines.forEach(line => console.log(`${HUGO_LOGO} [ERROR] ${line}`))
+          })
+
+          // Save a reference to all hugo server processes so we can
+          // close them later and perform other cleanup.
+          if (this.hugoServerProcesses === null || this.hugoServerProcesses === undefined) {
+            this.hugoServerProcesses = []
+          }
+          this.hugoServerProcesses.push(hugoServerProcess)
+
+          // Print the output received so far.
+          hugoBuildOutput.split('\n').forEach(line => {
+            console.log(`${HUGO_LOGO} ${line}`)
+          })
+        }
+      }
+    }
+  }
+
   // Middleware and routes that are unique to regular sites
   // (not used on proxy servers).
   async configureAppRoutes () {
@@ -307,43 +397,8 @@ class Site {
       throw new errors.InvalidPathToServeError(`Path ${this.pathToServe} does not exist.`)
     }
 
-    // Auto detect and support Hugo if it exists.
-    const hugoSourceDirectory = path.join(this.absolutePathToServe, '.hugo-source')
-    if (fs.existsSync(hugoSourceDirectory)) {
-
-      console.log(`   🎠    Starting Hugo server (.hugo-source folder detected).`)
-
-      this.hugo = new Hugo(path.join(Site.settingsDirectory, 'node-hugo'))
-
-      const sourcePath = path.join(this.pathToServe, '.hugo-source')
-      const destinationPath = path.join('../.hugo-public')
-      const baseURL = this.global ? ((process.env.NODE_ENV === 'production') ? 'https://unimplemented-for-now' : `https://${Site.hostname}`) : 'https://localhost'
-
-      // Start the server and await the end of the build process.
-      const { hugoServerProcess, hugoBuildOutput } = await this.hugo.serve(sourcePath, destinationPath, baseURL)
-
-      // At this point, the build process is complete and the .hugo-public folder should exist.
-
-      // Listen for standard output and error output on the server instance.
-      hugoServerProcess.stdout.on('data', (data) => {
-        const lines = data.toString('utf-8').split('\n')
-        lines.forEach(line => console.log(`${HUGO_LOGO} ${line}`))
-      })
-
-      hugoServerProcess.stderr.on('data', (data) => {
-        const lines = data.toString('utf-8').split('\n')
-        lines.forEach(line => console.log(`${HUGO_LOGO} [ERROR] ${line}`))
-      })
-
-      // Save a reference to the hugo server process so we can
-      // close it later and perform other cleanup.
-      this.hugoServerProcess = hugoServerProcess
-
-      // Print the output received so far.
-      hugoBuildOutput.split('\n').forEach(line => {
-        console.log(`${HUGO_LOGO} ${line}`)
-      })
-    }
+    // Async
+    await this.addHugoSupport()
 
     // Continue configuring the rest of the app routes.
     this.add4042302Support()
@@ -748,13 +803,11 @@ class Site {
 
     const roots = []
 
-    // Native Hugo static site generator support:
-    // Check if there is a .hugo-public directory in the path to serve and
-    // add serve it statically with live reload if there is.
-    const hugoPublicDirectory = path.join(this.pathToServe, '.hugo-public')
-    if (fs.existsSync(hugoPublicDirectory)) {
-      console.log(`   🎠    ❨Site.js❩ Serving generated static Hugo site (.hugo-public detected).`)
-      roots.push(hugoPublicDirectory)
+    // Serve any generated static content (e.g., Hugo output) that might exist.
+    const generatedStaticFilesDirectory = path.join(this.pathToServe, '.generated')
+    if (fs.existsSync(generatedStaticFilesDirectory)) {
+      console.log(`   🎠    ❨Site.js❩ Serving generated static files.`)
+      roots.push(generatedStaticFilesDirectory)
     }
 
     // Add the regular static web root.
