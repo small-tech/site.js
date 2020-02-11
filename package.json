@@ -27,7 +27,7 @@
     "@small-tech/express-ws": "^1.0.0",
     "@small-tech/https": "^1.0.9",
     "@small-tech/instant": "^1.1.0",
-    "@small-tech/node-hugo": "^1.0.0",
+    "@small-tech/node-hugo": "^1.1.0",
     "ansi-escape-sequences": "^4.1.0",
     "body-parser": "^1.19.0",
     "chokidar": "^3.3.0",
