@@ -644,9 +644,9 @@ class Site {
     this.goodbye = (done) => {
       console.log('\n   💃    ❨Site.js❩ Preparing to exit gracefully, please wait…\n')
 
-      if (this.hugoServerProcess) {
-        console.log('   🚮    ❨Site.js❩ Killing Hugo server process.')
-        this.hugoServerProcess.kill()
+      if (this.hugoServerProcesses) {
+        console.log('   🚮    ❨Site.js❩ Killing Hugo server processes.')
+        this.hugoServerProcesses.forEach(hugoServerProcess => hugoServerProcess.kill())
       }
 
       // Close all active connections on the server.
@@ -866,9 +866,9 @@ class Site {
           Graceful.off('SIGINT', this.goodbye)
           Graceful.off('SIGTERM', this.goodbye)
 
-          if (this.hugoServerProcess) {
-            console.log('   🚮    ❨Site.js❩ Killing Hugo server process.')
-            this.hugoServerProcess.kill()
+          if (this.hugoServerProcesses) {
+            console.log('   🚮    ❨Site.js❩ Killing Hugo server processes.')
+            this.hugoServerProcesses.forEach(hugoServerProcess => hugoServerProcess.kill())
           }
 
           // Destroy the current server (so we do not get a port conflict on restart before
