@@ -28,6 +28,8 @@ class CommandLineInterface {
       ['logs', arg0 === 'logs'],
       ['status', arg0 === 'status'],
 
+      ['hugo', arg0 === 'hugo'],
+
       ['update', arg0 === 'update'],
       ['uninstall', arg0 === 'uninstall'],
 

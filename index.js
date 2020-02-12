@@ -52,9 +52,12 @@ const Stats = require('./lib/Stats')
 
 const errors = require('./lib/errors')
 
-const HUGO_LOGO = `${clr('🅷', 'magenta')} ${clr('🆄', 'blue')} ${clr('🅶', 'green')} ${clr('🅾', 'yellow')} `
 
 class Site {
+
+  static get HUGO_LOGO () {
+    return `${clr('🅷', 'magenta')} ${clr('🆄', 'blue')} ${clr('🅶', 'green')} ${clr('🅾', 'yellow')} `
+  }
 
   // Emitted when the address the server is trying to use is already in use by a different process on the system.
   static get SMALL_TECH_ORG_ERROR_HTTP_SERVER () { return 'small-tech.org-error-http-server' }
@@ -357,12 +360,12 @@ class Site {
           // Listen for standard output and error output on the server instance.
           hugoServerProcess.stdout.on('data', (data) => {
             const lines = data.toString('utf-8').split('\n')
-            lines.forEach(line => console.log(`${HUGO_LOGO} ${line}`))
+            lines.forEach(line => console.log(`${Site.HUGO_LOGO} ${line}`))
           })
 
           hugoServerProcess.stderr.on('data', (data) => {
             const lines = data.toString('utf-8').split('\n')
-            lines.forEach(line => console.log(`${HUGO_LOGO} [ERROR] ${line}`))
+            lines.forEach(line => console.log(`${Site.HUGO_LOGO} [ERROR] ${line}`))
           })
 
           // Save a reference to all hugo server processes so we can
@@ -374,7 +377,7 @@ class Site {
 
           // Print the output received so far.
           hugoBuildOutput.split('\n').forEach(line => {
-            console.log(`${HUGO_LOGO} ${line}`)
+            console.log(`${Site.HUGO_LOGO} ${line}`)
           })
         }
       }
