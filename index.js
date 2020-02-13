@@ -39,6 +39,7 @@ const httpProxyMiddleware = require('http-proxy-middleware')
 const instant = require('@small-tech/instant')
 
 const Hugo = require('@small-tech/node-hugo')
+const Eleventy = require('@11ty/eleventy')
 
 const cli = require('./bin/lib/cli')
 const serve = require('./bin/commands/serve')
@@ -304,6 +305,90 @@ class Site {
   }
 
 
+  // Auto detect and support eleventy source directories if they exist.
+  async addEleventySupport() {
+
+    // Hugo source folder names must begin with either
+    // .hugo or .hugo--. Anything after the first double-dash
+    // specifies a custom mount path (double dashes are converted
+    // to forward slashes when determining the mount path).
+    const eleventySourceFolderPrefixRegExp = /^.eleventy(--)?/
+
+    const files = fs.readdirSync(this.absolutePathToServe)
+
+    for (const file of files) {
+      if (file.match(eleventySourceFolderPrefixRegExp)) {
+
+        const eleventySourceDirectory = path.join(this.absolutePathToServe, file)
+
+        let mountPath = '/'
+        // Check for custom mount path naming convention.
+        if (eleventySourceDirectory.includes('--')) {
+          // Double dashes are translated into forward slashes.
+          const fragments = eleventySourceDirectory.split('--')
+
+          // Discard the first '.hugo' bit.
+          fragments.shift()
+
+          const _mountPath = fragments.reduce((accumulator, currentValue) => {
+            return accumulator += `/${currentValue}`
+          }, /* initial value = */ '')
+
+          mountPath = _mountPath
+        }
+
+        if (fs.existsSync(eleventySourceDirectory)) {
+
+          const serverDetails = clr(`${file}${path.sep}`, 'green') + clr(' → ', 'cyan') + clr(`https://${this.prettyLocation()}${mountPath}`, 'green')
+          console.log(`   🕚    ❨Site.js❩ Starting Eleventy (${serverDetails})`)
+
+          const elev = new Eleventy ('.', '../.generated')
+          // const layoutsPathPrefix = path.join(eleventySourceDirectory, '_includes')
+          // elev.setPathPrefix(layoutsPathPrefix)
+          // elev.setDryRun(true)
+
+          await elev.init()
+
+          console.log(`   🕚    ❨Site.js❩ Eleventy initialised.`)
+
+          await elev.write()
+
+          console.log(`   🕚    ❨Site.js❩ Eleventy site built.`)
+
+          await elev.watch()
+
+          console.log(`   🕚    ❨Site.js❩ Eleventy watching for changes…`)
+
+          // // At this point, the build process is complete and the .generated folder should exist.
+
+          // // Listen for standard output and error output on the server instance.
+          // hugoServerProcess.stdout.on('data', (data) => {
+          //   const lines = data.toString('utf-8').split('\n')
+          //   lines.forEach(line => console.log(`${Site.HUGO_LOGO} ${line}`))
+          // })
+
+          // hugoServerProcess.stderr.on('data', (data) => {
+          //   const lines = data.toString('utf-8').split('\n')
+          //   lines.forEach(line => console.log(`${Site.HUGO_LOGO} [ERROR] ${line}`))
+          // })
+
+          // // Save a reference to all hugo server processes so we can
+          // // close them later and perform other cleanup.
+          // if (this.hugoServerProcesses === null || this.hugoServerProcesses === undefined) {
+          //   this.hugoServerProcesses = []
+          // }
+          // this.hugoServerProcesses.push(hugoServerProcess)
+
+          // // Print the output received so far.
+          // hugoBuildOutput.split('\n').forEach(line => {
+          //   console.log(`${Site.HUGO_LOGO} ${line}`)
+          // })
+        }
+      }
+    }
+  }
+
+
   // Auto detect and support hugo source directories if they exist.
   async addHugoSupport() {
 
@@ -394,6 +479,7 @@ class Site {
 
     // Async
     await this.addHugoSupport()
+    await this.addEleventySupport()
 
     // Continue configuring the rest of the app routes.
     this.add4042302Support()
@@ -840,6 +926,8 @@ class Site {
       // slashes are forward slashes to ensure correct functioning on Windows 10
       // (see https://github.com/paulmillr/chokidar#api).
       const watchPath = `${dynamicRoutesDirectory.replace(/\\/g, '/')}/**`
+
+      console.log('Watchpath: ', watchPath)
 
       this.app.__dynamicFileWatcher = chokidar.watch(watchPath, {
         persistent: true,

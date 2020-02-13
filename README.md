@@ -1,5 +1,16 @@
 # Site.js
 
+## Branch Eleventy
+
+Test of Eleventy integration
+
+### Limitations
+
+  - Must be run from `.eleventy` folder as `site ..` (due to eleventy not being able to handle paths)
+  - Watch does not fire on Markdown file change (does for nunchucks layouts)
+
+-----
+
 [![Screenshot of the Site.js web site header](images/site.js.jpeg)](https://sitejs.org)
 
 ## Develop, test, and deploy your secure static or dynamic personal web site with zero configuration.

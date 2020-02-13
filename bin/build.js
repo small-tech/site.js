@@ -114,6 +114,7 @@ const resources = [
   'package.json',    // Used to get the app’s version at runtime.
   'bin/commands/*',   // Conditionally required based on command-line argument.
   'node_modules/le-store-certbot/renewal.conf.tpl',  // Template used to write out the Let’s Encrypt renewal config.
+  'node_modules/@11ty/eleventy/src/Engines/*',  // Eleventy template engines (conditionally required).
 ]
 
 const input = 'bin/site.js'
