@@ -9,7 +9,7 @@
     "deploy": "bin/build.js --deploy",
     "install-locally": "node bin/build.js --install",
     "test": "QUIET=true tape test/*.js | tap-spec",
-    "coverage": "nyc tape test/*.js | tap-spec"
+    "coverage": "nyc npm run test"
   },
   "repository": {
     "type": "git",
@@ -38,7 +38,7 @@
     "express": "^4.17.1",
     "fs-extra": "^8.1.0",
     "gunzip-maybe": "^1.4.1",
-    "helmet": "^3.20.0",
+    "helmet": "^3.21.2",
     "http-proxy-middleware": "^0.19.1",
     "minimist": "^1.2.0",
     "morgan": "^1.9.1",
