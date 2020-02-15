@@ -74,6 +74,11 @@ class Site {
   // (Only once per Site lifetime.)
   // (Synchronous.)
   static logAppNameAndVersion (compact = false) {
+
+    if (process.env.QUIET) {
+      return
+    }
+
     if (!Site.appNameAndVersionAlreadyLogged && !process.argv.includes('--dont-log-app-name-and-version')) {
       let prefix1 = compact ? ' 💕 ' : '   💕    '
       let prefix2 = compact ? '    ' : '         '
@@ -168,6 +173,16 @@ class Site {
     })
   }
 
+
+  // Conditionally log to console.
+  log(...args) {
+    if (process.env.QUIET) {
+      return
+    }
+    console.log(...args)
+  }
+
+
   // The app configuration is handled in an asynchronous method
   // as there is a chance that we will have to wait for a Hugo
   // build to complete.
@@ -195,6 +210,11 @@ class Site {
 
     // Logging.
     this.app.use(morgan(function (tokens, req, res) {
+
+      if (process.env.QUIET) {
+        return
+      }
+
       let hasWarning = false
       let hasError = false
 
@@ -293,7 +313,7 @@ class Site {
         if (requestedHost === mainHostname) {
           next()
         } else {
-          console.log(` 👉 ❨Site.js❩ Redirecting alias ${requestedHost} to main hostname ${mainHostname}.`)
+          this.log(` 👉 ❨Site.js❩ Redirecting alias ${requestedHost} to main hostname ${mainHostname}.`)
           response.redirect(`https://${mainHostname}${request.path}`)
         }
       })
@@ -339,7 +359,7 @@ class Site {
         if (fs.existsSync(hugoSourceDirectory)) {
 
           const serverDetails = clr(`${file}${path.sep}`, 'green') + clr(' → ', 'cyan') + clr(`https://${this.prettyLocation()}${mountPath}`, 'green')
-          console.log(`   🎠    ❨Site.js❩ Starting Hugo server (${serverDetails})`)
+          this.log(`   🎠    ❨Site.js❩ Starting Hugo server (${serverDetails})`)
 
           if (this.hugo === null || this.hugo === undefined) {
             this.hugo = new Hugo(path.join(Site.settingsDirectory, 'node-hugo'))
@@ -360,12 +380,12 @@ class Site {
           // Listen for standard output and error output on the server instance.
           hugoServerProcess.stdout.on('data', (data) => {
             const lines = data.toString('utf-8').split('\n')
-            lines.forEach(line => console.log(`${Site.HUGO_LOGO} ${line}`))
+            lines.forEach(line => this.log(`${Site.HUGO_LOGO} ${line}`))
           })
 
           hugoServerProcess.stderr.on('data', (data) => {
             const lines = data.toString('utf-8').split('\n')
-            lines.forEach(line => console.log(`${Site.HUGO_LOGO} [ERROR] ${line}`))
+            lines.forEach(line => this.log(`${Site.HUGO_LOGO} [ERROR] ${line}`))
           })
 
           // Save a reference to all hugo server processes so we can
@@ -377,7 +397,7 @@ class Site {
 
           // Print the output received so far.
           hugoBuildOutput.split('\n').forEach(line => {
-            console.log(`${Site.HUGO_LOGO} ${line}`)
+            this.log(`${Site.HUGO_LOGO} ${line}`)
           })
         }
       }
@@ -415,7 +435,7 @@ class Site {
     const proxyWebSocketUrl = `ws://localhost:${this.proxyPort}`
 
     function prettyLog (message) {
-      console.log(`   🔁    ❨Site.js❩ ${message}`)
+      this.log(`   🔁    ❨Site.js❩ ${message}`)
     }
 
     const logProvider = function(provider) {
@@ -469,9 +489,9 @@ class Site {
     this.server.SMALL_TECH_ORG_ERROR_HTTP_SERVER = Site.SMALL_TECH_ORG_ERROR_HTTP_SERVER
 
     this.server.on('error', error => {
-      console.log('\n   🤯    ❨Site.js❩ Error: could not start server.\n')
+      this.log('\n   🤯    ❨Site.js❩ Error: could not start server.\n')
       if (error.code === 'EADDRINUSE') {
-        console.log(`   💥    ❨Site.js❩ Port ${this.port} is already in use.\n`)
+        this.log(`   💥    ❨Site.js❩ Port ${this.port} is already in use.\n`)
       }
       this.server.emit(Site.SMALL_TECH_ORG_ERROR_HTTP_SERVER)
     })
@@ -480,19 +500,19 @@ class Site {
       // Clear the auto update check interval.
       if (this.autoUpdateCheckInterval !== undefined) {
         clearInterval(this.autoUpdateCheckInterval)
-        console.log('   ⏰    ❨Site.js❩ Cleared auto-update check interval.')
+        this.log('   ⏰    ❨Site.js❩ Cleared auto-update check interval.')
       }
 
       // Ensure dynamic route watchers are removed.
       if (this.app.__dynamicFileWatcher !== undefined) {
         this.app.__dynamicFileWatcher.close()
-        console.log (`   🚮    ❨Site.js❩ Removed dynamic file watchers.`)
+        this.log (`   🚮    ❨Site.js❩ Removed dynamic file watchers.`)
       }
 
       // Ensure that the static route file watchers are removed.
       if (this.app.__staticRoutes !== undefined) {
         this.app.__staticRoutes.cleanUp(() => {
-          console.log('   🚮    ❨Site.js❩ Live reload file system watchers removed from static web routes on server close.')
+          this.log('   🚮    ❨Site.js❩ Live reload file system watchers removed from static web routes on server close.')
         })
       }
     })
@@ -514,7 +534,7 @@ class Site {
     if (this.wssRoutes !== undefined) {
       this.createWebSocketServer()
       this.wssRoutes.forEach(route => {
-        console.log(`   🐁    ❨Site.js❩ Adding WebSocket (WSS) route: ${route.path}`)
+        this.log(`   🐁    ❨Site.js❩ Adding WebSocket (WSS) route: ${route.path}`)
         decache(route.callback)
         this.app.ws(route.path, require(route.callback))
       })
@@ -532,7 +552,7 @@ class Site {
       // replaced with the current request path before it is returned.)
       if (this.has4042302) {
         const forwardingURL = `${this._4042302}${request.url}`
-        console.log(`   ♻    ❨Site.js❩ 404 → 302: Forwarding to ${forwardingURL}`)
+        this.log(`   ♻    ❨Site.js❩ 404 → 302: Forwarding to ${forwardingURL}`)
         response.redirect(forwardingURL)
       } else if (this.hasCustom404) {
         // Enable basic template support for including the missing path.
@@ -589,7 +609,7 @@ class Site {
     const requestsGlobalCertificateScope = options.global === true
 
     if (requestsGlobalCertificateScope) {
-      console.log('   🌍    ❨Site.js❩ Using globally-trusted certificates.')
+      this.log('   🌍    ❨Site.js❩ Using globally-trusted certificates.')
 
       // Let’s be nice and not continue to pollute the options object
       // with our custom property (global).
@@ -607,9 +627,9 @@ class Site {
       const listOfAliases = this.aliases.reduce((prev, current) => {
         return `${prev}${current}, `
       }, '').slice(0, -2)
-      console.log(`   👉    ❨Site.js❩ Aliases: also responding for ${listOfAliases}.`)
+      this.log(`   👉    ❨Site.js❩ Aliases: also responding for ${listOfAliases}.`)
     } else {
-      console.log('   🚧    ❨Site.js❩ Using locally-trusted certificates.')
+      this.log('   🚧    ❨Site.js❩ Using locally-trusted certificates.')
     }
 
     // Specify custom certificate directory for Site.js.
@@ -637,10 +657,10 @@ class Site {
 
     // Handle graceful exit.
     this.goodbye = (done) => {
-      console.log('\n   💃    ❨Site.js❩ Preparing to exit gracefully, please wait…\n')
+      this.log('\n   💃    ❨Site.js❩ Preparing to exit gracefully, please wait…\n')
 
       if (this.hugoServerProcesses) {
-        console.log('   🚮    ❨Site.js❩ Killing Hugo server processes.')
+        this.log('   🚮    ❨Site.js❩ Killing Hugo server processes.')
         this.hugoServerProcesses.forEach(hugoServerProcess => hugoServerProcess.kill())
       }
 
@@ -651,7 +671,7 @@ class Site {
       // Stop accepting new connections.
       this.server.close( () => {
         // OK, it’s time to go :)
-        console.log('\n   💕    ❨Site.js❩ Goodbye!\n')
+        this.log('\n   💕    ❨Site.js❩ Goodbye!\n')
         done()
       })
     }
@@ -678,19 +698,19 @@ class Site {
       if (process.env.NODE_ENV === 'production') {
 
         function checkForUpdates () {
-          console.log(' 🛰 Running auto update check…')
+          this.log(' 🛰 Running auto update check…')
 
           const options = {env: process.env, stdio: 'inherit'}
           childProcess.exec('site update', options, (error, stdout, stderr) => {
             if (error !== null) {
-              console.log(' 😱 Error: Could not check for updates.')
+              this.log(' 😱 Error: Could not check for updates.')
             } else {
-              console.log(stdout)
+              this.log(stdout)
             }
           })
         }
 
-        console.log(' ⏰ Setting up auto-update check interval.')
+        this.log(' ⏰ Setting up auto-update check interval.')
         this.autoUpdateCheckInterval = setInterval(checkForUpdates, /* every */ 5 /* hours */ * 60 * 60 * 1000)
 
         // And perform an initial check a few seconds after startup.
@@ -715,14 +735,14 @@ class Site {
 
 
   showStatisticsUrl (location) {
-    console.log(`   📊    ❨Site.js❩ For statistics, see https://${location}${this.stats.route}`)
+    this.log(`   📊    ❨Site.js❩ For statistics, see https://${location}${this.stats.route}`)
   }
 
 
   // Callback used in regular servers.
   regularCallback (server) {
     const location = this.prettyLocation()
-    console.log(`   🎉    ❨Site.js❩ Serving ${clr(this.pathToServe, 'cyan')} on ${clr(`https://${location}`, 'green')}`)
+    this.log(`   🎉    ❨Site.js❩ Serving ${clr(this.pathToServe, 'cyan')} on ${clr(`https://${location}`, 'green')}`)
     this.showStatisticsUrl(location)
   }
 
@@ -730,7 +750,7 @@ class Site {
   // Callback used in proxy servers.
   proxyCallback (server) {
     const location = this.prettyLocation()
-    console.log(`   🚚    ❨Site.js❩ Proxying: HTTP/WS on localhost:${this.proxyPort} ←→ HTTPS/WSS on ${location}`)
+    this.log(`   🚚    ❨Site.js❩ Proxying: HTTP/WS on localhost:${this.proxyPort} ←→ HTTPS/WSS on ${location}`)
     this.showStatisticsUrl(location)
   }
 
@@ -801,7 +821,7 @@ class Site {
     // Serve any generated static content (e.g., Hugo output) that might exist.
     const generatedStaticFilesDirectory = path.join(this.pathToServe, '.generated')
     if (fs.existsSync(generatedStaticFilesDirectory)) {
-      console.log(`   🎠    ❨Site.js❩ Serving generated static files.`)
+      this.log(`   🎠    ❨Site.js❩ Serving generated static files.`)
       roots.push(generatedStaticFilesDirectory)
     }
 
@@ -847,8 +867,8 @@ class Site {
       })
 
       this.app.__dynamicFileWatcher.on ('all', (event, file) => {
-        console.log(`   🐁    ❨Site.js❩ ${clr('Code updated', 'green')} in ${clr(file, 'cyan')}!`)
-        console.log('   🐁    ❨Site.js❩ Requesting restart…\n')
+        this.log(`   🐁    ❨Site.js❩ ${clr('Code updated', 'green')} in ${clr(file, 'cyan')}!`)
+        this.log('   🐁    ❨Site.js❩ Requesting restart…\n')
 
         if (process.env.NODE_ENV === 'production') {
           // We’re running production, to restart the daemon, just exit.
@@ -862,7 +882,7 @@ class Site {
           Graceful.off('SIGTERM', this.goodbye)
 
           if (this.hugoServerProcesses) {
-            console.log('   🚮    ❨Site.js❩ Killing Hugo server processes.')
+            this.log('   🚮    ❨Site.js❩ Killing Hugo server processes.')
             this.hugoServerProcesses.forEach(hugoServerProcess => hugoServerProcess.kill())
           }
 
@@ -877,7 +897,7 @@ class Site {
             this.server.removeAllListeners('error')
             const {commandPath, args} = cli.initialise(process.argv.slice(2))
             serve(args)
-            console.log('   🐁    ❨Site.js❩ Restarted server.\n')
+            this.log('   🐁    ❨Site.js❩ Restarted server.\n')
           })
         }
       })
@@ -894,7 +914,7 @@ class Site {
         const loadHttpsGetRoutesFrom = (httpsGetRoutesDirectory) => {
           const httpsGetRoutes = getRoutes(httpsGetRoutesDirectory)
           httpsGetRoutes.forEach(route => {
-            console.log(`   🐁    ❨Site.js❩ Adding HTTPS GET route: ${route.path}`)
+            this.log(`   🐁    ❨Site.js❩ Adding HTTPS GET route: ${route.path}`)
             // Ensure we are loading a fresh copy in case it has changed.
             decache(route.callback)
             this.app.get(route.path, require(route.callback))
@@ -914,7 +934,7 @@ class Site {
 
         if (httpsGetRoutesDirectoryExists || httpsPostRoutesDirectoryExists) {
           // Either .get or .post routes directories (or both) exist.
-          console.log('   🐁    ❨Site.js❩ Found .get/.post folders. Will load dynamic routes from there.')
+          this.log('   🐁    ❨Site.js❩ Found .get/.post folders. Will load dynamic routes from there.')
           if (httpsGetRoutesDirectoryExists) {
             loadHttpsGetRoutesFrom(httpsGetRoutesDirectory)
           }
@@ -925,7 +945,7 @@ class Site {
 
             const httpsPostRoutes = getRoutes(httpsPostRoutesDirectory)
             httpsPostRoutes.forEach(route => {
-              console.log(`   🐁    ❨Site.js❩ Adding HTTPS POST route: ${route.path}`)
+              this.log(`   🐁    ❨Site.js❩ Adding HTTPS POST route: ${route.path}`)
               this.app.post(route.path, require(route.callback))
             })
           }
@@ -948,7 +968,7 @@ class Site {
       const routesJsFile = path.join(dynamicRoutesDirectory, 'routes.js')
 
       if (fs.existsSync(routesJsFile)) {
-        console.log('   🐁    ❨Site.js❩ Found routes.js file, will load dynamic routes from there.')
+        this.log('   🐁    ❨Site.js❩ Found routes.js file, will load dynamic routes from there.')
         // We flag that this needs to be done here and actually require the file
         // once the server has been created so that WebSocket routes can be added also.
         this.routesJsFile = routesJsFile
@@ -970,7 +990,7 @@ class Site {
 
       if (httpsRoutesDirectoryExists || wssRoutesDirectoryExists) {
         // Either .https or .wss routes directories (or both) exist.
-        console.log('   🐁    ❨Site.js❩ Found .https/.wss folders. Will load dynamic routes from there.')
+        this.log('   🐁    ❨Site.js❩ Found .https/.wss folders. Will load dynamic routes from there.')
         if (httpsRoutesDirectoryExists) {
           loadHttpsRoutesFrom(httpsRoutesDirectory)
         }
@@ -1047,7 +1067,7 @@ class Site {
     let archiveNumber = 0
     archiveCascade.forEach(archivePath => {
       archiveNumber++
-      console.log(`   🌱    ❨Site.js❩ Evergreen web: serving archive #${archiveNumber}`)
+      this.log(`   🌱    ❨Site.js❩ Evergreen web: serving archive #${archiveNumber}`)
       this.app.use(express.static(archivePath))
     })
   }

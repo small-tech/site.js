@@ -10,10 +10,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - Native support for Hugo.
   - Serve command now displays an error if the path to serve doesn’t doesn’t exist.
+  - Ability to set QUIET=true environment variable to suppress console output.
 
 ### Changed
 
   - Improved log output.
+  - Improved test output.
 
 ## [12.10.5] - 2020-01-22
 
