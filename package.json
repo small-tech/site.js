@@ -8,7 +8,7 @@
     "build": "node bin/build.js",
     "deploy": "bin/build.js --deploy",
     "install-locally": "node bin/build.js --install",
-    "test": "tape test/*.js | tap-spec",
+    "test": "QUIET=true tape test/*.js | tap-spec",
     "coverage": "nyc tape test/*.js | tap-spec"
   },
   "repository": {
@@ -55,7 +55,7 @@
   },
   "devDependencies": {
     "nexe": "^3.3.2",
-    "nyc": "^14.1.1",
+    "nyc": "^15.0.0",
     "tap-spec": "^5.0.0",
     "tape": "^4.11.0",
     "ws": "^7.1.1"
