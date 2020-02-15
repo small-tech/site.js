@@ -9,7 +9,7 @@
     "deploy": "bin/build.js --deploy",
     "install-locally": "node bin/build.js --install",
     "test": "QUIET=true tape test/*.js | tap-spec",
-    "coverage": "nyc npm run test"
+    "coverage": "QUIET=true nyc tape test/*.js | tap-nyc"
   },
   "repository": {
     "type": "git",
@@ -56,7 +56,8 @@
   },
   "devDependencies": {
     "nexe": "^3.3.2",
-    "nyc": "^15.0.0",
+    "nyc": "^14.1.1",
+    "tap-nyc": "^1.0.3",
     "tap-spec": "^5.0.0",
     "tape": "^4.11.0",
     "ws": "^7.1.1"
