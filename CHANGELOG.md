@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Improved log output.
   - Improved test output.
 
+### Fixed
+
+  - Handled all npm security warnings in third-party dependencies.
+
 ## [12.10.5] - 2020-01-22
 
 ### Changed
