@@ -35,7 +35,7 @@ function sync (options) {
       'exclude': [
         '.DS_Store',
         '.gitignore',
-        '.hugo-source/*',
+        '.hugo*/*',
         '.dat/*',
         '.git/*'
       ],
