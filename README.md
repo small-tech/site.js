@@ -533,22 +533,30 @@ When you `serve` a site at `@hostname` or use the `enable` command, globally-tru
 
 What if links never died? What if we never broke the Web? What if it didn’t involve any extra work? It’s possible. And, with Site.js, it’s effortless.
 
-### Native cascading archives support
+### The Archival Cascade
 
-If you have a static archive of the previous version of your site, you can have Site.js automatically serve it for you. For example, if your site is being served from the `my-site` folder, just put the archive of your site into a folder named `my-site-archive-1`:
+__(As of version 12.11.0)__ If you have static archives of previous versions of your site, you can have Site.js automatically serve them for you.
+
+Just put them into folder named `.archive-1`, `.archive-2`, etc.
+
+If a path cannot be found in your current site, Site.js will search for it first in `.archive-2` and, if it cannot find it there either, in `.archive-1`.
+
+Paths in your current site will override those in `.archive-2` and those in `.archive-2` will, similarly, override those in `.archive-1`.
+
+Use the archival  old links will never die but if you do replace them with never content in never versions, those will take precedence.
+
+#### Legacy method (pre version 12.11.0)
+
+In older versions, the convention for specifying the archival cascade was as follows:
 
 ```
 |- my-site
 |- my-site-archive-1
+|- my-site-archive-2
+|- etc.
 ```
 
-If a path cannot be found in `my-site`, it will be served from `my-site-archive-1`.
-
-And you’re not limited to a single archive (and hence the “cascade” bit in the name of the feature). As you have multiple older versions of your site, just add them to new folders and increment the archive index in the name. e.g., `my-site-archive-2`, `my-site-archive-3`, etc.
-
-Paths in `my-site` will override those in `my-site-archive-3` and those in `my-site-archive-3` will, similarly, override those in `my-site-archive-2` and so on.
-
-What this means that your old links will never die but if you do replace them with never content in never versions, those will take precedence.
+This legacy method of specifying the archival cascade is still supported but may be removed in a future release. Please use the recommended method outlined above instead.
 
 ### Native 404 → 302 support
 

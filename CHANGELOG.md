@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
+  - Naming and directory placement conventions for archival cascades. Existing conventions will work but have been deprecated. Please see the README file for further details.
   - Improved log output.
   - Improved test output.
 

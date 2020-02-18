@@ -423,7 +423,7 @@ class Site {
     this.appAddTest500ErrorPage()
     this.appAddDynamicRoutes()
     this.appAddStaticRoutes()
-    this.appAddArchiveCascade()
+    this.appAddArchivalCascade()
   }
 
 
@@ -840,7 +840,8 @@ class Site {
   //
   // 1. Advanced _routes.js_-based advanced routing.
   //
-  // 2. Separate folders for _.https_ and _.wss_ routes routing (the _.http_ folder itself will apply precedence rules 3 and 4 internally).
+  // 2. Separate folders for _.https_ and _.wss_ routes routing (the _.http_ folder itself will apply
+  // precedence rules 3 and 4 internally).
   //
   // 3. Separate folders for _.get_ and _.post_ routes in HTTPS-only routing.
   //
@@ -1014,58 +1015,97 @@ class Site {
   }
 
 
-  // Check if we should implement an archive cascade.
-  // e.g., given the following folder structure:
+  // Check if we should implement an archival cascade.
+  //
+  // As of 12.11.0, the preferred method of setting up an archival
+  // cascade is to include the archives in the root directory of your
+  // site while conforming to the following naming convention:
+  //
+  // .archive-1, .archive-2, etc.
+  //
+  // The routes in the archives will be served in the order indicated
+  // by their index.
+  //
+  // To illustrate: In the above example, if we get a 404, we will
+  // try to find the path in .archive-2 and then in .archive-1. The idea
+  // is that .archive-\d+ are static archives of older versions of
+  // the site and they are being served in order to maintain an
+  // evergreen web where we try not to break existing links. If the
+  // current site has a path, it will override .archive-2 and .archive-1.
+  // If .archive-2 has a path, it will override .archive-1 and so
+  // on. In terms of latest version to oldest version, the order is
+  // the current site, site-archive-2, site-archive-1.
+  //
+  // Legacy usage (pre Site.js version 12.11.0) [Deprecated.]
+  //
+  // The archives would be specified according to the following folder structure:
   //
   // |-site
   // |- site-archive-2
   // |- site-archive-1
   //
-  // If we are asked to serve site, we would try and serve any 404s
-  // first from site-archive-2 and then from site-archive-1. The idea
-  // is that site-archive-\d+ are static archives of older versions of
-  // the site and they are being served in order to maintain an
-  // evergreen web where we try not to break existing links. If site
-  // has a path, it will override site-archive-2 and site-archive-1. If
-  // site-archive-2 has a path, it will override site-archive-1 and so
-  // on. In terms of latest version to oldest version, the order is
-  // site, site-archive-2, site-archive-1.
-  //
-  // The archive cascade is automatically created by naming and location
+  // The archive cascade was automatically created by naming and location
   // convention. If the folder that is being served is called
   // my-lovely-site, then the archive folders we would look for are
   // my-lovely-site-archive-1, etc.
-  appAddArchiveCascade () {
-    const archiveCascade = []
+  //
+  // Note: this legacy method is still supported by deprecated. Please migrate
+  // ===== your sites to use the new method as this method will be removed
+  //       in a future release.
+  appAddArchivalCascade () {
+    const archivalCascade = []
     const absolutePathToServe = this.absolutePathToServe
 
-    // (Windows uses forward slashes in paths so write the RegExp accordingly for that platform.)
-    const pathName = process.platform === 'win32' ? absolutePathToServe.match(/.*\\(.*?)$/)[1] : absolutePathToServe.match(/.*\/(.*?)$/)[1]
+    // New method. Check for folders called .archive-\d+ in the folder being
+    // served. This is a simpler method in general and, practically, easier
+    // to deploy and projects feel better encapsulated.
 
-    if (pathName !== '') {
-      let archiveLevel = 0
-      do {
-        archiveLevel++
-        const archiveDirectory = path.resolve(absolutePathToServe, '..', `${pathName}-archive-${archiveLevel}`)
-        if (fs.existsSync(archiveDirectory)) {
-          // Archive exists, add it to the archive cascade.
-          archiveCascade.push(archiveDirectory)
-        } else {
-          // Archive does not exist.
-          break
-        }
-      } while (true)
+    const fileNames = fs.readdirSync(absolutePathToServe)
 
-      // We will implement the cascade in reverse (from highest archive number to the
-      // lowest, with latter versions overriding earlier ones), so reverse the list.
-      archiveCascade.reverse()
+    // Filter directories that match the naming convention.
+    const archivalCascade = fileNames.filter(fileName => {
+      const matchesNamingConvention = fileName.match(/^.archive-\d+$/)
+      if (matchesNamingConvention) {
+        const fileStats = fs.statSync(path.join(absolutePathToServe, fileName))
+        return fileStats.isDirectory()
+      } else {
+        return false
+      }
+    })
+
+    if (archivalCascade.length === 0) {
+      //
+      // No archives found; try the legacy method.
+      //
+
+      // (Windows uses forward slashes in paths so write the RegExp accordingly for that platform.)
+      const pathName = process.platform === 'win32' ? absolutePathToServe.match(/.*\\(.*?)$/)[1] : absolutePathToServe.match(/.*\/(.*?)$/)[1]
+
+      if (pathName !== '') {
+        let archiveLevel = 0
+        do {
+          archiveLevel++
+          const archiveDirectory = path.resolve(absolutePathToServe, '..', `${pathName}-archive-${archiveLevel}`)
+          if (fs.existsSync(archiveDirectory)) {
+            // Archive exists, add it to the archive cascade.
+            archivalCascade.push(archiveDirectory)
+          } else {
+            // Archive does not exist.
+            break
+          }
+        } while (true)
+
+        // We will implement the cascade in reverse (from highest archive number to the
+        // lowest, with latter versions overriding earlier ones), so reverse the list.
+        archivalCascade.reverse()
+      }
     }
 
     // Serve the archive cascade (if there is one).
     // Note: for the archive cascade, we use express.static instead of instant as, by the
     // ===== nature of it being an archive, live reload should not be a requirement.
     let archiveNumber = 0
-    archiveCascade.forEach(archivePath => {
+    archivalCascade.forEach(archivePath => {
       archiveNumber++
       this.log(`   🌱    ❨Site.js❩ Evergreen web: serving archive #${archiveNumber}`)
       this.app.use(express.static(archivePath))
@@ -1077,4 +1117,3 @@ Site.appNameAndVersionAlreadyLogged = false
 Site._versionNumber = null
 
 module.exports = Site
-
