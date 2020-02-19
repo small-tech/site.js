@@ -12,6 +12,28 @@
 const test = require('tape')
 const childProcess = require('child_process')
 
+const Site = require('../index.js')
+
+async function secureGet (url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, (response) => {
+      const statusCode = response.statusCode
+      const location = response.headers.location
+
+      // Reject if it’s not one of the status codes we are testing.
+      if (statusCode !== 200 && statusCode !== 404 && statusCode !== 500 && statusCode !== 302) {
+        reject({statusCode})
+      }
+
+      let body = ''
+      response.on('data', _ => body += _)
+      response.on('end', () => {
+        resolve({statusCode, location, body})
+      })
+    })
+  })
+}
+
 function options() {
   // Ensure that the command logs to console (as tests are being run with QUIET=true in the environment.)
   let env = Object.assign({}  , process.env)
@@ -67,7 +89,7 @@ test('[bin/commands] enable and disable', t => {
   const expectedOutputForEnableCommand = dehydrate(
   ` ${cliHeader()}
 
-    😈 Launched as daemon on https://dev.ar.al serving test/site
+    😈 Launched as daemon on https://${Site.hostname} serving test/site
 
     😈 Installed for auto-launch at startup.
 
