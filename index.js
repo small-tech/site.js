@@ -1053,7 +1053,7 @@ class Site {
   // ===== your sites to use the new method as this method will be removed
   //       in a future release.
   appAddArchivalCascade () {
-    const archivalCascade = []
+    let archivalCascade = []
     const absolutePathToServe = this.absolutePathToServe
 
     // New method. Check for folders called .archive-\d+ in the folder being
@@ -1063,7 +1063,7 @@ class Site {
     const fileNames = fs.readdirSync(absolutePathToServe)
 
     // Filter directories that match the naming convention.
-    const archivalCascade = fileNames.filter(fileName => {
+    archivalCascade = fileNames.filter(fileName => {
       const matchesNamingConvention = fileName.match(/^.archive-\d+$/)
       if (matchesNamingConvention) {
         const fileStats = fs.statSync(path.join(absolutePathToServe, fileName))
