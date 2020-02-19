@@ -4,7 +4,9 @@ const childProcess = require('child_process')
 test('[bin/commands] version', t => {
   t.plan(1)
 
-  const expectedOutputConcentrate = '💕Site.jsv12.11.0(runningonNodev10.16.0)╔═══════════════════════════════════════════╗║Likethis?Fundus!║║║║We’reatiny,independentnot-for-profit.║║https://small-tech.org/fund-us║╚═══════════════════════════════════════════╝'
+  const version = require('../package.json').version
+
+  const expectedOutputConcentrate = `💕Site.jsv${version}(runningonNodev10.16.0)╔═══════════════════════════════════════════╗║Likethis?Fundus!║║║║We’reatiny,independentnot-for-profit.║║https://small-tech.org/fund-us║╚═══════════════════════════════════════════╝`
 
   // Ensure that the command logs to console (as tests are being run with QUIET=true in the environment.)
   let env = Object.assign({}  , process.env)
