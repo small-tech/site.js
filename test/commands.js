@@ -407,7 +407,26 @@ test('[commands] help', t => {
 
   `)
 
-  t.strictEquals(macHelp, macExpectedHelpOutput, 'Actual help output should match expectated output (mac)')
+  t.strictEquals(macHelp, macExpectedHelpOutput, 'Actual help output should match expected output (mac)')
 
+  t.end()
+})
+
+test('[commands] hugo', t => {
+  t.plan(1)
+
+  const expectedOutput = dehydrate(`
+  ${cliHeader()}
+  🎠    ❨Site.js❩ Running Hugo with command version
+
+  🅷 🆄 🅶 🅾  Hugo Static Site Generator v0.64.1-C327E75D linux/amd64 BuildDate: 2020-02-09T20:47:32Z
+  🅷 🆄 🅶 🅾
+
+     💕    ❨Site.js❩ Goodbye!
+  `)
+
+  const actualOutput = outputForCommand('bin/site.js hugo version')
+
+  t.strictEquals(actualOutput, expectedOutput, 'Actual output matches expected output')
   t.end()
 })
