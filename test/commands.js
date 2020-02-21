@@ -116,6 +116,8 @@ test('[bin/commands] enable and disable', t => {
   t.end()
 })
 
+// Note that these tests will not catch whitespace differences in the Help output
+// due to the dehydration.
 test('[commands] help', t => {
   t.plan(4)
 
