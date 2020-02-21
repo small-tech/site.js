@@ -114,7 +114,7 @@ class Help {
     ${commandLogs}\tDisplay and tail server logs.
     ${commandStatus}\tDisplay detailed server information.
       ` : ''}
-    ${commandHugo}\tPasses the remainder of the command string to the intergrated Hugo static site generator.
+    ${commandHugo}\tPasses the remainder of the command string to the integrated Hugo static site generator.
 
     ${commandUpdate}\tCheck for Site.js updates and update if new version is found.
     ${commandUninstall}\tUninstall Site.js.
@@ -190,19 +190,19 @@ class Help {
       (shorthand and full)\t\t\t${prompt} ${appName} ${commandServe} ${argument('demo')} ${argument('@hostname')}
 
     • Proxy ${argument('localhost:1313')} ⇄ https://hostname\t${prompt} ${appName} ${commandServe} ${argument(':1313')} ${argument('@hostname')}
-
-      ${heading('Static site generation:')}
-
-    • Create a new Hugo site\t\t\t${prompt} ${appName} ${commandHugo} ${argument('new site demo')}
     ${ this.systemdExists ? `
-      ${heading('Start-up daemon:')}
+      Start-up daemon:
 
     • Serve current folder as daemon\t\t${prompt} ${appName} ${commandEnable}
     • Ditto & also ensure it can rsync via ssh\t${prompt} ${appName} ${commandEnable} ${optionEnsureCanSync}
     • Get status of deamon\t\t\t${prompt} ${appName} ${commandStatus}
     • Display server logs\t\t\t${prompt} ${appName} ${commandLogs}
     • Stop current daemon\t\t\t${prompt} ${appName} ${commandDisable}
-    ` : ''}${ this.isWindows ? `
+    ` : ''}
+      ${heading('Static site generation:')}
+
+    • Create a new Hugo site\t\t\t${prompt} ${appName} ${commandHugo} ${argument('new site demo')}
+    ${ this.isWindows ? `
     ${heading('Windows-specific notes:')}
 
       - Unlike Linux and macOS, you must use quotation marks around @localhost and @hostname.
