@@ -54,6 +54,7 @@ class Help {
     const commandRestart = command('restart')
     const commandLogs = command('logs')
     const commandStatus = command('status')
+    const commandHugo = command('hugo')
 
     const commandUpdate = command('update')
     const commandUninstall = command('uninstall')
@@ -86,7 +87,7 @@ class Help {
 
   ${prompt} ${clr(appName, 'bold')} [${usageCommand}] [${usageFolderOrPort}] [${usageHostAndPort}] [${usageOptions}]
 
-    ${usageCommand}\t\t${commandServe}${this.systemdExists ? ` | ${commandEnable} | ${commandDisable} | ${commandStart} | ${commandStop} | ${commandRestart} | ${commandLogs} | ${commandStatus}` : ''} | ${commandUpdate} | ${commandUninstall} | ${commandVersion} | ${commandHelp}
+    ${usageCommand}\t\t${commandServe}${this.systemdExists ? ` | ${commandEnable} | ${commandDisable} | ${commandStart} | ${commandStop} | ${commandRestart} | ${commandLogs} | ${commandStatus}` : ''} | ${commandUpdate} | ${commandHugo} | ${commandUninstall} | ${commandVersion} | ${commandHelp}
     ${usageFolderOrPort}\tPath of folder to serve (defaults to current folder) or port on localhost to proxy.
     ${usageHostAndPort}\tHost (and, optionally port) to sync. Valid hosts are @localhost and @hostname.
     ${usageOptions}\t\tSettings that alter command behaviour.
@@ -113,6 +114,8 @@ class Help {
     ${commandLogs}\tDisplay and tail server logs.
     ${commandStatus}\tDisplay detailed server information.
       ` : ''}
+    ${commandHugo}\tPasses the remainder of the command string to the intergrated Hugo static site generator.
+
     ${commandUpdate}\tCheck for Site.js updates and update if new version is found.
     ${commandUninstall}\tUninstall Site.js.
 
@@ -187,8 +190,12 @@ class Help {
       (shorthand and full)\t\t\t${prompt} ${appName} ${commandServe} ${argument('demo')} ${argument('@hostname')}
 
     • Proxy ${argument('localhost:1313')} ⇄ https://hostname\t${prompt} ${appName} ${commandServe} ${argument(':1313')} ${argument('@hostname')}
+
+      ${heading('Static site generation:')}
+
+    • Create a new Hugo site\t\t\t${prompt} ${appName} ${commandHugo} ${argument('new site demo')}
     ${ this.systemdExists ? `
-    Start-up daemon:
+      ${heading('Start-up daemon:')}
 
     • Serve current folder as daemon\t\t${prompt} ${appName} ${commandEnable}
     • Ditto & also ensure it can rsync via ssh\t${prompt} ${appName} ${commandEnable} ${optionEnsureCanSync}
