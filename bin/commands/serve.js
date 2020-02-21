@@ -133,7 +133,7 @@ function serve (args) {
     // Start a server and also sync if requested.
     ensure.weCanBindToPort(port, () => {
       tcpPortUsed.check(port)
-      .then(inUse => {
+      .then(async inUse => {
         if (inUse) {
           // Check to see if the problem is that Site.js is running as a daemon and
           // display a more specific error message if so. (Remember that daemons are
@@ -166,6 +166,14 @@ function serve (args) {
           try {
             site = new Site(options)
           } catch (error) {
+            // Rethrow
+            throwError(error)
+          }
+
+          // Start serving.
+          try {
+            await site.serve()
+          } catch (error) {
             if (error instanceof errors.InvalidPathToServeError) {
               console.log(`   🤯    ${clr('Error:', 'red')} The path to serve ${clr(options.path, 'yellow')} does not exist.\n`)
               process.exit(1)
@@ -174,9 +182,6 @@ function serve (args) {
               throwError(error)
             }
           }
-
-          // Start serving.
-          site.serve()
 
           const server = site.server
 
