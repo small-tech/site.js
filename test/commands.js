@@ -15,6 +15,9 @@ const childProcess = require('child_process')
 const Site = require('../index.js')
 const Help = require('../bin/lib/Help')
 
+const util = require('util')
+const exec = util.promisify(childProcess.exec)
+
 async function secureGet (url) {
   return new Promise((resolve, reject) => {
     https.get(url, (response) => {
@@ -35,11 +38,12 @@ async function secureGet (url) {
   })
 }
 
-function options() {
+function options(timeout = 0) {
   // Ensure that the command logs to console (as tests are being run with QUIET=true in the environment.)
   let env = Object.assign({}  , process.env)
   delete env['QUIET']
-  return { env }
+
+  return { env, timeout }
 }
 
 function cliHeader() {
@@ -245,8 +249,6 @@ test('[commands] help', t => {
   `)
 
   t.strictEquals(linuxWithSystemdHelp, linuxWithSystemdExpectedHelpOutput, 'Actual help output should match expected output (linux with systemd)')
-
-  console.log()
 
   const linuxWithoutSystemdExpectedHelpOutput = dehydrate(`
   Usage:
@@ -480,4 +482,29 @@ test('[commands] hugo', t => {
 
   t.strictEquals(actualOutput, expectedOutput, 'Actual output matches expected output')
   t.end()
+})
+
+test('[commands] logs', async t => {
+  t.plan(5)
+
+  let result
+  try {
+    const optionsWithOneSecondTimeout = options(1000)
+
+    result = childProcess.exec('bin/site.js logs', optionsWithOneSecondTimeout, (error, stdout, stderr) => {
+
+      // This will end with an error due to the timeout. Ensure that the error is the one we expect.
+      t.true(error, 'process termination is as expected')
+      t.true(error.killed, 'logs process was killed by us')
+      t.strictEquals(error.signal, 'SIGTERM', 'logs process was terminated in the manner we expect')
+
+      actualOutput = dehydrate(stdout)
+      t.true(actualOutput.includes(dehydrate('📜 Tailing logs (press Ctrl+C to exit).')), 'stdout includes our header')
+      t.true(actualOutput.includes(dehydrate('-- Logs begin at')), 'stdout includes journalctl header')
+      t.end()
+    })
+  } catch (error) {
+    console.log(error)
+    t.fail('log process launch error')
+  }
 })

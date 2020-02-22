@@ -697,7 +697,7 @@ class Site {
       // updates and perform them if necessary.
       if (process.env.NODE_ENV === 'production') {
 
-        function checkForUpdates () {
+        const checkForUpdates = () => {
           this.log(' 🛰 Running auto update check…')
 
           const options = {env: process.env, stdio: 'inherit'}
