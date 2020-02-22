@@ -84,14 +84,25 @@ test('[bin/commands] version', t => {
 })
 
 
-test('[bin/commands] enable and disable', t => {
-  t.plan(2)
+test('[bin/commands] systemd startup daemon', t => {
+  t.plan(4)
 
+  //
+  // Setup.
+  //
+
+  // Ensure server isn’t enabled first.
+  try { outputForCommand(disableCommand) } catch (error) {
+    // OK if this fails (it will fail if server wasn’t enabled).
+  }
+
+  //
+  // Enable command.
+  //
   const enableCommand = 'bin/site.js enable test/site'
-  const disableCommand = 'bin/site.js disable'
 
   const expectedOutputForEnableCommand = dehydrate(
-  ` ${cliHeader()}
+    ` ${cliHeader()}
 
     😈 Launched as daemon on https://${Site.hostname} serving test/site
 
@@ -99,22 +110,29 @@ test('[bin/commands] enable and disable', t => {
 
     😁👍 You’re all set!`)
 
-  const expectedOutputForDisableCommand = dehydrate(`${cliHeader()} 🎈 Server stopped and removed from startup.`)
-
-  // Ensure server isn’t enabled first.
-  try { outputForCommand(disableCommand) } catch (error) {
-    // OK if this fails (it will fail if server wasn’t enabled).
-  }
-
   const actualOutputForEnableCommand = outputForCommand(enableCommand)
 
-  // Test enable.
   t.strictEquals(actualOutputForEnableCommand, expectedOutputForEnableCommand, 'Enable command: actual output matches expected output')
 
-  const actualOutputForDisableCommand = outputForCommand(disableCommand)
+  //
+  // Disable command.
+  //
 
-  // Test disable
+  const disableCommand = 'bin/site.js disable'
+  const expectedOutputForDisableCommand = dehydrate(`${cliHeader()} 🎈 Server stopped and removed from startup.`)
+  const actualOutputForDisableCommand = outputForCommand(disableCommand)
   t.strictEquals(actualOutputForDisableCommand, expectedOutputForDisableCommand, 'Disable command: actual output matches expected output')
+
+  // Test start command elegant error handling when invoked when server is disabled.
+  const startCommand = 'bin/site.js start'
+  const expectedOutputForStartCommandWhenDaemonIsDisabled = dehydrate(`${cliHeader()}  👿 Error: Site.js daemon is not enabled. Please run site enable to enable it.`)
+  try {
+    outputForCommand(startCommand)
+  } catch (error) {
+    t.pass('Start command fails as expected when daemon is disabled')
+    const actualOutputForStartCommandWhenDaemonIsDisabled = dehydrate(error.stdout)
+    t.strictEquals(actualOutputForStartCommandWhenDaemonIsDisabled, expectedOutputForStartCommandWhenDaemonIsDisabled, 'Start command: output is as expected when daemon is disabled')
+  }
 
   t.end()
 })
