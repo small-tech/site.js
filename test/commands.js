@@ -85,7 +85,7 @@ test('[bin/commands] version', t => {
 
 
 test('[bin/commands] systemd startup daemon', t => {
-  t.plan(4)
+  t.plan(8)
 
   //
   // Setup.
@@ -123,6 +123,16 @@ test('[bin/commands] systemd startup daemon', t => {
   const actualOutputForDisableCommand = outputForCommand(disableCommand)
   t.strictEquals(actualOutputForDisableCommand, expectedOutputForDisableCommand, 'Disable command: actual output matches expected output')
 
+  // Test disable command elegant error handling when invoked when service is already disabled.
+  const expectedOutputForDisableCommandWhenDaemonIsAlreadyDisabled = dehydrate(`${cliHeader()}  👿 Error: Site.js server is not enabled. Nothing to disable.`)
+  try {
+    outputForCommand(disableCommand)
+  } catch (error) {
+    t.pass('Disable command fails as expected when daemon is already disabled')
+    const actualOutputForDisableCommandWhenDaemonIsAlreadyDisabled = dehydrate(error.stdout)
+    t.strictEquals(actualOutputForDisableCommandWhenDaemonIsAlreadyDisabled, expectedOutputForDisableCommandWhenDaemonIsAlreadyDisabled, 'Disable command: output is as expected when daemon is already disabled')
+  }
+
   // Test start command elegant error handling when invoked when server is disabled.
   const startCommand = 'bin/site.js start'
   const expectedOutputForStartCommandWhenDaemonIsDisabled = dehydrate(`${cliHeader()}  👿 Error: Site.js daemon is not enabled. Please run site enable to enable it.`)
@@ -132,6 +142,17 @@ test('[bin/commands] systemd startup daemon', t => {
     t.pass('Start command fails as expected when daemon is disabled')
     const actualOutputForStartCommandWhenDaemonIsDisabled = dehydrate(error.stdout)
     t.strictEquals(actualOutputForStartCommandWhenDaemonIsDisabled, expectedOutputForStartCommandWhenDaemonIsDisabled, 'Start command: output is as expected when daemon is disabled')
+  }
+
+  // Test stop command elegant error handling when invoked when server is already not active.
+  const stopCommand = 'bin/site.js stop'
+  const expectedOutputForStopCommandWhenDaemonIsAlreadyNotActive = dehydrate(`${cliHeader()}  👿 Error: Site.js server is not active. Nothing to stop.`)
+  try {
+    outputForCommand(stopCommand)
+  } catch (error) {
+    t.pass('Stop command fails as expected when daemon is already not active')
+    const actualOutputForStopCommandWhenDaemonIsAlreadyNotActive = dehydrate(error.stdout)
+    t.strictEquals(actualOutputForStopCommandWhenDaemonIsAlreadyNotActive, expectedOutputForStopCommandWhenDaemonIsAlreadyNotActive, 'Stop command: output is as expected when daemon is already not active')
   }
 
   t.end()
