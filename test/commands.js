@@ -39,7 +39,7 @@ async function secureGet (url) {
 
 function options(timeout = 0) {
   // Ensure that the command logs to console (as tests are being run with QUIET=true in the environment.)
-  let env = Object.assign({}  , process.env)
+  let env = Object.assign({}, process.env)
   delete env['QUIET']
 
   return { env, timeout }
@@ -85,13 +85,14 @@ test('[bin/commands] version', t => {
 
 
 test('[bin/commands] systemd startup daemon', t => {
-  t.plan(8)
+  t.plan(10)
 
   //
   // Setup.
   //
 
   // Ensure server isn’t enabled first.
+  const disableCommand = 'bin/site.js disable'
   try { outputForCommand(disableCommand) } catch (error) {
     // OK if this fails (it will fail if server wasn’t enabled).
   }
@@ -114,11 +115,39 @@ test('[bin/commands] systemd startup daemon', t => {
 
   t.strictEquals(actualOutputForEnableCommand, expectedOutputForEnableCommand, 'Enable command: actual output matches expected output')
 
+  // Test enable command elegant error handling when invoked when daemon is already enabled.
+  const expectedOutputForEnableCommandWhenDaemonIsAlreadyEnabled = dehydrate(` 👿 Site.js Daemon is already running.
+ Please stop it first with the command: site disable`)
+  try {
+    outputForCommand(enableCommand)
+  } catch (error) {
+    t.pass('Enable command fails as expected when daemon is already enabled')
+    const actualOutputForEnableCommandWhenDaemonIsAlreadyEnabled = dehydrate(error.stdout)
+    t.strictEquals(actualOutputForEnableCommandWhenDaemonIsAlreadyEnabled, expectedOutputForEnableCommandWhenDaemonIsAlreadyEnabled, 'Enable command: output is as expected when daemon is already enabled')
+  }
+
+  //
+  // Stop command.
+  //
+
+  // TODO
+
+  //
+  // Start command.
+  //
+
+  // TODO
+
+  //
+  // Restart command.
+  //
+
+  // TODO
+
   //
   // Disable command.
   //
 
-  const disableCommand = 'bin/site.js disable'
   const expectedOutputForDisableCommand = dehydrate(`${cliHeader()} 🎈 Server stopped and removed from startup.`)
   const actualOutputForDisableCommand = outputForCommand(disableCommand)
   t.strictEquals(actualOutputForDisableCommand, expectedOutputForDisableCommand, 'Disable command: actual output matches expected output')
@@ -154,6 +183,9 @@ test('[bin/commands] systemd startup daemon', t => {
     const actualOutputForStopCommandWhenDaemonIsAlreadyNotActive = dehydrate(error.stdout)
     t.strictEquals(actualOutputForStopCommandWhenDaemonIsAlreadyNotActive, expectedOutputForStopCommandWhenDaemonIsAlreadyNotActive, 'Stop command: output is as expected when daemon is already not active')
   }
+
+  // Test restart command elegant error handling when invoked when service is not active.
+  // TODO
 
   t.end()
 })

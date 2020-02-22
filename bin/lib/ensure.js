@@ -83,7 +83,7 @@ class Ensure {
   // Ensure systemctl exists.
   systemctl () {
     if (!this.commandExists('systemctl')) {
-      console.error('\n 👿 Sorry, daemons are only supported on Linux systems with systemd (systemctl required).\n')
+      console.log('\n 👿 Sorry, daemons are only supported on Linux systems with systemd (systemctl required).\n')
       process.exit(1)
     }
   }
@@ -92,7 +92,7 @@ class Ensure {
   // Ensure journalctl exists.
   journalctl () {
     if (!this.commandExists('journalctl')) {
-      console.error('\n 👿 Sorry, daemons are only supported on Linux systems with systemd (journalctl required).\n')
+      console.log('\n 👿 Sorry, daemons are only supported on Linux systems with systemd (journalctl required).\n')
       process.exit(1)
     }
   }
@@ -106,7 +106,7 @@ class Ensure {
     const { isActive } = getStatus()
 
     if (isActive) {
-      console.error(`\n 👿 Site.js Daemon is already running.\n\n    ${clr('Please stop it first with the command:', 'yellow')} site ${clr('disable', 'green')}\n`)
+      console.log(`\n 👿 Site.js Daemon is already running.\n\n    ${clr('Please stop it first with the command:', 'yellow')} site ${clr('disable', 'green')}\n`)
       process.exit(1)
     }
   }
