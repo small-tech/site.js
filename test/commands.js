@@ -85,7 +85,7 @@ test('[bin/commands] version', t => {
 
 
 test('[bin/commands] systemd startup daemon', t => {
-  t.plan(12)
+  t.plan(14)
 
   //
   // Commands used in the tests.
@@ -113,6 +113,13 @@ test('[bin/commands] systemd startup daemon', t => {
   ////////////////////////////////////////////////////////////////////////////////
 
   //
+  // Status should display correctly when server is disabled.
+  //
+  const expectedOutputForStatusCommandWhenServerIsDisabled = dehydrate(`${cliHeader()}  ❌ Site.js is inactive and disabled.`)
+  const actualOutputForStatusCommandWhenServerIsDisabled = outputForCommand(statusCommand)
+  t.strictEquals(actualOutputForStatusCommandWhenServerIsDisabled, expectedOutputForStatusCommandWhenServerIsDisabled, 'Server status should display correctly when server is disabled')
+
+  //
   // Disable command should fail when server is disabled.
   //
 
@@ -120,7 +127,7 @@ test('[bin/commands] systemd startup daemon', t => {
   try {
     outputForCommand(disableCommand)
   } catch (error) {
-    t.pass('Disable command fails as expected when daemon is already disabled')
+    t.pass('Disable command fails as expected when server is already disabled')
     const actualOutputForDisableCommandWhenServerIsDisabled = dehydrate(error.stdout)
     t.strictEquals(actualOutputForDisableCommandWhenServerIsDisabled, expectedOutputForDisableCommandWhenServerIsDisabled, 'Disable command should fail when server is disabled')
   }
@@ -132,7 +139,7 @@ test('[bin/commands] systemd startup daemon', t => {
   try {
     outputForCommand(startCommand)
   } catch (error) {
-    t.pass('Start command fails as expected when daemon is disabled')
+    t.pass('Start command fails as expected when server is disabled')
     const actualOutputForStartCommandWhenServerIsDisabled = dehydrate(error.stdout)
     t.strictEquals(actualOutputForStartCommandWhenServerIsDisabled, expectedOutputForStartCommandWhenServerIsDisabled, 'Start command should fail when server is disabled')
   }
@@ -188,16 +195,48 @@ test('[bin/commands] systemd startup daemon', t => {
   ////////////////////////////////////////////////////////////////////////////////
 
   //
+  // Status should display correctly when server is enabled.
+  //
+  const expectedOutputForStatusCommandWhenServerIsEnabled = dehydrate(`${cliHeader()} ✔ Site.js is active and enabled.`)
+  const actualOutputForStatusCommandWhenServerIsEnabled = outputForCommand(statusCommand)
+  t.strictEquals(actualOutputForStatusCommandWhenServerIsEnabled, expectedOutputForStatusCommandWhenServerIsEnabled, 'Server status should display correctly when server is enabled')
+
+
+  //
   // Enable command should fail when server is enabled.
   //
   const expectedOutputForEnableCommandWhenServerIsEnabled = dehydrate(` 👿 Site.js Daemon is already running. Please stop it first with the command: site disable`)
   try {
     outputForCommand(enableCommand)
   } catch (error) {
-    t.pass('Enable command fails as expected when daemon is already enabled')
+    t.pass('Enable command fails as expected when server is enabled')
     const actualOutputForEnableCommandWhenServerIsEnabled = dehydrate(error.stdout)
     t.strictEquals(actualOutputForEnableCommandWhenServerIsEnabled, expectedOutputForEnableCommandWhenServerIsEnabled, 'Enable command should fail when server is enabled')
   }
+
+  //
+  // Stop command should succeed when server is active.
+  //
+
+  // TODO
+
+  //
+  // Server status should display correctly when server is enabled but inactive.
+  //
+
+  // TODO
+
+  //
+  // Start command should succeed when server is inactive.
+  //
+
+  // Q. What is the expected behaviour of restart command when server is inactive? [ ]
+
+  // TODO
+
+  //
+  // Restart command should succeed when server is active.
+  //
 
   //
   // Disable command should succeed when server is enabled.
