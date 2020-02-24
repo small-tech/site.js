@@ -85,7 +85,7 @@ test('[bin/commands] version', t => {
 
 
 test('[bin/commands] systemd startup daemon', t => {
-  t.plan(18)
+  t.plan(19)
 
   //
   // Commands used in the tests.
@@ -236,16 +236,22 @@ test('[bin/commands] systemd startup daemon', t => {
   t.strictEquals(actualOutputForStartCommandWhenServerIsEnabledButInactive, expectedOutputForStartCommandWhenServerIsEnabledButInactive, 'Start command should succeed when server is inactive')
 
   //
-  // Q. What is the expected behaviour of restart command when server is enabled but inactive? [ ]
+  // Restart command should succeed when server is enabled but inactive.
   //
 
-  // TODO
+  // Stop the server first.
+  /* ignore the */ outputForCommand(stopCommand)
+
+  const restartCommandSuccessOutput = dehydrate(`${cliHeader()} 🎈 Server restarted.`)
+  const expectedOutputForRestartCommandWhenServerIsEnabledButInactive = restartCommandSuccessOutput
+  const actualOutputForRestartCommandWhenServerIsEnabledButInactive = outputForCommand(restartCommand)
+  t.strictEquals(actualOutputForRestartCommandWhenServerIsEnabledButInactive, expectedOutputForRestartCommandWhenServerIsEnabledButInactive, 'Restart command should succeed when server is enabled but inactive')
 
   //
   // Restart command should succeed when server is active.
   //
 
-  const expectedOutputForRestartCommandWhenServerIsEnabled = dehydrate(`${cliHeader()} 🎈 Server restarted.`)
+  const expectedOutputForRestartCommandWhenServerIsEnabled = restartCommandSuccessOutput
   const actualOutputForRestartCommandWhenServerIsEnabled = outputForCommand(restartCommand)
   t.strictEquals(actualOutputForRestartCommandWhenServerIsEnabled,expectedOutputForRestartCommandWhenServerIsEnabled, 'Restart command should succeed when server is active')
 
