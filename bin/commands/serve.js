@@ -12,6 +12,9 @@
 // Note: requires are at the bottom to avoid a circular reference as ../../index (Site)
 // ===== also requires this module.
 
+const fs = require('fs-extra')
+const pathModule = require('path')
+
 const ALIASES = 'aliases'
 const SYNC_TO = 'sync-to'
 const SYNC_FROM = 'sync-from'
@@ -126,8 +129,27 @@ function serve (args) {
     })
   }
 
-  if (syncOptions !== null && syncOptions.exit) {
-    // No need to start a server if all we want to do is sync.
+  // If sync is requested, check if we need to generate any source.
+  // Currently, this is a check for Hugo source directories.
+  let hasGeneratedContent = false
+  if (syncOptions !== null) {
+    const hugoSourceFolderPrefixRegExp = /^.hugo(--)?/
+    const absolutePathToServe = pathModule.resolve(path)
+    const files = fs.readdirSync(absolutePathToServe)
+    for (const file of files) {
+      if (file.match(hugoSourceFolderPrefixRegExp)) {
+        // Delete the .generated folder so that a full
+        // generation can happen as we’re about to deploy.
+        const generatedContentPath = pathModule.join(absolutePathToServe, '.generated')
+        fs.removeSync(generatedContentPath)
+        hasGeneratedContent = true
+        break
+      }
+    }
+  }
+
+  if (syncOptions !== null && syncOptions.exit && !hasGeneratedContent) {
+    // No need to start a server if all we want to do is sync and there’s no generated content.
     sync(syncOptions)
   } else {
     // Start a server and also sync if requested.
