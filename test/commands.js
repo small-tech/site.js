@@ -85,7 +85,7 @@ test('[bin/commands] version', t => {
 
 
 test('[bin/commands] systemd startup daemon', t => {
-  t.plan(15)
+  t.plan(18)
 
   //
   // Commands used in the tests.
@@ -145,27 +145,27 @@ test('[bin/commands] systemd startup daemon', t => {
   }
 
   //
-  // Stop command should fail when server is not active.
+  // Stop command should fail when server is disabled.
   //
-  const expectedOutputForStopCommandWhenServerIsNotActive = dehydrate(`${cliHeader()}  👿 Error: Site.js server is not active. Nothing to stop.`)
+  const expectedOutputForStopCommandWhenServerIsDisabled = dehydrate(`${cliHeader()}  👿 Error: Site.js server is not active. Nothing to stop.`)
   try {
     outputForCommand(stopCommand)
   } catch (error) {
     t.pass('Stop command fails as expected when server is not active')
-    const actualOutputForStopCommandWhenServerIsNotActive = dehydrate(error.stdout)
-    t.strictEquals(actualOutputForStopCommandWhenServerIsNotActive, expectedOutputForStopCommandWhenServerIsNotActive, 'Stop command should fail when server is not active')
+    const actualOutputForStopCommandWhenServerIsDisabled = dehydrate(error.stdout)
+    t.strictEquals(actualOutputForStopCommandWhenServerIsDisabled, expectedOutputForStopCommandWhenServerIsDisabled, 'Stop command should fail when server is disabled')
   }
 
   //
-  // Restart command should fail when server is not active.
+  // Restart command should fail when server is disabled.
   //
-  const expectedOutputForRestartCommandWhenServerIsNotActive = dehydrate(`${cliHeader()}  👿 Error: Site.js daemon is not enabled. Please run site enable to enable it.`)
+  const expectedOutputForRestartCommandWhenServerIsDisabled = dehydrate(`${cliHeader()}  👿 Error: Site.js daemon is not enabled. Please run site enable to enable it.`)
   try {
     outputForCommand(restartCommand)
   } catch (error) {
     t.pass('Restart command fails as expected when server is not active')
-    actualOutputForRestartCommandWhenServerIsNotActive = dehydrate(error.stdout)
-    t.strictEquals(actualOutputForRestartCommandWhenServerIsNotActive, expectedOutputForRestartCommandWhenServerIsNotActive, 'Restart command should fail when server is not active')
+    actualOutputForRestartCommandWhenServerIsDisabled = dehydrate(error.stdout)
+    t.strictEquals(actualOutputForRestartCommandWhenServerIsDisabled, expectedOutputForRestartCommandWhenServerIsDisabled, 'Restart command should fail when server is not active')
   }
 
   //
@@ -217,29 +217,37 @@ test('[bin/commands] systemd startup daemon', t => {
   //
   // Stop command should succeed when server is active.
   //
-  expectedOutputForStopCommandWhenServerIsActive = dehydrate(`${cliHeader()} 🎈 Server stopped.`)
-  actualOutputForStopCommandWhenServerIsActive = outputForCommand(stopCommand)
+  const expectedOutputForStopCommandWhenServerIsActive = dehydrate(`${cliHeader()} 🎈 Server stopped.`)
+  const actualOutputForStopCommandWhenServerIsActive = outputForCommand(stopCommand)
   t.strictEquals(actualOutputForStopCommandWhenServerIsActive, expectedOutputForStopCommandWhenServerIsActive, 'Stop command should succeed when server is active')
-
-  // TODO
 
   //
   // Server status should display correctly when server is enabled but inactive.
   //
-
-  // TODO
+  const expectedOutputForStatusCommandWhenServerIsEnabledButInactive = dehydrate(`${cliHeader()} ❌ Site.js is inactive and enabled.`)
+  const actualOutputForStatusCommandWhenServerIsEnabledButInactive = outputForCommand(statusCommand)
+  t.strictEquals(actualOutputForStatusCommandWhenServerIsEnabledButInactive, expectedOutputForStatusCommandWhenServerIsEnabledButInactive, 'Server status should display correctly when server is enabled but inactive')
 
   //
   // Start command should succeed when server is inactive.
   //
+  const expectedOutputForStartCommandWhenServerIsEnabledButInactive = dehydrate(`${cliHeader()} 🎈 Server started.`)
+  const actualOutputForStartCommandWhenServerIsEnabledButInactive = outputForCommand(startCommand)
+  t.strictEquals(actualOutputForStartCommandWhenServerIsEnabledButInactive, expectedOutputForStartCommandWhenServerIsEnabledButInactive, 'Start command should succeed when server is inactive')
 
-  // Q. What is the expected behaviour of restart command when server is inactive? [ ]
+  //
+  // Q. What is the expected behaviour of restart command when server is enabled but inactive? [ ]
+  //
 
   // TODO
 
   //
   // Restart command should succeed when server is active.
   //
+
+  const expectedOutputForRestartCommandWhenServerIsEnabled = dehydrate(`${cliHeader()} 🎈 Server restarted.`)
+  const actualOutputForRestartCommandWhenServerIsEnabled = outputForCommand(restartCommand)
+  t.strictEquals(actualOutputForRestartCommandWhenServerIsEnabled,expectedOutputForRestartCommandWhenServerIsEnabled, 'Restart command should succeed when server is active')
 
   //
   // Disable command should succeed when server is enabled.
