@@ -85,7 +85,7 @@ test('[bin/commands] version', t => {
 
 
 test('[bin/commands] systemd startup daemon', t => {
-  t.plan(14)
+  t.plan(15)
 
   //
   // Commands used in the tests.
@@ -217,6 +217,9 @@ test('[bin/commands] systemd startup daemon', t => {
   //
   // Stop command should succeed when server is active.
   //
+  expectedOutputForStopCommandWhenServerIsActive = dehydrate(`${cliHeader()} 🎈 Server stopped.`)
+  actualOutputForStopCommandWhenServerIsActive = outputForCommand(stopCommand)
+  t.strictEquals(actualOutputForStopCommandWhenServerIsActive, expectedOutputForStopCommandWhenServerIsActive, 'Stop command should succeed when server is active')
 
   // TODO
 
