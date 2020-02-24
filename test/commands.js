@@ -8,6 +8,8 @@
 // sudo ln -s /home/aral/.nvm/versions/node/v12.16.0/bin/node /usr/local/bin/node
 // sudo ln -s /home/aral/.nvm/versions/node/v12.16.0/bin/npm /usr/local/bin/npm
 //
+// Untested: - uninstall, - update
+//
 
 const test = require('tape')
 const childProcess = require('child_process')
