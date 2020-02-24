@@ -8,9 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-  - Native support for Hugo.
-  - Serve command now displays an error if the path to serve doesn’t doesn’t exist.
-  - Ability to set QUIET=true environment variable to suppress console output.
+  - Native support for Hugo static site generator with integrated binary.
+  - QUIET=true environment variable to suppress console output.
+  - Unit tests for all CLI commands.
 
 ### Changed
 
@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 
   - Handled all npm security warnings in third-party dependencies.
+  - Serve command now displays an error if the path to serve doesn’t exist.
 
 ## [12.10.5] - 2020-01-22
 
