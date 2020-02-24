@@ -17,8 +17,6 @@ const childProcess = require('child_process')
 const Site = require('../index.js')
 const Help = require('../bin/lib/Help')
 
-const util = require('util')
-
 async function secureGet (url) {
   return new Promise((resolve, reject) => {
     https.get(url, (response) => {
