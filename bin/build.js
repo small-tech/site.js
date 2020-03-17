@@ -84,10 +84,10 @@ const binaryPaths = {
   'win32': windowsBinaryPath
 }
 
-const linuxX64Target = 'linux-x64-10.16.0'
+const linuxX64Target = 'linux-x64-12.15.0'
 // Linux on ARM doesn’t have a target as we build Node from source.
-const macOsTarget = 'mac-x64-10.16.0'
-const windowsTarget = 'windows-x64-10.16.0'
+const macOsTarget = 'mac-x64-12.15.0'
+const windowsTarget = 'windows-x64-12.15.0'
 
 // Only build for the current platform unless a deployment build is requested via --deploy.
 const platform = os.platform()
