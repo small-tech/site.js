@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
+  - Update @small-tech/https to version 1.2.1. Through this change, TLS certificates are now managed by [Auto Encrypt](https://source.ind.ie/site.js/lib/auto-encrypt) and [Auto Encrypt Localhost](https://source.ind.ie/site.js/lib/auto-encrypt-localhost).
   - Naming and directory placement conventions for archival cascades. Existing conventions will work but have been deprecated. Please see the README file for further details.
   - Improved log output.
   - Improved test output.
