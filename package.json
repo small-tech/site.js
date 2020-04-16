@@ -13,11 +13,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@source.ind.ie:site.js/app.git"
+    "url": "git@source.small-tech.org:site.js/app.git"
   },
   "author": {
     "name": "Aral Balkan",
-    "email": "aral@ind.ie",
+    "email": "aral@small-tech.org",
     "url": "https://ar.al"
   },
   "license": "AGPL-3.0-or-later",
