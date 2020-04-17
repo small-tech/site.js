@@ -14,9 +14,9 @@ Most tools today are built for startups and enterprises. Site.js is built for pe
 
   - Seamless single binary [install](#install) (thanks to [Nexe](https://github.com/nexe/nexe)).
 
-  - Automatically provisions locally-trusted TLS for development (courtesy of [mkcert](https://github.com/FiloSottile/mkcert) seamlessly integrated via [Nodecert](https://source.ind.ie/hypha/tools/nodecert)).
+  - Automatically provisions locally-trusted TLS for development (courtesy of [mkcert](https://github.com/FiloSottile/mkcert) seamlessly integrated via [Auto Encrypt Localhost](https://source.small-tech.org/site.js/lib/auto-encrypt-localhost)).
 
-  - Automatically provisions globally-trusted TLS for staging and production (courtesy of [Let’s Encrypt](https://letsencrypt.org/) seamlessly integrated via [ACME TLS](https://source.ind.ie/hypha/tools/acme-tls) and [systemd](https://freedesktop.org/wiki/Software/systemd/). Your server will score an A on the [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest).)
+  - Automatically provisions globally-trusted TLS for staging and production (courtesy of [Let’s Encrypt](https://letsencrypt.org/) seamlessly integrated via [Auto Encrypt]((https://source.small-tech.org/site.js/lib/auto-encrypt) and [systemd](https://freedesktop.org/wiki/Software/systemd/). Your server will score an A on the [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest).)
 
   - Supports static web sites, dynamic web sites written in JavaScript, and hybrid sites (via integrated [Node.js](https://nodejs.org/) and [Express](https://expressjs.com)).
 
@@ -165,7 +165,7 @@ $ site serve . @localhost:666
 
 #### Proxy server
 
-You can use Site.js as a development-time reverse proxy for HTTP and WebSocket connections. For example, if you use [Hugo](https://gohugo.io/) and you’re running `hugo server` on the default HTTP port 1313. You can run a HTTPS reverse proxy at https://localhost [with LiveReload support](https://source.ind.ie/hypha/tools/web-server/blob/master/bin/web-server.js#L237) using:
+You can use Site.js as a development-time reverse proxy for HTTP and WebSocket connections. For example, if you use [Hugo](https://gohugo.io/) and you’re running `hugo server` on the default HTTP port 1313. You can run a HTTPS reverse proxy at https://localhost [with LiveReload support](https://source.small-tech.org/hypha/tools/web-server/blob/master/bin/web-server.js#L237) using:
 
 ```shell
 $ site :1313
@@ -229,7 +229,7 @@ Say you want to set your hostname to `my-windows-laptop.small-tech.org`:
 
 #### Making your server public
 
-Use a service like [ngrok](https://ngrok.com/) (Pro+) to point a custom domain name to your temporary staging server. Make sure you set your `hostname` file (e.g., in `/etc/hostname` or via `hostnamectl set-hostname <hostname>` or the equivalent for your platform) to match your domain name. The first time you hit your server via your hostname it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
+Use a service like [ngrok](https://ngrok.com/) (Pro+) to point a custom domain name to your temporary staging server. Make sure you set your `hostname` file (e.g., in `/etc/hostname` or via `hostnamectl set-hostname <hostname>` or the equivalent for your platform) to match your domain name. The first time you hit your server via your hostname it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by Auto Encrypt.
 
 When you start your server, it will run as a regular process. It will not be restarted if it crashes or if you exit the foreground process or restart the computer.
 
@@ -291,7 +291,7 @@ $ site enable my-site
 
 The `enable` command sets up your server to start automatically when your server starts and restart automatically if it crashes. Requires superuser privileges on first run to set up the launch item.
 
-For example, if you run the command on a connected server that has the ar.al domain pointing to it and `ar.al` set in _/etc/hostname_, you will be able to access the site at https://ar.al. (Yes, of course, [ar.al](https://ar.al) runs on Site.js.) The first time you hit your live site, it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by ACME TLS.
+For example, if you run the command on a connected server that has the ar.al domain pointing to it and `ar.al` set in _/etc/hostname_, you will be able to access the site at https://ar.al. (Yes, of course, [ar.al](https://ar.al) runs on Site.js.) The first time you hit your live site, it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by Auto Encrypt.
 
 The automatic TLS certificate provisioning will get certificates for the naked domain and the _www_ subdomain. There is currently no option to add other subdomains. Also, please ensure that both the naked domain and the _www_ subdomain are pointing to your server before you enable your server and hit it to ensure that the provisioning works. This is especially important if you are migrating an existing site.
 
@@ -315,7 +315,7 @@ Site.js is built using and supports the latest Node.js LTS (currently version 10
 ```shell
 # Clone and install.
 mkdir site.js && cd site.js
-git clone https://source.ind.ie/site.js/app.git
+git clone https://source.small-tech.org/site.js/app.git
 cd app
 ./install
 
@@ -381,7 +381,7 @@ You cannot currently [cross-compile for ARM](https://github.com/nexe/nexe/issues
 
 ```shell
 mkdir -p dist/linux-arm/12.8.0
-node_modules/nexe/index.js bin/site.js --build --verbose -r package.json -r "bin/commands/*" -r "node_modules/le-store-certbot/renewal.conf.tpl" -r "node_modules/@ind.ie/nodecert/mkcert-bin/mkcert-v1.4.0-linux-arm" -o dist/linux-arm/12.8.0/site
+node_modules/nexe/index.js bin/site.js --build --verbose -r package.json -r "bin/commands/*" -r "node_modules/le-store-certbot/renewal.conf.tpl" -r "node_modules/@small-tech/auto-encrypt-localhost/mkcert-bin/mkcert-v1.4.1-linux-arm" -o dist/linux-arm/12.8.0/site
 ```
 
 You can then find the `site` binary in your `dist/linux-arm/12.8.0/` folder. To install it, do:
@@ -467,7 +467,7 @@ If `command` is omitted, behaviour defaults to `serve`.
 
 All command-line arguments are optional. By default, Site.js will serve your current working folder over port 443 with locally-trusted certificates.
 
-When you `serve` a site at `@hostname` or use the `enable` command, globally-trusted Let’s Encrypt TLS certificates are automatically provisioned for you using ACME TLS the first time you hit your hostname. The hostname for the certificates is automatically set from the hostname of your system (and the _www._ subdomain is also automatically provisioned).
+When you `serve` a site at `@hostname` or use the `enable` command, globally-trusted Let’s Encrypt TLS certificates are automatically provisioned for you using Auto Encrypt the first time you hit your hostname. The hostname for the certificates is automatically set from the hostname of your system (and the _www._ subdomain is also automatically provisioned).
 
 ## Usage examples
 
@@ -533,22 +533,30 @@ When you `serve` a site at `@hostname` or use the `enable` command, globally-tru
 
 What if links never died? What if we never broke the Web? What if it didn’t involve any extra work? It’s possible. And, with Site.js, it’s effortless.
 
-### Native cascading archives support
+### The Archival Cascade
 
-If you have a static archive of the previous version of your site, you can have Site.js automatically serve it for you. For example, if your site is being served from the `my-site` folder, just put the archive of your site into a folder named `my-site-archive-1`:
+__(As of version 12.11.0)__ If you have static archives of previous versions of your site, you can have Site.js automatically serve them for you.
+
+Just put them into folder named `.archive-1`, `.archive-2`, etc.
+
+If a path cannot be found in your current site, Site.js will search for it first in `.archive-2` and, if it cannot find it there either, in `.archive-1`.
+
+Paths in your current site will override those in `.archive-2` and those in `.archive-2` will, similarly, override those in `.archive-1`.
+
+Use the archival  old links will never die but if you do replace them with never content in never versions, those will take precedence.
+
+#### Legacy method (pre version 12.11.0)
+
+In older versions, the convention for specifying the archival cascade was as follows:
 
 ```
 |- my-site
 |- my-site-archive-1
+|- my-site-archive-2
+|- etc.
 ```
 
-If a path cannot be found in `my-site`, it will be served from `my-site-archive-1`.
-
-And you’re not limited to a single archive (and hence the “cascade” bit in the name of the feature). As you have multiple older versions of your site, just add them to new folders and increment the archive index in the name. e.g., `my-site-archive-2`, `my-site-archive-3`, etc.
-
-Paths in `my-site` will override those in `my-site-archive-3` and those in `my-site-archive-3` will, similarly, override those in `my-site-archive-2` and so on.
-
-What this means that your old links will never die but if you do replace them with never content in never versions, those will take precedence.
+This legacy method of specifying the archival cascade is still supported but may be removed in a future release. Please use the recommended method outlined above instead.
 
 ### Native 404 → 302 support
 
@@ -1028,11 +1036,11 @@ new Site().createServer
 
 ### createServer([options], [requestListener])
 
-  - __options__ _(object)_: see [https.createServer](https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener). Populates the `cert` and `key` properties from the automatically-created [nodecert](https://source.ind.ie/hypha/tools/nodecert/) or Let’s Encrypt certificates and will overwrite them if they exist in the options object you pass in. If your options has `options.global = true` set, globally-trusted TLS certificates are obtained from Let’s Encrypt using ACME TLS.
+  - __options__ _(object)_: see [https.createServer](https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener). Populates the `cert` and `key` properties from the automatically-created [Auto Encrypt Localhost](https://source.small-tech.org/site.js/lib/auto-encrypt-localhost) or Let’s Encrypt certificates and will overwrite them if they exist in the options object you pass in. If your options has `options.global = true` set, globally-trusted TLS certificates are obtained from Let’s Encrypt using [Auto Encrypt](https://source.small-tech.org/site.js/lib/auto-encrypt).
 
   - __requestListener__ _(function)_: see [https.createServer](https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener). If you don’t pass a request listener, Site.js will use its default one.
 
-    __Returns:__ [https.Server](https://nodejs.org/api/https.html#https_class_https_server) instance, configured with either locally-trusted certificates via nodecert or globally-trusted ones from Let’s Encrypt.
+    __Returns:__ [https.Server](https://nodejs.org/api/https.html#https_class_https_server) instance, configured with either locally-trusted certificates via Auto Encrypt Localhost or globally-trusted ones from Let’s Encrypt via Auto Encrypt.
 
 #### Example
 
@@ -1057,7 +1065,7 @@ Options is an optional parameter object that may contain the following propertie
 
   - __port__ _(number)_: the port to serve on. Defaults to 443. (On Linux, privileges to bind to the port are automatically obtained for you.)
 
-  - __global__ _(boolean)_: if true, globally-trusted Let’s Encrypt certificates will be provisioned (if necessary) and used via ACME TLS. If false (default), locally-trusted certificates will be provisioned (if necessary) and used using _nodecert_.
+  - __global__ _(boolean)_: if true, globally-trusted Let’s Encrypt certificates will be provisioned (if necessary) and used via Auto Encrypt. If false (default), locally-trusted certificates will be provisioned (if necessary) and used using _Auto Encrypt Localhost_.
 
   - __proxyPort__ _(number)_: if provided, a proxy server will be created for the port (and `path` will be ignored).
 

@@ -28,7 +28,7 @@ async function update () {
 
   ensure.root('update')
 
-  Site.logAppNameAndVersion()
+  Site.logAppNameAndVersion(/* compact = */ true)
 
   console.log(' 🧐 Checking for updates…\n')
 

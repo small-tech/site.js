@@ -25,7 +25,7 @@ function sync (options) {
   //
   // Start rsync watcher.
   //
-  console.log(`\n 💞 [Sync] Syncing folder ${clr(options.from, 'cyan')} to account ${clr(options.account, 'cyan')} on host ${clr(options.host, 'cyan')}`)
+  console.log(`\n   💫    [Sync] Syncing folder ${clr(options.from, 'cyan')} to account ${clr(options.account, 'cyan')} on host ${clr(options.host, 'cyan')}`)
 
   const rsyncOptions = {
     'sync': {
@@ -35,6 +35,7 @@ function sync (options) {
       'exclude': [
         '.DS_Store',
         '.gitignore',
+        '.hugo*/*',
         '.dat/*',
         '.git/*'
       ],
@@ -84,38 +85,38 @@ function sync (options) {
           const errorCode = errorMatch[1]
           const errorMessage = _[errorCode]
           if (typeof errorMessage !== 'undefined') {
-            console.log(` 🤯 [Sync] Error ${errorCode}: ${errorMessage}\n`)
+            console.log(`   🤯    [Sync] Error ${errorCode}: ${errorMessage}\n`)
             console.log(error)
             process.exit(1)
           }
         }
 
-        console.log(` 🤯 [Sync] Unknown error: ${error}`)
+        console.log(`   🤯    [Sync] Unknown error: ${error}`)
         process.exit(1)
       },
       'sync': function () {
         // Sync succeeded.
-        console.log(` 💞 [Sync] Local folder ${clr(options.from, 'cyan')} synced to ${clr(options.host, 'cyan')}`)
+        console.log(`   💫    [Sync] Local folder ${clr(options.from, 'cyan')} synced to ${clr(options.host, 'cyan')}`)
 
         if (options.exit) {
           // We've been asked to exit once we’ve successfully synced. Do so.
-          console.log('\n 👋 Exit on sync requested, exiting…')
+          console.log('\n   👋    Exit on sync requested, exiting…')
           Graceful.exit()
         }
       },
       'watch': function () {
         // Watch succeeded.
-        console.log(`\n 🔎 [Watch] Watching ${clr(options.from, 'cyan')} for changes to sync to ${clr(options.host, 'cyan')}…\n`)
+        console.log(`\n   🔎    [Watch] Watching ${clr(options.from, 'cyan')} for changes to sync to ${clr(options.host, 'cyan')}…\n`)
       },
       'watchEvent': function (event, path) {
         // A watch event occurred.
         // Capitalise the first letter of the event name (verb).
         event = `${event[0].toUpperCase()}${event.slice(1)}`
-        console.log(` 🔎 [Watch] ${event} ${path}`)
+        console.log(`   🔎    [Watch] ${event} ${path}`)
       },
       'watchError': function (error) {
         // A watch error occurred.
-        console.log(`\n 🔎 [Watch] Error: ${error}\n`)
+        console.log(`\n   🔎    [Watch] Error: ${error}\n`)
         process.exit(1)
       }
     }

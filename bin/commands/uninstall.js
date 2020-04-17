@@ -66,7 +66,7 @@ async function uninstall (options) {
     ensure.root('uninstall')
   }
 
-  Site.logAppNameAndVersion()
+  Site.logAppNameAndVersion(/* compact = */ true)
 
   const { isActive: serverIsActive, isEnabled: serverIsEnabled } = status()
 
@@ -125,9 +125,8 @@ async function uninstall (options) {
       }
     }
 
-    // Remove the Site.js settings folder. All configuration data for any dependencies
-    // (e.g., @small-tech/https, @ind.ie/nodecert, etc.) are stored under this main
-    // top-level directory so it’s all we need to delete.
+    // Remove the Site.js settings folder. All configuration data for any dependencies (e.g., @small-tech/https, etc.)
+    // are stored under this main top-level directory so it’s all we need to delete.
     if (fs.existsSync(Site.settingsDirectory)) {
       try {
         fs.removeSync(Site.settingsDirectory)

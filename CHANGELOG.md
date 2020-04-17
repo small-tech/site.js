@@ -4,11 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased (work in progress on 12.10.6)
+## Unreleased (work in progress on 12.11.0)
 
 ### Added
 
-  - Serve command now displays an error if the path to serve doesn’t doesn’t exist.
+  - Native support for Hugo static site generator with integrated binary.
+  - QUIET=true environment variable to suppress console output.
+  - Unit tests for all CLI commands.
+
+### Changed
+
+  - Update @small-tech/https to version 1.2.1. Through this change, TLS certificates are now managed by [Auto Encrypt](https://source.ind.ie/site.js/lib/auto-encrypt) and [Auto Encrypt Localhost](https://source.ind.ie/site.js/lib/auto-encrypt-localhost).
+  - Naming and directory placement conventions for archival cascades. Existing conventions will work but have been deprecated. Please see the README file for further details.
+  - Improved log output.
+  - Improved test output.
+
+### Fixed
+
+  - Handled all npm security warnings in third-party dependencies.
+  - Serve command now displays an error if the path to serve doesn’t exist.
 
 ## [12.10.5] - 2020-01-22
 

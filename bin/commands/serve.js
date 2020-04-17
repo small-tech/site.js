@@ -12,6 +12,9 @@
 // Note: requires are at the bottom to avoid a circular reference as ../../index (Site)
 // ===== also requires this module.
 
+const fs = require('fs-extra')
+const pathModule = require('path')
+
 const ALIASES = 'aliases'
 const SYNC_TO = 'sync-to'
 const SYNC_FROM = 'sync-from'
@@ -112,7 +115,7 @@ function serve (args) {
 
   // Sync is not supported on Windows as rsync does not exist in that cursed wasteland.
   if (syncRequested && process.platform === 'win32') {
-    console.log(`\n 🤯 [Windows] Sync is not supported on this platform.\n`)
+    console.log(`\n   🤯    Sync is not supported on Windows.\n`)
     return
   }
 
@@ -126,14 +129,33 @@ function serve (args) {
     })
   }
 
-  if (syncOptions !== null && syncOptions.exit) {
-    // No need to start a server if all we want to do is sync.
+  // If sync is requested, check if we need to generate any source.
+  // Currently, this is a check for Hugo source directories.
+  let hasGeneratedContent = false
+  if (syncOptions !== null) {
+    const hugoSourceFolderPrefixRegExp = /^.hugo(--)?/
+    const absolutePathToServe = pathModule.resolve(path)
+    const files = fs.readdirSync(absolutePathToServe)
+    for (const file of files) {
+      if (file.match(hugoSourceFolderPrefixRegExp)) {
+        // Delete the .generated folder so that a full
+        // generation can happen as we’re about to deploy.
+        const generatedContentPath = pathModule.join(absolutePathToServe, '.generated')
+        fs.removeSync(generatedContentPath)
+        hasGeneratedContent = true
+        break
+      }
+    }
+  }
+
+  if (syncOptions !== null && syncOptions.exit && !hasGeneratedContent) {
+    // No need to start a server if all we want to do is sync and there’s no generated content.
     sync(syncOptions)
   } else {
     // Start a server and also sync if requested.
     ensure.weCanBindToPort(port, () => {
       tcpPortUsed.check(port)
-      .then(inUse => {
+      .then(async inUse => {
         if (inUse) {
           // Check to see if the problem is that Site.js is running as a daemon and
           // display a more specific error message if so. (Remember that daemons are
@@ -141,14 +163,14 @@ function serve (args) {
           if (port === 443) {
             if (ensure.commandExists('systemctl')) {
               if ({ isActive } = status()) {
-                console.log(`\n 🤯 Error: Cannot start server. Site.js is already running as a daemon on port ${clr(port.toString(), 'cyan')}. Use the ${clr('stop', 'green')} command to stop it.\n`)
+                console.log(`\n   🤯    Error: Cannot start server. Site.js is already running as a daemon on port ${clr(port.toString(), 'cyan')}. Use the ${clr('stop', 'green')} command to stop it.\n`)
                 process.exit(1)
               }
             }
           }
 
           // Generic port-in-use error message.
-          console.log(`\n 🤯 Error: Cannot start server. Port ${clr(port.toString(), 'cyan')} is already in use.\n`)
+          console.log(`\n   🤯    Error: Cannot start server. Port ${clr(port.toString(), 'cyan')} is already in use.\n`)
           process.exit(1)
         } else {
 
@@ -166,8 +188,16 @@ function serve (args) {
           try {
             site = new Site(options)
           } catch (error) {
+            // Rethrow
+            throwError(error)
+          }
+
+          // Start serving.
+          try {
+            await site.serve()
+          } catch (error) {
             if (error instanceof errors.InvalidPathToServeError) {
-              console.log(` 🤯 ${clr('Error:', 'red')} The path to serve ${clr(options.path, 'yellow')} does not exist.\n`)
+              console.log(`   🤯    ${clr('Error:', 'red')} The path to serve ${clr(options.path, 'yellow')} does not exist.\n`)
               process.exit(1)
             } else {
               // Rethrow
@@ -175,7 +205,7 @@ function serve (args) {
             }
           }
 
-          const server = site.serve()
+          const server = site.server
 
           // Exit on known errors as we have already logged them to console.
           // (Otherwise, the stack trace will be output for debugging purposes.)
@@ -191,7 +221,7 @@ function serve (args) {
           if (!syncRequested && exitOnSync) {
             // Person has provided the --exit-on-sync option but has not specified where to sync to.
             // Warn them and continue.
-            console.log (` ⚠ --exit-on-sync option specified without --sync-to option; ignoring.`)
+            console.log (`   ⚠    --exit-on-sync option specified without --sync-to option; ignoring.`)
           }
         }
       })
@@ -208,7 +238,7 @@ function syntaxError(message = null) {
 
 // Throw a general error.
 function throwError(errorMessage) {
-  console.log(`\n 🤯 ${errorMessage}\n`)
+  console.log(`\n   🤯    ${errorMessage}\n`)
   throw new Error(errorMessage)
 }
 
