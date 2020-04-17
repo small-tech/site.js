@@ -47,7 +47,7 @@ const decache = require('decache')
 
 const childProcess = require('child_process')
 
-const getRoutes = require('@ind.ie/web-routes-from-files')
+const getRoutes = require('@small-tech/web-routes-from-files')
 const Stats = require('./lib/Stats')
 
 const errors = require('./lib/errors')
