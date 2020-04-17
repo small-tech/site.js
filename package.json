@@ -2,6 +2,7 @@
   "name": "@small-tech/site.js",
   "version": "12.11.0",
   "description": "Develop, test, and deploy your secure static or dynamic personal web site with zero configuration.",
+  "keywords": ["web server", "static site generator", "dynamic site", "hugo", "personal site", "small technology"],
   "main": "index.js",
   "bin": "bin/site.js",
   "scripts": {
@@ -10,6 +11,10 @@
     "install-locally": "node bin/build.js --install",
     "test": "QUIET=true tape test/*.js | tap-spec",
     "coverage": "QUIET=true nyc tape test/*.js | tap-nyc"
+  },
+  "funding": {
+    "type": "foundation",
+    "url": "https://small-tech.org/fund-us/"
   },
   "repository": {
     "type": "git",
