@@ -599,7 +599,7 @@ class Site {
   }
 
 
-  // Returns an https server instance configured with your locally-trusted nodecert
+  // Returns an https server instance configured with your locally-trusted TLS
   // certificates by default. If you pass in {global: true} in the options object,
   // globally-trusted TLS certificates are obtained from Let’s Encrypt.
   //
