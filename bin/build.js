@@ -49,12 +49,14 @@ if (cpuArchitecture !== 'x64' && cpuArchitecture !== 'arm') {
   process.exit()
 }
 
+const nodeVersion = process.version.slice(1)
+
 // Get the version from the npm package configuration.
 const version           = package.version
 const binaryName        = 'site'
 const windowsBinaryName = `${binaryName}.exe`
 
-console.log(`\n ⚙ Site.js: building native binaries for version ${version}\n`)
+console.log(`\n ⚙ Site.js: building native binaries for Site.js version ${version} (bundling Node version ${nodeVersion})\n`)
 
 const linuxX64Directory = path.join('dist', 'linux',     version)
 const linuxArmDirectory = path.join('dist', 'linux-arm', version)
@@ -72,16 +74,19 @@ const macOsBinaryPath    = path.join(macOsDirectory,    binaryName       )
 const windowsBinaryPath  = path.join(windowsDirectory,  windowsBinaryName)
 
 const binaryPaths = {
+  // Note: We have a special check for Linux on ARM, later.
   'linux': linuxX64BinaryPath,
-  // We have a special check for Linux on ARM, later.
   'darwin': macOsBinaryPath,
   'win32': windowsBinaryPath
 }
 
-// Note: Linux on ARM doesn’t have a target as we build Node from source.
-const linuxX64Target = 'linux-x64-12.15.0'
-const macOsTarget    = 'mac-x64-12.15.0'
-const windowsTarget  = 'windows-x64-12.15.0'
+// Note 1: Linux on ARM doesn’t have a target as we build Node from source.
+// Note 2: Ensure that a Nexe build exists for the Node version you’re running as that is
+//         what will be used. This is by design as you should be testing with the Node
+//         version that you’re deploying with.
+const linuxX64Target = `linux-x64-${nodeVersion}`
+const macOsTarget    = `mac-x64-${nodeVersion}`
+const windowsTarget  = `windows-x64-${nodeVersion}`
 
 // Only build for the current platform unless a deployment build is requested via --deploy.
 const platform = os.platform()
@@ -105,9 +110,8 @@ if (platform === 'linux' && cpuArchitecture === 'arm') { currentPlatformBinaryPa
 
 // Common resources.
 const resources = [
-  'package.json',                                    // Used to get the app’s version at runtime.
-  'bin/commands/*',                                  // Conditionally required based on command-line argument.
-  'node_modules/le-store-certbot/renewal.conf.tpl',  // Template used to write out the Let’s Encrypt renewal config.
+  'package.json',   // Used to get the app’s version at runtime.
+  'bin/commands/*', // Conditionally required based on command-line argument.
 ]
 
 const input = 'bin/site.js'
@@ -132,8 +136,6 @@ async function build () {
 
   const mkcertTemporaryDirectoryPath = '/tmp/mkcert-bin/'
   const hugoTemporaryDirectoryPath   = '/tmp/hugo-bin/'
-  // fs.mkdirpSync(mkcertBinaryDirectoryPath)
-  // fs.mkdirpSync(hugoBinaryDirectoryPath)
 
   const mkcertBinaryName = fs.readdirSync(mkcertBinaryDirectoryPath).filter(fileName => fileName.startsWith('mkcert'))[0]
 
