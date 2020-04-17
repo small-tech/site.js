@@ -13,19 +13,13 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-const fs = require('fs-extra')
-const path = require('path')
-const os = require('os')
-const childProcess = require('child_process')
-
-const { compile } = require('nexe')
-const minimist = require('minimist')
-
-const status = require('./lib/status')
-const stop = require('./lib/stop')
-const start = require('./lib/start')
-const package = require('../package.json')
-
+const fs              = require('fs-extra')
+const path            = require('path')
+const os              = require('os')
+const childProcess    = require('child_process')
+const { compile }     = require('nexe')
+const minimist        = require('minimist')
+const package         = require('../package.json')
 const cpuArchitecture = os.arch()
 
 // Parse the commandline arguments.
@@ -56,26 +50,26 @@ if (cpuArchitecture !== 'x64' && cpuArchitecture !== 'arm') {
 }
 
 // Get the version from the npm package configuration.
-const version = package.version
-const binaryName = 'site'
+const version           = package.version
+const binaryName        = 'site'
 const windowsBinaryName = `${binaryName}.exe`
 
 console.log(`\n ⚙ Site.js: building native binaries for version ${version}\n`)
 
-const linuxX64Directory = path.join('dist', 'linux', version)
+const linuxX64Directory = path.join('dist', 'linux',     version)
 const linuxArmDirectory = path.join('dist', 'linux-arm', version)
-const macOsDirectory = path.join('dist', 'macos', version)
-const windowsDirectory = path.join('dist', 'windows', version)
+const macOsDirectory    = path.join('dist', 'macos',     version)
+const windowsDirectory  = path.join('dist', 'windows',   version)
 
 fs.mkdirSync(linuxX64Directory, {recursive: true})
 fs.mkdirSync(linuxArmDirectory, {recursive: true})
-fs.mkdirSync(macOsDirectory, {recursive: true})
-fs.mkdirSync(windowsDirectory, {recursive: true})
+fs.mkdirSync(macOsDirectory,    {recursive: true})
+fs.mkdirSync(windowsDirectory,  {recursive: true})
 
-const linuxX64BinaryPath = path.join(linuxX64Directory, binaryName)
-const linuxArmBinaryPath = path.join(linuxArmDirectory, binaryName)
-const macOsBinaryPath = path.join(macOsDirectory, binaryName)
-const windowsBinaryPath = path.join(windowsDirectory, windowsBinaryName)
+const linuxX64BinaryPath = path.join(linuxX64Directory, binaryName       )
+const linuxArmBinaryPath = path.join(linuxArmDirectory, binaryName       )
+const macOsBinaryPath    = path.join(macOsDirectory,    binaryName       )
+const windowsBinaryPath  = path.join(windowsDirectory,  windowsBinaryName)
 
 const binaryPaths = {
   'linux': linuxX64BinaryPath,
@@ -84,10 +78,10 @@ const binaryPaths = {
   'win32': windowsBinaryPath
 }
 
+// Note: Linux on ARM doesn’t have a target as we build Node from source.
 const linuxX64Target = 'linux-x64-12.15.0'
-// Linux on ARM doesn’t have a target as we build Node from source.
-const macOsTarget = 'mac-x64-12.15.0'
-const windowsTarget = 'windows-x64-12.15.0'
+const macOsTarget    = 'mac-x64-12.15.0'
+const windowsTarget  = 'windows-x64-12.15.0'
 
 // Only build for the current platform unless a deployment build is requested via --deploy.
 const platform = os.platform()
@@ -97,7 +91,7 @@ const buildMacVersion = commandLineOptions.deploy || commandLineOptions.all || (
 const buildWindowsVersion = commandLineOptions.deploy || commandLineOptions.all || (platform === 'win32')
 
 let currentPlatformBinaryPath = binaryPaths[['linux', 'darwin', 'win32'].find(_ => _ === platform)]
-if (platform === 'linux' && cpuArchitecture === 'arm') currentPlatformBinaryPath = linuxArmBinaryPath
+if (platform === 'linux' && cpuArchitecture === 'arm') { currentPlatformBinaryPath = linuxArmBinaryPath }
 
 //
 // Resources
@@ -111,8 +105,8 @@ if (platform === 'linux' && cpuArchitecture === 'arm') currentPlatformBinaryPath
 
 // Common resources.
 const resources = [
-  'package.json',    // Used to get the app’s version at runtime.
-  'bin/commands/*',   // Conditionally required based on command-line argument.
+  'package.json',                                    // Used to get the app’s version at runtime.
+  'bin/commands/*',                                  // Conditionally required based on command-line argument.
   'node_modules/le-store-certbot/renewal.conf.tpl',  // Template used to write out the Let’s Encrypt renewal config.
 ]
 
@@ -131,42 +125,57 @@ async function build () {
 
   // Move all the third-party binaries out of the node_modules folders so they
   // are not all included in the various builds.
-  // fs.moveSync()
   const nodeModulesPath = path.resolve(__dirname, '..', 'node_modules')
 
-  const mkcertBinaryPath = path.join(nodeModulesPath, '@ind.ie', 'nodecert', 'mkcert-bin')
-  const hugoBinaryPath = path.join(nodeModulesPath, '@small-tech', 'node-hugo', 'hugo-bin')
+  const mkcertBinaryDirectoryPath = path.join(nodeModulesPath, '@small-tech', 'auto-encrypt-localhost', 'mkcert-bin')
+  const hugoBinaryDirectoryPath   = path.join(nodeModulesPath, '@small-tech', 'node-hugo', 'hugo-bin')
 
-  const mkcertTemporaryPath = '/tmp/mkcert-bin/'
-  const hugoTemporaryPath = '/tmp/hugo-bin/'
-  fs.mkdirpSync(mkcertBinaryPath)
-  fs.mkdirpSync(hugoBinaryPath)
+  const mkcertTemporaryDirectoryPath = '/tmp/mkcert-bin/'
+  const hugoTemporaryDirectoryPath   = '/tmp/hugo-bin/'
+  // fs.mkdirpSync(mkcertBinaryDirectoryPath)
+  // fs.mkdirpSync(hugoBinaryDirectoryPath)
+
+  const mkcertBinaryName = fs.readdirSync(mkcertBinaryDirectoryPath).filter(fileName => fileName.startsWith('mkcert'))[0]
+
+  if (mkcertBinaryName === undefined) {
+    throw new Error('Panic: Could not find any mkcert binaries in', mkcertBinaryDirectoryPath)
+  }
+
+  const mkcertBinaryFilenameBase = mkcertBinaryName.match(/^mkcert-v\d+\.\d+\.\d+-/)[0]
+
+  const hugoBinaryName = fs.readdirSync(hugoBinaryDirectoryPath).filter(fileName => fileName.startsWith('hugo'))[0]
+
+  if (hugoBinaryName === undefined) {
+    throw new Error('Panic: Could not find any Hugo binaries in', hugoBinaryDirectoryPath)
+  }
+
+  const hugoBinaryFilenameBase = hugoBinaryName.match(/^hugo-v\d+\.\d+\.\d+-/)[0]
 
   function removeMkcertBinary(platform) {
-    const fileName = `mkcert-v1.4.0-${platform}`
-    fs.moveSync(path.join(mkcertBinaryPath, fileName), path.join(mkcertTemporaryPath, fileName), {overwrite: true})
+    const fileName = `${mkcertBinaryFilenameBase}${platform}`
+    fs.moveSync(path.join(mkcertBinaryDirectoryPath, fileName), path.join(mkcertTemporaryDirectoryPath, fileName), {overwrite: true})
   }
 
   function removeHugoBinary(platform) {
-    const fileName = `hugo-v0.64.1-${platform}`
-    fs.moveSync(path.join(hugoBinaryPath, fileName), path.join(hugoTemporaryPath, fileName), {overwrite: true})
+    const fileName = `${hugoBinaryFilenameBase}${platform}`
+    fs.moveSync(path.join(hugoBinaryDirectoryPath, fileName), path.join(hugoTemporaryDirectoryPath, fileName), {overwrite: true})
   }
 
   function restoreMkcertBinary(platform) {
-    const fileName = `mkcert-v1.4.0-${platform}`
-    fs.moveSync(path.join(mkcertTemporaryPath, fileName), path.join(mkcertBinaryPath, fileName))
+    const fileName = `${mkcertBinaryFilenameBase}${platform}`
+    fs.moveSync(path.join(mkcertTemporaryDirectoryPath, fileName), path.join(mkcertBinaryDirectoryPath, fileName))
   }
 
   function restoreHugoBinary(platform) {
-    const fileName = `hugo-v0.64.1-${platform}`
-    fs.moveSync(path.join(hugoTemporaryPath, fileName), path.join(hugoBinaryPath, fileName))
+    const fileName = `${hugoBinaryFilenameBase}${platform}`
+    fs.moveSync(path.join(hugoTemporaryDirectoryPath, fileName), path.join(hugoBinaryDirectoryPath, fileName))
   }
 
   const platforms = ['darwin-amd64', 'linux-amd64', 'linux-arm', 'windows-amd64.exe']
 
   function removeAllMkcertPlatforms () {
     platforms.forEach(platform => {
-      if (fs.existsSync(path.join(mkcertBinaryPath, `mkcert-v1.4.0-${platform}`))) {
+      if (fs.existsSync(path.join(mkcertBinaryDirectoryPath, `${mkcertBinaryFilenameBase}${platform}`))) {
         removeMkcertBinary(platform)
       }
     })
@@ -174,7 +183,7 @@ async function build () {
 
   function removeAllHugoPlatforms () {
     platforms.forEach(platform => {
-      if (fs.existsSync(path.join(hugoBinaryPath, `hugo-v0.64.1-${platform}`))) {
+      if (fs.existsSync(path.join(hugoBinaryDirectoryPath, `${hugoBinaryFilenameBase}${platform}`))) {
         removeHugoBinary(platform)
       }
     })
@@ -182,10 +191,10 @@ async function build () {
 
   function stripForPlatform (platform) {
     console.log('Adding platform', platform)
-    removeAllMkcertPlatforms(platform)
-    removeAllHugoPlatforms(platform)
-    restoreMkcertBinary(platform)
-    restoreHugoBinary(platform)
+    removeAllMkcertPlatforms (platform)
+    removeAllHugoPlatforms   (platform)
+    restoreMkcertBinary      (platform)
+    restoreHugoBinary        (platform)
   }
 
   if (buildLinuxX64Version) {
@@ -284,16 +293,16 @@ async function build () {
     // We use tar and gzip here instead of zip as unzip is not a standard
     // part of Linux distributions whereas tar and gzip are. We do not use
     // gzip directly as that does not maintain the executable flag on the binary.
-    const zipFileName = `${version}.tar.gz`
-    const mainSourceDirectory = path.join(__dirname, '..')
+    const zipFileName              = `${version}.tar.gz`
+    const mainSourceDirectory      = path.join(__dirname, '..')
     const linuxX64WorkingDirectory = path.join(mainSourceDirectory, linuxX64Directory)
     const linuxArmWorkingDirectory = path.join(mainSourceDirectory, linuxArmDirectory)
-    const macOsWorkingDirectory = path.join(mainSourceDirectory, macOsDirectory)
-    const windowsWorkingDirectory = path.join(mainSourceDirectory, windowsDirectory)
+    const macOsWorkingDirectory    = path.join(mainSourceDirectory, macOsDirectory   )
+    const windowsWorkingDirectory  = path.join(mainSourceDirectory, windowsDirectory )
 
     childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: linuxX64WorkingDirectory})
     childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: linuxArmWorkingDirectory})
-    childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: macOsWorkingDirectory})
+    childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: macOsWorkingDirectory   })
     childProcess.execSync(`tar -cvzf ${zipFileName} ${windowsBinaryName}`, {env: process.env, cwd: windowsWorkingDirectory})
 
     //
@@ -307,39 +316,41 @@ async function build () {
     //  |_ app                 This project.
     //  |   |_ bin             The folder that this script is running in.
     //  |_ site                The Site.js web site.
-    //      |_ releases        The folder that releease binaries are held.
+    //      |_ releases        The folder that release binaries are held.
     //
     // If it cannot find the Site.js web site, the build script will simply skip this step.
     //
-    const pathToWebSite = path.resolve(path.join(__dirname, '../../site/'))
-    const pathToReleasesFolder = path.resolve(path.join(pathToWebSite, 'releases/'))
-    const pathToDynamicVersionRoute = path.join(pathToWebSite, '.dynamic', 'version.js')
-    const pathToInstallationScriptsFolderOnWebSite = path.join(pathToWebSite, 'installation-scripts')
+    const pathToWebSite                                      = path.resolve(path.join(__dirname, '../../site/'))
+    const pathToReleasesFolder                               = path.resolve(path.join(pathToWebSite, 'releases/'))
+    const pathToDynamicVersionRoute                          = path.join(pathToWebSite, '.dynamic', 'version.js')
+    const pathToInstallationScriptsFolderOnWebSite           = path.join(pathToWebSite, 'installation-scripts')
     const pathToLinuxAndMacOSInstallationScriptFileOnWebSite = path.join(pathToInstallationScriptsFolderOnWebSite, 'install')
-    const pathToWindowsInstallationScriptFileOnWebSite = path.join(pathToInstallationScriptsFolderOnWebSite, 'install.txt')
+    const pathToWindowsInstallationScriptFileOnWebSite       = path.join(pathToInstallationScriptsFolderOnWebSite, 'install.txt')
 
     // Check that a local working copy of the Site.js web site exists at the relative location
     // that we expect it to. If it doesn’t skip this step.
     if (fs.existsSync(pathToWebSite)) {
       console.log('   • Copying release binaries to the Site.js web site…')
-      const linuxX64VersionZipFilePath = path.join(linuxX64WorkingDirectory, zipFileName)
-      const linuxArmVersionZipFilePath = path.join(linuxArmWorkingDirectory, zipFileName)
-      const macOsVersionZipFilePath = path.join(macOsWorkingDirectory, zipFileName)
-      const windowsVersionZipFilePath = path.join(windowsWorkingDirectory, zipFileName)
-      const linuxX64VersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'linux')
+
+      const linuxX64VersionZipFilePath           = path.join(linuxX64WorkingDirectory, zipFileName)
+      const linuxArmVersionZipFilePath           = path.join(linuxArmWorkingDirectory, zipFileName)
+      const macOsVersionZipFilePath              = path.join(macOsWorkingDirectory, zipFileName   )
+      const windowsVersionZipFilePath            = path.join(windowsWorkingDirectory, zipFileName )
+
+      const linuxX64VersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'linux'    )
       const linuxArmVersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'linux-arm')
-      const macOsVersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'macos')
-      const windowsVersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'windows')
+      const macOsVersionTargetDirectoryOnSite    = path.join(pathToReleasesFolder, 'macos'    )
+      const windowsVersionTargetDirectoryOnSite  = path.join(pathToReleasesFolder, 'windows'  )
 
       fs.mkdirSync(linuxX64VersionTargetDirectoryOnSite, {recursive: true})
       fs.mkdirSync(linuxArmVersionTargetDirectoryOnSite, {recursive: true})
-      fs.mkdirSync(macOsVersionTargetDirectoryOnSite, {recursive: true})
-      fs.mkdirSync(windowsVersionTargetDirectoryOnSite, {recursive: true})
+      fs.mkdirSync(macOsVersionTargetDirectoryOnSite,    {recursive: true})
+      fs.mkdirSync(windowsVersionTargetDirectoryOnSite,  {recursive: true})
 
       fs.copyFileSync(linuxX64VersionZipFilePath, path.join(linuxX64VersionTargetDirectoryOnSite, zipFileName))
       fs.copyFileSync(linuxArmVersionZipFilePath, path.join(linuxArmVersionTargetDirectoryOnSite, zipFileName))
-      fs.copyFileSync(macOsVersionZipFilePath, path.join(macOsVersionTargetDirectoryOnSite, zipFileName))
-      fs.copyFileSync(windowsVersionZipFilePath, path.join(windowsVersionTargetDirectoryOnSite, zipFileName))
+      fs.copyFileSync(macOsVersionZipFilePath,    path.join(macOsVersionTargetDirectoryOnSite,    zipFileName))
+      fs.copyFileSync(windowsVersionZipFilePath,  path.join(windowsVersionTargetDirectoryOnSite,  zipFileName))
 
       // Write out a dynamic route with the latest version into the site. That endpoint will be used by the
       // auto-update feature to decide whether it needs to update.
@@ -350,17 +361,23 @@ async function build () {
       // Update the install file and deploy them to the Site.js web site.
       console.log('   • Updating the installation scripts and deploying them to Site.js web site.')
 
+      //
       // Linux and macOS.
+      //
       const linuxAndMacOSInstallScriptFile = path.join(mainSourceDirectory, 'script', 'install')
-      let linuxAndMacOSInstallScript = fs.readFileSync(linuxAndMacOSInstallScriptFile, 'utf-8')
-      linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(/\d+\.\d+\.\d+/g, package.version)
+      let linuxAndMacOSInstallScript       = fs.readFileSync(linuxAndMacOSInstallScriptFile, 'utf-8')
+      linuxAndMacOSInstallScript           = linuxAndMacOSInstallScript.replace(/\d+\.\d+\.\d+/g, package.version)
+
       fs.writeFileSync(linuxAndMacOSInstallScriptFile, linuxAndMacOSInstallScript)
       fs.copyFileSync(linuxAndMacOSInstallScriptFile, pathToLinuxAndMacOSInstallationScriptFileOnWebSite)
 
+      //
       // Windows.
+      //
       const windowsInstallScriptFile = path.join(mainSourceDirectory, 'script', 'windows')
-      let windowsInstallScript = fs.readFileSync(windowsInstallScriptFile, 'utf-8')
-      windowsInstallScript = windowsInstallScript.replace(/\d+\.\d+\.\d+/g, package.version)
+      let windowsInstallScript       = fs.readFileSync(windowsInstallScriptFile, 'utf-8')
+      windowsInstallScript           = windowsInstallScript.replace(/\d+\.\d+\.\d+/g, package.version)
+
       fs.writeFileSync(windowsInstallScriptFile, windowsInstallScript)
       fs.copyFileSync(windowsInstallScriptFile, pathToWindowsInstallationScriptFileOnWebSite)
 
