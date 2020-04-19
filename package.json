@@ -65,6 +65,7 @@
   "devDependencies": {
     "nexe": "^3.3.2",
     "nyc": "^14.1.1",
+    "resolve-dependencies": "^3.0.3",
     "tap-nyc": "^1.0.3",
     "tap-spec": "^5.0.0",
     "tape": "^4.11.0",
