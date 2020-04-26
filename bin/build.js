@@ -112,6 +112,11 @@ if (platform === 'linux' && cpuArchitecture === 'arm') { currentPlatformBinaryPa
 const resources = [
   'package.json',                              // Used to get the app’s version at runtime.
   'bin/commands/*',                            // Conditionally required based on command-line argument.
+
+  // nexe@next does not appear to be making use of the pkg→assets setting in
+  // the package.json files of modules. Instead, we specify the files here.
+  'node_modules/@small-tech/auto-encrypt-localhost/mkcert-bin/*',
+  'node_modules/@small-tech/node-hugo/hugo-bin/*'
 ]
 
 const input = 'bin/site.js'
@@ -194,12 +199,35 @@ async function build () {
     })
   }
 
+  function restoreAllMkcertPlatforms () {
+    platforms.forEach(platform => {
+      if (fs.existsSync(path.join(mkcertTemporaryDirectoryPath, `${mkcertBinaryFilenameBase}${platform}`))) {
+        restoreMkcertBinary(platform)
+      }
+    })
+  }
+
+  function restoreAllHugoPlatforms () {
+    platforms.forEach(platform => {
+      if (fs.existsSync(path.join(hugoTemporaryDirectoryPath, `${hugoBinaryFilenameBase}${platform}`))) {
+        restoreHugoBinary(platform)
+      }
+    })
+  }
+
   function stripForPlatform (platform) {
-    console.log('Adding platform', platform)
     removeAllMkcertPlatforms (platform)
     removeAllHugoPlatforms   (platform)
     restoreMkcertBinary      (platform)
     restoreHugoBinary        (platform)
+  }
+
+  // Unstrip at start in case last build failed.
+  unstrip()
+
+  function unstrip () {
+    restoreAllMkcertPlatforms()
+    restoreAllHugoPlatforms()
   }
 
   if (buildLinuxX64Version) {
@@ -213,6 +241,8 @@ async function build () {
       target    : linuxX64Target,
       resources
     })
+
+    unstrip()
 
     console.log('     Done ✔\n')
   }
@@ -229,6 +259,8 @@ async function build () {
       build: true
     })
 
+    unstrip()
+
     console.log('     Done ✔\n')
   }
 
@@ -244,6 +276,8 @@ async function build () {
       resources
     })
 
+    unstrip()
+
     console.log('     Done ✔\n')
   }
 
@@ -258,6 +292,8 @@ async function build () {
       target    : windowsTarget,
       resources
     })
+
+    unstrip()
 
     console.log('     Done ✔\n')
   }

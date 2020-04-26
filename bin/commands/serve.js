@@ -189,7 +189,7 @@ function serve (args) {
             site = new Site(options)
           } catch (error) {
             // Rethrow
-            throwError(error)
+            throw(error)
           }
 
           // Start serving.
@@ -201,7 +201,7 @@ function serve (args) {
               process.exit(1)
             } else {
               // Rethrow
-              throwError(error)
+              throw(error)
             }
           }
 
