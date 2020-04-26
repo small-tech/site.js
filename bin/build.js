@@ -142,6 +142,9 @@ async function build () {
   const mkcertTemporaryDirectoryPath = '/tmp/mkcert-bin/'
   const hugoTemporaryDirectoryPath   = '/tmp/hugo-bin/'
 
+  fs.ensureDirSync(mkcertTemporaryDirectoryPath)
+  fs.ensureDirSync(hugoTemporaryDirectoryPath)
+
   const mkcertBinaryName = fs.readdirSync(mkcertBinaryDirectoryPath).filter(fileName => fileName.startsWith('mkcert'))[0]
 
   if (mkcertBinaryName === undefined) {
