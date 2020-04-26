@@ -63,7 +63,7 @@
     "tcp-port-used": "^1.0.1"
   },
   "devDependencies": {
-    "nexe": "^3.3.2",
+    "nexe": "next",
     "nyc": "^14.1.1",
     "tap-nyc": "^1.0.3",
     "tap-spec": "^5.0.0",
