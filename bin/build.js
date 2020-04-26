@@ -112,11 +112,6 @@ if (platform === 'linux' && cpuArchitecture === 'arm') { currentPlatformBinaryPa
 const resources = [
   'package.json',                              // Used to get the app’s version at runtime.
   'bin/commands/*',                            // Conditionally required based on command-line argument.
-
-  'node_modules/@small-tech/auto-encrypt/**/*' // This *should not* be necessary, given that the @small-tech/https
-                                               // module has a static require for @small-tech/auto-encrypt (just like
-                                               // it does for auto-encrypt-localhost, which doesn’t require explicit
-                                               // bundling). Assuming that it’s a bug in Nexe.
 ]
 
 const input = 'bin/site.js'
