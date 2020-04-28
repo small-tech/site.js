@@ -4,10 +4,6 @@
 //
 // Builds Linux x86 & ARM, macOS, and Windows 10 binaries of Site.js.
 //
-// Note: the build script is only supported on Linux on ARM at the
-// ===== moment as that’s the only platform we cannot cross-compile
-//       for using Nexe.
-//
 // Run with: npm run build
 //       or: npm run deploy
 //
@@ -318,7 +314,7 @@ async function build () {
     }
   }
 
-  // Only zip and copy files to the Indie Web Site if explicitly asked to.
+  // Only zip and copy files to the local working copy of the Site.js web site if explicitly asked to.
   if (commandLineOptions.deploy) {
     //
     // Zip.
