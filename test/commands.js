@@ -5,8 +5,8 @@
 // ===== links from your /usr/local/bin folder to your current version of Node.
 //
 // e.g.,
-// sudo ln -s /home/aral/.nvm/versions/node/v12.16.1/bin/node /usr/local/bin/node
-// sudo ln -s /home/aral/.nvm/versions/node/v12.16.1/bin/npm /usr/local/bin/npm
+// sudo ln -s /home/aral/.nvm/versions/node/v12.16.2/bin/node /usr/local/bin/node
+// sudo ln -s /home/aral/.nvm/versions/node/v12.16.2/bin/npm /usr/local/bin/npm
 //
 // Untested: - uninstall, - update
 //
