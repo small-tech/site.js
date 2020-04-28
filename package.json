@@ -63,7 +63,7 @@
     "tcp-port-used": "^1.0.1"
   },
   "devDependencies": {
-    "nexe": "next",
+    "nexe": "https://github.com/aral/nexe#third-party-remotes",
     "nyc": "^14.1.1",
     "tap-nyc": "^1.0.3",
     "tap-spec": "^5.0.0",

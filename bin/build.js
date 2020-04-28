@@ -31,18 +31,6 @@ if (commandLineOptions._.length !== 0 || commandLineOptions.h || commandLineOpti
   process.exit()
 }
 
-// Check for deployment attempt on non-ARM processor and fail with helpful message.
-if ((commandLineOptions.deploy || commandLineOptions.all) && cpuArchitecture !== 'arm') {
-  console.log(`
- 🤯 Error: Deployment and building for all platforms is currently only supported on ARM processors.
-
- (Nexe cannot cross-compile to ARM yet so it’s the only platform where we can build for all supported platforms. As of version 12.8.0, all official builds of Site.js are compiled on a Raspberry Pi 3B+. This restriction will be removed once cross-compilation support for ARM is added to Nexe.)
-
- More info: https://github.com/nexe/nexe/issues/424
-  `)
-  process.exit()
-}
-
 // Check for supported CPU architectures (currently only x86 and ARM)
 if (cpuArchitecture !== 'x64' && cpuArchitecture !== 'arm') {
   console.log(`🤯 Error: The build script is currently only supported on x64 and ARM architectures.`)
@@ -84,7 +72,9 @@ const binaryPaths = {
 // Note 2: Ensure that a Nexe build exists for the Node version you’re running as that is
 //         what will be used. This is by design as you should be testing with the Node
 //         version that you’re deploying with.
+const remote  = 'https://sitejs.org/nexe/'
 const linuxX64Target = `linux-x64-${nodeVersion}`
+const linuxArmTarget = `linux-arm-${nodeVersion}`
 const macOsTarget    = `mac-x64-${nodeVersion}`
 const windowsTarget  = `windows-x64-${nodeVersion}`
 
@@ -237,9 +227,10 @@ async function build () {
 
     await compile({
       input,
+      remote,
       output    : linuxX64BinaryPath,
       target    : linuxX64Target,
-      resources
+      resources,
     })
 
     unstrip()
@@ -254,9 +245,10 @@ async function build () {
 
     await compile({
       input,
+      remote,
       output    : linuxArmBinaryPath,
+      target    : linuxArmTarget,
       resources,
-      build: true
     })
 
     unstrip()
@@ -271,9 +263,10 @@ async function build () {
 
     await compile({
       input,
+      remote,
       output    : macOsBinaryPath,
       target    : macOsTarget,
-      resources
+      resources,
     })
 
     unstrip()
@@ -288,9 +281,10 @@ async function build () {
 
     await compile({
       input,
+      remote,
       output    : windowsBinaryPath,
       target    : windowsTarget,
-      resources
+      resources,
     })
 
     unstrip()
