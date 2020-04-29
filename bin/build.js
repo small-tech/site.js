@@ -101,8 +101,13 @@ const resources = [
 
   // nexe@next does not appear to be making use of the pkg→assets setting in
   // the package.json files of modules. Instead, we specify the files here.
+  // See: https://github.com/nexe/nexe/issues/758
   'node_modules/@small-tech/auto-encrypt-localhost/mkcert-bin/*',
-  'node_modules/@small-tech/node-hugo/hugo-bin/*'
+  'node_modules/@small-tech/node-hugo/hugo-bin/*',
+
+  // Not sure if this is a different regression in Nexe 4’s resolve dependencies.
+  // Afaik, it was being included correctly before.
+  'node_modules/@small-tech/instant/client/bundle.js'
 ]
 
 const input = 'bin/site.js'
