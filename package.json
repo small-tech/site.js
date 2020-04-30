@@ -16,6 +16,12 @@
     "build": "node bin/build.js",
     "deploy": "bin/build.js --deploy",
     "install-locally": "node bin/build.js --install",
+    "build-alpha": "node bin/build.js --alpha",
+    "deploy-alpha": "bin/build.js --deploy --alpha",
+    "install-locally-alpha": "node bin/build.js --install --alpha",
+    "build-beta": "node bin/build.js --beta",
+    "deploy-beta": "bin/build.js --deploy --beta",
+    "install-locally-beta": "node bin/build.js --install --beta",
     "test": "QUIET=true tape test/*.js | tap-spec",
     "coverage": "QUIET=true nyc tape test/*.js | tap-nyc"
   },

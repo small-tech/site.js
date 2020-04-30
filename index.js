@@ -18,42 +18,37 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-const https = require('@small-tech/https')
-const fs = require('fs-extra')
-const path = require('path')
-const os = require('os')
-
+const fs                    = require('fs-extra')
+const path                  = require('path')
+const os                    = require('os')
+const childProcess          = require('child_process')
+const https                 = require('@small-tech/https')
+const expressWebSocket      = require('@small-tech/express-ws')
+const Hugo                  = require('@small-tech/node-hugo')
+const instant               = require('@small-tech/instant')
 const crossPlatformHostname = require('@small-tech/cross-platform-hostname')
-
-const clr = require('./lib/clr')
-
-const express = require('express')
-const bodyParser = require('body-parser')
-const expressWebSocket = require('@small-tech/express-ws')
-const helmet = require('helmet')
-const morgan = require('morgan')
-const enableDestroy = require('server-destroy')
-const Graceful = require('node-graceful')
-const httpProxyMiddleware = require('http-proxy-middleware')
-
-const instant = require('@small-tech/instant')
-
-const Hugo = require('@small-tech/node-hugo')
-
-const cli = require('./bin/lib/cli')
-const serve = require('./bin/commands/serve')
-const chokidar = require('chokidar')
-const decache = require('decache')
-
-const childProcess = require('child_process')
-
-const getRoutes = require('@small-tech/web-routes-from-files')
-const Stats = require('./lib/Stats')
-
-const errors = require('./lib/errors')
+const getRoutes             = require('@small-tech/web-routes-from-files')
+const Graceful              = require('node-graceful')
+const express               = require('express')
+const bodyParser            = require('body-parser')
+const helmet                = require('helmet')
+const httpProxyMiddleware   = require('http-proxy-middleware')
+const enableDestroy         = require('server-destroy')
+const moment                = require('moment')
+const morgan                = require('morgan')
+const chokidar              = require('chokidar')
+const decache               = require('decache')
+const clr                   = require('./lib/clr')
+const cli                   = require('./bin/lib/cli')
+const serve                 = require('./bin/commands/serve')
+const Stats                 = require('./lib/Stats')
+const errors                = require('./lib/errors')
 
 
 class Site {
+
+  static #appNameAndVersionAlreadyLogged = false
+  static #manifest = null
 
   static get HUGO_LOGO () {
     return `${clr('🅷', 'magenta')} ${clr('🆄', 'blue')} ${clr('🅶', 'green')} ${clr('🅾', 'yellow')} `
@@ -79,12 +74,17 @@ class Site {
       return
     }
 
-    if (!Site.appNameAndVersionAlreadyLogged && !process.argv.includes('--dont-log-app-name-and-version')) {
+    if (!Site.#appNameAndVersionAlreadyLogged && !process.argv.includes('--dont-log-app-name-and-version')) {
       let prefix1 = compact ? ' 💕 ' : '   💕    '
       let prefix2 = compact ? '    ' : '         '
 
+      this.readAndCacheManifest()
+
       let message = [
-        `\n${prefix1}Site.js v${Site.versionNumber()} ${clr(`(running on Node ${process.version})`, 'italic')}\n\n`,
+        `\n${prefix1}Site.js ${this.humanReadableReleaseType()}\n\n`,
+        `${prefix2}Build : ${clr(this.humanReadableVersion(), 'green')}\n`,
+        `${prefix2}Engine: ${clr(`Node.js ${process.version}`, 'green')}\n`,
+        `${prefix2}Source: ${clr(`https://source.small-tech.org/site.js/app/tags/${this.#manifest.sourceVersion}`, 'cyan')}\n\n`,
         `${prefix2}╔═══════════════════════════════════════════╗\n`,
         `${prefix2}║ Like this? Fund us!                       ║\n`,
         `${prefix2}║                                           ║\n`,
@@ -95,16 +95,49 @@ class Site {
 
       console.log(message)
 
-      Site.appNameAndVersionAlreadyLogged = true
+      Site.#appNameAndVersionAlreadyLogged = true
     }
   }
 
-  // Calculate and cache version number from package.json on first call.
+  static readAndCacheManifest () {
+    this.#manifest = JSON.parse(fs.readFileSync(path.join(__dirname, './manifest.json'), 'utf-8'))
+  }
+
+  // Return the binary version.
   static versionNumber () {
-    if (Site._versionNumber === null) {
-      Site._versionNumber = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json'), 'utf-8')).version
+    if (this.#manifest === null) {
+      this.readAndCacheManifest()
     }
-    return Site._versionNumber
+    return this.#manifest.binaryVersion
+  }
+
+  static humanReadableVersion () {
+    if (this.#manifest === null) {
+      this.readAndCacheManifest()
+    }
+    const m = moment(this.#manifest.binaryVersion, 'YYYYMMDDHHmmss')
+    return `${m.format('MMMM Do, YYYY')} at ${m.format('HH:mm:ss')}`
+  }
+
+  static humanReadableReleaseType () {
+    if (this.#manifest === null) {
+      this.readAndCacheManifest()
+    }
+    switch(this.#manifest.releaseType) {
+      case 'alpha': return clr(`\n
+     █████  ██      ██████  ██   ██  █████ 
+    ██   ██ ██      ██   ██ ██   ██ ██   ██ 
+    ███████ ██      ██████  ███████ ███████ 
+    ██   ██ ██      ██      ██   ██ ██   ██ 
+    ██   ██ ███████ ██      ██   ██ ██   ██`, 'red')
+      case 'beta': return clr(`\n
+    ██████  ███████ ████████  █████ 
+    ██   ██ ██         ██    ██   ██ 
+    ██████  █████      ██    ███████ 
+    ██   ██ ██         ██    ██   ██ 
+    ██████  ███████    ██    ██   ██`, 'yellow')
+      default: return ''
+    }
   }
 
   // Default error pages.
@@ -1113,7 +1146,5 @@ class Site {
   }
 }
 
-Site.appNameAndVersionAlreadyLogged = false
-Site._versionNumber = null
 
 module.exports = Site
