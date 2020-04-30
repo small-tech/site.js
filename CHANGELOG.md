@@ -11,11 +11,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Native support for Hugo static site generator with integrated binary.
   - QUIET=true environment variable to suppress console output.
   - Unit tests for all CLI commands.
+  - Alpha and beta binaries in addition to release binaries.
 
 ### Changed
 
   - Update @small-tech/https to version 1.2.1. Through this change, TLS certificates are now managed by [Auto Encrypt](https://source.ind.ie/site.js/lib/auto-encrypt) and [Auto Encrypt Localhost](https://source.ind.ie/site.js/lib/auto-encrypt-localhost).
-  - Naming and directory placement conventions for archival cascades. Existing conventions will work but have been deprecated. Please see the README file for further details.
+  - Upgrade version of bundled Node LTS to 12.16.2.
+  - Upgrade Nexe to latest 4.x beta.
+  - Naming and directory placement conventions for archival cascades. Existing conventions will continue to work but have been deprecated. Please see the README file for further details.
+  - New [CalVer](https://calver.org/#other-notable-projects) version numbering scheme for binaries (YYYYMMDDHHMMSS). These version numbers are meant to be represented as human readable dates when presented to people. e.g., Site.js – released April 29, 2020 at 15:13:02 (running on Node.js version 12.16.2). Alpha and beta versions display their modifier in parentheses. e.g., Site.js – (alpha) released April 29, 2020 at 15:13:02 (running on Node.js version 12.16.2).
   - Improved log output.
   - Improved test output.
 
@@ -28,7 +32,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
-  - Automatic server relead on source code changes now picks up changes in nested hidden directories (e.g., when using separate `.get/` and `.post/` folders for your routes).
+  - Automatic server reload on source code changes now picks up changes in nested hidden directories (e.g., when using separate `.get/` and `.post/` folders for your routes).
 
 ## [12.10.4] - 2019-11-27
 
