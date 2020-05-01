@@ -27,7 +27,6 @@ async function update () {
   const isLinux = platform === 'linux'
 
   const releaseType = Site.releaseType
-  const releaseTypePath = releaseType === 'release' ? '/' : `/${releaseType}/`
 
   ensure.root('update')
 
@@ -94,7 +93,7 @@ async function update () {
       platformPath = `${platformPath}-arm`
     }
 
-    let binaryUrl = `https://sitejs.org/releases/${releaseTypePath}${platformPath}/${latestVersion}.tar.gz`
+    let binaryUrl = `https://sitejs.org/binaries/${releaseType}/${platformPath}/${latestVersion}.tar.gz`
 
     console.log(` 📡 Downloading Site.js ${releaseType} version ${latestFullVersion}…`)
 
