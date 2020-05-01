@@ -46,7 +46,6 @@ const errors                = require('./lib/errors')
 
 
 class Site {
-
   static #appNameAndVersionAlreadyLogged = false
   static #manifest = null
 
@@ -54,8 +53,75 @@ class Site {
     return `${clr('🅷', 'magenta')} ${clr('🆄', 'blue')} ${clr('🅶', 'green')} ${clr('🅾', 'yellow')} `
   }
 
-  // Emitted when the address the server is trying to use is already in use by a different process on the system.
-  static get SMALL_TECH_ORG_ERROR_HTTP_SERVER () { return 'small-tech.org-error-http-server' }
+  // Manifest helpers. The manifest file is created by the build script and includes metadata such as the
+  // binary version (in calendar version format YYYYMMDDHHmmss), the source version (in semantic version format), and
+  // the release type (alpha, beta, or release).
+  static RELEASE_TYPE = {
+    alpha  : 'alpha',
+    beta   : 'beta',
+    release: 'release'
+  }
+
+  static readAndCacheManifest () {
+    this.#manifest = JSON.parse(fs.readFileSync(path.join(__dirname, './manifest.json'), 'utf-8'))
+  }
+
+  static get releaseType () {
+    if (this.#manifest === null) {
+      this.readAndCacheManifest()
+    }
+    return this.#manifest.releaseType
+  }
+
+  static get binaryVersion () {
+    if (this.#manifest === null) {
+      this.readAndCacheManifest()
+    }
+    return this.#manifest.binaryVersion
+  }
+
+  static get sourceVersion () {
+    if (this.#manifest === null) {
+      this.readAndCacheManifest()
+    }
+    return this.#manifest.sourceVersion
+  }
+
+  static binaryVersionToHumanReadableDateString (binaryVersion) {
+    const m = moment(binaryVersion, 'YYYYMMDDHHmmss')
+    return `${m.format('MMMM Do, YYYY')} at ${m.format('HH:mm:ss')}`
+  }
+
+  static get humanReadableBinaryVersion () {
+    if (this.#manifest === null) {
+      this.readAndCacheManifest()
+    }
+    return this.binaryVersionToHumanReadableDateString(this.#manifest.binaryVersion)
+  }
+
+  static get releaseTypeFormattedForConsole () {
+    if (this.#manifest === null) {
+      this.readAndCacheManifest()
+    }
+    switch(this.#manifest.releaseType) {
+      // Spells ALPHA in large red block letters.
+      case 'alpha': return clr(`\n
+     █████  ██      ██████  ██   ██  █████ 
+    ██   ██ ██      ██   ██ ██   ██ ██   ██ 
+    ███████ ██      ██████  ███████ ███████ 
+    ██   ██ ██      ██      ██   ██ ██   ██ 
+    ██   ██ ███████ ██      ██   ██ ██   ██`, 'red')
+
+    // Spells BETA in large yellow block letters.
+    case 'beta': return clr(`\n
+    ██████  ███████ ████████  █████ 
+    ██   ██ ██         ██    ██   ██ 
+    ██████  █████      ██    ███████ 
+    ██   ██ ██         ██    ██   ██ 
+    ██████  ███████    ██    ██   ██`, 'yellow')
+      default: return ''
+    }
+  }
 
   // The cross-platform hostname (os.hostname() on Linux and macOS, special handling on Windows to return
   // the full computer name, which can be a domain name and thus the equivalent of hostname on Linux and macOS).
@@ -81,10 +147,10 @@ class Site {
       this.readAndCacheManifest()
 
       let message = [
-        `\n${prefix1}Site.js ${this.humanReadableReleaseType()}\n\n`,
-        `${prefix2}Build : ${clr(this.humanReadableVersion(), 'green')}\n`,
+        `\n${prefix1}Site.js ${this.releaseTypeFormattedForConsole}\n\n`,
+        `${prefix2}Build : ${clr(this.humanReadableBinaryVersion, 'green')}\n`,
         `${prefix2}Engine: ${clr(`Node.js ${process.version}`, 'green')}\n`,
-        `${prefix2}Source: ${clr(`https://source.small-tech.org/site.js/app/tags/${this.#manifest.sourceVersion}`, 'cyan')}\n\n`,
+        `${prefix2}Source: ${clr(`https://source.small-tech.org/site.js/app/tags/${this.sourceVersion}`, 'cyan')}\n\n`,
         `${prefix2}╔═══════════════════════════════════════════╗\n`,
         `${prefix2}║ Like this? Fund us!                       ║\n`,
         `${prefix2}║                                           ║\n`,
@@ -96,50 +162,6 @@ class Site {
       console.log(message)
 
       Site.#appNameAndVersionAlreadyLogged = true
-    }
-  }
-
-  static readAndCacheManifest () {
-    this.#manifest = JSON.parse(fs.readFileSync(path.join(__dirname, './manifest.json'), 'utf-8'))
-  }
-
-  // Return the binary version.
-  static versionNumber () {
-    if (this.#manifest === null) {
-      this.readAndCacheManifest()
-    }
-    return this.#manifest.binaryVersion
-  }
-
-  static humanReadableVersion () {
-    if (this.#manifest === null) {
-      this.readAndCacheManifest()
-    }
-    const m = moment(this.#manifest.binaryVersion, 'YYYYMMDDHHmmss')
-    return `${m.format('MMMM Do, YYYY')} at ${m.format('HH:mm:ss')}`
-  }
-
-  static humanReadableReleaseType () {
-    if (this.#manifest === null) {
-      this.readAndCacheManifest()
-    }
-    switch(this.#manifest.releaseType) {
-      // Spells ALPHA in large red block letters.
-      case 'alpha': return clr(`\n
-     █████  ██      ██████  ██   ██  █████ 
-    ██   ██ ██      ██   ██ ██   ██ ██   ██ 
-    ███████ ██      ██████  ███████ ███████ 
-    ██   ██ ██      ██      ██   ██ ██   ██ 
-    ██   ██ ███████ ██      ██   ██ ██   ██`, 'red')
-
-    // Spells BETA in large yellow block letters.
-    case 'beta': return clr(`\n
-    ██████  ███████ ████████  █████ 
-    ██   ██ ██         ██    ██   ██ 
-    ██████  █████      ██    ███████ 
-    ██   ██ ██         ██    ██   ██ 
-    ██████  ███████    ██    ██   ██`, 'yellow')
-      default: return ''
     }
   }
 
@@ -519,18 +541,6 @@ class Site {
 
     // Enable the ability to destroy the server (close all active connections).
     enableDestroy(this.server)
-
-    // Provide access to the error constant on the server instance itself
-    // as consuming objects may not have access to the class itself.
-    this.server.SMALL_TECH_ORG_ERROR_HTTP_SERVER = Site.SMALL_TECH_ORG_ERROR_HTTP_SERVER
-
-    this.server.on('error', error => {
-      this.log('\n   🤯    ❨Site.js❩ Error: could not start server.\n')
-      if (error.code === 'EADDRINUSE') {
-        this.log(`   💥    ❨Site.js❩ Port ${this.port} is already in use.\n`)
-      }
-      this.server.emit(Site.SMALL_TECH_ORG_ERROR_HTTP_SERVER)
-    })
 
     this.server.on('close', () => {
       // Clear the auto update check interval.

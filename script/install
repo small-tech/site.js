@@ -1,28 +1,56 @@
 #!/bin/bash
 
-######################################################################
+##########################################################################################
 #
-# Site.js v12.11.0 Installer for Linux (x86 and armv7l) and macOS.
+# Site.js version 202005010942/12.11.0 Installer for Linux (x86 and ARM) and macOS.
 #
 # To use:
 #
 # wget -qO- https://sitejs.org/install | bash
 #
-# Copyright (c) 2019 Aral Balkan.
+# Copyright (c) 2019-2020 Aral Balkan.
 # Released under the AGPL version 3.0 or later license.
 # Made with ♥ by Small Technology Foundation (https://small-tech.org)
 # Like this? Fund us! (https://small-tech.org/fund-us)
 #
-######################################################################
+##########################################################################################
 
 set -e
 echo
-echo " 📡 Downloading Site.js v12.11.0…"
+echo " 📡 Downloading Site.js version 202005010942/12.11.0…"
 
 function cleanUp {
   popd > /dev/null
   rm -rf /tmp/sitejs.org
 }
+
+releaseType=$1
+releaseTypePath='/'
+
+if [[ "$releaseType" == "alpha" ]]; then
+  # Writes ALPHA in large red block letters.
+  echo -e '\033[31m'
+  echo '     █████  ██      ██████  ██   ██  █████'
+  echo '    ██   ██ ██      ██   ██ ██   ██ ██   ██ '
+  echo '    ███████ ██      ██████  ███████ ███████ '
+  echo '    ██   ██ ██      ██      ██   ██ ██   ██ '
+  echo '    ██   ██ ███████ ██      ██   ██ ██   ██'
+  echo -e '\033[0m'
+  releaseTypePath='/alpha/'
+elif [[ "$releaseType" == "beta" ]]; then
+  # Writes BETA in large yellow block letters.
+  echo -e '\033[33m'
+  echo '    ██████  ███████ ████████  █████ '
+  echo '    ██   ██ ██         ██    ██   ██ '
+  echo '    ██████  █████      ██    ███████ '
+  echo '    ██   ██ ██         ██    ██   ██ '
+  echo '    ██████  ███████    ██    ██   ██'
+  echo -e '\033[0m'
+  releaseTypePath='/beta/'
+else
+  # Ignore any other type and default to the release version.
+  releaseType=''
+fi
 
 # Setup
 rm -rf /tmp/sitejs.org
@@ -33,29 +61,33 @@ if [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux-gnueabihf" ]]; then
   cpuArchitecture=`uname -m`
   if [[ "$cpuArchitecture" == "x86_64" ]]; then
     # Linux on x64.
-    wget -q https://sitejs.org/releases/linux/12.11.0.tar.gz
+    wget -q "https://sitejs.org/releases${releaseTypePath}linux/202005010942.tar.gz"
   elif [[ "$cpuArchitecture" == "armv7l" || "$cpuArchitecture" == "armv6l" ]]; then
     # Linux on ARM. Tested on Raspberry Pi Zero W (armv6l), 3B+ and 4B (both reporting armv7l).
-    wget -q https://sitejs.org/releases/linux-arm/12.11.0.tar.gz
+    wget -q "https://sitejs.org/releases${releaseTypePath}linux-arm/202005010942.tar.gz"
   else
     # Unsupported
-    echo "\n ❌ Error: this architecture is not supported on Linux (only x86_64, armv6l, and armv7l are).\n"
+    echo
+    echo " ❌ Error: this architecture is not supported on Linux (only x86_64, armv6l, and armv7l are)."
+    echo
     cleanUp
     exit 1
   fi
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   # macOS
-  curl -Os https://sitejs.org/releases/macos/12.11.0.tar.gz
+  curl -Os "https://sitejs.org/releases${releaseTypePath}macos/202005010942.tar.gz"
 else
   # Unsupported
-  echo "\n ❌ Error: this operating system is not supported.\n"
+  echo
+  echo " ❌ Error: this operating system is not supported."
+  echo
   cleanUp
   exit 1
 fi
 
 echo " 📦 Installing…"
-gzip -d 12.11.0.tar.gz
-tar -xf 12.11.0.tar
+gzip -d 202005010942.tar.gz
+tar -xf 202005010942.tar
 
 # Ensure that the /usr/local/bin directory exists (it does not by default on macOS)
 sudo mkdir -p /usr/local/bin/

@@ -948,7 +948,7 @@ module.exports = app => {
 }
 ```
 
-When using the _routes.js_ file, you can use all of the features in [wxpress](https://expressjs.com/) and [our fork of express-ws](https://github.com/aral/express-ws) (which itself wraps [ws](https://github.com/websockets/ws#usage-examples)).
+When using the _routes.js_ file, you can use all of the features in [express](https://expressjs.com/) and [our fork of express-ws](https://github.com/aral/express-ws) (which itself wraps [ws](https://github.com/websockets/ws#usage-examples)).
 
 ### Routing precedence
 

@@ -374,50 +374,73 @@ async function build () {
     // site.js/app/bin/
     //
     // site.js
-    //  |_ app                 This project.
-    //  |   |_ bin             The folder that this script is running in.
-    //  |_ site                The Site.js web site.
-    //      |_ releases        The folder that release binaries are held.
+    //  |_ app                    This project.
+    //  |   |_ bin                The folder that this script is running in.
+    //  |_ site                   The Site.js web site.
+    //      |_ version/
+    //      |    |_ index.js      (Dynamic) Returns source version (for compatibility with versions prior to 12.11.0)
+    //      |    |_ alpha
+    //      |    |    |_ index.js (Dynamic) If it exists, returns latest alpha channel version.
+    //      |    |_ beta
+    //      |    |    |_ index.js (Dynamic) If it exists, returns latest beta channel version.
+    //      |    |_ release
+    //      |         |_ index.js (Dynamic) If it exists, returns latest release channel version.
+    //      |_ releases           The folder that release binaries are held.
+    //            |_ alpha        Contains alpha releases. (12.11.0+)
+    //            |_ beta         Contains beta releases.  (12.11.0+)
+
     //
     // If it cannot find the Site.js web site, the build script will simply skip this step.
     //
-    const pathToWebSite                                      = path.resolve(path.join(__dirname, '../../site/'))
-    const pathToReleasesFolder                               = path.resolve(path.join(pathToWebSite, 'releases/'))
-    const pathToDynamicVersionRoute                          = path.join(pathToWebSite, '.dynamic', 'version.js')
-    const pathToInstallationScriptsFolderOnWebSite           = path.join(pathToWebSite, 'installation-scripts')
-    const pathToLinuxAndMacOSInstallationScriptFileOnWebSite = path.join(pathToInstallationScriptsFolderOnWebSite, 'install')
-    const pathToWindowsInstallationScriptFileOnWebSite       = path.join(pathToInstallationScriptsFolderOnWebSite, 'install.txt')
+    const INDEX                                  = 'index.js'
+    const websitePath                            = path.resolve(path.join(__dirname, '../../site/'))
+    const websitePathForReleases                 = path.resolve(path.join(websitePath, 'releases/'))
+    const websitePathForOldVersionRoute          = path.join(websitePath, '.dynamic', 'version.js')
+    const websitePathForSourceVersionRoute       = path.join(websitePath, '.dynamic', 'version', INDEX)
+    const websitePathForBinaryVersionRoute       = path.join(websitePath, '.dynamic', 'version', releaseType, INDEX)
+    const websitePathForInstallScripts           = path.join(websitePath, 'installation-scripts')
+    const websitePathForLinuxAndMacInstallScript = path.join(websitePathForInstallScripts, 'install')
+    const websitePathForWindowsInstallScript     = path.join(websitePathForInstallScripts, 'install.txt')
+
+    // 12.10.5 → 12.11.0 migration. If old .dynamic/version.js path exists on the site, delete it.
+    fs.removeSync(websitePathForOldVersionRoute)
 
     // Check that a local working copy of the Site.js web site exists at the relative location
     // that we expect it to. If it doesn’t skip this step.
-    if (fs.existsSync(pathToWebSite)) {
+    if (fs.existsSync(websitePath)) {
       console.log('   • Copying release binaries to the Site.js web site…')
 
-      const linuxX64VersionZipFilePath           = path.join(linuxX64WorkingDirectory, zipFileName)
-      const linuxArmVersionZipFilePath           = path.join(linuxArmWorkingDirectory, zipFileName)
-      const macOsVersionZipFilePath              = path.join(macOsWorkingDirectory, zipFileName   )
-      const windowsVersionZipFilePath            = path.join(windowsWorkingDirectory, zipFileName )
+      const linuxX64VersionZipFilePath    = path.join(linuxX64WorkingDirectory, zipFileName)
+      const linuxArmVersionZipFilePath    = path.join(linuxArmWorkingDirectory, zipFileName)
+      const macOsVersionZipFilePath       = path.join(macOsWorkingDirectory,    zipFileName)
+      const windowsVersionZipFilePath     = path.join(windowsWorkingDirectory,  zipFileName)
 
-      const linuxX64VersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'linux'    )
-      const linuxArmVersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'linux-arm')
-      const macOsVersionTargetDirectoryOnSite    = path.join(pathToReleasesFolder, 'macos'    )
-      const windowsVersionTargetDirectoryOnSite  = path.join(pathToReleasesFolder, 'windows'  )
+      const websitePathForLinuxX64Version = path.join(websitePathForReleases, 'linux'    )
+      const websitePathForLinuxArmVersion = path.join(websitePathForReleases, 'linux-arm')
+      const websitePathForMacVersion      = path.join(websitePathForReleases, 'macos'    )
+      const websitePathForWindowsVersion  = path.join(websitePathForReleases, 'windows'  )
 
-      fs.mkdirSync(linuxX64VersionTargetDirectoryOnSite, {recursive: true})
-      fs.mkdirSync(linuxArmVersionTargetDirectoryOnSite, {recursive: true})
-      fs.mkdirSync(macOsVersionTargetDirectoryOnSite,    {recursive: true})
-      fs.mkdirSync(windowsVersionTargetDirectoryOnSite,  {recursive: true})
+      fs.mkdirSync(websitePathForLinuxX64Version, {recursive: true})
+      fs.mkdirSync(websitePathForLinuxArmVersion, {recursive: true})
+      fs.mkdirSync(websitePathForMacVersion,      {recursive: true})
+      fs.mkdirSync(websitePathForWindowsVersion,  {recursive: true})
 
-      fs.copyFileSync(linuxX64VersionZipFilePath, path.join(linuxX64VersionTargetDirectoryOnSite, zipFileName))
-      fs.copyFileSync(linuxArmVersionZipFilePath, path.join(linuxArmVersionTargetDirectoryOnSite, zipFileName))
-      fs.copyFileSync(macOsVersionZipFilePath,    path.join(macOsVersionTargetDirectoryOnSite,    zipFileName))
-      fs.copyFileSync(windowsVersionZipFilePath,  path.join(windowsVersionTargetDirectoryOnSite,  zipFileName))
+      fs.copyFileSync(linuxX64VersionZipFilePath, path.join(websitePathForLinuxX64Version, zipFileName))
+      fs.copyFileSync(linuxArmVersionZipFilePath, path.join(websitePathForLinuxArmVersion, zipFileName))
+      fs.copyFileSync(macOsVersionZipFilePath,    path.join(websitePathForMacVersion,      zipFileName))
+      fs.copyFileSync(windowsVersionZipFilePath,  path.join(websitePathForWindowsVersion,  zipFileName))
 
-      // Write out a dynamic route with the latest version into the site. That endpoint will be used by the
-      // auto-update feature to decide whether it needs to update.
-      console.log('   • Adding dynamic version endpoint to Site.js web site.')
-      const versionRoute = `module.exports = (request, response) => { response.end('${binaryVersion}') }\n`
-      fs.writeFileSync(pathToDynamicVersionRoute, versionRoute, {encoding: 'utf-8'})
+      // Write out a dynamic routes with the latest source version (for compatibility with releases prior to
+      // source version 12.11.0) and binary version ( for source version 12.11.0+). These endpoints are used by the
+      // auto-update feature to decide whether the binary needs to update.
+      console.log('   • Adding dynamic source version endpoint to Site.js web site.')
+      const sourceVersionRoute = `module.exports = (request, response) => { response.end('${sourceVersion}') }\n`
+      fs.writeFileSync(websitePathForSourceVersionRoute, sourceVersionRoute, {encoding: 'utf-8'})
+
+      console.log(`   • Adding dynamic binary version endpoint for ${releaseType ? `${releaseType} `: ''}release to Site.js web site.`)
+      const binaryVersionRoute = `module.exports = (request, response) => { response.end('${binaryVersion}') }\n`
+      fs.writeFileSync(websitePathForBinaryVersionRoute, binaryVersionRoute, {encoding: 'utf-8'})
+
 
       // Update the install file and deploy them to the Site.js web site.
       console.log('   • Updating the installation scripts and deploying them to Site.js web site.')
@@ -427,10 +450,11 @@ async function build () {
       //
       const linuxAndMacOSInstallScriptFile = path.join(mainSourceDirectory, 'script', 'install')
       let linuxAndMacOSInstallScript       = fs.readFileSync(linuxAndMacOSInstallScriptFile, 'utf-8')
-      linuxAndMacOSInstallScript           = linuxAndMacOSInstallScript.replace(/\d+\.\d+\.\d+/g, binaryVersion)
+      linuxAndMacOSInstallScript           = linuxAndMacOSInstallScript.replace(/\d+\.\d+\.\d+/g, sourceVersion)
+      linuxAndMacOSInstallScript           = linuxAndMacOSInstallScript.replace(/\d{14}/, binaryVersion)
 
       fs.writeFileSync(linuxAndMacOSInstallScriptFile, linuxAndMacOSInstallScript)
-      fs.copyFileSync(linuxAndMacOSInstallScriptFile, pathToLinuxAndMacOSInstallationScriptFileOnWebSite)
+      fs.copyFileSync(linuxAndMacOSInstallScriptFile, websitePathForLinuxAndMacInstallScript)
 
       //
       // Windows.
@@ -440,10 +464,10 @@ async function build () {
       windowsInstallScript           = windowsInstallScript.replace(/\d+\.\d+\.\d+/g, binaryVersion)
 
       fs.writeFileSync(windowsInstallScriptFile, windowsInstallScript)
-      fs.copyFileSync(windowsInstallScriptFile, pathToWindowsInstallationScriptFileOnWebSite)
+      fs.copyFileSync(windowsInstallScriptFile, websitePathForWindowsInstallScript)
 
     } else {
-      console.log('   • No local working copy of Site.js web site found. Skipped copy of release binaries.')
+      console.log(`   • No local working copy of Site.js web site found. Skipped copy of release binaries. Please clone https://small-tech.org/site.js/site to ${websitePath} and ensure you have commit permissions on the repository before attempting to deploy.`)
     }
   }
 
