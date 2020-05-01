@@ -460,15 +460,24 @@ async function build () {
       //
 
       const linuxAndMacOSInstallScriptFile = path.join(installationScriptTemplatesFolder, 'install')
-      const binaryVersionRegExp = new RegExp(`${releaseType}BinaryVersion=00000000000000`, 'g')
-      const sourceVersionRegExp = new RegExp(`${releaseType}SourceVersion=00\.00\.00`, 'g')
+
+      const binaryVersionVariableName = `${releaseType}BinaryVersion`
+      const binaryVersionVariable = `${binaryVersionVariableName}=${binaryVersion}`
+      const binaryVersionRegExp = new RegExp(`${binaryVersionVariableName}=\\d{14}`)
+
+      const sourceVersionVariableName = `${releaseType}SourceVersion`
+      const sourceVersionVariable = `${sourceVersionVariableName}=${sourceVersion}`
+      const sourceVersionRegExp = new RegExp(`${sourceVersionVariableName}=\\d+\\.\\d+\\.\\d+`)
 
       let linuxAndMacOSInstallScript
       linuxAndMacOSInstallScript = fs.readFileSync(linuxAndMacOSInstallScriptFile, 'utf-8')
-      linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(binaryVersionRegExp, binaryVersion)
-      linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(sourceVersionRegExp, sourceVersion)
+      linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(binaryVersionRegExp, binaryVersionVariable)
+      linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(sourceVersionRegExp, sourceVersionVariable)
 
-      fs.writeFileSync(websitePathForLinuxAndMacInstallScript, linuxAndMacOSInstallScript)
+      // As we have three different release types, each with a different version, we need to persist
+      // the template with the other values. Changes should be checked into the repository.
+      fs.writeFileSync(linuxAndMacOSInstallScriptFile, linuxAndMacOSInstallScript)
+      fs.copyFileSync(linuxAndMacOSInstallScriptFile, websitePathForLinuxAndMacInstallScript)
 
       //
       // Windows.
