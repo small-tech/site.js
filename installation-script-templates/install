@@ -25,7 +25,6 @@ function cleanUp {
 }
 
 releaseType=$1
-releaseTypePath='/'
 
 if [[ "$releaseType" == "alpha" ]]; then
   # Writes ALPHA in large red block letters.
@@ -36,7 +35,6 @@ if [[ "$releaseType" == "alpha" ]]; then
   echo '    ██   ██ ██      ██      ██   ██ ██   ██ '
   echo '    ██   ██ ███████ ██      ██   ██ ██   ██'
   echo -e '\033[0m'
-  releaseTypePath='/alpha/'
 elif [[ "$releaseType" == "beta" ]]; then
   # Writes BETA in large yellow block letters.
   echo -e '\033[33m'
@@ -46,10 +44,9 @@ elif [[ "$releaseType" == "beta" ]]; then
   echo '    ██   ██ ██         ██    ██   ██ '
   echo '    ██████  ███████    ██    ██   ██'
   echo -e '\033[0m'
-  releaseTypePath='/beta/'
 else
   # Ignore any other type and default to the release version.
-  releaseType=''
+  releaseType='release'
 fi
 
 # Setup
@@ -61,10 +58,10 @@ if [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux-gnueabihf" ]]; then
   cpuArchitecture=`uname -m`
   if [[ "$cpuArchitecture" == "x86_64" ]]; then
     # Linux on x64.
-    wget -q "https://sitejs.org/releases${releaseTypePath}linux/00000000000000.tar.gz"
+    wget -q "https://sitejs.org/binaries/${releaseType}/linux/00000000000000.tar.gz"
   elif [[ "$cpuArchitecture" == "armv7l" || "$cpuArchitecture" == "armv6l" ]]; then
     # Linux on ARM. Tested on Raspberry Pi Zero W (armv6l), 3B+ and 4B (both reporting armv7l).
-    wget -q "https://sitejs.org/releases${releaseTypePath}linux-arm/00000000000000.tar.gz"
+    wget -q "https://sitejs.org/binaries/${releaseType}/linux-arm/00000000000000.tar.gz"
   else
     # Unsupported
     echo
@@ -75,7 +72,7 @@ if [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux-gnueabihf" ]]; then
   fi
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   # macOS
-  curl -Os "https://sitejs.org/releases${releaseTypePath}macos/00000000000000.tar.gz"
+  curl -Os "https://sitejs.org/binaries/${releaseType}/macos/00000000000000.tar.gz"
 else
   # Unsupported
   echo

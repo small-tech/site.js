@@ -23,7 +23,7 @@ $installationScriptUrl = 'https://sitejs.org/install.txt'
 $installationScriptFileName = 'install-site.js.ps1'
 
 # The address to download the tar-gzipped archive of the Site.js binary from.
-$archiveUrl = 'https://sitejs.org/releases/windows/00000000000000.tar.gz'
+$archiveUrl = 'https://sitejs.org/binaries/windows/00000000000000.tar.gz'
 
 # Emoji encodings (because Powershell is from the Stone Age and cannot handle
 # emoji literals in strings)

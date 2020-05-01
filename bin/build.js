@@ -34,9 +34,7 @@ if (cpuArchitecture !== 'x64' && cpuArchitecture !== 'arm') {
   process.exit()
 }
 
-const releaseType     = commandLineOptions.alpha ? 'alpha' : (commandLineOptions.beta ? 'beta' : '')
-const releaseTypeName = releaseType === '' ? 'release': releaseType
-const releaseSuffix   = releaseType === '' ? '' : `-${releaseType}`
+const releaseType     = commandLineOptions.alpha ? 'alpha' : (commandLineOptions.beta ? 'beta' : 'release')
 
 const nodeVersion = process.version.slice(1)
 
@@ -51,7 +49,7 @@ const binaryName        = 'site'
 const windowsBinaryName = `${binaryName}.exe`
 
 console.log(`\n ⚙️ Site.js build started on ${presentBinaryVersion(binaryVersion)}.\n
-    Build type    : ${releaseTypeName}
+    Build type    : ${releaseType}
     Binary version: ${binaryVersion}
     Source version: ${sourceVersion}
     Node version  : ${nodeVersion}\n`)
@@ -61,19 +59,21 @@ console.log(`\n ⚙️ Site.js build started on ${presentBinaryVersion(binaryVer
 const manifest = {
   binaryVersion,
   sourceVersion,
-  releaseType: releaseTypeName
+  releaseType
 }
 fs.writeFileSync('manifest.json', JSON.stringify(manifest), 'utf-8')
 
-const linuxX64Directory = path.join('dist', `linux${releaseSuffix}`,     binaryVersion)
-const linuxArmDirectory = path.join('dist', `linux-arm${releaseSuffix}`, binaryVersion)
-const macOsDirectory    = path.join('dist', `macos${releaseSuffix}`,     binaryVersion)
-const windowsDirectory  = path.join('dist', `windows${releaseSuffix}`,   binaryVersion)
+const releaseTypeDirectory = path.join('dist', releaseType)
+const linuxX64Directory    = path.join(releaseTypeDirectory, 'linux',     binaryVersion)
+const linuxArmDirectory    = path.join(releaseTypeDirectory, 'linux-arm', binaryVersion)
+const macOsDirectory       = path.join(releaseTypeDirectory, 'macos',     binaryVersion)
+const windowsDirectory     = path.join(releaseTypeDirectory, 'windows',   binaryVersion)
 
-fs.mkdirSync(linuxX64Directory, {recursive: true})
-fs.mkdirSync(linuxArmDirectory, {recursive: true})
-fs.mkdirSync(macOsDirectory,    {recursive: true})
-fs.mkdirSync(windowsDirectory,  {recursive: true})
+fs.ensureDirSync(releaseTypeDirectory)
+fs.ensureDirSync(linuxX64Directory   )
+fs.ensureDirSync(linuxArmDirectory   )
+fs.ensureDirSync(macOsDirectory      )
+fs.ensureDirSync(windowsDirectory    )
 
 const linuxX64BinaryPath = path.join(linuxX64Directory, binaryName       )
 const linuxArmBinaryPath = path.join(linuxArmDirectory, binaryName       )
@@ -231,7 +231,7 @@ async function build () {
     })
   }
 
-  function stripForPlatform (platform) {
+  function stripForPlatform  (platform) {
     removeAllMkcertPlatforms (platform)
     removeAllHugoPlatforms   (platform)
     restoreMkcertBinary      (platform)
@@ -385,16 +385,17 @@ async function build () {
     //      |    |    |_ index.js (Dynamic) If it exists, returns latest beta channel version.
     //      |    |_ release
     //      |         |_ index.js (Dynamic) If it exists, returns latest release channel version.
-    //      |_ releases           The folder that release binaries are held.
-    //            |_ alpha        Contains alpha releases. (12.11.0+)
-    //            |_ beta         Contains beta releases.  (12.11.0+)
+    //      |_ binaries
+    //           |_ alpha         (12.11.0+) Contains alpha releases.
+    //           |_ beta          (12.11.0+) Contains beta releases.
+    //           |_ release       (12.11.0+) Contains release versions
 
     //
     // If it cannot find the Site.js web site, the build script will simply skip this step.
     //
     const INDEX                                  = 'index.js'
-    const websitePath                            = path.resolve(path.join(__dirname, '../../site/'))
-    const websitePathForReleases                 = path.resolve(path.join(websitePath, 'releases/'))
+    const websitePath                            = path.resolve(path.join(__dirname, '..', '..', 'site'))
+    const websitePathForBinaries                 = path.resolve(path.join(websitePath, 'binaries', releaseType))
     const websitePathForOldVersionRoute          = path.join(websitePath, '.dynamic', 'version.js')
     const websitePathForVersionRoutesFolder      = path.join(websitePath, '.dynamic', 'version')
     const websitePathForSourceVersionRouteFile   = path.join(websitePathForVersionRoutesFolder, INDEX)
@@ -421,15 +422,16 @@ async function build () {
       const macOsVersionZipFilePath       = path.join(macOsWorkingDirectory,    zipFileName)
       const windowsVersionZipFilePath     = path.join(windowsWorkingDirectory,  zipFileName)
 
-      const websitePathForLinuxX64Version = path.join(websitePathForReleases, 'linux'    )
-      const websitePathForLinuxArmVersion = path.join(websitePathForReleases, 'linux-arm')
-      const websitePathForMacVersion      = path.join(websitePathForReleases, 'macos'    )
-      const websitePathForWindowsVersion  = path.join(websitePathForReleases, 'windows'  )
+      const websitePathForLinuxX64Version = path.join(websitePathForBinaries, 'linux'    )
+      const websitePathForLinuxArmVersion = path.join(websitePathForBinaries, 'linux-arm')
+      const websitePathForMacVersion      = path.join(websitePathForBinaries, 'macos'    )
+      const websitePathForWindowsVersion  = path.join(websitePathForBinaries, 'windows'  )
 
-      fs.mkdirSync(websitePathForLinuxX64Version, {recursive: true})
-      fs.mkdirSync(websitePathForLinuxArmVersion, {recursive: true})
-      fs.mkdirSync(websitePathForMacVersion,      {recursive: true})
-      fs.mkdirSync(websitePathForWindowsVersion,  {recursive: true})
+      fs.ensureDirSync(websitePathForBinaries, {recursive: true})
+      fs.ensureDirSync(websitePathForLinuxX64Version)
+      fs.ensureDirSync(websitePathForLinuxArmVersion)
+      fs.ensureDirSync(websitePathForMacVersion     )
+      fs.ensureDirSync(websitePathForWindowsVersion )
 
       fs.copyFileSync(linuxX64VersionZipFilePath, path.join(websitePathForLinuxX64Version, zipFileName))
       fs.copyFileSync(linuxArmVersionZipFilePath, path.join(websitePathForLinuxArmVersion, zipFileName))
@@ -443,7 +445,7 @@ async function build () {
       const sourceVersionRoute = `module.exports = (request, response) => { response.end('${sourceVersion}') }\n`
       fs.writeFileSync(websitePathForSourceVersionRouteFile, sourceVersionRoute, {encoding: 'utf-8'})
 
-      console.log(`   • Adding dynamic binary version endpoint for ${releaseType ? `${releaseType} `: ''}release to Site.js web site.`)
+      console.log(`   • Adding dynamic binary version endpoint for ${releaseType} version to Site.js web site.`)
       const binaryVersionRoute = `module.exports = (request, response) => { response.end('${binaryVersion}') }\n`
       fs.writeFileSync(websitePathForBinaryVersionRouteFile, binaryVersionRoute, {encoding: 'utf-8'})
 
@@ -461,7 +463,7 @@ async function build () {
       linuxAndMacOSInstallScript           = linuxAndMacOSInstallScript.replace('00.00.00', sourceVersion)
       linuxAndMacOSInstallScript           = linuxAndMacOSInstallScript.replace('00000000000000', binaryVersion)
 
-      fs.writeFileSync(linuxAndMacOSInstallScriptFile, websitePathForLinuxAndMacInstallScript)
+      fs.writeFileSync(websitePathForLinuxAndMacInstallScript, linuxAndMacOSInstallScript)
 
       //
       // Windows.
@@ -471,7 +473,7 @@ async function build () {
       windowsInstallScript           = windowsInstallScript.replace('00.00.00', sourceVersion)
       windowsInstallScript           = windowsInstallScript.replace('00000000000000', binaryVersion)
 
-      fs.writeFileSync(windowsInstallScriptFile, websitePathForWindowsInstallScript)
+      fs.writeFileSync(websitePathForWindowsInstallScript, windowsInstallScript)
 
     } else {
       console.log(`   • No local working copy of Site.js web site found. Skipped copy of release binaries. Please clone https://small-tech.org/site.js/site to ${websitePath} and ensure you have commit permissions on the repository before attempting to deploy.`)
