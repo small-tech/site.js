@@ -2,7 +2,7 @@
 
 ##########################################################################################
 #
-# Site.js version 202005010942/12.11.0 Installer for Linux (x86 and ARM) and macOS.
+# Site.js version 00000000000000/00.00.00 Installer for Linux (x86 and ARM) and macOS.
 #
 # To use:
 #
@@ -17,7 +17,7 @@
 
 set -e
 echo
-echo " 📡 Downloading Site.js version 202005010942/12.11.0…"
+echo " 📡 Downloading Site.js version 00000000000000/00.00.00…"
 
 function cleanUp {
   popd > /dev/null
@@ -61,10 +61,10 @@ if [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux-gnueabihf" ]]; then
   cpuArchitecture=`uname -m`
   if [[ "$cpuArchitecture" == "x86_64" ]]; then
     # Linux on x64.
-    wget -q "https://sitejs.org/releases${releaseTypePath}linux/202005010942.tar.gz"
+    wget -q "https://sitejs.org/releases${releaseTypePath}linux/00000000000000.tar.gz"
   elif [[ "$cpuArchitecture" == "armv7l" || "$cpuArchitecture" == "armv6l" ]]; then
     # Linux on ARM. Tested on Raspberry Pi Zero W (armv6l), 3B+ and 4B (both reporting armv7l).
-    wget -q "https://sitejs.org/releases${releaseTypePath}linux-arm/202005010942.tar.gz"
+    wget -q "https://sitejs.org/releases${releaseTypePath}linux-arm/00000000000000.tar.gz"
   else
     # Unsupported
     echo
@@ -75,7 +75,7 @@ if [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux-gnueabihf" ]]; then
   fi
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   # macOS
-  curl -Os "https://sitejs.org/releases${releaseTypePath}macos/202005010942.tar.gz"
+  curl -Os "https://sitejs.org/releases${releaseTypePath}macos/00000000000000.tar.gz"
 else
   # Unsupported
   echo
@@ -86,8 +86,8 @@ else
 fi
 
 echo " 📦 Installing…"
-gzip -d 202005010942.tar.gz
-tar -xf 202005010942.tar
+gzip -d 00000000000000.tar.gz
+tar -xf 00000000000000.tar
 
 # Ensure that the /usr/local/bin directory exists (it does not by default on macOS)
 sudo mkdir -p /usr/local/bin/

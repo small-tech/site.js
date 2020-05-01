@@ -396,14 +396,20 @@ async function build () {
     const websitePath                            = path.resolve(path.join(__dirname, '../../site/'))
     const websitePathForReleases                 = path.resolve(path.join(websitePath, 'releases/'))
     const websitePathForOldVersionRoute          = path.join(websitePath, '.dynamic', 'version.js')
-    const websitePathForSourceVersionRoute       = path.join(websitePath, '.dynamic', 'version', INDEX)
-    const websitePathForBinaryVersionRoute       = path.join(websitePath, '.dynamic', 'version', releaseType, INDEX)
+    const websitePathForVersionRoutesFolder      = path.join(websitePath, '.dynamic', 'version')
+    const websitePathForSourceVersionRouteFile   = path.join(websitePathForVersionRoutesFolder, INDEX)
+    const websitePathForBinaryVersionRouteFolder = path.join(websitePathForVersionRoutesFolder, releaseType)
+    const websitePathForBinaryVersionRouteFile   = path.join(websitePathForBinaryVersionRouteFolder, INDEX)
     const websitePathForInstallScripts           = path.join(websitePath, 'installation-scripts')
     const websitePathForLinuxAndMacInstallScript = path.join(websitePathForInstallScripts, 'install')
     const websitePathForWindowsInstallScript     = path.join(websitePathForInstallScripts, 'install.txt')
 
     // 12.10.5 → 12.11.0 migration. If old .dynamic/version.js path exists on the site, delete it.
     fs.removeSync(websitePathForOldVersionRoute)
+
+    // Ensure website version route folders exist
+    fs.ensureDirSync(websitePathForVersionRoutesFolder)
+    fs.ensureDirSync(websitePathForBinaryVersionRouteFolder)
 
     // Check that a local working copy of the Site.js web site exists at the relative location
     // that we expect it to. If it doesn’t skip this step.
@@ -435,36 +441,37 @@ async function build () {
       // auto-update feature to decide whether the binary needs to update.
       console.log('   • Adding dynamic source version endpoint to Site.js web site.')
       const sourceVersionRoute = `module.exports = (request, response) => { response.end('${sourceVersion}') }\n`
-      fs.writeFileSync(websitePathForSourceVersionRoute, sourceVersionRoute, {encoding: 'utf-8'})
+      fs.writeFileSync(websitePathForSourceVersionRouteFile, sourceVersionRoute, {encoding: 'utf-8'})
 
       console.log(`   • Adding dynamic binary version endpoint for ${releaseType ? `${releaseType} `: ''}release to Site.js web site.`)
       const binaryVersionRoute = `module.exports = (request, response) => { response.end('${binaryVersion}') }\n`
-      fs.writeFileSync(websitePathForBinaryVersionRoute, binaryVersionRoute, {encoding: 'utf-8'})
+      fs.writeFileSync(websitePathForBinaryVersionRouteFile, binaryVersionRoute, {encoding: 'utf-8'})
 
 
       // Update the install file and deploy them to the Site.js web site.
       console.log('   • Updating the installation scripts and deploying them to Site.js web site.')
 
+      const installationScriptTemplatesFolder = path.join(mainSourceDirectory, 'installation-script-templates')
+
       //
       // Linux and macOS.
       //
-      const linuxAndMacOSInstallScriptFile = path.join(mainSourceDirectory, 'script', 'install')
+      const linuxAndMacOSInstallScriptFile = path.join(installationScriptTemplatesFolder, 'install')
       let linuxAndMacOSInstallScript       = fs.readFileSync(linuxAndMacOSInstallScriptFile, 'utf-8')
-      linuxAndMacOSInstallScript           = linuxAndMacOSInstallScript.replace(/\d+\.\d+\.\d+/g, sourceVersion)
-      linuxAndMacOSInstallScript           = linuxAndMacOSInstallScript.replace(/\d{14}/, binaryVersion)
+      linuxAndMacOSInstallScript           = linuxAndMacOSInstallScript.replace('00.00.00', sourceVersion)
+      linuxAndMacOSInstallScript           = linuxAndMacOSInstallScript.replace('00000000000000', binaryVersion)
 
-      fs.writeFileSync(linuxAndMacOSInstallScriptFile, linuxAndMacOSInstallScript)
-      fs.copyFileSync(linuxAndMacOSInstallScriptFile, websitePathForLinuxAndMacInstallScript)
+      fs.writeFileSync(linuxAndMacOSInstallScriptFile, websitePathForLinuxAndMacInstallScript)
 
       //
       // Windows.
       //
-      const windowsInstallScriptFile = path.join(mainSourceDirectory, 'script', 'windows')
+      const windowsInstallScriptFile = path.join(installationScriptTemplatesFolder, 'windows')
       let windowsInstallScript       = fs.readFileSync(windowsInstallScriptFile, 'utf-8')
-      windowsInstallScript           = windowsInstallScript.replace(/\d+\.\d+\.\d+/g, binaryVersion)
+      windowsInstallScript           = windowsInstallScript.replace('00.00.00', sourceVersion)
+      windowsInstallScript           = windowsInstallScript.replace('00000000000000', binaryVersion)
 
-      fs.writeFileSync(windowsInstallScriptFile, windowsInstallScript)
-      fs.copyFileSync(windowsInstallScriptFile, websitePathForWindowsInstallScript)
+      fs.writeFileSync(windowsInstallScriptFile, websitePathForWindowsInstallScript)
 
     } else {
       console.log(`   • No local working copy of Site.js web site found. Skipped copy of release binaries. Please clone https://small-tech.org/site.js/site to ${websitePath} and ensure you have commit permissions on the repository before attempting to deploy.`)
