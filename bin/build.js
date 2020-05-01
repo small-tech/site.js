@@ -451,27 +451,37 @@ async function build () {
 
 
       // Update the install file and deploy them to the Site.js web site.
-      console.log('   • Updating the installation scripts and deploying them to Site.js web site.')
+      console.log('   • Updating the installation scripts and copying them to local Site.js web site working copy.')
 
       const installationScriptTemplatesFolder = path.join(mainSourceDirectory, 'installation-script-templates')
 
       //
       // Linux and macOS.
       //
+
       const linuxAndMacOSInstallScriptFile = path.join(installationScriptTemplatesFolder, 'install')
-      let linuxAndMacOSInstallScript       = fs.readFileSync(linuxAndMacOSInstallScriptFile, 'utf-8')
-      linuxAndMacOSInstallScript           = linuxAndMacOSInstallScript.replace('00.00.00', sourceVersion)
-      linuxAndMacOSInstallScript           = linuxAndMacOSInstallScript.replace('00000000000000', binaryVersion)
+      const binaryVersionRegExp = new RegExp(`${releaseType}BinaryVersion=00000000000000`, 'g')
+      const sourceVersionRegExp = new RegExp(`${releaseType}SourceVersion=00\.00\.00`, 'g')
+
+      let linuxAndMacOSInstallScript
+      linuxAndMacOSInstallScript = fs.readFileSync(linuxAndMacOSInstallScriptFile, 'utf-8')
+      linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(binaryVersionRegExp, binaryVersion)
+      linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(sourceVersionRegExp, sourceVersion)
 
       fs.writeFileSync(websitePathForLinuxAndMacInstallScript, linuxAndMacOSInstallScript)
 
       //
       // Windows.
       //
+      // (Note: Windows script does not support alpha and beta builds.)
+      //
+
       const windowsInstallScriptFile = path.join(installationScriptTemplatesFolder, 'windows')
-      let windowsInstallScript       = fs.readFileSync(windowsInstallScriptFile, 'utf-8')
-      windowsInstallScript           = windowsInstallScript.replace('00.00.00', sourceVersion)
-      windowsInstallScript           = windowsInstallScript.replace('00000000000000', binaryVersion)
+
+      let windowsInstallScript
+      windowsInstallScript = fs.readFileSync(windowsInstallScriptFile, 'utf-8')
+      windowsInstallScript = windowsInstallScript.replace(/00000000000000/g, binaryVersion)
+      windowsInstallScript = windowsInstallScript.replace(/00\.00\.00/g, sourceVersion)
 
       fs.writeFileSync(websitePathForWindowsInstallScript, windowsInstallScript)
 

@@ -1,23 +1,29 @@
 #!/bin/bash
 
-##########################################################################################
+######################################################################
 #
-# Site.js version 00000000000000/00.00.00 Installer for Linux (x86 and ARM) and macOS.
+# Site.js installer for Linux (x86 and ARM) and macOS.
 #
-# To use:
+# Usage:
 #
 # wget -qO- https://sitejs.org/install | bash
+#
+# Or:
+#
+# curl -s https://sitejs.org/install | bash
+#
+# For alpha, replace bash with bash -s -- alpha
+# For beta, replace bash with bash -s -- beta
 #
 # Copyright (c) 2019-2020 Aral Balkan.
 # Released under the AGPL version 3.0 or later license.
 # Made with ♥ by Small Technology Foundation (https://small-tech.org)
+#
 # Like this? Fund us! (https://small-tech.org/fund-us)
 #
-##########################################################################################
+######################################################################
 
 set -e
-echo
-echo " 📡 Downloading Site.js version 00000000000000/00.00.00…"
 
 function cleanUp {
   popd > /dev/null
@@ -26,7 +32,38 @@ function cleanUp {
 
 releaseType=$1
 
+# Release is the default release type (others are alpha and beta).
+if [[ "$releaseType" == "" ]]; then
+  releaseType='release'
+fi
+
+alphaBinaryVersion=00000000000000
+alphaSourceVersion=00.00.00
+
+betaBinaryVersion=00000000000000
+betaSourceVersion=00.00.00
+
+releaseBinaryVersion=00000000000000
+releaseSourceVersion=00.00.00
+
+binaryVersionVariableName="${releaseType}BinaryVersion"
+sourceVersionVariableName="${releaseType}SourceVersion"
+
+binaryVersion=${!binaryVersionVariableName}
+sourceVersion=${!sourceVersionVariableName}
+
+if [[ "$binaryVersion" == "00000000000000" ]]; then
+  echo " ❌ Sorry, no Site.js ${releaseType} binaries have been released yet."
+  cleanUp
+  exit 1
+fi
+
+echo
+echo " 📡 Downloading Site.js version ${binaryVersion}/${sourceVersion}…"
+
+# Mark alpha and beta releases prominently.
 if [[ "$releaseType" == "alpha" ]]; then
+
   # Writes ALPHA in large red block letters.
   echo -e '\033[31m'
   echo '     █████  ██      ██████  ██   ██  █████'
@@ -35,7 +72,9 @@ if [[ "$releaseType" == "alpha" ]]; then
   echo '    ██   ██ ██      ██      ██   ██ ██   ██ '
   echo '    ██   ██ ███████ ██      ██   ██ ██   ██'
   echo -e '\033[0m'
+
 elif [[ "$releaseType" == "beta" ]]; then
+
   # Writes BETA in large yellow block letters.
   echo -e '\033[33m'
   echo '    ██████  ███████ ████████  █████ '
@@ -44,26 +83,25 @@ elif [[ "$releaseType" == "beta" ]]; then
   echo '    ██   ██ ██         ██    ██   ██ '
   echo '    ██████  ███████    ██    ██   ██'
   echo -e '\033[0m'
-else
-  # Ignore any other type and default to the release version.
-  releaseType='release'
+
 fi
 
-# Setup
+# Setup.
 rm -rf /tmp/sitejs.org
 mkdir -p /tmp/sitejs.org
 pushd /tmp/sitejs.org > /dev/null
 
+# Download the release.
 if [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux-gnueabihf" ]]; then
   cpuArchitecture=`uname -m`
   if [[ "$cpuArchitecture" == "x86_64" ]]; then
     # Linux on x64.
-    wget -q "https://sitejs.org/binaries/${releaseType}/linux/00000000000000.tar.gz"
+    wget -q "https://sitejs.org/binaries/${releaseType}/linux/${binaryVersion}.tar.gz"
   elif [[ "$cpuArchitecture" == "armv7l" || "$cpuArchitecture" == "armv6l" ]]; then
     # Linux on ARM. Tested on Raspberry Pi Zero W (armv6l), 3B+ and 4B (both reporting armv7l).
-    wget -q "https://sitejs.org/binaries/${releaseType}/linux-arm/00000000000000.tar.gz"
+    wget -q "https://sitejs.org/binaries/${releaseType}/linux-arm/${binaryVersion}.tar.gz"
   else
-    # Unsupported
+    # Error: unsupported architecture.
     echo
     echo " ❌ Error: this architecture is not supported on Linux (only x86_64, armv6l, and armv7l are)."
     echo
@@ -72,9 +110,9 @@ if [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux-gnueabihf" ]]; then
   fi
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   # macOS
-  curl -Os "https://sitejs.org/binaries/${releaseType}/macos/00000000000000.tar.gz"
+  curl -Os "https://sitejs.org/binaries/${releaseType}/macos/${binaryVersion}.tar.gz"
 else
-  # Unsupported
+  # Error: Unsupported operating system.
   echo
   echo " ❌ Error: this operating system is not supported."
   echo
@@ -82,14 +120,15 @@ else
   exit 1
 fi
 
+# Install.
 echo " 📦 Installing…"
-gzip -d 00000000000000.tar.gz
-tar -xf 00000000000000.tar
+gzip -d "${binaryVersion}.tar.gz"
+tar -xf "${binaryVersion}.tar"
 
-# Ensure that the /usr/local/bin directory exists (it does not by default on macOS)
+# Ensure /usr/local/bin directory exists (it does not by default on macOS)
 sudo mkdir -p /usr/local/bin/
 
-# Move the site binary there.
+# Install the Site.js binary.
 sudo mv site /usr/local/bin/
 
 cleanUp
