@@ -124,13 +124,16 @@ class Site {
       this.readAndCacheManifest()
     }
     switch(this.#manifest.releaseType) {
+      // Spells ALPHA in large red block letters.
       case 'alpha': return clr(`\n
      █████  ██      ██████  ██   ██  █████ 
     ██   ██ ██      ██   ██ ██   ██ ██   ██ 
     ███████ ██      ██████  ███████ ███████ 
     ██   ██ ██      ██      ██   ██ ██   ██ 
     ██   ██ ███████ ██      ██   ██ ██   ██`, 'red')
-      case 'beta': return clr(`\n
+
+    // Spells BETA in large yellow block letters.
+    case 'beta': return clr(`\n
     ██████  ███████ ████████  █████ 
     ██   ██ ██         ██    ██   ██ 
     ██████  █████      ██    ███████ 
