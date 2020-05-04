@@ -30,8 +30,15 @@ if (commandLineOptions._.length !== 0 || commandLineOptions.h || commandLineOpti
 
 // Check for supported CPU architectures (currently only x86 and ARM)
 if (cpuArchitecture !== 'x64' && cpuArchitecture !== 'arm') {
-  console.log(`🤯 Error: The build script is currently only supported on x64 and ARM architectures.`)
-  process.exit()
+  console.log(`❌ Error: The build script is currently only supported on x64 and ARM architectures.\n`)
+  process.exit(1)
+}
+
+// If this is a deployment build, ensure that the working directory is not dirty
+// before proceeding. Deployment builds are tied to Git revisions and tags.
+if (childProcess.execSync('git status').toString().match('working tree clean') === null) {
+  console.log('❌ Error: Cannot deploy when working copy is dirty. Please commit or stash changes before retrying.\n')
+  process.exit(1)
 }
 
 const releaseType     = commandLineOptions.alpha ? 'alpha' : (commandLineOptions.beta ? 'beta' : 'release')
