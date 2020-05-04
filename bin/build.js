@@ -478,17 +478,11 @@ async function build () {
       fs.copyFileSync(macOsVersionZipFilePath,    path.join(websitePathForMacVersion,      zipFileName))
       fs.copyFileSync(windowsVersionZipFilePath,  path.join(websitePathForWindowsVersion,  zipFileName))
 
-      // Write out a dynamic routes with the latest package version (for compatibility with releases prior to
-      // source version 12.11.0) and binary version (for source version 12.11.0+). These endpoints are used by the
-      // auto-update feature to decide whether the binary needs to update.
-      console.log('   • Adding dynamic package version endpoint to Site.js web site.')
-      const packageVersionRoute = `module.exports = (request, response) => { response.end('${packageVersion}') }\n`
-      fs.writeFileSync(websitePathForPackageVersionRouteFile, packageVersionRoute, {encoding: 'utf-8'})
-
+      // Write out a dynamic route on the SiteJS.org web site to return the binary version. This endpoint is used by
+      // the auto-update feature to decide whether the binary should be updated.
       console.log(`   • Adding dynamic binary version endpoint for ${releaseChannel} version to Site.js web site.`)
       const binaryVersionRoute = `module.exports = (request, response) => { response.end('${binaryVersion}') }\n`
       fs.writeFileSync(websitePathForBinaryVersionRouteFile, binaryVersionRoute, {encoding: 'utf-8'})
-
 
       // Update the install file and deploy them to the Site.js web site.
       console.log('   • Updating the installation scripts and copying them to local Site.js web site working copy.')
