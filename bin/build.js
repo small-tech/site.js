@@ -524,8 +524,9 @@ async function build () {
 
         let windowsInstallScript
         windowsInstallScript = fs.readFileSync(windowsInstallScriptFile, 'utf-8')
-        windowsInstallScript = windowsInstallScript.replace(/00000000000000/g, binaryVersion)
-        windowsInstallScript = windowsInstallScript.replace(/00\.00\.00/g, packageVersion)
+        windowsInstallScript = windowsInstallScript.replace(/\d{14}/g, binaryVersion)
+        windowsInstallScript = windowsInstallScript.replace(/[0-9a-fA-F]{7}/g, sourceVersion)
+        windowsInstallScript = windowsInstallScript.replace(/\d+\.\d+\.\d+/g, packageVersion)
 
         fs.writeFileSync(websitePathForWindowsInstallScript, windowsInstallScript)
       } else {
