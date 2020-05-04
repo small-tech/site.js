@@ -1,6 +1,6 @@
-################################################################################
+##########################################################################################
 #
-# Site.js 00000000000000/00.00.00 Installer for Windows 10 (PowerShell)
+# Site.js 00000000000000 (00.00.00/bedface) Installer for Windows 10 (PowerShell)
 #
 # To use:
 #
@@ -11,7 +11,7 @@
 # Made with <3 by Small Technology Foundation (https://small-tech.org)
 # Like this? Fund us! (https://small-tech.org/fund-us)
 #
-################################################################################
+##########################################################################################
 
 # This is where the binary will be installed to.
 $installationDirectory =  'C:\Program Files\site.js'
@@ -86,7 +86,7 @@ if (!([Security.Principal.WindowsPrincipal] `
   # Installer is running with regular privileges. Start a new PowerShell session with elevated privileges.
   #
   Write-Output ''
-  Write-Output " $satelliteEmoji Downloading Site.js 00000000000000/00.00.00$ellipsis"
+  Write-Output " $satelliteEmoji Downloading Site.js 00000000000000 (00.00.00/bedface)$ellipsis"
 
   # We need to start a new PowerShell session with elevated privileges but if we're running in memory
   # only after being downloaded by the installation command, we don't have a copy of ourselves to run.
@@ -112,7 +112,7 @@ if (!([Security.Principal.WindowsPrincipal] `
   Write-Output "`n`n`n`n`n`n"
   Write-Output ' Installing Site.js using administrator privileges...'
   Write-Output ''
-  Write-Output ' * Downloading Site.js 00000000000000/00.00.00...'
+  Write-Output ' * Downloading Site.js 00000000000000 (00.00.00/bedface)...'
 
   # Download the latest Site.js archive.
   Invoke-WebRequest -Uri $archiveUrl -OutFile '00000000000000.tar.gz'
