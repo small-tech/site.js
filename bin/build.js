@@ -519,14 +519,18 @@ async function build () {
       // (Note: Windows script does not support alpha and beta builds.)
       //
 
-      const windowsInstallScriptFile = path.join(installationScriptTemplatesFolder, 'windows')
+      if (releaseChannel === 'release') {
+        const windowsInstallScriptFile = path.join(installationScriptTemplatesFolder, 'windows')
 
-      let windowsInstallScript
-      windowsInstallScript = fs.readFileSync(windowsInstallScriptFile, 'utf-8')
-      windowsInstallScript = windowsInstallScript.replace(/00000000000000/g, binaryVersion)
-      windowsInstallScript = windowsInstallScript.replace(/00\.00\.00/g, packageVersion)
+        let windowsInstallScript
+        windowsInstallScript = fs.readFileSync(windowsInstallScriptFile, 'utf-8')
+        windowsInstallScript = windowsInstallScript.replace(/00000000000000/g, binaryVersion)
+        windowsInstallScript = windowsInstallScript.replace(/00\.00\.00/g, packageVersion)
 
-      fs.writeFileSync(websitePathForWindowsInstallScript, windowsInstallScript)
+        fs.writeFileSync(websitePathForWindowsInstallScript, windowsInstallScript)
+      } else {
+        console.log(`   • This is a ${releaseChannel} build, not updating the Windows install script as ${releaseChannel} builds are not supported on Windows.`)
+      }
 
     } else {
       console.log(`   • No local working copy of Site.js web site found. Skipped copy of release binaries. Please clone https://small-tech.org/site.js/site to ${websitePath} and ensure you have commit permissions on the repository before attempting to deploy.`)
