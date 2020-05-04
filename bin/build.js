@@ -436,7 +436,6 @@ async function build () {
     const INDEX                                  = 'index.js'
     const websitePath                            = path.resolve(path.join(__dirname, '..', '..', 'site'))
     const websitePathForBinaries                 = path.resolve(path.join(websitePath, 'binaries', releaseChannel))
-    const websitePathForOldVersionRoute          = path.join(websitePath, '.dynamic', 'version.js')
     const websitePathForVersionRoutesFolder      = path.join(websitePath, '.dynamic', 'version')
     const websitePathForPackageVersionRouteFile  = path.join(websitePathForVersionRoutesFolder, INDEX)
     const websitePathForBinaryVersionRouteFolder = path.join(websitePathForVersionRoutesFolder, releaseChannel)
@@ -444,9 +443,6 @@ async function build () {
     const websitePathForInstallScripts           = path.join(websitePath, 'installation-scripts')
     const websitePathForLinuxAndMacInstallScript = path.join(websitePathForInstallScripts, 'install')
     const websitePathForWindowsInstallScript     = path.join(websitePathForInstallScripts, 'install.txt')
-
-    // 12.10.5 → 12.11.0 migration. If old .dynamic/version.js path exists on the site, delete it.
-    fs.removeSync(websitePathForOldVersionRoute)
 
     // Ensure website version route folders exist
     fs.ensureDirSync(websitePathForVersionRoutesFolder)
@@ -500,7 +496,7 @@ async function build () {
       const binaryVersionRegExp = new RegExp(`${binaryVersionVariableName}=\\d{14}`)
 
       const sourceVersionVariableName = `${releaseChannel}sourceVersion`
-      const sourceVersionVariable = `${packageVersionVariableName}=${sourceVersion}`
+      const sourceVersionVariable = `${sourceVersionVariableName}=${sourceVersion}`
       const sourceVersionRegExp = new RegExp(`${sourceVersionVariableName}=[0-9a-fA-F]{7}`)
 
       const packageVersionVariableName = `${releaseChannel}packageVersion`
