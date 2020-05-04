@@ -161,6 +161,7 @@ class Site {
         `\n${prefix1}Site.js ${this.releaseChannelFormattedForConsole}\n\n`,
         `${prefix2}Version: ${clr(this.humanReadableBinaryVersion, 'green')}\n`,
         `${prefix2}Engine : ${clr(`Node.js ${process.version}`, 'green')}\n`,
+        `${prefix2}Base   : ${clr(`https://sitejs.org/nexe/${process.platform}-${process.arch}-${process.version.replace('v', '')}`, 'cyan')}\n`,
         `${prefix2}Source : ${clr(`https://source.small-tech.org/site.js/app/-/tree/${this.sourceVersion}`, 'cyan')}\n\n`,
         `${prefix2}╔═══════════════════════════════════════════╗\n`,
         `${prefix2}║ Like this? Fund us!                       ║\n`,
