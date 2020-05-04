@@ -41,8 +41,19 @@ if (childProcess.execSync('git status').toString().match('working tree clean') =
   process.exit(1)
 }
 
-const releaseType     = commandLineOptions.alpha ? 'alpha' : (commandLineOptions.beta ? 'beta' : 'release')
+//
+// There are five elements that go into uniquely identifying a build:
+//
+// channel       : alpha, beta, or release. Releases on a channel check for updates on that channel.
+// nodeVersion   : the version of Node that’s bundled in the build.
+// binaryVersion : unique version for the binary, a calendar version determined at build time.
+// packageVersion: the semantic version specified in the npm package.
+// sourceVersion : the commit hash that corresponds to the source bundled in this build.
+//
+// Each version element is useful in its own way.
+//
 
+const channel     = commandLineOptions.alpha ? 'alpha' : (commandLineOptions.beta ? 'beta' : 'release')
 const nodeVersion = process.version.slice(1)
 
 function presentBinaryVersion (binaryVersion) {
@@ -51,32 +62,38 @@ function presentBinaryVersion (binaryVersion) {
 }
 
 const binaryVersion     = moment(new Date()).format('YYYYMMDDHHmmss')
-const sourceVersion     = package.version
+const packageVersion    = package.version
+const sourceVersion     = childProcess.execSync('git log -1 --oneline | cut -c1-8')
+
 const binaryName        = 'site'
 const windowsBinaryName = `${binaryName}.exe`
 
 console.log(`\n ⚙️ Site.js build started on ${presentBinaryVersion(binaryVersion)}.\n
-    Build type    : ${releaseType}
-    Binary version: ${binaryVersion}
-    Source version: ${sourceVersion}
-    Node version  : ${nodeVersion}\n`)
+    Channel        : ${channel}
+    Binary version : ${binaryVersion}
+    Package version: ${packageVersion}
+    Source version : ${packageVersion}
+    Node version   : ${nodeVersion}\n`)
+
+process.exit()
 
 // Write out the manifest file. This will be included in the build so that the binary knows what type of release it is.
 // This allows it to modify its behaviour at runtime (e.g., auto-update from beta releases if it’s a beta release).
 const manifest = {
   binaryVersion,
+  packageVersion,
   sourceVersion,
-  releaseType
+  channel
 }
 fs.writeFileSync('manifest.json', JSON.stringify(manifest), 'utf-8')
 
-const releaseTypeDirectory = path.join('dist', releaseType)
-const linuxX64Directory    = path.join(releaseTypeDirectory, 'linux',     binaryVersion)
-const linuxArmDirectory    = path.join(releaseTypeDirectory, 'linux-arm', binaryVersion)
-const macOsDirectory       = path.join(releaseTypeDirectory, 'macos',     binaryVersion)
-const windowsDirectory     = path.join(releaseTypeDirectory, 'windows',   binaryVersion)
+const channelDirectory = path.join('dist', channel)
+const linuxX64Directory    = path.join(channelDirectory, 'linux',     binaryVersion)
+const linuxArmDirectory    = path.join(channelDirectory, 'linux-arm', binaryVersion)
+const macOsDirectory       = path.join(channelDirectory, 'macos',     binaryVersion)
+const windowsDirectory     = path.join(channelDirectory, 'windows',   binaryVersion)
 
-fs.ensureDirSync(releaseTypeDirectory)
+fs.ensureDirSync(channelDirectory)
 fs.ensureDirSync(linuxX64Directory   )
 fs.ensureDirSync(linuxArmDirectory   )
 fs.ensureDirSync(macOsDirectory      )
@@ -420,11 +437,11 @@ async function build () {
     //
     const INDEX                                  = 'index.js'
     const websitePath                            = path.resolve(path.join(__dirname, '..', '..', 'site'))
-    const websitePathForBinaries                 = path.resolve(path.join(websitePath, 'binaries', releaseType))
+    const websitePathForBinaries                 = path.resolve(path.join(websitePath, 'binaries', channel))
     const websitePathForOldVersionRoute          = path.join(websitePath, '.dynamic', 'version.js')
     const websitePathForVersionRoutesFolder      = path.join(websitePath, '.dynamic', 'version')
-    const websitePathForSourceVersionRouteFile   = path.join(websitePathForVersionRoutesFolder, INDEX)
-    const websitePathForBinaryVersionRouteFolder = path.join(websitePathForVersionRoutesFolder, releaseType)
+    const websitePathForpackageVersionRouteFile   = path.join(websitePathForVersionRoutesFolder, INDEX)
+    const websitePathForBinaryVersionRouteFolder = path.join(websitePathForVersionRoutesFolder, channel)
     const websitePathForBinaryVersionRouteFile   = path.join(websitePathForBinaryVersionRouteFolder, INDEX)
     const websitePathForInstallScripts           = path.join(websitePath, 'installation-scripts')
     const websitePathForLinuxAndMacInstallScript = path.join(websitePathForInstallScripts, 'install')
@@ -467,10 +484,10 @@ async function build () {
       // source version 12.11.0) and binary version ( for source version 12.11.0+). These endpoints are used by the
       // auto-update feature to decide whether the binary needs to update.
       console.log('   • Adding dynamic source version endpoint to Site.js web site.')
-      const sourceVersionRoute = `module.exports = (request, response) => { response.end('${sourceVersion}') }\n`
-      fs.writeFileSync(websitePathForSourceVersionRouteFile, sourceVersionRoute, {encoding: 'utf-8'})
+      const packageVersionRoute = `module.exports = (request, response) => { response.end('${packageVersion}') }\n`
+      fs.writeFileSync(websitePathForpackageVersionRouteFile, packageVersionRoute, {encoding: 'utf-8'})
 
-      console.log(`   • Adding dynamic binary version endpoint for ${releaseType} version to Site.js web site.`)
+      console.log(`   • Adding dynamic binary version endpoint for ${channel} version to Site.js web site.`)
       const binaryVersionRoute = `module.exports = (request, response) => { response.end('${binaryVersion}') }\n`
       fs.writeFileSync(websitePathForBinaryVersionRouteFile, binaryVersionRoute, {encoding: 'utf-8'})
 
@@ -486,18 +503,18 @@ async function build () {
 
       const linuxAndMacOSInstallScriptFile = path.join(installationScriptTemplatesFolder, 'install')
 
-      const binaryVersionVariableName = `${releaseType}BinaryVersion`
+      const binaryVersionVariableName = `${channel}BinaryVersion`
       const binaryVersionVariable = `${binaryVersionVariableName}=${binaryVersion}`
       const binaryVersionRegExp = new RegExp(`${binaryVersionVariableName}=\\d{14}`)
 
-      const sourceVersionVariableName = `${releaseType}SourceVersion`
-      const sourceVersionVariable = `${sourceVersionVariableName}=${sourceVersion}`
-      const sourceVersionRegExp = new RegExp(`${sourceVersionVariableName}=\\d+\\.\\d+\\.\\d+`)
+      const packageVersionVariableName = `${channel}packageVersion`
+      const packageVersionVariable = `${packageVersionVariableName}=${packageVersion}`
+      const packageVersionRegExp = new RegExp(`${packageVersionVariableName}=\\d+\\.\\d+\\.\\d+`)
 
       let linuxAndMacOSInstallScript
       linuxAndMacOSInstallScript = fs.readFileSync(linuxAndMacOSInstallScriptFile, 'utf-8')
       linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(binaryVersionRegExp, binaryVersionVariable)
-      linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(sourceVersionRegExp, sourceVersionVariable)
+      linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(packageVersionRegExp, packageVersionVariable)
 
       // As we have three different release types, each with a different version, we need to persist
       // the template with the other values. Changes should be checked into the repository.
@@ -515,7 +532,7 @@ async function build () {
       let windowsInstallScript
       windowsInstallScript = fs.readFileSync(windowsInstallScriptFile, 'utf-8')
       windowsInstallScript = windowsInstallScript.replace(/00000000000000/g, binaryVersion)
-      windowsInstallScript = windowsInstallScript.replace(/00\.00\.00/g, sourceVersion)
+      windowsInstallScript = windowsInstallScript.replace(/00\.00\.00/g, packageVersion)
 
       fs.writeFileSync(websitePathForWindowsInstallScript, windowsInstallScript)
 
