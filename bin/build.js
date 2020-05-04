@@ -75,8 +75,6 @@ console.log(`\n ⚙️ Site.js build started on ${presentBinaryVersion(binaryVer
     Source version : ${packageVersion}
     Node version   : ${nodeVersion}\n`)
 
-process.exit()
-
 // Write out the manifest file. This will be included in the build so that the binary knows what type of release it is.
 // This allows it to modify its behaviour at runtime (e.g., auto-update from beta releases if it’s a beta release).
 const manifest = {
@@ -440,7 +438,7 @@ async function build () {
     const websitePathForBinaries                 = path.resolve(path.join(websitePath, 'binaries', releaseChannel))
     const websitePathForOldVersionRoute          = path.join(websitePath, '.dynamic', 'version.js')
     const websitePathForVersionRoutesFolder      = path.join(websitePath, '.dynamic', 'version')
-    const websitePathForpackageVersionRouteFile   = path.join(websitePathForVersionRoutesFolder, INDEX)
+    const websitePathForPackageVersionRouteFile  = path.join(websitePathForVersionRoutesFolder, INDEX)
     const websitePathForBinaryVersionRouteFolder = path.join(websitePathForVersionRoutesFolder, releaseChannel)
     const websitePathForBinaryVersionRouteFile   = path.join(websitePathForBinaryVersionRouteFolder, INDEX)
     const websitePathForInstallScripts           = path.join(websitePath, 'installation-scripts')
@@ -480,12 +478,12 @@ async function build () {
       fs.copyFileSync(macOsVersionZipFilePath,    path.join(websitePathForMacVersion,      zipFileName))
       fs.copyFileSync(windowsVersionZipFilePath,  path.join(websitePathForWindowsVersion,  zipFileName))
 
-      // Write out a dynamic routes with the latest source version (for compatibility with releases prior to
-      // source version 12.11.0) and binary version ( for source version 12.11.0+). These endpoints are used by the
+      // Write out a dynamic routes with the latest package version (for compatibility with releases prior to
+      // source version 12.11.0) and binary version (for source version 12.11.0+). These endpoints are used by the
       // auto-update feature to decide whether the binary needs to update.
-      console.log('   • Adding dynamic source version endpoint to Site.js web site.')
+      console.log('   • Adding dynamic package version endpoint to Site.js web site.')
       const packageVersionRoute = `module.exports = (request, response) => { response.end('${packageVersion}') }\n`
-      fs.writeFileSync(websitePathForpackageVersionRouteFile, packageVersionRoute, {encoding: 'utf-8'})
+      fs.writeFileSync(websitePathForPackageVersionRouteFile, packageVersionRoute, {encoding: 'utf-8'})
 
       console.log(`   • Adding dynamic binary version endpoint for ${releaseChannel} version to Site.js web site.`)
       const binaryVersionRoute = `module.exports = (request, response) => { response.end('${binaryVersion}') }\n`
