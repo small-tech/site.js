@@ -437,7 +437,6 @@ async function build () {
     const websitePath                            = path.resolve(path.join(__dirname, '..', '..', 'site'))
     const websitePathForBinaries                 = path.resolve(path.join(websitePath, 'binaries', releaseChannel))
     const websitePathForVersionRoutesFolder      = path.join(websitePath, '.dynamic', 'version')
-    const websitePathForPackageVersionRouteFile  = path.join(websitePathForVersionRoutesFolder, INDEX)
     const websitePathForBinaryVersionRouteFolder = path.join(websitePathForVersionRoutesFolder, releaseChannel)
     const websitePathForBinaryVersionRouteFile   = path.join(websitePathForBinaryVersionRouteFolder, INDEX)
     const websitePathForInstallScripts           = path.join(websitePath, 'installation-scripts')
@@ -495,11 +494,11 @@ async function build () {
       const binaryVersionVariable = `${binaryVersionVariableName}=${binaryVersion}`
       const binaryVersionRegExp = new RegExp(`${binaryVersionVariableName}=\\d{14}`)
 
-      const sourceVersionVariableName = `${releaseChannel}sourceVersion`
+      const sourceVersionVariableName = `${releaseChannel}SourceVersion`
       const sourceVersionVariable = `${sourceVersionVariableName}=${sourceVersion}`
       const sourceVersionRegExp = new RegExp(`${sourceVersionVariableName}=[0-9a-fA-F]{7}`)
 
-      const packageVersionVariableName = `${releaseChannel}packageVersion`
+      const packageVersionVariableName = `${releaseChannel}PackageVersion`
       const packageVersionVariable = `${packageVersionVariableName}=${packageVersion}`
       const packageVersionRegExp = new RegExp(`${packageVersionVariableName}=\\d+\\.\\d+\\.\\d+`)
 
