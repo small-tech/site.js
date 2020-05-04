@@ -69,7 +69,7 @@ const binaryName        = 'site'
 const windowsBinaryName = `${binaryName}.exe`
 
 console.log(`\n ⚙️ Site.js build started on ${presentBinaryVersion(binaryVersion)}.\n
-    releaseChannel : ${releaseChannel}
+    Release channel: ${releaseChannel}
     Binary version : ${binaryVersion}
     Package version: ${packageVersion}
     Source version : ${packageVersion}
