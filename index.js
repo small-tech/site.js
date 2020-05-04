@@ -53,10 +53,14 @@ class Site {
     return `${clr('🅷', 'magenta')} ${clr('🆄', 'blue')} ${clr('🅶', 'green')} ${clr('🅾', 'yellow')} `
   }
 
+  //
   // Manifest helpers. The manifest file is created by the build script and includes metadata such as the
-  // binary version (in calendar version format YYYYMMDDHHmmss), the source version (in semantic version format), and
-  // the release type (alpha, beta, or release).
-  static RELEASE_TYPE = {
+  // binary version (in calendar version format YYYYMMDDHHmmss), the package version (in semantic version format),
+  // the source version (the git hash of the commit that corresponds to the source code the binary was built from), and
+  // the release channel (alpha, beta, or release).
+  //
+
+  static RELEASE_CHANNEL = {
     alpha  : 'alpha',
     beta   : 'beta',
     release: 'release'
@@ -66,11 +70,11 @@ class Site {
     this.#manifest = JSON.parse(fs.readFileSync(path.join(__dirname, './manifest.json'), 'utf-8'))
   }
 
-  static get releaseType () {
+  static get releaseChannel () {
     if (this.#manifest === null) {
       this.readAndCacheManifest()
     }
-    return this.#manifest.releaseType
+    return this.#manifest.releaseChannel
   }
 
   static get binaryVersion () {
@@ -78,6 +82,13 @@ class Site {
       this.readAndCacheManifest()
     }
     return this.#manifest.binaryVersion
+  }
+
+  static get packageVersion () {
+    if (this.#manifest === null) {
+      this.readAndCacheManifest()
+    }
+    return this.#manifest.packageVersion
   }
 
   static get sourceVersion () {
@@ -99,11 +110,11 @@ class Site {
     return this.binaryVersionToHumanReadableDateString(this.#manifest.binaryVersion)
   }
 
-  static get releaseTypeFormattedForConsole () {
+  static get releaseChannelFormattedForConsole () {
     if (this.#manifest === null) {
       this.readAndCacheManifest()
     }
-    switch(this.#manifest.releaseType) {
+    switch(this.#manifest.releaseChannel) {
       // Spells ALPHA in large red block letters.
       case 'alpha': return clr(`\n
      █████  ██      ██████  ██   ██  █████ 
@@ -147,10 +158,10 @@ class Site {
       this.readAndCacheManifest()
 
       let message = [
-        `\n${prefix1}Site.js ${this.releaseTypeFormattedForConsole}\n\n`,
-        `${prefix2}Build : ${clr(this.humanReadableBinaryVersion, 'green')}\n`,
-        `${prefix2}Engine: ${clr(`Node.js ${process.version}`, 'green')}\n`,
-        `${prefix2}Source: ${clr(`https://source.small-tech.org/site.js/app/tags/${this.sourceVersion}`, 'cyan')}\n\n`,
+        `\n${prefix1}Site.js ${this.releaseChannelFormattedForConsole}\n\n`,
+        `${prefix2}Version: ${clr(this.humanReadableBinaryVersion, 'green')}\n`,
+        `${prefix2}Engine : ${clr(`Node.js ${process.version}`, 'green')}\n`,
+        `${prefix2}Source : ${clr(`https://source.small-tech.org/site.js/app/-/tree/${this.sourceVersion}`, 'cyan')}\n\n`,
         `${prefix2}╔═══════════════════════════════════════════╗\n`,
         `${prefix2}║ Like this? Fund us!                       ║\n`,
         `${prefix2}║                                           ║\n`,

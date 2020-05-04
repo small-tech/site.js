@@ -26,19 +26,19 @@ async function update () {
   const cpuArchitecture = os.arch()
   const isLinux = platform === 'linux'
 
-  const releaseType = Site.releaseType
+  const releaseChannel = Site.releaseChannel
 
   ensure.root('update')
 
   Site.logAppNameAndVersion(/* compact = */ true)
 
-  console.log(` 🧐 Checking for ${releaseType} updates…\n`)
+  console.log(` 🧐 Checking for ${releaseChannel} updates…\n`)
 
   let response
   try {
-    response = await secureGet(`https://sitejs.org/version/${releaseType}`)
+    response = await secureGet(`https://sitejs.org/version/${releaseChannel}`)
   } catch (error) {
-    console.log(` 🤯 Error: Could not check for ${releaseType} updates.\n`)
+    console.log(` 🤯 Error: Could not check for ${releaseChannel} updates.\n`)
     console.log(error)
     exitGracefully(1)
     return
@@ -53,31 +53,15 @@ async function update () {
   if (currentVersion !== latestVersion) {
     // Are we running a newer version than the latest release version?
     if (currentVersion > latestVersion) {
-      console.log(` 🤓 You are running a newer ${releaseType} version (released on ${humanReadableCurrentVersion}) than the latest ${releaseType} version (released on ${humanReadableLatestVersion}).\n`)
+      console.log(` 🤓 You are running a newer ${releaseChannel} version (released on ${humanReadableCurrentVersion}) than the latest version released on ${humanReadableLatestVersion}.\n`)
       exitGracefully()
       return
     }
 
-    // Get the source version also.
-    try {
-      response = await secureGet(`https://sitejs.org/version/`)
-    } catch (error) {
-      console.log(` 🤯 Error: Could not check for ${releaseType} source version.\n`)
-      console.log(error)
-      exitGracefully(1)
-      return
-    }
-
-    const latestSourceVersion  = response.body
-    const currentSourceVersion = Site.sourceVersion
-
-    const currentFullVersion = `${currentBinaryVersion}/${currentSourceVersion}`
-    const latestFullVersion  = `${latestBinaryVersion}/${latestSourceVersion}`
-
     // The current version is not newer than the latest version and we know
     // that it isn’t equal to the release version so it must be older. Let’s
     // update!
-    console.log(` 🎁 There is a new ${releaseType} version of Site.js available (${latestFullVersion} released on ${humanReadableLatestVersion}). You currently have ${releaseType} version ${currentFullVersion} released on ${humanReadableCurrentVersion}\n`)
+    console.log(` 🎁 There is a new version of Site.js available in the ${releaseChannel} channel: (${latestVersion} released on ${humanReadableLatestVersion}). You currently have version ${currentVersion} released on ${humanReadableCurrentVersion}.\n`)
 
     //
     // Compose the right binary URL for the platform and architecture.
@@ -93,9 +77,9 @@ async function update () {
       platformPath = `${platformPath}-arm`
     }
 
-    let binaryUrl = `https://sitejs.org/binaries/${releaseType}/${platformPath}/${latestVersion}.tar.gz`
+    let binaryUrl = `https://sitejs.org/binaries/${releaseChannel}/${platformPath}/${latestVersion}.tar.gz`
 
-    console.log(` 📡 Downloading Site.js ${releaseType} version ${latestFullVersion}…`)
+    console.log(` 📡 Downloading Site.js ${releaseChannel} version ${latestVersion}…`)
 
     let latestReleaseResponse
     try {
@@ -140,7 +124,7 @@ async function update () {
       if (ensure.commandExists('systemctl')) {
         const { isActive } = status()
         if (isActive) {
-          console.log(` 😈 Daemon is running on old version. Restarting it using Site.js ${releaseType} version ${latestFullVersion}…`)
+          console.log(` 😈 Daemon is running on old version. Restarting it using Site.js ${releaseChannel} version ${latestVersion}…`)
 
           try {
             restart()

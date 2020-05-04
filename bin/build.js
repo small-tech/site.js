@@ -36,7 +36,7 @@ if (cpuArchitecture !== 'x64' && cpuArchitecture !== 'arm') {
 
 // If this is a deployment build, ensure that the working directory is not dirty
 // before proceeding. Deployment builds are tied to Git revisions and tags.
-if (childProcess.execSync('git status').toString().match('working tree clean') === null) {
+if (commandLineOptions.deploy && childProcess.execSync('git status').toString().match('working tree clean') === null) {
   console.log('❌ Error: Cannot deploy when working copy is dirty. Please commit or stash changes before retrying.\n')
   process.exit(1)
 }
@@ -63,7 +63,7 @@ function presentBinaryVersion (binaryVersion) {
 
 const binaryVersion     = moment(new Date()).format('YYYYMMDDHHmmss')
 const packageVersion    = package.version
-const sourceVersion     = childProcess.execSync('git log -1 --oneline | cut -c1-8')
+const sourceVersion     = (childProcess.execSync('git log -1 --oneline | cut -c1-7')).toString().trim()
 
 const binaryName        = 'site'
 const windowsBinaryName = `${binaryName}.exe`
@@ -72,7 +72,7 @@ console.log(`\n ⚙️ Site.js build started on ${presentBinaryVersion(binaryVer
     Release channel: ${releaseChannel}
     Binary version : ${binaryVersion}
     Package version: ${packageVersion}
-    Source version : ${packageVersion}
+    Source version : ${sourceVersion}
     Node version   : ${nodeVersion}\n`)
 
 // Write out the manifest file. This will be included in the build so that the binary knows what type of release it is.
@@ -499,6 +499,10 @@ async function build () {
       const binaryVersionVariable = `${binaryVersionVariableName}=${binaryVersion}`
       const binaryVersionRegExp = new RegExp(`${binaryVersionVariableName}=\\d{14}`)
 
+      const sourceVersionVariableName = `${releaseChannel}sourceVersion`
+      const sourceVersionVariable = `${packageVersionVariableName}=${sourceVersion}`
+      const sourceVersionRegExp = new RegExp(`${sourceVersionVariableName}=[0-9a-fA-F]{7}`)
+
       const packageVersionVariableName = `${releaseChannel}packageVersion`
       const packageVersionVariable = `${packageVersionVariableName}=${packageVersion}`
       const packageVersionRegExp = new RegExp(`${packageVersionVariableName}=\\d+\\.\\d+\\.\\d+`)
@@ -506,6 +510,7 @@ async function build () {
       let linuxAndMacOSInstallScript
       linuxAndMacOSInstallScript = fs.readFileSync(linuxAndMacOSInstallScriptFile, 'utf-8')
       linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(binaryVersionRegExp, binaryVersionVariable)
+      linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(sourceVersionRegExp, sourceVersionVariable)
       linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(packageVersionRegExp, packageVersionVariable)
 
       // As we have three different release types, each with a different version, we need to persist

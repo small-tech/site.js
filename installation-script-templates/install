@@ -30,39 +30,44 @@ function cleanUp {
   rm -rf /tmp/sitejs.org
 }
 
-releaseType=$1
+releaseChannel=$1
 
 # Release is the default release type (others are alpha and beta).
-if [[ "$releaseType" == "" ]]; then
-  releaseType='release'
+if [[ "$releaseChannel" == "" ]]; then
+  releaseChannel='release'
 fi
 
 alphaBinaryVersion=00000000000000
-alphaSourceVersion=00.00.00
+alphaPackageVersion=00.00.00
+alphaSourceVersion=bedface
 
 betaBinaryVersion=00000000000000
-betaSourceVersion=00.00.00
+betaPackageVersion=00.00.00
+betaSourceVersion=acecafe
 
 releaseBinaryVersion=00000000000000
-releaseSourceVersion=00.00.00
+releasePackageVersion=00.00.00
+releaseSourceVersion=decafAF
 
-binaryVersionVariableName="${releaseType}BinaryVersion"
-sourceVersionVariableName="${releaseType}SourceVersion"
+binaryVersionVariableName="${releaseChannel}BinaryVersion"
+packageVersionVariableName="${releaseChannel}PackageVersion"
+sourceVersionVariableName="${releaseChannel}SourceVersion"
 
 binaryVersion=${!binaryVersionVariableName}
+packageVersion=${!packageVersionVariableName}
 sourceVersion=${!sourceVersionVariableName}
 
 if [[ "$binaryVersion" == "00000000000000" ]]; then
-  echo " ❌ Sorry, no Site.js ${releaseType} binaries have been released yet."
+  echo " ❌ Sorry, no Site.js ${releaseChannel} binaries have been released yet."
   cleanUp
   exit 1
 fi
 
 echo
-echo " 📡 Downloading Site.js version ${binaryVersion}/${sourceVersion}…"
+echo " 📡 Downloading Site.js version ${binaryVersion} (${packageversion}/${sourceVersion})…"
 
 # Mark alpha and beta releases prominently.
-if [[ "$releaseType" == "alpha" ]]; then
+if [[ "$releaseChannel" == "alpha" ]]; then
 
   # Writes ALPHA in large red block letters.
   echo -e '\033[31m'
@@ -73,7 +78,7 @@ if [[ "$releaseType" == "alpha" ]]; then
   echo '    ██   ██ ███████ ██      ██   ██ ██   ██'
   echo -e '\033[0m'
 
-elif [[ "$releaseType" == "beta" ]]; then
+elif [[ "$releaseChannel" == "beta" ]]; then
 
   # Writes BETA in large yellow block letters.
   echo -e '\033[33m'
@@ -96,10 +101,10 @@ if [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux-gnueabihf" ]]; then
   cpuArchitecture=`uname -m`
   if [[ "$cpuArchitecture" == "x86_64" ]]; then
     # Linux on x64.
-    wget -q "https://sitejs.org/binaries/${releaseType}/linux/${binaryVersion}.tar.gz"
+    wget -q "https://sitejs.org/binaries/${releaseChannel}/linux/${binaryVersion}.tar.gz"
   elif [[ "$cpuArchitecture" == "armv7l" || "$cpuArchitecture" == "armv6l" ]]; then
     # Linux on ARM. Tested on Raspberry Pi Zero W (armv6l), 3B+ and 4B (both reporting armv7l).
-    wget -q "https://sitejs.org/binaries/${releaseType}/linux-arm/${binaryVersion}.tar.gz"
+    wget -q "https://sitejs.org/binaries/${releaseChannel}/linux-arm/${binaryVersion}.tar.gz"
   else
     # Error: unsupported architecture.
     echo
@@ -110,7 +115,7 @@ if [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux-gnueabihf" ]]; then
   fi
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   # macOS
-  curl -Os "https://sitejs.org/binaries/${releaseType}/macos/${binaryVersion}.tar.gz"
+  curl -Os "https://sitejs.org/binaries/${releaseChannel}/macos/${binaryVersion}.tar.gz"
 else
   # Error: Unsupported operating system.
   echo
