@@ -17,6 +17,7 @@ const { compile }     = require('nexe')
 const minimist        = require('minimist')
 const package         = require('../package.json')
 const moment          = require('moment')
+const Hugo            = require('@small-tech/node-hugo')
 const cpuArchitecture = os.arch()
 
 // Parse the command-line arguments.
@@ -42,10 +43,11 @@ if (commandLineOptions.deploy && childProcess.execSync('git status').toString().
 }
 
 //
-// There are five elements that go into uniquely identifying a build:
+// There are six elements that go into uniquely identifying a build:
 //
 // releaseChannel       : alpha, beta, or release. Releases on a releaseChannel check for updates on that releaseChannel.
 // nodeVersion   : the version of Node that’s bundled in the build.
+// hugoVersion   : the version of Hugo that’s bundled in the build.
 // binaryVersion : unique version for the binary, a calendar version determined at build time.
 // packageVersion: the semantic version specified in the npm package.
 // sourceVersion : the commit hash that corresponds to the source bundled in this build.
@@ -55,6 +57,8 @@ if (commandLineOptions.deploy && childProcess.execSync('git status').toString().
 
 const releaseChannel     = commandLineOptions.alpha ? 'alpha' : (commandLineOptions.beta ? 'beta' : 'release')
 const nodeVersion = process.version.slice(1)
+
+const hugoVersion = (new Hugo()).version
 
 function presentBinaryVersion (binaryVersion) {
   const m = moment(binaryVersion, 'YYYYMMDDHHmmss')
@@ -73,13 +77,16 @@ console.log(`\n ⚙️ Site.js build started on ${presentBinaryVersion(binaryVer
     Binary version : ${binaryVersion}
     Package version: ${packageVersion}
     Source version : ${sourceVersion}
-    Node version   : ${nodeVersion}\n`)
+    Node version   : ${nodeVersion}
+    Hugo version   : ${hugoVersion}
+    \n`)
 
 // Write out the manifest file. This will be included in the build so that the binary knows what type of release it is.
 // This allows it to modify its behaviour at runtime (e.g., auto-update from beta releases if it’s a beta release).
 const manifest = {
   binaryVersion,
   packageVersion,
+  hugoVersion,
   sourceVersion,
   releaseChannel
 }

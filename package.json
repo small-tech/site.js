@@ -44,7 +44,7 @@
     "@small-tech/express-ws": "^1.0.0",
     "@small-tech/https": "^1.2.2",
     "@small-tech/instant": "^1.1.0",
-    "@small-tech/node-hugo": "^1.3.0",
+    "@small-tech/node-hugo": "^1.4.0",
     "@small-tech/web-routes-from-files": "^2.0.0",
     "ansi-escape-sequences": "^4.1.0",
     "body-parser": "^1.19.0",

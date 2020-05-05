@@ -70,33 +70,18 @@ class Site {
     this.#manifest = JSON.parse(fs.readFileSync(path.join(__dirname, './manifest.json'), 'utf-8'))
   }
 
-  static get releaseChannel () {
+  static getFromManifest (key) {
     if (this.#manifest === null) {
       this.readAndCacheManifest()
     }
-    return this.#manifest.releaseChannel
+    return this.#manifest[key]
   }
 
-  static get binaryVersion () {
-    if (this.#manifest === null) {
-      this.readAndCacheManifest()
-    }
-    return this.#manifest.binaryVersion
-  }
-
-  static get packageVersion () {
-    if (this.#manifest === null) {
-      this.readAndCacheManifest()
-    }
-    return this.#manifest.packageVersion
-  }
-
-  static get sourceVersion () {
-    if (this.#manifest === null) {
-      this.readAndCacheManifest()
-    }
-    return this.#manifest.sourceVersion
-  }
+  static get releaseChannel () { return this.getFromManifest('releaseChannel') }
+  static get binaryVersion  () { return this.getFromManifest('binaryVersion')  }
+  static get packageVersion () { return this.getFromManifest('packageVersion')  }
+  static get sourceVersion  () { return this.getFromManifest('sourceVersion')  }
+  static get hugoVersion    () { return this.getFromManifest('hugoVersion')  }
 
   static binaryVersionToHumanReadableDateString (binaryVersion) {
     const m = moment(binaryVersion, 'YYYYMMDDHHmmss')
@@ -116,7 +101,7 @@ class Site {
     }
     switch(this.#manifest.releaseChannel) {
       // Spells ALPHA in large red block letters.
-      case 'alpha': return clr(`\n
+      case this.RELEASE_CHANNEL.alpha: return clr(`\n
      █████  ██      ██████  ██   ██  █████ 
     ██   ██ ██      ██   ██ ██   ██ ██   ██ 
     ███████ ██      ██████  ███████ ███████ 
@@ -124,7 +109,7 @@ class Site {
     ██   ██ ███████ ██      ██   ██ ██   ██`, 'red')
 
     // Spells BETA in large yellow block letters.
-    case 'beta': return clr(`\n
+    case this.RELEASE_CHANNEL.beta: return clr(`\n
     ██████  ███████ ████████  █████ 
     ██   ██ ██         ██    ██   ██ 
     ██████  █████      ██    ███████ 
@@ -159,10 +144,12 @@ class Site {
 
       let message = [
         `\n${prefix1}Site.js ${this.releaseChannelFormattedForConsole}\n\n`,
-        `${prefix2}Version: ${clr(this.humanReadableBinaryVersion, 'green')}\n`,
-        `${prefix2}Engine : ${clr(`Node.js ${process.version}`, 'green')}\n`,
-        `${prefix2}Base   : ${clr(`https://sitejs.org/nexe/${process.platform}-${process.arch}-${process.version.replace('v', '')}`, 'cyan')}\n`,
-        `${prefix2}Source : ${clr(`https://source.small-tech.org/site.js/app/-/tree/${this.sourceVersion}`, 'cyan')}\n\n`,
+        `${prefix2}Version ${clr(`${this.humanReadableBinaryVersion} (${this.packageVersion}-${this.sourceVersion})`, 'green')}\n`,
+        '\n',
+        `${prefix2}Node.js ${clr(`${process.version.replace('v', '')}`, 'green')}\n`,
+        `${prefix2}Hugo    ${clr(`${this.hugoVersion}`, 'green')}\n`,
+        `${prefix2}Base    ${clr(`https://sitejs.org/nexe/${process.platform}-${process.arch}-${process.version.replace('v', '')}`, 'cyan')}\n`,
+        `${prefix2}Source  ${clr(`https://source.small-tech.org/site.js/app/-/tree/${this.sourceVersion}`, 'cyan')}\n\n`,
         `${prefix2}╔═══════════════════════════════════════════╗\n`,
         `${prefix2}║ Like this? Fund us!                       ║\n`,
         `${prefix2}║                                           ║\n`,
