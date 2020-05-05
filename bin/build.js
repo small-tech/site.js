@@ -442,6 +442,7 @@ async function build () {
     //
     const INDEX                                  = 'index.js'
     const websitePath                            = path.resolve(path.join(__dirname, '..', '..', 'site'))
+    const websitePathForIndex                    = path.resolve(path.join(websitePath, 'index.html'))
     const websitePathForBinaries                 = path.resolve(path.join(websitePath, 'binaries', releaseChannel))
     const websitePathForVersionRoutesFolder      = path.join(websitePath, '.dynamic', 'version')
     const websitePathForBinaryVersionRouteFolder = path.join(websitePathForVersionRoutesFolder, releaseChannel)
@@ -519,6 +520,40 @@ async function build () {
       // the template with the other values. Changes should be checked into the repository.
       fs.writeFileSync(linuxAndMacOSInstallScriptFile, linuxAndMacOSInstallScript)
       fs.copyFileSync(linuxAndMacOSInstallScriptFile, websitePathForLinuxAndMacInstallScript)
+
+      //
+      // Update the versions in the web site’s index.
+      //
+
+      console.log('   • Updating the web site index.')
+
+      const binaryVersionProperty = `${binaryVersionVariableName}: ${binaryVersion},`
+      const binaryVersionPropertyRegExp = new RegExp(`${binaryVersionVariableName}: \\d{14},`)
+
+      const sourceVersionProperty = `${sourceVersionVariableName}: '${sourceVersion}',`
+      const sourceVersionPropertyRegExp = new RegExp(`${sourceVersionVariableName}: '[0-9a-fA-F]{7}',`)
+
+      const packageVersionProperty = `${packageVersionVariableName}: '${packageVersion}',`
+      const packageVersionPropertyRegExp = new RegExp(`${packageVersionVariableName}: '\\d+\\.\\d+\\.\\d+',`)
+
+      const nodeVersionPropertyName = `${releaseChannel}NodeVersion`
+      const nodeVersionProperty = `${nodeVersionVariableName}: '${nodeVersion},`
+      const nodeVersionPropertyRegExp = new RegExp(`${nodeVersionPropertyName}: '\\d+\\.\\d+\\.\\d+',`)
+
+      const hugoVersionPropertyName = `${releaseChannel}HugoVersion`
+      const hugoVersionProperty = `${hugoVersionVariableName}: '${hugoVersion},`
+      const hugoVersionPropertyRegExp = new RegExp(`${hugoVersionPropertyName}: '\\d+\\.\\d+\\.\\d+',`)
+
+
+      let websiteIndex
+      websiteIndex = fs.readFileSync(websitePathForIndex, 'utf-8')
+      websiteIndex = websiteIndex.replace(binaryVersionPropertyRegExp, binaryVersionProperty)
+      websiteIndex = websiteIndex.replace(sourceVersionPropertyRegExp, sourceVersionProperty)
+      websiteIndex = websiteIndex.replace(packageVersionPropertyRegExp, packageVersionProperty)
+      websiteIndex = websiteIndex.replace(nodeVersionPropertyRegExp, nodeVersionProperty)
+      websiteIndex = websiteIndex.replace(hugoVersionPropertyRegExp, hugoVersionProperty)
+
+      fs.writeFileSync(websitePathForIndex, websiteIndex, 'utf-8')
 
       //
       // Windows.
