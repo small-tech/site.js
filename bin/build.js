@@ -537,11 +537,11 @@ async function build () {
       const packageVersionPropertyRegExp = new RegExp(`${packageVersionVariableName}: '\\d+\\.\\d+\\.\\d+',`)
 
       const nodeVersionPropertyName = `${releaseChannel}NodeVersion`
-      const nodeVersionProperty = `${nodeVersionPropertyName}: '${nodeVersion},`
+      const nodeVersionProperty = `${nodeVersionPropertyName}: '${nodeVersion}',`
       const nodeVersionPropertyRegExp = new RegExp(`${nodeVersionPropertyName}: '\\d+\\.\\d+\\.\\d+',`)
 
       const hugoVersionPropertyName = `${releaseChannel}HugoVersion`
-      const hugoVersionProperty = `${hugoVersionPropertyName}: '${hugoVersion},`
+      const hugoVersionProperty = `${hugoVersionPropertyName}: '${hugoVersion}',`
       const hugoVersionPropertyRegExp = new RegExp(`${hugoVersionPropertyName}: '\\d+\\.\\d+\\.\\d+',`)
 
 
