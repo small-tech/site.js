@@ -96,10 +96,7 @@ class Site {
   }
 
   static get releaseChannelFormattedForConsole () {
-    if (this.#manifest === null) {
-      this.readAndCacheManifest()
-    }
-    switch(this.#manifest.releaseChannel) {
+    switch(this.releaseChannel) {
       // Spells ALPHA in large red block letters.
       case this.RELEASE_CHANNEL.alpha: return clr(`\n
      █████  ██      ██████  ██   ██  █████ 
@@ -491,9 +488,10 @@ class Site {
     const proxyHttpUrl = `http://localhost:${this.proxyPort}`
     const proxyWebSocketUrl = `ws://localhost:${this.proxyPort}`
 
-    function prettyLog (message) {
+    let prettyLog = function (message) {
       this.log(`   🔁    ❨Site.js❩ ${message}`)
     }
+    prettyLog = prettyLog.bind(this)
 
     const logProvider = function(provider) {
       return { log: prettyLog, debug: prettyLog, info: prettyLog, warn: prettyLog, error: prettyLog }
@@ -756,7 +754,16 @@ class Site {
         }
 
         this.log(' ⏰ Setting up auto-update check interval.')
-        this.autoUpdateCheckInterval = setInterval(checkForUpdates, /* every */ 5 /* hours */ * 60 * 60 * 1000)
+        // Regular and alpha releases check for updates every 6 hours.
+        // (You  should not be deploying servers using the alpha release channel.)
+        let hours = 6
+        let minutes = 60
+        if (Site.releaseChannel === Site.RELEASE_CHANNEL.beta) {
+          // Beta releases check for updates every 10 minutes.
+          hours = 1
+          minutes = 10
+        }
+        this.autoUpdateCheckInterval = setInterval(checkForUpdates, /* every */ hours * minutes * 60 * 1000)
 
         // And perform an initial check a few seconds after startup.
         setTimeout(checkForUpdates, 3000)
