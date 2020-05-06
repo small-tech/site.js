@@ -185,24 +185,46 @@ $ site serve . @localhost:666
 
 #### Proxy server
 
-You can use Site.js as a development-time reverse proxy for HTTP and WebSocket connections.
+You can use Site.js as a development-time reverse proxy for HTTP and WebSocket connections. This is useful if you have a web app written in any language that only supports HTTP (not TLS) that you want to deploy securely.
 
-This is useful, for example, if you have a REST API written in some other language that you want to use in your Node.js app or a web app that only supports HTTP (not TLS) that you want to deploy securely.
+For example, the following is a simple HTTP server written in Python 3 (_server.py_) that runs insecurely on port 3000:
+
+```python
+from http.server import HTTPServer, BaseHTTPRequestHandler
+
+class MyRequestHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b'Hello, from Python!')
+
+server = HTTPServer(('localhost', 3000), MyRequestHandler)
+server.serve_forever()
+```
+
+Run it (at http://localhost:3000) with:
 
 ```shell
-$ site :1313
+$ python3 server
 ```
+
+Then, proxy it securely from https://localhost using:
+
+```shell
+$ site :3000
+```
+
 
 Again, this is a convenient shortcut. The full form of this command is:
 
 ```shell
-$ site serve :1313 @localhost:443
+$ site serve :3000 @localhost:443
 ```
 
 This will create and serve the following proxies:
 
-  * http://localhost:1313 → https://localhost
-  * ws://localhost:1313 → wss://localhost
+  * http://localhost:3000 → https://localhost
+  * ws://localhost:3000 → wss://localhost
 
 ### Testing (servers @hostname)
 
