@@ -352,7 +352,9 @@ Site.js uses the [systemd](https://freedesktop.org/wiki/Software/systemd/) to st
 
 ## Build and test from source
 
-Site.js is built using and supports the latest Node.js LTS (currently version 10.16.0; after October 22nd, 2019, we are scheduled to move to Node 12 LTS when it becomes the active branch).
+Site.js is built using and supports Node.js LTS (currently version 12.16.2).
+
+The build is created using Nexe and our own pre-built Nexe base Node.js binaries hosted on SiteJS.org. Please make sure that the version of your Node.js runtime matches the currently supported version stated above to ensure that the correct Nexe binary build is downloaded and used by the build script.
 
 ### Install the source and run tests
 
@@ -393,8 +395,8 @@ __Note:__ for commands that require root privileges (i.e., `enable` and `disable
 
 ```shell
 # Replace v10.16.3 with the version of node you want to make available globally.
-sudo ln -s "$NVM_DIR/versions/node/v10.16.3/bin/node" "/usr/local/bin/node"
-sudo ln -s "$NVM_DIR/versions/node/v10.16.3/bin/npm" "/usr/local/bin/npm"
+sudo ln -s "$NVM_DIR/versions/node/v12.16.2/bin/node" "/usr/local/bin/node"
+sudo ln -s "$NVM_DIR/versions/node/v12.16.2/bin/npm" "/usr/local/bin/npm"
 ```
 
 ### Native binaries
@@ -407,8 +409,9 @@ After you install the source and run tests:
 npm run build
 
 # Serve the test site (visit https://localhost to view).
-# e.g., To Linux binary:
-dist/linux/12.8.0/site test/site
+# e.g., Using the Linux binary with version <binary-version>
+# in the format (YYYYMMDDHHmmss).
+dist/linux/<binary-version>/site test/site
 ```
 
 ### Build and install native binary locally
@@ -1153,7 +1156,7 @@ I can use your help to test Site.js on the following platform/package manager co
   - Linux with yum
   - macOS with MacPorts
 
-Please [let me know how/if it works](https://github.com/small-tech/site.js/issues). Thank you!
+Please [let us know how/if it works](https://github.com/small-tech/site.js/issues). Thank you!
 
 ## Thanks
 
