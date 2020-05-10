@@ -113,11 +113,6 @@ test('[bin/commands] version', t => {
   const command = _('version')
   const actualOutput = outputForCommand(command)
 
-  console.log(actualOutput)
-  console.log(binaryVersionLine())
-  console.log(nodeVersionLine())
-  console.log(sourceLink())
-
   t.ok(actualOutput.includes(siteJSHeader()), 'version screen includes Site.js header')
   t.ok(actualOutput.includes(binaryVersionLine()), 'version screen includes binary version line')
   t.ok(actualOutput.includes(nodeVersionLine()), 'version screen includes Node.js version line')
