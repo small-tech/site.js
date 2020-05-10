@@ -4,6 +4,8 @@ const cli = require('../bin/lib/cli')
 const fs = require('fs')
 const path = require('path')
 
+process.env['QUIET'] = true
+
 function loadPath(commandPath) {
   fs.readFileSync(path.resolve(`${commandPath.replace('.', './bin')}.js`))
 }

@@ -13,9 +13,13 @@
 
 const test = require('tape')
 const childProcess = require('child_process')
-
+const path = require('path')
 const Site = require('../index.js')
 const Help = require('../bin/lib/Help')
+const ensure = require('../bin/lib/ensure')
+const Hugo = require('@small-tech/node-hugo')
+
+process.env['QUIET'] = true
 
 async function secureGet (url) {
   return new Promise((resolve, reject) => {
@@ -45,18 +49,47 @@ function options(timeout = 0) {
   return { env, timeout }
 }
 
-function cliHeader() {
-  const version = require('../package.json').version
-  return `
-    💕 Site.js v${version} (running on Node ${process.version})
+function fundingMessage() {
+  return dehydrate(`
+    ╔═══════════════════════════════════════════╗
+    ║ Like this? Fund us!                       ║
+    ║                                           ║
+    ║ We’re a tiny, independent not-for-profit. ║
+    ║ https://small-tech.org/fund-us            ║
+    ╚═══════════════════════════════════════════╝
+  `)
+}
 
-      ╔═══════════════════════════════════════════╗
-      ║ Like this? Fund us!                       ║
-      ║                                           ║
-      ║ We’re a tiny, independent not-for-profit. ║
-      ║ https://small-tech.org/fund-us            ║
-      ╚═══════════════════════════════════════════╝
-  `
+function siteJSHeader () {
+  return dehydrate('💕 Site.js')
+}
+
+function packageVersion () {
+  return require(path.join('..', 'package.json')).version
+}
+
+function binaryVersionLine () {
+  return dehydrate(`Version January 1st,2000 at 00:00:00 (${packageVersion()}-${gitHash()})`)
+}
+
+function nodeVersionLine () {
+  return dehydrate(`Node.js ${process.version.replace('v', '')}`)
+}
+
+function hugoVersionLine () {
+  return dehydrate(`Hugo ${(new Hugo()).version}`)
+}
+
+function gitHash () {
+  return childProcess.execSync('git log -1 --oneline').toString().match(/^[0-9a-fA-F]{7}/)[0]
+}
+
+function nexeBaseLink () {
+  return dehydrate(`https://sitejs.org/nexe/${process.platform}-${process.arch}-${process.version.replace('v', '')}`)
+}
+
+function sourceLink () {
+  return dehydrate(`https://source.small-tech.org/site.js/app/-/tree/${gitHash()}`)
 }
 
 function dehydrate (str) {
@@ -70,32 +103,62 @@ function outputForCommand(command) {
   return dehydrate(childProcess.execSync(command, options()))
 }
 
+function _(commandPartial) {
+  return `node ${path.join('bin', 'site.js')} ${commandPartial}`
+}
 
 test('[bin/commands] version', t => {
-  t.plan(1)
+  t.plan(6)
 
-  const command = 'bin/site.js version'
-  const expectedOutput = dehydrate(cliHeader())
-
+  const command = _('version')
   const actualOutput = outputForCommand(command)
 
-  t.strictEquals(actualOutput, expectedOutput, 'Actual output from command matches expected output')
+  console.log(actualOutput)
+  console.log(binaryVersionLine())
+  console.log(nodeVersionLine())
+  console.log(sourceLink())
+
+  t.ok(actualOutput.includes(siteJSHeader()), 'version screen includes Site.js header')
+  t.ok(actualOutput.includes(binaryVersionLine()), 'version screen includes binary version line')
+  t.ok(actualOutput.includes(nodeVersionLine()), 'version screen includes Node.js version line')
+  t.ok(actualOutput.includes(hugoVersionLine()), 'version screen includes Hugo version line')
+  t.ok(actualOutput.includes(nexeBaseLink()), 'version screen includes nexe base link')
+  t.ok(actualOutput.includes(sourceLink()), 'version screen includes source link')
   t.end()
 })
 
 
 test('[bin/commands] systemd startup daemon', t => {
-  t.plan(19)
 
   //
   // Commands used in the tests.
   //
-  const enableCommand = 'bin/site.js enable test/site'
-  const disableCommand = 'bin/site.js disable'
-  const startCommand = 'bin/site.js start'
-  const stopCommand = 'bin/site.js stop'
-  const restartCommand = 'bin/site.js restart'
-  const statusCommand = 'bin/site.js status'
+  const enableCommand = _('enable test/site')
+  const disableCommand = _('disable')
+  const startCommand = _('start')
+  const stopCommand = _('stop')
+  const restartCommand = _('restart')
+  const statusCommand = _('status')
+
+  // Startup daemons are only supported on platforms with systemd.
+  if (process.platform === 'win32' || process.platform === 'darwin' || !ensure.commandExists('systemctl')) {
+    const expectedErrorMessage = dehydrate('Sorry, daemons are only supported on Linux systems with systemd (systemctl required).')
+    const commandsToTest = ['enable', 'disable', 'start', 'stop', 'restart', 'status']
+
+    commandsToTest.forEach(commandName => {
+      try {
+        outputForCommand(eval(`${commandName}Command`))
+      } catch (error) {
+        t.ok(dehydrate(error.output[1].toString()).includes(expectedErrorMessage), 'On non-supported systems, daemon command ${commandName} fails gracefully as expected')
+      }
+    })
+
+    t.end()
+
+    return
+  }
+
+  t.plan(19)
 
   //
   // Setup.
@@ -613,29 +676,38 @@ test('[commands] help', t => {
 })
 
 test('[commands] hugo', t => {
-  t.plan(1)
+  t.plan(3)
 
-  const expectedOutput = dehydrate(`
-  ${cliHeader()}
-  🎠    ❨Site.js❩ Running Hugo with command version
+  let platform = process.platform
+  if (platform === 'win32') platform = 'windows'
 
-  🅷 🆄 🅶 🅾  Hugo Static Site Generator v0.64.1-C327E75D linux/amd64 BuildDate: 2020-02-09T20:47:32Z
-  🅷 🆄 🅶 🅾
+  const actualOutput = outputForCommand(_('hugo version'))
 
-     💕    ❨Site.js❩ Goodbye!
-  `)
-
-  const actualOutput = outputForCommand('bin/site.js hugo version')
-
-  t.strictEquals(actualOutput, expectedOutput, 'Actual output matches expected output')
+  t.ok(actualOutput.includes(dehydrate('🎠 ❨Site.js❩ Running Hugo with command version')), 'hugo command output includes Site.js information line')
+  t.ok(actualOutput.includes(dehydrate('🅷 🆄 🅶 🅾  Hugo Static Site Generator v0.64.1-C327E75D')), 'hugo command output includes correct hugo version')
+  t.ok(actualOutput.includes(dehydrate('💕 ❨Site.js❩ Goodbye!')), 'hugo commands exits as expected')
   t.end()
 })
 
 test('[commands] logs', async t => {
+  // Startup daemons are only supported on platforms with systemd.
+  if (process.platform === 'win32' || process.platform === 'darwin' || !ensure.commandExists('systemctl')) {
+    const errorMessage = 'Sorry, daemons are only supported on Linux systems with systemd (journalctl required).'
+
+    try {
+      childProcess.exec(_('logs'))
+    } catch (error) {
+      t.ok(dehydrate(error.output[1].toString()).includes(errorMessage), 'On non-supported systems, daemon command logs fails gracefully as expected')
+    }
+
+    t.end()
+    return
+  }
+
   t.plan(5)
 
   const optionsWithOneSecondTimeout = options(1000)
-  childProcess.exec('bin/site.js logs', optionsWithOneSecondTimeout, (error, stdout, stderr) => {
+  childProcess.exec(_('logs'), optionsWithOneSecondTimeout, (error, stdout, stderr) => {
 
     // This will end with an error due to the timeout. Ensure that the error is the one we expect.
     t.true(error, 'process termination is as expected')

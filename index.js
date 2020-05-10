@@ -63,11 +63,23 @@ class Site {
   static RELEASE_CHANNEL = {
     alpha  : 'alpha',
     beta   : 'beta',
-    release: 'release'
+    release: 'release',
+    npm: 'npm'
   }
 
   static readAndCacheManifest () {
-    this.#manifest = JSON.parse(fs.readFileSync(path.join(__dirname, './manifest.json'), 'utf-8'))
+    try {
+      this.#manifest = JSON.parse(fs.readFileSync(path.join(__dirname, 'manifest.json'), 'utf-8'))
+    } catch (error) {
+      // When running under Node (not wrapped as a binary), there will be no manifest file. So mock one.
+      this.#manifest = {
+        releaseChannel: 'npm',
+        binaryVersion: '20000101000000',
+        packageVersion: (require(path.join(__dirname, 'package.json'))).version,
+        sourceVersion: childProcess.execSync('git log -1 --oneline').toString().match(/^[0-9a-fA-F]{7}/)[0],
+        hugoVersion: (new Hugo()).version
+      }
+    }
   }
 
   static getFromManifest (key) {

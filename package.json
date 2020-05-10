@@ -22,8 +22,8 @@
     "build-beta": "node bin/build.js --beta",
     "deploy-beta": "bin/build.js --deploy --beta",
     "install-locally-beta": "node bin/build.js --install --beta",
-    "test": "QUIET=true tape test/*.js | tap-spec",
-    "coverage": "QUIET=true nyc tape test/*.js | tap-nyc"
+    "test": "tape test/*.js | tap-spec",
+    "coverage": "nyc tape test/*.js | tap-nyc"
   },
   "funding": {
     "type": "foundation",
