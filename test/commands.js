@@ -156,7 +156,7 @@ test('[bin/commands] systemd startup daemon', t => {
       try {
         outputForCommand(eval(`${commandName}Command`))
       } catch (error) {
-        t.ok(dehydrate(error.output[1].toString()).includes(expectedErrorMessage), 'On non-supported systems, daemon command ${commandName} fails gracefully as expected')
+        t.ok(dehydrate(error.output[1].toString()).includes(expectedErrorMessage), `On non-supported systems, daemon command ${commandName} fails gracefully as expected`)
       }
     })
 
