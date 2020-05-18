@@ -1,17 +1,17 @@
-################################################################################
+##########################################################################################
 #
-# Site.js v12.11.0 Installer for Windows 10 (PowerShell)
+# Site.js 00000000000000 (00.00.00/bedface) Installer for Windows 10 (PowerShell)
 #
 # To use:
 #
 # iex(iwr -UseBasicParsing https://sitejs.org/windows).Content
 #
-# Copyright (c) 2019 Aral Balkan.
+# Copyright (c) 2019-2020 Aral Balkan.
 # Released under the AGPL version 3.0 or later license.
 # Made with <3 by Small Technology Foundation (https://small-tech.org)
 # Like this? Fund us! (https://small-tech.org/fund-us)
 #
-################################################################################
+##########################################################################################
 
 # This is where the binary will be installed to.
 $installationDirectory =  'C:\Program Files\site.js'
@@ -23,7 +23,7 @@ $installationScriptUrl = 'https://sitejs.org/install.txt'
 $installationScriptFileName = 'install-site.js.ps1'
 
 # The address to download the tar-gzipped archive of the Site.js binary from.
-$archiveUrl = 'https://sitejs.org/releases/windows/12.11.0.tar.gz'
+$archiveUrl = 'https://sitejs.org/binaries/release/windows/00000000000000.tar.gz'
 
 # Emoji encodings (because Powershell is from the Stone Age and cannot handle
 # emoji literals in strings)
@@ -86,7 +86,7 @@ if (!([Security.Principal.WindowsPrincipal] `
   # Installer is running with regular privileges. Start a new PowerShell session with elevated privileges.
   #
   Write-Output ''
-  Write-Output " $satelliteEmoji Downloading Site.js v12.11.0$ellipsis"
+  Write-Output " $satelliteEmoji Downloading Site.js 00000000000000 (00.00.00/bedface)$ellipsis"
 
   # We need to start a new PowerShell session with elevated privileges but if we're running in memory
   # only after being downloaded by the installation command, we don't have a copy of ourselves to run.
@@ -112,16 +112,16 @@ if (!([Security.Principal.WindowsPrincipal] `
   Write-Output "`n`n`n`n`n`n"
   Write-Output ' Installing Site.js using administrator privileges...'
   Write-Output ''
-  Write-Output ' * Downloading Site.js v12.11.0...'
+  Write-Output ' * Downloading Site.js 00000000000000 (00.00.00/bedface)...'
 
   # Download the latest Site.js archive.
-  Invoke-WebRequest -Uri $archiveUrl -OutFile '12.11.0.tar.gz'
+  Invoke-WebRequest -Uri $archiveUrl -OutFile '00000000000000.tar.gz'
 
   Write-Output ''
   Write-Output ' * Extracting binary...'
 
   # Gunzip and untar the binary.
-  tar -xf 12.11.0.tar.gz
+  tar -xf 00000000000000.tar.gz
 
   Write-Output ''
   Write-Output ' * Installing binary...'

@@ -21,6 +21,8 @@ const queryString = require('querystring')
 
 const WebSocket = require('ws')
 
+process.env['QUIET'] = true
+
 function localhost(path) {
   return `https://localhost${path}`
 }

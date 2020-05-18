@@ -16,41 +16,93 @@ const childProcess    = require('child_process')
 const { compile }     = require('nexe')
 const minimist        = require('minimist')
 const package         = require('../package.json')
+const moment          = require('moment')
+const Hugo            = require('@small-tech/node-hugo')
 const cpuArchitecture = os.arch()
 
-// Parse the commandline arguments.
+// Parse the command-line arguments.
 const commandLineOptions = minimist(process.argv.slice(2), {boolean: true})
 
 // Display help on syntax error or if explicitly requested.
 if (commandLineOptions._.length !== 0 || commandLineOptions.h || commandLineOptions.help) {
-  console.log('\n Usage: npm run build [--deploy] [--all] [--install]\n')
+  console.log('\n Usage: npm run build [--deploy] [--all] [--install] [--alpha] [--beta]\n')
   process.exit()
 }
 
 // Check for supported CPU architectures (currently only x86 and ARM)
 if (cpuArchitecture !== 'x64' && cpuArchitecture !== 'arm') {
-  console.log(`🤯 Error: The build script is currently only supported on x64 and ARM architectures.`)
-  process.exit()
+  console.log(`❌ Error: The build script is currently only supported on x64 and ARM architectures.\n`)
+  process.exit(1)
 }
 
+// If this is a deployment build, ensure that the working directory is not dirty
+// before proceeding. Deployment builds are tied to Git revisions and tags.
+if (commandLineOptions.deploy && childProcess.execSync('git status').toString().match('working tree clean') === null) {
+  console.log('❌ Error: Cannot deploy when working copy is dirty. Please commit or stash changes before retrying.\n')
+  process.exit(1)
+}
+
+//
+// There are six elements that go into uniquely identifying a build:
+//
+// releaseChannel       : alpha, beta, or release. Releases on a releaseChannel check for updates on that releaseChannel.
+// nodeVersion   : the version of Node that’s bundled in the build.
+// hugoVersion   : the version of Hugo that’s bundled in the build.
+// binaryVersion : unique version for the binary, a calendar version determined at build time.
+// packageVersion: the semantic version specified in the npm package.
+// sourceVersion : the commit hash that corresponds to the source bundled in this build.
+//
+// Each version element is useful in its own way.
+//
+
+const releaseChannel     = commandLineOptions.alpha ? 'alpha' : (commandLineOptions.beta ? 'beta' : 'release')
 const nodeVersion = process.version.slice(1)
 
-// Get the version from the npm package configuration.
-const version           = package.version
+const hugoVersion = (new Hugo()).version
+
+function presentBinaryVersion (binaryVersion) {
+  const m = moment(binaryVersion, 'YYYYMMDDHHmmss')
+  return `${m.format('MMMM Do YYYY')} at ${m.format('HH:mm:ss')}`
+}
+
+const binaryVersion     = moment(new Date()).format('YYYYMMDDHHmmss')
+const packageVersion    = package.version
+const sourceVersion     = (childProcess.execSync('git log -1 --oneline | cut -c1-7')).toString().trim()
+
 const binaryName        = 'site'
 const windowsBinaryName = `${binaryName}.exe`
 
-console.log(`\n ⚙ Site.js: building native binaries for Site.js version ${version} (bundling Node version ${nodeVersion})\n`)
+console.log(`\n ⚙️ Site.js build started on ${presentBinaryVersion(binaryVersion)}.\n
+    Release channel: ${releaseChannel}
+    Binary version : ${binaryVersion}
+    Package version: ${packageVersion}
+    Source version : ${sourceVersion}
+    Node version   : ${nodeVersion}
+    Hugo version   : ${hugoVersion}
+    \n`)
 
-const linuxX64Directory = path.join('dist', 'linux',     version)
-const linuxArmDirectory = path.join('dist', 'linux-arm', version)
-const macOsDirectory    = path.join('dist', 'macos',     version)
-const windowsDirectory  = path.join('dist', 'windows',   version)
+// Write out the manifest file. This will be included in the build so that the binary knows what type of release it is.
+// This allows it to modify its behaviour at runtime (e.g., auto-update from beta releases if it’s a beta release).
+const manifest = {
+  binaryVersion,
+  packageVersion,
+  hugoVersion,
+  sourceVersion,
+  releaseChannel
+}
+fs.writeFileSync('manifest.json', JSON.stringify(manifest), 'utf-8')
 
-fs.mkdirSync(linuxX64Directory, {recursive: true})
-fs.mkdirSync(linuxArmDirectory, {recursive: true})
-fs.mkdirSync(macOsDirectory,    {recursive: true})
-fs.mkdirSync(windowsDirectory,  {recursive: true})
+const releaseChannelDirectory = path.join('dist', releaseChannel)
+const linuxX64Directory       = path.join(releaseChannelDirectory, 'linux',     binaryVersion)
+const linuxArmDirectory       = path.join(releaseChannelDirectory, 'linux-arm', binaryVersion)
+const macOsDirectory          = path.join(releaseChannelDirectory, 'macos',     binaryVersion)
+const windowsDirectory        = path.join(releaseChannelDirectory, 'windows',   binaryVersion)
+
+fs.ensureDirSync(releaseChannelDirectory)
+fs.ensureDirSync(linuxX64Directory   )
+fs.ensureDirSync(linuxArmDirectory   )
+fs.ensureDirSync(macOsDirectory      )
+fs.ensureDirSync(windowsDirectory    )
 
 const linuxX64BinaryPath = path.join(linuxX64Directory, binaryName       )
 const linuxArmBinaryPath = path.join(linuxArmDirectory, binaryName       )
@@ -64,10 +116,12 @@ const binaryPaths = {
   'win32': windowsBinaryPath
 }
 
-// Note 1: Linux on ARM doesn’t have a target as we build Node from source.
-// Note 2: Ensure that a Nexe build exists for the Node version you’re running as that is
-//         what will be used. This is by design as you should be testing with the Node
-//         version that you’re deploying with.
+// Note: Ensure that a Nexe build exists for the Node version you’re running as that is
+// ===== what will be used. This is by design as you should be deploying with the Node
+//       version that you’re developing and testing with. Pre-built Nexe base images are
+//       downloaded from our own remote repository, not from the official Nexe releases
+//       (so we can include platforms – like ARM – that aren’t covered yet by the
+//       official releases).
 const remote  = 'https://sitejs.org/nexe/'
 const linuxX64Target = `linux-x64-${nodeVersion}`
 const linuxArmTarget = `linux-arm-${nodeVersion}`
@@ -96,7 +150,7 @@ if (platform === 'linux' && cpuArchitecture === 'arm') { currentPlatformBinaryPa
 
 // Common resources.
 const resources = [
-  'package.json',                              // Used to get the app’s version at runtime.
+  'manifest.json',                             // App-specific metadata generated by this build script (version, etc.)
   'bin/commands/*',                            // Conditionally required based on command-line argument.
 
   // nexe@next does not appear to be making use of the pkg→assets setting in
@@ -111,6 +165,12 @@ const resources = [
 ]
 
 const input = 'bin/site.js'
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Build.
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //
 // Start the build.
@@ -206,7 +266,7 @@ async function build () {
     })
   }
 
-  function stripForPlatform (platform) {
+  function stripForPlatform  (platform) {
     removeAllMkcertPlatforms (platform)
     removeAllHugoPlatforms   (platform)
     restoreMkcertBinary      (platform)
@@ -293,6 +353,12 @@ async function build () {
     console.log('     Done ✔\n')
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // Install.
+  //
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   // Install the build for the current platform if requested.
   if (commandLineOptions.install) {
     //
@@ -319,6 +385,12 @@ async function build () {
     }
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // Deploy.
+  //
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   // Only zip and copy files to the local working copy of the Site.js web site if explicitly asked to.
   if (commandLineOptions.deploy) {
     //
@@ -329,7 +401,7 @@ async function build () {
     // We use tar and gzip here instead of zip as unzip is not a standard
     // part of Linux distributions whereas tar and gzip are. We do not use
     // gzip directly as that does not maintain the executable flag on the binary.
-    const zipFileName              = `${version}.tar.gz`
+    const zipFileName              = `${binaryVersion}.tar.gz`
     const mainSourceDirectory      = path.join(__dirname, '..')
     const linuxX64WorkingDirectory = path.join(mainSourceDirectory, linuxX64Directory)
     const linuxArmWorkingDirectory = path.join(mainSourceDirectory, linuxArmDirectory)
@@ -349,76 +421,162 @@ async function build () {
     // site.js/app/bin/
     //
     // site.js
-    //  |_ app                 This project.
-    //  |   |_ bin             The folder that this script is running in.
-    //  |_ site                The Site.js web site.
-    //      |_ releases        The folder that release binaries are held.
+    //  |_ app                    This project.
+    //  |   |_ bin                The folder that this script is running in.
+    //  |_ site                   The Site.js web site.
+    //      |_ version/
+    //      |    |_ index.js      (Dynamic) Returns source version (for compatibility with versions prior to 12.11.0)
+    //      |    |_ alpha
+    //      |    |    |_ index.js (Dynamic) If it exists, returns latest alpha releaseChannel version.
+    //      |    |_ beta
+    //      |    |    |_ index.js (Dynamic) If it exists, returns latest beta releaseChannel version.
+    //      |    |_ release
+    //      |         |_ index.js (Dynamic) If it exists, returns latest release releaseChannel version.
+    //      |_ binaries
+    //           |_ alpha         (12.11.0+) Contains alpha releases.
+    //           |_ beta          (12.11.0+) Contains beta releases.
+    //           |_ release       (12.11.0+) Contains release versions
+
     //
     // If it cannot find the Site.js web site, the build script will simply skip this step.
     //
-    const pathToWebSite                                      = path.resolve(path.join(__dirname, '../../site/'))
-    const pathToReleasesFolder                               = path.resolve(path.join(pathToWebSite, 'releases/'))
-    const pathToDynamicVersionRoute                          = path.join(pathToWebSite, '.dynamic', 'version.js')
-    const pathToInstallationScriptsFolderOnWebSite           = path.join(pathToWebSite, 'installation-scripts')
-    const pathToLinuxAndMacOSInstallationScriptFileOnWebSite = path.join(pathToInstallationScriptsFolderOnWebSite, 'install')
-    const pathToWindowsInstallationScriptFileOnWebSite       = path.join(pathToInstallationScriptsFolderOnWebSite, 'install.txt')
+    const INDEX                                  = 'index.js'
+    const websitePath                            = path.resolve(path.join(__dirname, '..', '..', 'site'))
+    const websitePathForIndex                    = path.resolve(path.join(websitePath, 'index.html'))
+    const websitePathForBinaries                 = path.resolve(path.join(websitePath, 'binaries', releaseChannel))
+    const websitePathForVersionRoutesFolder      = path.join(websitePath, '.dynamic', 'version')
+    const websitePathForBinaryVersionRouteFolder = path.join(websitePathForVersionRoutesFolder, releaseChannel)
+    const websitePathForBinaryVersionRouteFile   = path.join(websitePathForBinaryVersionRouteFolder, INDEX)
+    const websitePathForInstallScripts           = path.join(websitePath, 'installation-scripts')
+    const websitePathForLinuxAndMacInstallScript = path.join(websitePathForInstallScripts, 'install')
+    const websitePathForWindowsInstallScript     = path.join(websitePathForInstallScripts, 'install.txt')
+
+    // Ensure website version route folders exist
+    fs.ensureDirSync(websitePathForVersionRoutesFolder)
+    fs.ensureDirSync(websitePathForBinaryVersionRouteFolder)
 
     // Check that a local working copy of the Site.js web site exists at the relative location
     // that we expect it to. If it doesn’t skip this step.
-    if (fs.existsSync(pathToWebSite)) {
+    if (fs.existsSync(websitePath)) {
       console.log('   • Copying release binaries to the Site.js web site…')
 
-      const linuxX64VersionZipFilePath           = path.join(linuxX64WorkingDirectory, zipFileName)
-      const linuxArmVersionZipFilePath           = path.join(linuxArmWorkingDirectory, zipFileName)
-      const macOsVersionZipFilePath              = path.join(macOsWorkingDirectory, zipFileName   )
-      const windowsVersionZipFilePath            = path.join(windowsWorkingDirectory, zipFileName )
+      const linuxX64VersionZipFilePath    = path.join(linuxX64WorkingDirectory, zipFileName)
+      const linuxArmVersionZipFilePath    = path.join(linuxArmWorkingDirectory, zipFileName)
+      const macOsVersionZipFilePath       = path.join(macOsWorkingDirectory,    zipFileName)
+      const windowsVersionZipFilePath     = path.join(windowsWorkingDirectory,  zipFileName)
 
-      const linuxX64VersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'linux'    )
-      const linuxArmVersionTargetDirectoryOnSite = path.join(pathToReleasesFolder, 'linux-arm')
-      const macOsVersionTargetDirectoryOnSite    = path.join(pathToReleasesFolder, 'macos'    )
-      const windowsVersionTargetDirectoryOnSite  = path.join(pathToReleasesFolder, 'windows'  )
+      const websitePathForLinuxX64Version = path.join(websitePathForBinaries, 'linux'    )
+      const websitePathForLinuxArmVersion = path.join(websitePathForBinaries, 'linux-arm')
+      const websitePathForMacVersion      = path.join(websitePathForBinaries, 'macos'    )
+      const websitePathForWindowsVersion  = path.join(websitePathForBinaries, 'windows'  )
 
-      fs.mkdirSync(linuxX64VersionTargetDirectoryOnSite, {recursive: true})
-      fs.mkdirSync(linuxArmVersionTargetDirectoryOnSite, {recursive: true})
-      fs.mkdirSync(macOsVersionTargetDirectoryOnSite,    {recursive: true})
-      fs.mkdirSync(windowsVersionTargetDirectoryOnSite,  {recursive: true})
+      fs.ensureDirSync(websitePathForBinaries, {recursive: true})
+      fs.ensureDirSync(websitePathForLinuxX64Version)
+      fs.ensureDirSync(websitePathForLinuxArmVersion)
+      fs.ensureDirSync(websitePathForMacVersion     )
+      fs.ensureDirSync(websitePathForWindowsVersion )
 
-      fs.copyFileSync(linuxX64VersionZipFilePath, path.join(linuxX64VersionTargetDirectoryOnSite, zipFileName))
-      fs.copyFileSync(linuxArmVersionZipFilePath, path.join(linuxArmVersionTargetDirectoryOnSite, zipFileName))
-      fs.copyFileSync(macOsVersionZipFilePath,    path.join(macOsVersionTargetDirectoryOnSite,    zipFileName))
-      fs.copyFileSync(windowsVersionZipFilePath,  path.join(windowsVersionTargetDirectoryOnSite,  zipFileName))
+      fs.copyFileSync(linuxX64VersionZipFilePath, path.join(websitePathForLinuxX64Version, zipFileName))
+      fs.copyFileSync(linuxArmVersionZipFilePath, path.join(websitePathForLinuxArmVersion, zipFileName))
+      fs.copyFileSync(macOsVersionZipFilePath,    path.join(websitePathForMacVersion,      zipFileName))
+      fs.copyFileSync(windowsVersionZipFilePath,  path.join(websitePathForWindowsVersion,  zipFileName))
 
-      // Write out a dynamic route with the latest version into the site. That endpoint will be used by the
-      // auto-update feature to decide whether it needs to update.
-      console.log('   • Adding dynamic version endpoint to Site.js web site.')
-      const versionRoute = `module.exports = (request, response) => { response.end('${package.version}') }\n`
-      fs.writeFileSync(pathToDynamicVersionRoute, versionRoute, {encoding: 'utf-8'})
+      // Write out a dynamic route on the SiteJS.org web site to return the binary version. This endpoint is used by
+      // the auto-update feature to decide whether the binary should be updated.
+      console.log(`   • Adding dynamic binary version endpoint for ${releaseChannel} version to Site.js web site.`)
+      const binaryVersionRoute = `module.exports = (request, response) => { response.end('${binaryVersion}') }\n`
+      fs.writeFileSync(websitePathForBinaryVersionRouteFile, binaryVersionRoute, {encoding: 'utf-8'})
 
       // Update the install file and deploy them to the Site.js web site.
-      console.log('   • Updating the installation scripts and deploying them to Site.js web site.')
+      console.log('   • Updating the installation scripts and copying them to local Site.js web site working copy.')
+
+      const installationScriptTemplatesFolder = path.join(mainSourceDirectory, 'installation-script-templates')
 
       //
       // Linux and macOS.
       //
-      const linuxAndMacOSInstallScriptFile = path.join(mainSourceDirectory, 'script', 'install')
-      let linuxAndMacOSInstallScript       = fs.readFileSync(linuxAndMacOSInstallScriptFile, 'utf-8')
-      linuxAndMacOSInstallScript           = linuxAndMacOSInstallScript.replace(/\d+\.\d+\.\d+/g, package.version)
 
+      const linuxAndMacOSInstallScriptFile = path.join(installationScriptTemplatesFolder, 'install')
+
+      const binaryVersionVariableName = `${releaseChannel}BinaryVersion`
+      const binaryVersionVariable = `${binaryVersionVariableName}=${binaryVersion}`
+      const binaryVersionRegExp = new RegExp(`${binaryVersionVariableName}=\\d{14}`)
+
+      const sourceVersionVariableName = `${releaseChannel}SourceVersion`
+      const sourceVersionVariable = `${sourceVersionVariableName}=${sourceVersion}`
+      const sourceVersionRegExp = new RegExp(`${sourceVersionVariableName}=[0-9a-fA-F]{7}`)
+
+      const packageVersionVariableName = `${releaseChannel}PackageVersion`
+      const packageVersionVariable = `${packageVersionVariableName}=${packageVersion}`
+      const packageVersionRegExp = new RegExp(`${packageVersionVariableName}=\\d+\\.\\d+\\.\\d+`)
+
+      let linuxAndMacOSInstallScript
+      linuxAndMacOSInstallScript = fs.readFileSync(linuxAndMacOSInstallScriptFile, 'utf-8')
+      linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(binaryVersionRegExp, binaryVersionVariable)
+      linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(sourceVersionRegExp, sourceVersionVariable)
+      linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(packageVersionRegExp, packageVersionVariable)
+
+      // As we have three different release types, each with a different version, we need to persist
+      // the template with the other values. Changes should be checked into the repository.
       fs.writeFileSync(linuxAndMacOSInstallScriptFile, linuxAndMacOSInstallScript)
-      fs.copyFileSync(linuxAndMacOSInstallScriptFile, pathToLinuxAndMacOSInstallationScriptFileOnWebSite)
+      fs.copyFileSync(linuxAndMacOSInstallScriptFile, websitePathForLinuxAndMacInstallScript)
+
+      //
+      // Update the versions in the web site’s index.
+      //
+
+      console.log('   • Updating the web site index.')
+
+      const binaryVersionProperty = `${binaryVersionVariableName}: ${binaryVersion},`
+      const binaryVersionPropertyRegExp = new RegExp(`${binaryVersionVariableName}: \\d{14},`)
+
+      const sourceVersionProperty = `${sourceVersionVariableName}: '${sourceVersion}',`
+      const sourceVersionPropertyRegExp = new RegExp(`${sourceVersionVariableName}: '[0-9a-fA-F]{7}',`)
+
+      const packageVersionProperty = `${packageVersionVariableName}: '${packageVersion}',`
+      const packageVersionPropertyRegExp = new RegExp(`${packageVersionVariableName}: '\\d+\\.\\d+\\.\\d+',`)
+
+      const nodeVersionPropertyName = `${releaseChannel}NodeVersion`
+      const nodeVersionProperty = `${nodeVersionPropertyName}: '${nodeVersion}',`
+      const nodeVersionPropertyRegExp = new RegExp(`${nodeVersionPropertyName}: '\\d+\\.\\d+\\.\\d+',`)
+
+      const hugoVersionPropertyName = `${releaseChannel}HugoVersion`
+      const hugoVersionProperty = `${hugoVersionPropertyName}: '${hugoVersion}',`
+      const hugoVersionPropertyRegExp = new RegExp(`${hugoVersionPropertyName}: '\\d+\\.\\d+\\.\\d+',`)
+
+
+      let websiteIndex
+      websiteIndex = fs.readFileSync(websitePathForIndex, 'utf-8')
+      websiteIndex = websiteIndex.replace(binaryVersionPropertyRegExp, binaryVersionProperty)
+      websiteIndex = websiteIndex.replace(sourceVersionPropertyRegExp, sourceVersionProperty)
+      websiteIndex = websiteIndex.replace(packageVersionPropertyRegExp, packageVersionProperty)
+      websiteIndex = websiteIndex.replace(nodeVersionPropertyRegExp, nodeVersionProperty)
+      websiteIndex = websiteIndex.replace(hugoVersionPropertyRegExp, hugoVersionProperty)
+
+      fs.writeFileSync(websitePathForIndex, websiteIndex, 'utf-8')
 
       //
       // Windows.
       //
-      const windowsInstallScriptFile = path.join(mainSourceDirectory, 'script', 'windows')
-      let windowsInstallScript       = fs.readFileSync(windowsInstallScriptFile, 'utf-8')
-      windowsInstallScript           = windowsInstallScript.replace(/\d+\.\d+\.\d+/g, package.version)
+      // (Note: Windows script does not support alpha and beta builds.)
+      //
 
-      fs.writeFileSync(windowsInstallScriptFile, windowsInstallScript)
-      fs.copyFileSync(windowsInstallScriptFile, pathToWindowsInstallationScriptFileOnWebSite)
+      if (releaseChannel === 'release') {
+        const windowsInstallScriptFile = path.join(installationScriptTemplatesFolder, 'windows')
+
+        let windowsInstallScript
+        windowsInstallScript = fs.readFileSync(windowsInstallScriptFile, 'utf-8')
+        windowsInstallScript = windowsInstallScript.replace(/\d{14}/g, binaryVersion)
+        windowsInstallScript = windowsInstallScript.replace(/\/[0-9a-fA-F]{7}\)/g, `/${sourceVersion})`)
+        windowsInstallScript = windowsInstallScript.replace(/\d+\.\d+\.\d+/g, packageVersion)
+
+        fs.writeFileSync(websitePathForWindowsInstallScript, windowsInstallScript)
+      } else {
+        console.log(`   • This is a ${releaseChannel} build, not updating the Windows install script as ${releaseChannel} builds are not supported on Windows.`)
+      }
 
     } else {
-      console.log('   • No local working copy of Site.js web site found. Skipped copy of release binaries.')
+      console.log(`   • No local working copy of Site.js web site found. Skipped copy of release binaries. Please clone https://small-tech.org/site.js/site to ${websitePath} and ensure you have commit permissions on the repository before attempting to deploy.`)
     }
   }
 

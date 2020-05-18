@@ -207,12 +207,6 @@ function serve (args) {
 
           const server = site.server
 
-          // Exit on known errors as we have already logged them to console.
-          // (Otherwise, the stack trace will be output for debugging purposes.)
-          server.on(server.SMALL_TECH_ORG_ERROR_HTTP_SERVER, () => {
-            process.exit(1)
-          })
-
           // Start sync if requested.
           if (syncOptions !== null) {
             sync(syncOptions)

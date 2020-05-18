@@ -1,0 +1,142 @@
+#!/bin/bash
+
+######################################################################
+#
+# Site.js installer for Linux (x86 and ARM) and macOS.
+#
+# Usage:
+#
+# wget -qO- https://sitejs.org/install | bash
+#
+# Or:
+#
+# curl -s https://sitejs.org/install | bash
+#
+# For alpha, replace bash with bash -s -- alpha
+# For beta, replace bash with bash -s -- beta
+#
+# Copyright (c) 2019-2020 Aral Balkan.
+# Released under the AGPL version 3.0 or later license.
+# Made with ♥ by Small Technology Foundation (https://small-tech.org)
+#
+# Like this? Fund us! (https://small-tech.org/fund-us)
+#
+######################################################################
+
+set -e
+
+function cleanUp {
+  popd > /dev/null
+  rm -rf /tmp/sitejs.org
+}
+
+releaseChannel=$1
+
+# Release is the default release type (others are alpha and beta).
+if [[ "$releaseChannel" == "" ]]; then
+  releaseChannel='release'
+fi
+
+alphaBinaryVersion=00000000000000
+alphaPackageVersion=00.00.00
+alphaSourceVersion=bedface
+
+betaBinaryVersion=00000000000000
+betaPackageVersion=00.00.00
+betaSourceVersion=acecafe
+
+releaseBinaryVersion=00000000000000
+releasePackageVersion=00.00.00
+releaseSourceVersion=decafAF
+
+binaryVersionVariableName="${releaseChannel}BinaryVersion"
+packageVersionVariableName="${releaseChannel}PackageVersion"
+sourceVersionVariableName="${releaseChannel}SourceVersion"
+
+binaryVersion=${!binaryVersionVariableName}
+packageVersion=${!packageVersionVariableName}
+sourceVersion=${!sourceVersionVariableName}
+
+if [[ "$binaryVersion" == "00000000000000" ]]; then
+  echo " ❌ Sorry, no Site.js ${releaseChannel} binaries have been released yet."
+  cleanUp
+  exit 1
+fi
+
+echo
+echo " 📡 Downloading Site.js version ${binaryVersion} (${packageversion}/${sourceVersion})…"
+
+# Mark alpha and beta releases prominently.
+if [[ "$releaseChannel" == "alpha" ]]; then
+
+  # Writes ALPHA in large red block letters.
+  echo -e '\033[31m'
+  echo '     █████  ██      ██████  ██   ██  █████'
+  echo '    ██   ██ ██      ██   ██ ██   ██ ██   ██ '
+  echo '    ███████ ██      ██████  ███████ ███████ '
+  echo '    ██   ██ ██      ██      ██   ██ ██   ██ '
+  echo '    ██   ██ ███████ ██      ██   ██ ██   ██'
+  echo -e '\033[0m'
+
+elif [[ "$releaseChannel" == "beta" ]]; then
+
+  # Writes BETA in large yellow block letters.
+  echo -e '\033[33m'
+  echo '    ██████  ███████ ████████  █████ '
+  echo '    ██   ██ ██         ██    ██   ██ '
+  echo '    ██████  █████      ██    ███████ '
+  echo '    ██   ██ ██         ██    ██   ██ '
+  echo '    ██████  ███████    ██    ██   ██'
+  echo -e '\033[0m'
+
+fi
+
+# Setup.
+rm -rf /tmp/sitejs.org
+mkdir -p /tmp/sitejs.org
+pushd /tmp/sitejs.org > /dev/null
+
+# Download the release.
+if [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux-gnueabihf" ]]; then
+  cpuArchitecture=`uname -m`
+  if [[ "$cpuArchitecture" == "x86_64" ]]; then
+    # Linux on x64.
+    wget -q "https://sitejs.org/binaries/${releaseChannel}/linux/${binaryVersion}.tar.gz"
+  elif [[ "$cpuArchitecture" == "armv7l" || "$cpuArchitecture" == "armv6l" ]]; then
+    # Linux on ARM. Tested on Raspberry Pi Zero W (armv6l), 3B+ and 4B (both reporting armv7l).
+    wget -q "https://sitejs.org/binaries/${releaseChannel}/linux-arm/${binaryVersion}.tar.gz"
+  else
+    # Error: unsupported architecture.
+    echo
+    echo " ❌ Error: this architecture is not supported on Linux (only x86_64, armv6l, and armv7l are)."
+    echo
+    cleanUp
+    exit 1
+  fi
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+  # macOS
+  curl -Os "https://sitejs.org/binaries/${releaseChannel}/macos/${binaryVersion}.tar.gz"
+else
+  # Error: Unsupported operating system.
+  echo
+  echo " ❌ Error: this operating system is not supported."
+  echo
+  cleanUp
+  exit 1
+fi
+
+# Install.
+echo " 📦 Installing…"
+gzip -d "${binaryVersion}.tar.gz"
+tar -xf "${binaryVersion}.tar"
+
+# Ensure /usr/local/bin directory exists (it does not by default on macOS)
+sudo mkdir -p /usr/local/bin/
+
+# Install the Site.js binary.
+sudo mv site /usr/local/bin/
+
+cleanUp
+
+echo " 🎉 Done!"
+echo

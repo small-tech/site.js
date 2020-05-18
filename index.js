@@ -18,49 +18,115 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-const https = require('@small-tech/https')
-const fs = require('fs-extra')
-const path = require('path')
-const os = require('os')
-
+const fs                    = require('fs-extra')
+const path                  = require('path')
+const os                    = require('os')
+const childProcess          = require('child_process')
+const https                 = require('@small-tech/https')
+const expressWebSocket      = require('@small-tech/express-ws')
+const Hugo                  = require('@small-tech/node-hugo')
+const instant               = require('@small-tech/instant')
 const crossPlatformHostname = require('@small-tech/cross-platform-hostname')
-
-const clr = require('./lib/clr')
-
-const express = require('express')
-const bodyParser = require('body-parser')
-const expressWebSocket = require('@small-tech/express-ws')
-const helmet = require('helmet')
-const morgan = require('morgan')
-const enableDestroy = require('server-destroy')
-const Graceful = require('node-graceful')
-const httpProxyMiddleware = require('http-proxy-middleware')
-
-const instant = require('@small-tech/instant')
-
-const Hugo = require('@small-tech/node-hugo')
-
-const cli = require('./bin/lib/cli')
-const serve = require('./bin/commands/serve')
-const chokidar = require('chokidar')
-const decache = require('decache')
-
-const childProcess = require('child_process')
-
-const getRoutes = require('@small-tech/web-routes-from-files')
-const Stats = require('./lib/Stats')
-
-const errors = require('./lib/errors')
+const getRoutes             = require('@small-tech/web-routes-from-files')
+const Graceful              = require('node-graceful')
+const express               = require('express')
+const bodyParser            = require('body-parser')
+const helmet                = require('helmet')
+const httpProxyMiddleware   = require('http-proxy-middleware')
+const enableDestroy         = require('server-destroy')
+const moment                = require('moment')
+const morgan                = require('morgan')
+const chokidar              = require('chokidar')
+const decache               = require('decache')
+const clr                   = require('./lib/clr')
+const cli                   = require('./bin/lib/cli')
+const serve                 = require('./bin/commands/serve')
+const Stats                 = require('./lib/Stats')
+const errors                = require('./lib/errors')
 
 
 class Site {
+  static #appNameAndVersionAlreadyLogged = false
+  static #manifest = null
 
   static get HUGO_LOGO () {
     return `${clr('🅷', 'magenta')} ${clr('🆄', 'blue')} ${clr('🅶', 'green')} ${clr('🅾', 'yellow')} `
   }
 
-  // Emitted when the address the server is trying to use is already in use by a different process on the system.
-  static get SMALL_TECH_ORG_ERROR_HTTP_SERVER () { return 'small-tech.org-error-http-server' }
+  //
+  // Manifest helpers. The manifest file is created by the build script and includes metadata such as the
+  // binary version (in calendar version format YYYYMMDDHHmmss), the package version (in semantic version format),
+  // the source version (the git hash of the commit that corresponds to the source code the binary was built from), and
+  // the release channel (alpha, beta, or release).
+  //
+
+  static RELEASE_CHANNEL = {
+    alpha  : 'alpha',
+    beta   : 'beta',
+    release: 'release',
+    npm: 'npm'
+  }
+
+  static readAndCacheManifest () {
+    try {
+      this.#manifest = JSON.parse(fs.readFileSync(path.join(__dirname, 'manifest.json'), 'utf-8'))
+    } catch (error) {
+      // When running under Node (not wrapped as a binary), there will be no manifest file. So mock one.
+      this.#manifest = {
+        releaseChannel: 'npm',
+        binaryVersion: '20000101000000',
+        packageVersion: (require(path.join(__dirname, 'package.json'))).version,
+        sourceVersion: childProcess.execSync('git log -1 --oneline').toString().match(/^[0-9a-fA-F]{7}/)[0],
+        hugoVersion: (new Hugo()).version
+      }
+    }
+  }
+
+  static getFromManifest (key) {
+    if (this.#manifest === null) {
+      this.readAndCacheManifest()
+    }
+    return this.#manifest[key]
+  }
+
+  static get releaseChannel () { return this.getFromManifest('releaseChannel') }
+  static get binaryVersion  () { return this.getFromManifest('binaryVersion')  }
+  static get packageVersion () { return this.getFromManifest('packageVersion')  }
+  static get sourceVersion  () { return this.getFromManifest('sourceVersion')  }
+  static get hugoVersion    () { return this.getFromManifest('hugoVersion')  }
+
+  static binaryVersionToHumanReadableDateString (binaryVersion) {
+    const m = moment(binaryVersion, 'YYYYMMDDHHmmss')
+    return `${m.format('MMMM Do, YYYY')} at ${m.format('HH:mm:ss')}`
+  }
+
+  static get humanReadableBinaryVersion () {
+    if (this.#manifest === null) {
+      this.readAndCacheManifest()
+    }
+    return this.binaryVersionToHumanReadableDateString(this.#manifest.binaryVersion)
+  }
+
+  static get releaseChannelFormattedForConsole () {
+    switch(this.releaseChannel) {
+      // Spells ALPHA in large red block letters.
+      case this.RELEASE_CHANNEL.alpha: return clr(`\n
+     █████  ██      ██████  ██   ██  █████ 
+    ██   ██ ██      ██   ██ ██   ██ ██   ██ 
+    ███████ ██      ██████  ███████ ███████ 
+    ██   ██ ██      ██      ██   ██ ██   ██ 
+    ██   ██ ███████ ██      ██   ██ ██   ██`, 'red')
+
+    // Spells BETA in large yellow block letters.
+    case this.RELEASE_CHANNEL.beta: return clr(`\n
+    ██████  ███████ ████████  █████ 
+    ██   ██ ██         ██    ██   ██ 
+    ██████  █████      ██    ███████ 
+    ██   ██ ██         ██    ██   ██ 
+    ██████  ███████    ██    ██   ██`, 'yellow')
+      default: return ''
+    }
+  }
 
   // The cross-platform hostname (os.hostname() on Linux and macOS, special handling on Windows to return
   // the full computer name, which can be a domain name and thus the equivalent of hostname on Linux and macOS).
@@ -79,12 +145,20 @@ class Site {
       return
     }
 
-    if (!Site.appNameAndVersionAlreadyLogged && !process.argv.includes('--dont-log-app-name-and-version')) {
+    if (!Site.#appNameAndVersionAlreadyLogged && !process.argv.includes('--dont-log-app-name-and-version')) {
       let prefix1 = compact ? ' 💕 ' : '   💕    '
       let prefix2 = compact ? '    ' : '         '
 
+      this.readAndCacheManifest()
+
       let message = [
-        `\n${prefix1}Site.js v${Site.versionNumber()} ${clr(`(running on Node ${process.version})`, 'italic')}\n\n`,
+        `\n${prefix1}Site.js ${this.releaseChannelFormattedForConsole}\n\n`,
+        `${prefix2}Version ${clr(`${this.humanReadableBinaryVersion} (${this.packageVersion}-${this.sourceVersion})`, 'green')}\n`,
+        '\n',
+        `${prefix2}Node.js ${clr(`${process.version.replace('v', '')}`, 'green')}\n`,
+        `${prefix2}Hugo    ${clr(`${this.hugoVersion}`, 'green')}\n`,
+        `${prefix2}Base    ${clr(`https://sitejs.org/nexe/${process.platform}-${process.arch}-${process.version.replace('v', '')}`, 'cyan')}\n`,
+        `${prefix2}Source  ${clr(`https://source.small-tech.org/site.js/app/-/tree/${this.sourceVersion}`, 'cyan')}\n\n`,
         `${prefix2}╔═══════════════════════════════════════════╗\n`,
         `${prefix2}║ Like this? Fund us!                       ║\n`,
         `${prefix2}║                                           ║\n`,
@@ -95,16 +169,8 @@ class Site {
 
       console.log(message)
 
-      Site.appNameAndVersionAlreadyLogged = true
+      Site.#appNameAndVersionAlreadyLogged = true
     }
-  }
-
-  // Calculate and cache version number from package.json on first call.
-  static versionNumber () {
-    if (Site._versionNumber === null) {
-      Site._versionNumber = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json'), 'utf-8')).version
-    }
-    return Site._versionNumber
   }
 
   // Default error pages.
@@ -434,9 +500,10 @@ class Site {
     const proxyHttpUrl = `http://localhost:${this.proxyPort}`
     const proxyWebSocketUrl = `ws://localhost:${this.proxyPort}`
 
-    function prettyLog (message) {
+    let prettyLog = function (message) {
       this.log(`   🔁    ❨Site.js❩ ${message}`)
     }
+    prettyLog = prettyLog.bind(this)
 
     const logProvider = function(provider) {
       return { log: prettyLog, debug: prettyLog, info: prettyLog, warn: prettyLog, error: prettyLog }
@@ -483,18 +550,6 @@ class Site {
 
     // Enable the ability to destroy the server (close all active connections).
     enableDestroy(this.server)
-
-    // Provide access to the error constant on the server instance itself
-    // as consuming objects may not have access to the class itself.
-    this.server.SMALL_TECH_ORG_ERROR_HTTP_SERVER = Site.SMALL_TECH_ORG_ERROR_HTTP_SERVER
-
-    this.server.on('error', error => {
-      this.log('\n   🤯    ❨Site.js❩ Error: could not start server.\n')
-      if (error.code === 'EADDRINUSE') {
-        this.log(`   💥    ❨Site.js❩ Port ${this.port} is already in use.\n`)
-      }
-      this.server.emit(Site.SMALL_TECH_ORG_ERROR_HTTP_SERVER)
-    })
 
     this.server.on('close', () => {
       // Clear the auto update check interval.
@@ -711,7 +766,16 @@ class Site {
         }
 
         this.log(' ⏰ Setting up auto-update check interval.')
-        this.autoUpdateCheckInterval = setInterval(checkForUpdates, /* every */ 5 /* hours */ * 60 * 60 * 1000)
+        // Regular and alpha releases check for updates every 6 hours.
+        // (You  should not be deploying servers using the alpha release channel.)
+        let hours = 6
+        let minutes = 60
+        if (Site.releaseChannel === Site.RELEASE_CHANNEL.beta) {
+          // Beta releases check for updates every 10 minutes.
+          hours = 1
+          minutes = 10
+        }
+        this.autoUpdateCheckInterval = setInterval(checkForUpdates, /* every */ hours * minutes * 60 * 1000)
 
         // And perform an initial check a few seconds after startup.
         setTimeout(checkForUpdates, 3000)
@@ -1113,7 +1177,5 @@ class Site {
   }
 }
 
-Site.appNameAndVersionAlreadyLogged = false
-Site._versionNumber = null
 
 module.exports = Site

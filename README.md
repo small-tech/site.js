@@ -50,6 +50,8 @@ __Before you pipe any script into your computer, always view the source code ([L
 wget -qO- https://sitejs.org/install | bash
 ```
 
+(To use curl instead, see the macOS instructions, below.)
+
 #### macOS
 
 ```shell
@@ -68,19 +70,37 @@ iex(iwr -UseBasicParsing https://sitejs.org/install.txt).Content
 npm i -g @small-tech/site.js
 ```
 
+### Alpha and Beta channels
+
+On Linux and macOS, addition to the release build channel, there is also an alpha build and beta build channel available. Pass either `alpha` or `beta` as an argument to the Bash pipe to install the latest build from the respective channel.
+
+For example, to install the latest beta build on Linux:
+
+```shell
+wget -qO- https://sitejs.org/install | bash -s -- beta
+```
+
+All of our servers at Small Technology Foundation ([Laura’s web site](https://laurakalbag.com), [Aral’s web site](https://ar.al), the [Small Technology Foundation web site](https://small-tech.org), and the [Better Blocker web site](https://better.fyi)) run on the Beta channel of Site.js so we can hopefully catch any issues that may exist in updates before pushing them out to everyone else.
+
+Alpha builds are strictly for local testing and should not, under any circumstances, be used in production. We do not test Alpha builds in production.
+
+Servers deployed using release builds check for updates every six hours whereas beta builds check every 10 minutes.
+
 ## System Requirements
 
 ### Linux
 
-Any recent Linux distribution should work. However, Site.js is most thoroughly tested on Ubuntu 19.04/Pop!_OS 19.04 (development and staging) and Ubuntu 18.04 LTS (production) at [Small Technology Foundation](https://small-tech.org).
+Any recent Linux distribution should work. However, Site.js is most thoroughly tested at Small Technology Foundation on Ubuntu 19.04/Pop!_OS 19.04 (development and staging) and Ubuntu 18.04 LTS (production).
 
-There are builds available for x64 and ARM (tested and supported on armv6l and armv7l only. Tested on Rasperry Pi Zero W, 3B+, 4B).
+There are builds available for x64 and ARM.
 
-For production use, systemd is required.
+ARM builds currently only tested and supported on Raspberry Pi Zero W, 3B+, and 4B (armv6l and armv7l). If you are successfully running Site.js on other ARM architectures, please [let us know by opening an issue with the details](https://github.com/small-tech/site.js/issues) and we’ll update the documentation accordingly.
+
+For production use, [systemd](https://en.wikipedia.org/wiki/Systemd) is required.
 
 ### macOS
 
-macOS 10.14 Mojave and macOS 10.15 Catalina are supported (the latter as of Site.js 12.5.1).
+macOS 10.14.x Mojave and macOS 10.15.x Catalina are supported (the latter as of Site.js 12.5.1).
 
 _Production use is not possible under macOS._
 
@@ -94,16 +114,16 @@ _Production use is not possible under Windows._
 
 ## Dependencies
 
-Site.js tries to install the dependencies it needs seamlessly while running. That said, there are certain basic components it expects on a Linux-like system. These are:
+Site.js tries to seamlessly install the dependencies it needs when run. That said, there are certain basic components it expects on a Linux-like system. These are:
 
   - `sudo`
   - `libcap2-bin` (we use `setcap` to escalate privileges on the binary as necessary)
 
-For production use, passwordless sudo is required. On systems where the sudo configuration directory is set to `/etc/sudoers.d`, Site.js will automatically install this rule. On other systems, you might have to set it up yourself.
+__For production use, passwordless sudo is required.__ On systems where the sudo configuration directory is set to `/etc/sudoers.d`, Site.js will automatically install this rule. On other systems, you might have to [set it up yourself](https://serverfault.com/questions/160581/how-to-setup-passwordless-sudo-on-linux).
 
-If it turns out that any of these prerequisites are a widespread reason for first-run breakage, we can look into having them installed automatically in the future. Please open an issue if any of these is an issue in your deployments or everyday usage.
+If it turns out that any of these prerequisites are a widespread cause of first-run woe, we can look into having them installed automatically in the future. Please [open an issue](https://github.com/small-tech/site.js/issues) if any of these affects you during your deployments or in everyday use.
 
-Of course, you will need `wget` (or `curl`) installed to download the install script. You can install `wget` via your distribution’s package manager (e.g., `sudo apt install wget` on Ubuntu-like systems).
+To install Site.js using the one-line installation command on Linux and macOS, you will need `wget` (or `curl`) installed to download the installation script. On Linux, you can install either via your distribution’s package manager (e.g., `sudo apt install wget` on Ubuntu-like systems). macOS comes with curl installed.
 
 ## Update (as of version 12.9.5; properly functioning as of version 12.9.6)
 
@@ -119,7 +139,7 @@ __Note:__ There is a bug in the semantic version comparison in the original rele
 
 ## Automatic updates in production (as of version 12.10.0)
 
-[Production servers](#production) started with the `enable` command will automatically check for updates on first launch and then again at a set interval (currently every 5 hours) and update themselves as and when necessary.
+[Production servers](#production) started with the `enable` command will automatically check for updates on first launch and then again at a set interval (currently every 6 hours) and update themselves as and when necessary.
 
 This is a primary security feature given that Site.js is meant for use by individuals, not startups or enterprises with operations teams that can (in theory, at least) maintain servers with the latest updates.
 
@@ -165,22 +185,46 @@ $ site serve . @localhost:666
 
 #### Proxy server
 
-You can use Site.js as a development-time reverse proxy for HTTP and WebSocket connections. For example, if you use [Hugo](https://gohugo.io/) and you’re running `hugo server` on the default HTTP port 1313. You can run a HTTPS reverse proxy at https://localhost [with LiveReload support](https://source.small-tech.org/hypha/tools/web-server/blob/master/bin/web-server.js#L237) using:
+You can use Site.js as a development-time reverse proxy for HTTP and WebSocket connections. This is useful if you have a web app written in any language that only supports HTTP (not TLS) that you want to deploy securely.
+
+For example, the following is a simple HTTP server written in Python 3 (_server.py_) that runs insecurely on port 3000:
+
+```python
+from http.server import HTTPServer, BaseHTTPRequestHandler
+
+class MyRequestHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b'Hello, from Python!')
+
+server = HTTPServer(('localhost', 3000), MyRequestHandler)
+server.serve_forever()
+```
+
+Run it (at http://localhost:3000) with:
 
 ```shell
-$ site :1313
+$ python3 server
 ```
+
+Then, proxy it securely from https://localhost using:
+
+```shell
+$ site :3000
+```
+
 
 Again, this is a convenient shortcut. The full form of this command is:
 
 ```shell
-$ site serve :1313 @localhost:443
+$ site serve :3000 @localhost:443
 ```
 
 This will create and serve the following proxies:
 
-  * http://localhost:1313 → https://localhost
-  * ws://localhost:1313 → wss://localhost
+  * http://localhost:3000 → https://localhost
+  * ws://localhost:3000 → wss://localhost
 
 ### Testing (servers @hostname)
 
@@ -308,7 +352,9 @@ Site.js uses the [systemd](https://freedesktop.org/wiki/Software/systemd/) to st
 
 ## Build and test from source
 
-Site.js is built using and supports the latest Node.js LTS (currently version 10.16.0; after October 22nd, 2019, we are scheduled to move to Node 12 LTS when it becomes the active branch).
+Site.js is built using and supports Node.js LTS (currently version 12.16.2).
+
+The build is created using Nexe and our own pre-built Nexe base Node.js binaries hosted on SiteJS.org. Please make sure that the version of your Node.js runtime matches the currently supported version stated above to ensure that the correct Nexe binary build is downloaded and used by the build script.
 
 ### Install the source and run tests
 
@@ -349,8 +395,8 @@ __Note:__ for commands that require root privileges (i.e., `enable` and `disable
 
 ```shell
 # Replace v10.16.3 with the version of node you want to make available globally.
-sudo ln -s "$NVM_DIR/versions/node/v10.16.3/bin/node" "/usr/local/bin/node"
-sudo ln -s "$NVM_DIR/versions/node/v10.16.3/bin/npm" "/usr/local/bin/npm"
+sudo ln -s "$NVM_DIR/versions/node/v12.16.2/bin/node" "/usr/local/bin/node"
+sudo ln -s "$NVM_DIR/versions/node/v12.16.2/bin/npm" "/usr/local/bin/npm"
 ```
 
 ### Native binaries
@@ -363,8 +409,9 @@ After you install the source and run tests:
 npm run build
 
 # Serve the test site (visit https://localhost to view).
-# e.g., To Linux binary:
-dist/linux/12.8.0/site test/site
+# e.g., Using the Linux binary with version <binary-version>
+# in the format (YYYYMMDDHHmmss).
+dist/linux/<binary-version>/site test/site
 ```
 
 ### Build and install native binary locally
@@ -373,21 +420,6 @@ After you install the source and run tests:
 
 ```shell
 npm run install-locally
-```
-
-### Building for Linux on ARM (Raspberry Pi, etc.)
-
-You cannot currently [cross-compile for ARM](https://github.com/nexe/nexe/issues/424) so you must build Site.js on an ARM device. The release build is built on a Raspberry Pi 3B+. Note that [Aral had issues compiling it on a Pi 4](https://github.com/nexe/nexe/issues/685). To build the Site.js binary (e.g., version 12.8.0) on an ARM device, do:
-
-```shell
-mkdir -p dist/linux-arm/12.8.0
-node_modules/nexe/index.js bin/site.js --build --verbose -r package.json -r "bin/commands/*" -r "node_modules/le-store-certbot/renewal.conf.tpl" -r "node_modules/@small-tech/auto-encrypt-localhost/mkcert-bin/mkcert-v1.4.1-linux-arm" -o dist/linux-arm/12.8.0/site
-```
-
-You can then find the `site` binary in your `dist/linux-arm/12.8.0/` folder. To install it, do:
-
-```shell
-sudo cp dist/linux-arm/12.8.0/site /usr/local/bin
 ```
 
 ### Deployment
@@ -948,7 +980,7 @@ module.exports = app => {
 }
 ```
 
-When using the _routes.js_ file, you can use all of the features in [wxpress](https://expressjs.com/) and [our fork of express-ws](https://github.com/aral/express-ws) (which itself wraps [ws](https://github.com/websockets/ws#usage-examples)).
+When using the _routes.js_ file, you can use all of the features in [express](https://expressjs.com/) and [our fork of express-ws](https://github.com/aral/express-ws) (which itself wraps [ws](https://github.com/websockets/ws#usage-examples)).
 
 ### Routing precedence
 
@@ -1124,7 +1156,7 @@ I can use your help to test Site.js on the following platform/package manager co
   - Linux with yum
   - macOS with MacPorts
 
-Please [let me know how/if it works](https://github.com/small-tech/site.js/issues). Thank you!
+Please [let us know how/if it works](https://github.com/small-tech/site.js/issues). Thank you!
 
 ## Thanks
 

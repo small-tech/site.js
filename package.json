@@ -16,8 +16,14 @@
     "build": "node bin/build.js",
     "deploy": "bin/build.js --deploy",
     "install-locally": "node bin/build.js --install",
-    "test": "QUIET=true tape test/*.js | tap-spec",
-    "coverage": "QUIET=true nyc tape test/*.js | tap-nyc"
+    "build-alpha": "node bin/build.js --alpha",
+    "deploy-alpha": "bin/build.js --deploy --alpha",
+    "install-locally-alpha": "node bin/build.js --install --alpha",
+    "build-beta": "node bin/build.js --beta",
+    "deploy-beta": "bin/build.js --deploy --beta",
+    "install-locally-beta": "node bin/build.js --install --beta",
+    "test": "tape test/*.js | tap-spec",
+    "coverage": "nyc tape test/*.js | tap-nyc"
   },
   "funding": {
     "type": "foundation",
@@ -38,7 +44,7 @@
     "@small-tech/express-ws": "^1.0.0",
     "@small-tech/https": "^1.2.2",
     "@small-tech/instant": "^1.1.0",
-    "@small-tech/node-hugo": "^1.3.0",
+    "@small-tech/node-hugo": "^1.4.0",
     "@small-tech/web-routes-from-files": "^2.0.0",
     "ansi-escape-sequences": "^4.1.0",
     "body-parser": "^1.19.0",
