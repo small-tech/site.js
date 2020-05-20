@@ -73,13 +73,15 @@ function presentBinaryVersion (binaryVersion) {
 const existingInstallationScriptTemplate = fs.readFileSync('installation-script-templates/install', 'utf-8')
 const existingSourceVersionRegExp = new RegExp(`${releaseChannel}SourceVersion=([0-9a-fA-F]{7})`)
 const existingSourceVersion = existingInstallationScriptTemplate.match(existingSourceVersionRegExp)[1]
-const existingBinaryVersionRegExp = new RegExp(`${releaseChannel}SourceVersion=(\d{14})`)
+const existingBinaryVersionRegExp = new RegExp(`${releaseChannel}BinaryVersion=(\\d{14})`)
 const existingBinaryVersion = existingInstallationScriptTemplate.match(existingBinaryVersionRegExp)[1]
 
 if (existingSourceVersion !== 'bedface' /* (the default) */ && sourceVersion === existingSourceVersion) {
-  console.log(`❌ Error: You’ve already deployed source version ${sourceVersion} in the ${releaseChannel} channel as binary version ${existing}. You cannot deploy from the same source version twice in the same release channel. If this is in error, please update the ${releaseChannel}SourceVersion variable in installation-script-templates/install.\n`)
+  console.log(`❌ Error: You’ve already deployed source version ${sourceVersion} in the ${releaseChannel} channel as binary version ${existingBinaryVersion}. You cannot deploy from the same source version twice in the same release channel. If this is in error, please update the ${releaseChannel}SourceVersion variable in installation-script-templates/install.\n`)
   process.exit(1)
 }
+
+process.exit()
 
 console.log(`\n ⚙️ Site.js build started on ${presentBinaryVersion(binaryVersion)}.\n
     Release channel: ${releaseChannel}
