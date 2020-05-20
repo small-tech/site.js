@@ -396,7 +396,7 @@ async function build () {
     //
     // Tag the release.
     //
-    childProcess.execSync(`git tag -s ${binaryVersion} -m '${manifest.releaseChannel} (${manifest.packageVersion}-${manifest.sourceVersion})'`)
+    childProcess.execSync(`git tag -s ${binaryVersion} -m 'Binary: ${manifest.releaseChannel} channel (based on package version ${manifest.packageVersion}, source version ${manifest.sourceVersion})'`)
 
     //
     // Zip.
