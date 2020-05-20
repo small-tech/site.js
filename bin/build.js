@@ -55,22 +55,31 @@ if (commandLineOptions.deploy && childProcess.execSync('git status').toString().
 // Each version element is useful in its own way.
 //
 
-const releaseChannel     = commandLineOptions.alpha ? 'alpha' : (commandLineOptions.beta ? 'beta' : 'release')
-const nodeVersion = process.version.slice(1)
-
-const hugoVersion = (new Hugo()).version
+const releaseChannel    = commandLineOptions.alpha ? 'alpha' : (commandLineOptions.beta ? 'beta' : 'release')
+const nodeVersion       = process.version.slice(1)
+const hugoVersion       = (new Hugo()).version
+const binaryVersion     = moment(new Date()).format('YYYYMMDDHHmmss')
+const packageVersion    = package.version
+const sourceVersion     = (childProcess.execSync('git log -1 --oneline | cut -c1-7')).toString().trim()
+const binaryName        = 'site'
+const windowsBinaryName = `${binaryName}.exe`
 
 function presentBinaryVersion (binaryVersion) {
   const m = moment(binaryVersion, 'YYYYMMDDHHmmss')
   return `${m.format('MMMM Do YYYY')} at ${m.format('HH:mm:ss')}`
 }
 
-const binaryVersion     = moment(new Date()).format('YYYYMMDDHHmmss')
-const packageVersion    = package.version
-const sourceVersion     = (childProcess.execSync('git log -1 --oneline | cut -c1-7')).toString().trim()
+// Ensure that you cannot accidentally deploy the same source version (git hash) more than once.
+const existingInstallationScriptTemplate = fs.readFileSync('installation-script-templates/install', 'utf-8')
+const existingSourceVersionRegExp = new RegExp(`${releaseChannel}SourceVersion=([0-9a-fA-F]{7})`)
+const existingSourceVersion = existingInstallationScriptTemplate.match(existingSourceVersionRegExp)[1]
+const existingBinaryVersionRegExp = new RegExp(`${releaseChannel}SourceVersion=(\d{14})`)
+const existingBinaryVersion = existingInstallationScriptTemplate.match(existingBinaryVersionRegExp)[1]
 
-const binaryName        = 'site'
-const windowsBinaryName = `${binaryName}.exe`
+if (existingSourceVersion !== 'bedface' /* (the default) */ && sourceVersion === existingSourceVersion) {
+  console.log(`❌ Error: You’ve already deployed source version ${sourceVersion} in the ${releaseChannel} channel as binary version ${existing}. You cannot deploy from the same source version twice in the same release channel. If this is in error, please update the ${releaseChannel}SourceVersion variable in installation-script-templates/install.\n`)
+  process.exit(1)
+}
 
 console.log(`\n ⚙️ Site.js build started on ${presentBinaryVersion(binaryVersion)}.\n
     Release channel: ${releaseChannel}

@@ -43,11 +43,11 @@ alphaSourceVersion=bedface
 
 betaBinaryVersion=00000000000000
 betaPackageVersion=00.00.00
-betaSourceVersion=acecafe
+betaSourceVersion=bedface
 
 releaseBinaryVersion=00000000000000
 releasePackageVersion=00.00.00
-releaseSourceVersion=decafAF
+releaseSourceVersion=bedface
 
 binaryVersionVariableName="${releaseChannel}BinaryVersion"
 packageVersionVariableName="${releaseChannel}PackageVersion"
