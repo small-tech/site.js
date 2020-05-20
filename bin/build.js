@@ -77,7 +77,11 @@ const existingBinaryVersionRegExp = new RegExp(`${releaseChannel}BinaryVersion=(
 const existingBinaryVersion = existingInstallationScriptTemplate.match(existingBinaryVersionRegExp)[1]
 
 if (existingSourceVersion !== 'bedface' /* (the default) */ && sourceVersion === existingSourceVersion) {
-  console.log(`❌ Error: You’ve already deployed source version ${sourceVersion} in the ${releaseChannel} channel as binary version ${existingBinaryVersion}. You cannot deploy from the same source version twice in the same release channel. If this is in error, please update the ${releaseChannel}SourceVersion variable in installation-script-templates/install.\n`)
+  console.log(`❌ Error: You cannot deploy from the same source version twice in the same release channel.
+
+   You’ve already deployed source version ${sourceVersion} in the ${releaseChannel} channel as binary version ${existingBinaryVersion}.
+
+   If this is in error, please update the ${releaseChannel}SourceVersion variable in installation-script-templates/install.\n`)
   process.exit(1)
 }
 
@@ -233,12 +237,12 @@ async function build () {
 
   function restoreMkcertBinary(platform) {
     const fileName = `${mkcertBinaryFilenameBase}${platform}`
-    fs.moveSync(path.join(mkcertTemporaryDirectoryPath, fileName), path.join(mkcertBinaryDirectoryPath, fileName))
+    fs.moveSync(path.join(mkcertTemporaryDirectoryPath, fileName), path.join(mkcertBinaryDirectoryPath, fileName), {overwrite: true})
   }
 
   function restoreHugoBinary(platform) {
     const fileName = `${hugoBinaryFilenameBase}${platform}`
-    fs.moveSync(path.join(hugoTemporaryDirectoryPath, fileName), path.join(hugoBinaryDirectoryPath, fileName))
+    fs.moveSync(path.join(hugoTemporaryDirectoryPath, fileName), path.join(hugoBinaryDirectoryPath, fileName), {overwrite: true})
   }
 
   const platforms = ['darwin-amd64', 'linux-amd64', 'linux-arm', 'windows-amd64.exe']
