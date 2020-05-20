@@ -70,7 +70,7 @@
   },
   "devDependencies": {
     "nexe": "https://github.com/aral/nexe#third-party-remotes",
-    "nyc": "^14.1.1",
+    "nyc": "^15.0.1",
     "tap-nyc": "^1.0.3",
     "tap-spec": "^5.0.0",
     "tape": "^4.11.0",

@@ -33,182 +33,185 @@ function enable (args) {
   // Note: daemons are currently only supported on port 443. If there is a need
   // ===== to support other ports, please open an issue and explain the use case
   //       (it is easy enough to implement.)
-  ensure.weCanBindToPort(443, () => {
-    // While we’ve already checked that the Site.js daemon is not
-    // active, above, it is still possible that there is another service
-    // running on port 443. We could ignore this and enable the systemd
-    // service anyway and this command would succeed and our server would
-    // start being served when the blocking service is stopped. However, this
-    // is misleading as the command succeeding makes it appear as if the
-    // server has started running. So, instead, we detect if the port
-    // is already in use and, if it is, refuse to install and activate the
-    // service. This is should provide the least amount of surprise in usage.
-    tcpPortUsed.check(443)
-    .then(inUse => {
-      if (inUse) {
-        console.log(`\n 🤯 Error: Cannot start daemon. Port 443 is already in use.\n`)
-        process.exit(1)
-      } else {
-        // Ensure we are root (we do this here instead of before the asynchronous call to
-        // avoid any timing-related issues around a restart and a port-in-use error).
-        ensure.root()
 
-        if (args.positional.length > 1) {
-          // Syntax error.
-          console.log(`\n ${clr('Syntax error: ', 'red')} Too many arguments supplied to enable command (it expects at most one, the path to serve).`)
-          require('./help')()
-        }
+  // Ensure privileged ports are disabled on Linux machines.
+  // For details, see: https://source.small-tech.org/site.js/app/-/issues/169
+  ensure.privilegedPortsAreDisabled()
 
-        //
-        // Create the systemd service unit.
-        //
-        const pathToServe = args.positional.length === 1 ? args.positional[0] : '.'
-        const binaryExecutable = '/usr/local/bin/site'
-        const sourceDirectory = path.resolve(__dirname, '..', '..')
-        const nodeExecutable = `node ${path.join(sourceDirectory, 'bin/site.js')}`
-        const executable = runtime.isBinary ? binaryExecutable : nodeExecutable
+  // While we’ve already checked that the Site.js daemon is not
+  // active, above, it is still possible that there is another service
+  // running on port 443. We could ignore this and enable the systemd
+  // service anyway and this command would succeed and our server would
+  // start being served when the blocking service is stopped. However, this
+  // is misleading as the command succeeding makes it appear as if the
+  // server has started running. So, instead, we detect if the port
+  // is already in use and, if it is, refuse to install and activate the
+  // service. This is should provide the least amount of surprise in usage.
+  tcpPortUsed.check(443)
+  .then(inUse => {
+    if (inUse) {
+      console.log(`\n 🤯 Error: Cannot start daemon. Port 443 is already in use.\n`)
+      process.exit(1)
+    } else {
+      // Ensure we are root (we do this here instead of before the asynchronous call to
+      // avoid any timing-related issues around a restart and a port-in-use error).
+      ensure.root()
 
-        const absolutePathToServe = path.resolve(pathToServe)
-
-        // If there are aliase, we will add them to the configuration so they can
-        // be passed to the serve command when Site.js is started.
-        const _aliases = args.named['aliases']
-        const aliases = _aliases === undefined ? '' : `--aliases=${_aliases}`
-
-        // Expectation: At this point, regardless of whether we are running as a regular
-        // Node script or as a standalone executable created with Nexe, all paths should
-        // be set correctly.
-
-        // Get the regular account name (i.e, the unprivileged account that is
-        // running the current process via sudo).
-        const accountUID = parseInt(process.env.SUDO_UID)
-        if (!accountUID) {
-          console.log(`\n 👿 Error: could not get account ID.\n`)
-          process.exit(1)
-        }
-
-        let accountName
-        try {
-          // Courtesy: https://www.unix.com/302402784-post4.html
-          accountName = childProcess.execSync(`awk -v val=${accountUID} -F ":" '$3==val{print $1}' /etc/passwd`, {env: process.env, stdio: 'pipe'}).toString().replace('\n', '')
-        } catch (error) {
-          console.log(`\n 👿 Error: could not get account name \n${error}.`)
-          process.exit(1)
-        }
-
-        const unit = `[Unit]
-        Description=Site.js
-        Documentation=https://sitejs.org/
-        After=network.target
-        StartLimitIntervalSec=0
-
-        [Service]
-        Type=simple
-        User=${accountName}
-        Environment=PATH=/sbin:/usr/bin:/usr/local/bin
-        Environment=NODE_ENV=production
-        RestartSec=1
-        Restart=always
-
-        ExecStart=${executable} ${absolutePathToServe} @hostname ${aliases}
-
-        [Install]
-        WantedBy=multi-user.target
-        `
-
-        //
-        // Ensure passwordless sudo is set up before installing and activating the
-        // service (or else automatic updates will fail).
-        //
-
-        try {
-          // The following command will fail if passwordless sudo is not set up.
-          childProcess.execSync(`sudo --user=${accountName} sudo --reset-timestamp --non-interactive cat /etc/sudoers > /dev/null 2>&1`, {env: process.env})
-        } catch {
-          // Passwordless sudo is not set up.
-          console.log(' 🔐 Passwordless sudo is required for automatic server updates. Attempting to set up…')
-
-          // Sanity check: ensure the /etc/sudoers file exists.
-          if (!fs.existsSync('/etc/sudoers')) {
-            console.log('\n 👿 Sorry, could not find /etc/sudoers file. Cannot set up Site.js daemon.\n')
-            process.exit(1)
-          }
-
-          // Sanity check: ensure the /etc/sudoers.d directory exists as this is where we
-          // need to put our sudo rule to allow passwordless sudo.
-          if (!fs.existsSync('/etc/sudoers.d')) {
-            console.log('\n 👿 Sorry, could not find /etc/sudoers.d directory. Cannot set up Site.js daemon.\n')
-            process.exit(1)
-          }
-
-          // Sanity check: ensure sudo is set up to read sudo rules from /etc/sudoers.d directory.
-          const sudoers = fs.readFileSync('/etc/sudoers', 'utf-8')
-          if (!sudoers.includes('#includedir /etc/sudoers.d')) {
-            console.log(`\n 👿 Sorry, cannot set up passwordless sudo as /etc/sudoers.d is not included from /etc/sudoers.\n`)
-            console.log('   Add this line to the end of that file using visudo to fix:\n')
-            console.log('   #includedir /etc/sudoers.d\n')
-            process.exit(1)
-          }
-
-          // Create our passwordless sudo configuration file in the temporary folder.
-          fs.writeFileSync('/tmp/sitejs-passwordless-sudo', `${accountName} ALL=(ALL:ALL) NOPASSWD: ALL\n`)
-
-          // Check the syntax to ensure that we don’t mess up the system and lock the account out.
-          // (You can never be too careful when updating the sudo rules as one mistake and you could
-          // lock a person out of their account.)
-          try {
-            childProcess.execSync(`visudo -c -f /tmp/sitejs-passwordless-sudo`)
-          } catch (error) {
-            console.log('\n 👿 Error: could not verify that our attempt to set up passwordless sudo would succeed. Aborting.\n${error}')
-            process.exit(1)
-          }
-
-          // OK, the file is valid, copy it to the actual directory so it takes effect.
-          try {
-            childProcess.execSync('sudo cp /tmp/sitejs-passwordless-sudo /etc/sudoers.d/')
-          } catch (error) {
-            console.log('\n 👿 Error: could not install the passwordless sudo rule. Aborting.\n${error}')
-            process.exit(1)
-          }
-
-          console.log(' 🔐 Passwordless sudo successfully set up.\n')
-        }
-
-        //
-        // Save the systemd service unit.
-        //
-        fs.writeFileSync('/etc/systemd/system/site.js.service', unit, 'utf-8')
-
-        //
-        // Enable and start systemd service.
-        //
-        try {
-          // Start.
-          childProcess.execSync('sudo systemctl start site.js', {env: process.env, stdio: 'pipe'})
-          Site.logAppNameAndVersion(/* compact = */ true)
-          console.log(` 😈 Launched as daemon on ${clr(`https://${os.hostname()}`, 'green')} serving ${clr(pathToServe, 'cyan')}\n`)
-
-          // Enable.
-          childProcess.execSync('sudo systemctl enable site.js', {env: process.env, stdio: 'pipe'})
-          console.log(` 😈 Installed for auto-launch at startup.\n`)
-        } catch (error) {
-          console.log(error, `\n 👿 Error: could not enable server.\n`)
-          process.exit(1)
-        }
-
-        // When enable command is run with the --ensure-can-sync option, ensure that the current environment
-        // is set up to accept remote rsync over ssh and also provide some useful information
-        // for setting up the client-side development server.
-        if (args.named['ensure-can-sync']) {
-          ensure.rsyncExists()
-          disableInsecureRsyncDaemon()
-          displayConnectionInformation(pathToServe)
-        }
-
-        // All OK!
-        console.log(' 😁👍 You’re all set!\n')
+      if (args.positional.length > 1) {
+        // Syntax error.
+        console.log(`\n ${clr('Syntax error: ', 'red')} Too many arguments supplied to enable command (it expects at most one, the path to serve).`)
+        require('./help')()
       }
-    })
+
+      //
+      // Create the systemd service unit.
+      //
+      const pathToServe = args.positional.length === 1 ? args.positional[0] : '.'
+      const binaryExecutable = '/usr/local/bin/site'
+      const sourceDirectory = path.resolve(__dirname, '..', '..')
+      const nodeExecutable = `node ${path.join(sourceDirectory, 'bin/site.js')}`
+      const executable = runtime.isBinary ? binaryExecutable : nodeExecutable
+
+      const absolutePathToServe = path.resolve(pathToServe)
+
+      // If there are aliase, we will add them to the configuration so they can
+      // be passed to the serve command when Site.js is started.
+      const _aliases = args.named['aliases']
+      const aliases = _aliases === undefined ? '' : `--aliases=${_aliases}`
+
+      // Expectation: At this point, regardless of whether we are running as a regular
+      // Node script or as a standalone executable created with Nexe, all paths should
+      // be set correctly.
+
+      // Get the regular account name (i.e, the unprivileged account that is
+      // running the current process via sudo).
+      const accountUID = parseInt(process.env.SUDO_UID)
+      if (!accountUID) {
+        console.log(`\n 👿 Error: could not get account ID.\n`)
+        process.exit(1)
+      }
+
+      let accountName
+      try {
+        // Courtesy: https://www.unix.com/302402784-post4.html
+        accountName = childProcess.execSync(`awk -v val=${accountUID} -F ":" '$3==val{print $1}' /etc/passwd`, {env: process.env, stdio: 'pipe'}).toString().replace('\n', '')
+      } catch (error) {
+        console.log(`\n 👿 Error: could not get account name \n${error}.`)
+        process.exit(1)
+      }
+
+      const unit = `[Unit]
+      Description=Site.js
+      Documentation=https://sitejs.org/
+      After=network.target
+      StartLimitIntervalSec=0
+
+      [Service]
+      Type=simple
+      User=${accountName}
+      Environment=PATH=/sbin:/usr/bin:/usr/local/bin
+      Environment=NODE_ENV=production
+      RestartSec=1
+      Restart=always
+
+      ExecStart=${executable} ${absolutePathToServe} @hostname ${aliases}
+
+      [Install]
+      WantedBy=multi-user.target
+      `
+
+      //
+      // Ensure passwordless sudo is set up before installing and activating the
+      // service (or else automatic updates will fail).
+      //
+
+      try {
+        // The following command will fail if passwordless sudo is not set up.
+        childProcess.execSync(`sudo --user=${accountName} sudo --reset-timestamp --non-interactive cat /etc/sudoers > /dev/null 2>&1`, {env: process.env})
+      } catch {
+        // Passwordless sudo is not set up.
+        console.log(' 🔐 Passwordless sudo is required for automatic server updates. Attempting to set up…')
+
+        // Sanity check: ensure the /etc/sudoers file exists.
+        if (!fs.existsSync('/etc/sudoers')) {
+          console.log('\n 👿 Sorry, could not find /etc/sudoers file. Cannot set up Site.js daemon.\n')
+          process.exit(1)
+        }
+
+        // Sanity check: ensure the /etc/sudoers.d directory exists as this is where we
+        // need to put our sudo rule to allow passwordless sudo.
+        if (!fs.existsSync('/etc/sudoers.d')) {
+          console.log('\n 👿 Sorry, could not find /etc/sudoers.d directory. Cannot set up Site.js daemon.\n')
+          process.exit(1)
+        }
+
+        // Sanity check: ensure sudo is set up to read sudo rules from /etc/sudoers.d directory.
+        const sudoers = fs.readFileSync('/etc/sudoers', 'utf-8')
+        if (!sudoers.includes('#includedir /etc/sudoers.d')) {
+          console.log(`\n 👿 Sorry, cannot set up passwordless sudo as /etc/sudoers.d is not included from /etc/sudoers.\n`)
+          console.log('   Add this line to the end of that file using visudo to fix:\n')
+          console.log('   #includedir /etc/sudoers.d\n')
+          process.exit(1)
+        }
+
+        // Create our passwordless sudo configuration file in the temporary folder.
+        fs.writeFileSync('/tmp/sitejs-passwordless-sudo', `${accountName} ALL=(ALL:ALL) NOPASSWD: ALL\n`)
+
+        // Check the syntax to ensure that we don’t mess up the system and lock the account out.
+        // (You can never be too careful when updating the sudo rules as one mistake and you could
+        // lock a person out of their account.)
+        try {
+          childProcess.execSync(`visudo -c -f /tmp/sitejs-passwordless-sudo`)
+        } catch (error) {
+          console.log('\n 👿 Error: could not verify that our attempt to set up passwordless sudo would succeed. Aborting.\n${error}')
+          process.exit(1)
+        }
+
+        // OK, the file is valid, copy it to the actual directory so it takes effect.
+        try {
+          childProcess.execSync('sudo cp /tmp/sitejs-passwordless-sudo /etc/sudoers.d/')
+        } catch (error) {
+          console.log('\n 👿 Error: could not install the passwordless sudo rule. Aborting.\n${error}')
+          process.exit(1)
+        }
+
+        console.log(' 🔐 Passwordless sudo successfully set up.\n')
+      }
+
+      //
+      // Save the systemd service unit.
+      //
+      fs.writeFileSync('/etc/systemd/system/site.js.service', unit, 'utf-8')
+
+      //
+      // Enable and start systemd service.
+      //
+      try {
+        // Start.
+        childProcess.execSync('sudo systemctl start site.js', {env: process.env, stdio: 'pipe'})
+        Site.logAppNameAndVersion(/* compact = */ true)
+        console.log(` 😈 Launched as daemon on ${clr(`https://${os.hostname()}`, 'green')} serving ${clr(pathToServe, 'cyan')}\n`)
+
+        // Enable.
+        childProcess.execSync('sudo systemctl enable site.js', {env: process.env, stdio: 'pipe'})
+        console.log(` 😈 Installed for auto-launch at startup.\n`)
+      } catch (error) {
+        console.log(error, `\n 👿 Error: could not enable server.\n`)
+        process.exit(1)
+      }
+
+      // When enable command is run with the --ensure-can-sync option, ensure that the current environment
+      // is set up to accept remote rsync over ssh and also provide some useful information
+      // for setting up the client-side development server.
+      if (args.named['ensure-can-sync']) {
+        ensure.rsyncExists()
+        disableInsecureRsyncDaemon()
+        displayConnectionInformation(pathToServe)
+      }
+
+      // All OK!
+      console.log(' 😁👍 You’re all set!\n')
+    }
   })
 }
 
