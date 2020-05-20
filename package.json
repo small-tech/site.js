@@ -56,7 +56,7 @@
     "fs-extra": "^8.1.0",
     "gunzip-maybe": "^1.4.1",
     "helmet": "^3.21.2",
-    "http-proxy-middleware": "^0.19.1",
+    "http-proxy-middleware": "^0.19.2",
     "minimist": "^1.2.0",
     "morgan": "^1.9.1",
     "node-graceful": "^2.0.1",
