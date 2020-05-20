@@ -99,6 +99,10 @@ class Site {
   static get hugoVersion    () { return this.getFromManifest('hugoVersion')  }
 
   static binaryVersionToHumanReadableDateString (binaryVersion) {
+    // Is this the dummy version that signals a development build?
+    if (binaryVersion === '20000101000000') {
+      return 'Dev'
+    }
     const m = moment(binaryVersion, 'YYYYMMDDHHmmss')
     return `${m.format('MMMM Do, YYYY')} at ${m.format('HH:mm:ss')}`
   }
