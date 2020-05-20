@@ -111,61 +111,31 @@ class Ensure {
     }
   }
 
-  // If we’re on Linux and the requested port is < 1024 ensure that we can bind to it.
-  // (As of macOS Mojave, privileged ports are only an issue on Linux. Good riddance too,
-  // as these so-called privileged ports are a relic from the days of mainframes and they
-  // actually have a negative impact on security today:
-  // https://www.staldal.nu/tech/2007/10/31/why-can-only-root-listen-to-ports-below-1024/
+  // Linux has an archaic security restriction dating from the mainframe/dumb-terminal era where
+  // ports < 1024 are “privileged” and can only be connected to by the root process. This has no
+  // practical security advantage today (and actually can lead to security issues). Instead of
+  // bending over backwards and adding more complexity to accommodate this, we use a feature that’s
+  // been in the Linux kernel since version 4.11 to disable privileged ports.
   //
-  // Note: this might cause issues if https-server is used as a library as it assumes that the
-  // ===== current app is in index.js and that it can be forked. This might be an issue if a
-  //       process manager is already being used, etc. Worth keeping an eye on and possibly
-  //       making this method an optional part of server startup.
-  weCanBindToPort (port, callback) {
-    if (port < 1024 && os.platform() === 'linux') {
-      const options = {env: process.env}
+  // As this change is not persisted between reboots and takes a trivial amount of time to
+  // execute, we carry it out every time.
+  //
+  // For more details, see: https://source.small-tech.org/site.js/app/-/issues/169
+  privilegedPortsAreDisabled () {
+    if (os.platform() === 'linux') {
       try {
-        childProcess.execSync(`setcap -v 'cap_net_bind_service=+ep' $(which ${process.title})`, options)
-        callback()
+        Site.logAppNameAndVersion()
+
+        console.log('   😇    [Site.js] Linux: about to disable privileged ports so we can bind to ports < 1024.')
+        console.log('   👉              For details, see: https://source.small-tech.org/site.js/app/-/issues/169')
+
+        childProcess.execSync('sudo sysctl -w net.ipv4.ip_unprivileged_port_start=0', {env: process.env})
       } catch (error) {
-        try {
-          // Allow Node.js to bind to ports < 1024.
-          childProcess.execSync(`sudo setcap 'cap_net_bind_service=+ep' $(which ${process.title})`, options)
-
-          Site.logAppNameAndVersion()
-
-          console.log('   😇    [Site.js] First run on Linux: got privileges to bind to ports < 1024.')
-
-          // Fork a new instance of the server so that it is launched with the privileged Node.js.
-          const newArgs = process.argv.slice(2)
-          newArgs.push('--dont-log-app-name-and-version')
-
-          const luke = childProcess.fork(path.resolve(path.join(__dirname, '..', 'site.js')), newArgs, {env: process.env})
-
-          // Let the child process know it’s a child process.
-          luke.send({IAmYourFather: process.pid})
-
-          function exitMainProcess () {
-            // Exit main process in response to child process event.
-            process.exit()
-          }
-          luke.on('exit', exitMainProcess)
-          luke.on('disconnect', exitMainProcess)
-          luke.on('close', exitMainProcess)
-          luke.on('error', exitMainProcess)
-        } catch (error) {
-          console.log(`\n Error: could not get privileges for Node.js to bind to port ${port}.`, error)
-          process.exit(1)
-        }
+        console.log('\n   ❌    [Site.js] Error: could not disable privileged ports. Cannot bind to port 80 and 443. Exiting.', error)
+        process.exit(1)
       }
-    } else {
-      // This is only relevant for Linux, which is the last major platform to
-      // carry forward the archaic security theatre of privileged ports. On other
-      // Linux-like platforms (notably, macOS), just call the callback.
-      callback()
     }
   }
-
 
   // If the sync option is specified, ensure that Rsync exists on the system.
   // (This will install it automatically if a supported package manager exists.)

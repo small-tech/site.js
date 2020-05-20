@@ -118,6 +118,7 @@ Site.js tries to seamlessly install the dependencies it needs when run. That sai
 
   - `sudo`
   - `libcap2-bin` (we use `setcap` to escalate privileges on the binary as necessary)
+  - `bash` (on Linux, macOS, etc.)
 
 __For production use, passwordless sudo is required.__ On systems where the sudo configuration directory is set to `/etc/sudoers.d`, Site.js will automatically install this rule. On other systems, you might have to [set it up yourself](https://serverfault.com/questions/160581/how-to-setup-passwordless-sudo-on-linux).
 
@@ -1103,12 +1104,12 @@ Options is an optional parameter object that may contain the following propertie
 
     __Returns:__ Site instance.
 
-__Note:__ if you want to run the site on a port < 1024 on Linux, ensure your process has the necessary privileges to bind to such ports. E.g., use:
+__Note:__ if you want to run the site on a port < 1024 on Linux, ensure that privileged ports are disabled ([see details](https://source.small-tech.org/site.js/app/-/issues/169)). e.g., use:
 
 ```js
-require('lib/ensure').weCanBindToPort(port, () => {
-  // You can safely bind to a ‘privileged’ port on Linux now.
-})
+require('lib/ensure').disablePrivilegedPorts()
+
+// You can safely bind to ports below 1024 on Linux now.
 ```
 
 ### serve(callback)

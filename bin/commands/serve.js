@@ -152,73 +152,75 @@ function serve (args) {
     // No need to start a server if all we want to do is sync and there’s no generated content.
     sync(syncOptions)
   } else {
+    // Ensure privileged ports are disabled on Linux machines.
+    // For details, see: https://source.small-tech.org/site.js/app/-/issues/169
+    ensure.privilegedPortsAreDisabled()
+
     // Start a server and also sync if requested.
-    ensure.weCanBindToPort(port, () => {
-      tcpPortUsed.check(port)
-      .then(async inUse => {
-        if (inUse) {
-          // Check to see if the problem is that Site.js is running as a daemon and
-          // display a more specific error message if so. (Remember that daemons are
-          // only supported on port 443 at the moment.)
-          if (port === 443) {
-            if (ensure.commandExists('systemctl')) {
-              if ({ isActive } = status()) {
-                console.log(`\n   🤯    Error: Cannot start server. Site.js is already running as a daemon on port ${clr(port.toString(), 'cyan')}. Use the ${clr('stop', 'green')} command to stop it.\n`)
-                process.exit(1)
-              }
+    tcpPortUsed.check(port)
+    .then(async inUse => {
+      if (inUse) {
+        // Check to see if the problem is that Site.js is running as a daemon and
+        // display a more specific error message if so. (Remember that daemons are
+        // only supported on port 443 at the moment.)
+        if (port === 443) {
+          if (ensure.commandExists('systemctl')) {
+            if ({ isActive } = status()) {
+              console.log(`\n   🤯    Error: Cannot start server. Site.js is already running as a daemon on port ${clr(port.toString(), 'cyan')}. Use the ${clr('stop', 'green')} command to stop it.\n`)
+              process.exit(1)
             }
           }
+        }
 
-          // Generic port-in-use error message.
-          console.log(`\n   🤯    Error: Cannot start server. Port ${clr(port.toString(), 'cyan')} is already in use.\n`)
-          process.exit(1)
-        } else {
+        // Generic port-in-use error message.
+        console.log(`\n   🤯    Error: Cannot start server. Port ${clr(port.toString(), 'cyan')} is already in use.\n`)
+        process.exit(1)
+      } else {
 
 
-          const options = {
-            path,
-            port,
-            global,
-            proxyPort,
-            aliases
-          }
+        const options = {
+          path,
+          port,
+          global,
+          proxyPort,
+          aliases
+        }
 
-          // Start serving the site.
-          let site
-          try {
-            site = new Site(options)
-          } catch (error) {
+        // Start serving the site.
+        let site
+        try {
+          site = new Site(options)
+        } catch (error) {
+          // Rethrow
+          throw(error)
+        }
+
+        // Start serving.
+        try {
+          await site.serve()
+        } catch (error) {
+          if (error instanceof errors.InvalidPathToServeError) {
+            console.log(`   🤯    ${clr('Error:', 'red')} The path to serve ${clr(options.path, 'yellow')} does not exist.\n`)
+            process.exit(1)
+          } else {
             // Rethrow
             throw(error)
           }
-
-          // Start serving.
-          try {
-            await site.serve()
-          } catch (error) {
-            if (error instanceof errors.InvalidPathToServeError) {
-              console.log(`   🤯    ${clr('Error:', 'red')} The path to serve ${clr(options.path, 'yellow')} does not exist.\n`)
-              process.exit(1)
-            } else {
-              // Rethrow
-              throw(error)
-            }
-          }
-
-          const server = site.server
-
-          // Start sync if requested.
-          if (syncOptions !== null) {
-            sync(syncOptions)
-          }
-
-          if (!syncRequested && exitOnSync) {
-            // Person has provided the --exit-on-sync option but has not specified where to sync to.
-            // Warn them and continue.
-            console.log (`   ⚠    --exit-on-sync option specified without --sync-to option; ignoring.`)
-          }
         }
-      })
+
+        const server = site.server
+
+        // Start sync if requested.
+        if (syncOptions !== null) {
+          sync(syncOptions)
+        }
+
+        if (!syncRequested && exitOnSync) {
+          // Person has provided the --exit-on-sync option but has not specified where to sync to.
+          // Warn them and continue.
+          console.log (`   ⚠    --exit-on-sync option specified without --sync-to option; ignoring.`)
+        }
+      }
     })
   }
 }

@@ -72,11 +72,14 @@ class Site {
       this.#manifest = JSON.parse(fs.readFileSync(path.join(__dirname, 'manifest.json'), 'utf-8'))
     } catch (error) {
       // When running under Node (not wrapped as a binary), there will be no manifest file. So mock one.
+      const options = {shell: '/bin/bash', env: process.env}
+
+      // Note: we switch to __dirname because we need to if Site.js is running as a daemon from source.
       this.#manifest = {
         releaseChannel: 'npm',
         binaryVersion: '20000101000000',
         packageVersion: (require(path.join(__dirname, 'package.json'))).version,
-        sourceVersion: childProcess.execSync('git log -1 --oneline').toString().match(/^[0-9a-fA-F]{7}/)[0],
+        sourceVersion: childProcess.execSync(`pushd ${__dirname} > /dev/null && git log -1 --oneline`,options).toString().match(/^[0-9a-fA-F]{7}/)[0],
         hugoVersion: (new Hugo()).version
       }
     }
@@ -192,8 +195,10 @@ class Site {
   // •   aliases: (string)    comma-separated list of domains that we should get TLS certs
   //                          for and serve.
   //
-  // Note: if you want to run the site on a port < 1024 on Linux, ensure your process has the
-  // ===== necessary privileges to bind to such ports. E.g., use require('lib/ensure').weCanBindToPort(port, callback)
+  // Note: if you want to run the site on a port < 1024 on Linux, ensure that privileged ports are disabled.
+  // ===== e.g., use require('lib/ensure').disablePrivilegedPorts()
+  //
+  //       For details, see: https://source.small-tech.org/site.js/app/-/issues/169
   constructor (options) {
     // Introduce ourselves.
     Site.logAppNameAndVersion()
@@ -230,13 +235,6 @@ class Site {
 
     // Create the HTTPS server.
     this.createServer()
-
-    // If running as child process, notify person.
-    process.on('message', (m) => {
-      if (m.IAmYourFather !== undefined) {
-        process.stdout.write(`\n 👶 Running as child process.`)
-      }
-    })
   }
 
 
@@ -755,8 +753,14 @@ class Site {
         const checkForUpdates = () => {
           this.log(' 🛰 Running auto update check…')
 
-          const options = {env: process.env, stdio: 'inherit'}
-          childProcess.exec('site update', options, (error, stdout, stderr) => {
+          const options = {env: process.env, stdio: 'inherit', shell: 'bash'}
+
+          let appReference = process.title
+          if (appReference.includes('node')) {
+            appReference = `${appReference} ${path.join(__dirname, 'bin', 'site.js')}`
+          }
+
+          childProcess.exec(`${appReference} update`, options, (error, stdout, stderr) => {
             if (error !== null) {
               this.log(' 😱 Error: Could not check for updates.')
             } else {
