@@ -398,7 +398,8 @@ async function build () {
     //
     console.log('   • Tagging the release (don’t forget to git push --tags)…')
 
-    childProcess.execSync(`git tag -s ${binaryVersion} -m 'Binary ${manifest.releaseChannel} (package version: ${manifest.packageVersion}, source version: ${manifest.sourceVersion})'`)
+    const capitaliseFirstLetter = word => `${word.slice(0,1).toUpperCase()}${word.slice(1)}`
+    childProcess.execSync(`git tag -s ${binaryVersion} -m '${capitaliseFirstLetter(manifest.releaseChannel)} (package version: ${manifest.packageVersion}, source version: ${manifest.sourceVersion})'`)
 
     //
     // Zip.
