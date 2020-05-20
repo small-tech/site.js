@@ -45,9 +45,9 @@ betaBinaryVersion=00000000000000
 betaPackageVersion=00.00.00
 betaSourceVersion=acecafe
 
-releaseBinaryVersion=20200520171231
-releasePackageVersion=12.11.0
-releaseSourceVersion=ff49520
+releaseBinaryVersion=00000000000000
+releasePackageVersion=00.00.00
+releaseSourceVersion=decafAF
 
 binaryVersionVariableName="${releaseChannel}BinaryVersion"
 packageVersionVariableName="${releaseChannel}PackageVersion"

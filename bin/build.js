@@ -396,7 +396,9 @@ async function build () {
     //
     // Tag the release.
     //
-    childProcess.execSync(`git tag -s ${binaryVersion} -m 'Binary: ${manifest.releaseChannel} channel (based on package version ${manifest.packageVersion}, source version ${manifest.sourceVersion})'`)
+    console.log('   • Tagging the release (don’t forget to git push --tags)…')
+
+    childProcess.execSync(`git tag -s ${binaryVersion} -m 'Binary ${manifest.releaseChannel} (package version: ${manifest.packageVersion}, source version: ${manifest.sourceVersion})'`)
 
     //
     // Zip.
