@@ -81,8 +81,6 @@ if (existingSourceVersion !== 'bedface' /* (the default) */ && sourceVersion ===
   process.exit(1)
 }
 
-process.exit()
-
 console.log(`\n ⚙️ Site.js build started on ${presentBinaryVersion(binaryVersion)}.\n
     Release channel: ${releaseChannel}
     Binary version : ${binaryVersion}
