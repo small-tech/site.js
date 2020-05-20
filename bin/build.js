@@ -394,6 +394,11 @@ async function build () {
   // Only zip and copy files to the local working copy of the Site.js web site if explicitly asked to.
   if (commandLineOptions.deploy) {
     //
+    // Tag the release.
+    //
+    childProcess.execSync(`git tag -s ${binaryVersion} -m '${manifest.releaseChannel} (${manifest.packageVersion}-${manifest.sourceVersion})'`)
+
+    //
     // Zip.
     //
     console.log('   • Zipping binaries…')
