@@ -81,7 +81,7 @@ function manifest () {
 }
 
 function siteJSHeader () {
-  return dehydrate('💕 Site.js')
+  return dehydrate('🌱 Site.js')
 }
 
 function binaryVersionLine () {
@@ -688,9 +688,9 @@ test('[commands] hugo', t => {
 
   const actualOutput = outputForCommand(_('hugo version'))
 
-  t.ok(actualOutput.includes(dehydrate('🎠 ❨Site.js❩ Running Hugo with command version')), 'hugo command output includes Site.js information line')
+  t.ok(actualOutput.includes(dehydrate('🎠 ❨site.js❩ Running Hugo with command version')), 'hugo command output includes Site.js information line')
   t.ok(actualOutput.includes(dehydrate('🅷 🆄 🅶 🅾  Hugo Static Site Generator v0.64.1-C327E75D')), 'hugo command output includes correct hugo version')
-  t.ok(actualOutput.includes(dehydrate('💕 ❨Site.js❩ Goodbye!')), 'hugo commands exits as expected')
+  t.ok(actualOutput.includes(dehydrate('💕 ❨site.js❩ Goodbye!')), 'hugo commands exits as expected')
   t.end()
 })
 

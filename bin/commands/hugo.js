@@ -29,7 +29,7 @@ module.exports = function (args) {
 
   const hugo = new Hugo(path.join(Site.settingsDirectory, 'node-hugo'))
 
-  console.log(`   🎠    ❨Site.js❩ Running Hugo with command ${hugoArgs}\n`)
+  console.log(`   🎠    ❨site.js❩ Running Hugo with command ${hugoArgs}\n`)
 
   ;(async () => {
     if (positionalArgs.startsWith('server')) {
@@ -46,7 +46,7 @@ module.exports = function (args) {
           console.log(`${Site.HUGO_LOGO} ${line}`)
         })
         console.log('\n   ❌    Hugo encountered an error. Exiting… ')
-        console.log('\n   💕    ❨Site.js❩ Goodbye!\n')
+        console.log('\n   💕    ❨site.js❩ Goodbye!\n')
         process.exit(1)
       }
 
@@ -73,14 +73,14 @@ module.exports = function (args) {
 
       // Handle graceful exit.
       goodbye = (done) => {
-        console.log('\n   💃    ❨Site.js❩ Preparing to exit gracefully, please wait…\n')
+        console.log('\n   💃    ❨site.js❩ Preparing to exit gracefully, please wait…\n')
 
         if (hugoServerProcess) {
-          console.log('   🚮    ❨Site.js❩ Killing Hugo server process.')
+          console.log('   🚮    ❨site.js❩ Killing Hugo server process.')
           hugoServerProcess => hugoServerProcess.kill()
         }
 
-        console.log('\n   💕    ❨Site.js❩ Goodbye!\n')
+        console.log('\n   💕    ❨site.js❩ Goodbye!\n')
         done()
       }
       Graceful.on('SIGINT', this.goodbye)
@@ -97,13 +97,13 @@ module.exports = function (args) {
           console.log(`${Site.HUGO_LOGO} ${line}`)
         })
         console.log('\n   ❌    Hugo encountered an error. Exiting… ')
-        console.log('\n   💕    ❨Site.js❩ Goodbye!\n')
+        console.log('\n   💕    ❨site.js❩ Goodbye!\n')
         process.exit(1)
       }
       output.split('\n').forEach(line => {
         console.log(`${Site.HUGO_LOGO} ${line}`)
       })
-      console.log('\n   💕    ❨Site.js❩ Goodbye!\n')
+      console.log('\n   💕    ❨site.js❩ Goodbye!\n')
     }
   })()
 }

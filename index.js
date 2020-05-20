@@ -149,7 +149,7 @@ class Site {
     }
 
     if (!Site.#appNameAndVersionAlreadyLogged && !process.argv.includes('--dont-log-app-name-and-version')) {
-      let prefix1 = compact ? ' 💕 ' : '   💕    '
+      let prefix1 = compact ? ' 🌱 ' : '   🌱    '
       let prefix2 = compact ? '    ' : '         '
 
       this.readAndCacheManifest()
@@ -377,7 +377,7 @@ class Site {
         if (requestedHost === mainHostname) {
           next()
         } else {
-          this.log(` 👉 ❨Site.js❩ Redirecting alias ${requestedHost} to main hostname ${mainHostname}.`)
+          this.log(` 👉 ❨site.js❩ Redirecting alias ${requestedHost} to main hostname ${mainHostname}.`)
           response.redirect(`https://${mainHostname}${request.path}`)
         }
       })
@@ -423,7 +423,7 @@ class Site {
         if (fs.existsSync(hugoSourceDirectory)) {
 
           const serverDetails = clr(`${file}${path.sep}`, 'green') + clr(' → ', 'cyan') + clr(`https://${this.prettyLocation()}${mountPath}`, 'green')
-          this.log(`   🎠    ❨Site.js❩ Starting Hugo server (${serverDetails})`)
+          this.log(`   🎠    ❨site.js❩ Starting Hugo server (${serverDetails})`)
 
           if (this.hugo === null || this.hugo === undefined) {
             this.hugo = new Hugo(path.join(Site.settingsDirectory, 'node-hugo'))
@@ -499,7 +499,7 @@ class Site {
     const proxyWebSocketUrl = `ws://localhost:${this.proxyPort}`
 
     let prettyLog = function (message) {
-      this.log(`   🔁    ❨Site.js❩ ${message}`)
+      this.log(`   🔁    ❨site.js❩ ${message}`)
     }
     prettyLog = prettyLog.bind(this)
 
@@ -553,19 +553,19 @@ class Site {
       // Clear the auto update check interval.
       if (this.autoUpdateCheckInterval !== undefined) {
         clearInterval(this.autoUpdateCheckInterval)
-        this.log('   ⏰    ❨Site.js❩ Cleared auto-update check interval.')
+        this.log('   ⏰    ❨site.js❩ Cleared auto-update check interval.')
       }
 
       // Ensure dynamic route watchers are removed.
       if (this.app.__dynamicFileWatcher !== undefined) {
         this.app.__dynamicFileWatcher.close()
-        this.log (`   🚮    ❨Site.js❩ Removed dynamic file watchers.`)
+        this.log (`   🚮    ❨site.js❩ Removed dynamic file watchers.`)
       }
 
       // Ensure that the static route file watchers are removed.
       if (this.app.__staticRoutes !== undefined) {
         this.app.__staticRoutes.cleanUp(() => {
-          this.log('   🚮    ❨Site.js❩ Live reload file system watchers removed from static web routes on server close.')
+          this.log('   🚮    ❨site.js❩ Live reload file system watchers removed from static web routes on server close.')
         })
       }
     })
@@ -587,7 +587,7 @@ class Site {
     if (this.wssRoutes !== undefined) {
       this.createWebSocketServer()
       this.wssRoutes.forEach(route => {
-        this.log(`   🐁    ❨Site.js❩ Adding WebSocket (WSS) route: ${route.path}`)
+        this.log(`   🐁    ❨site.js❩ Adding WebSocket (WSS) route: ${route.path}`)
         decache(route.callback)
         this.app.ws(route.path, require(route.callback))
       })
@@ -605,7 +605,7 @@ class Site {
       // replaced with the current request path before it is returned.)
       if (this.has4042302) {
         const forwardingURL = `${this._4042302}${request.url}`
-        this.log(`   ♻    ❨Site.js❩ 404 → 302: Forwarding to ${forwardingURL}`)
+        this.log(`   ♻    ❨site.js❩ 404 → 302: Forwarding to ${forwardingURL}`)
         response.redirect(forwardingURL)
       } else if (this.hasCustom404) {
         // Enable basic template support for including the missing path.
@@ -662,7 +662,7 @@ class Site {
     const requestsGlobalCertificateScope = options.global === true
 
     if (requestsGlobalCertificateScope) {
-      this.log('   🌍    ❨Site.js❩ Using globally-trusted certificates.')
+      this.log('   🌍    ❨site.js❩ Using globally-trusted certificates.')
 
       // Let’s be nice and not continue to pollute the options object
       // with our custom property (global).
@@ -680,9 +680,9 @@ class Site {
       const listOfAliases = this.aliases.reduce((prev, current) => {
         return `${prev}${current}, `
       }, '').slice(0, -2)
-      this.log(`   👉    ❨Site.js❩ Aliases: also responding for ${listOfAliases}.`)
+      this.log(`   👉    ❨site.js❩ Aliases: also responding for ${listOfAliases}.`)
     } else {
-      this.log('   🚧    ❨Site.js❩ Using locally-trusted certificates.')
+      this.log('   🚧    ❨site.js❩ Using locally-trusted certificates.')
     }
 
     // Specify custom certificate directory for Site.js.
@@ -710,10 +710,10 @@ class Site {
 
     // Handle graceful exit.
     this.goodbye = (done) => {
-      this.log('\n   💃    ❨Site.js❩ Preparing to exit gracefully, please wait…\n')
+      this.log('\n   💃    ❨site.js❩ Preparing to exit gracefully, please wait…\n')
 
       if (this.hugoServerProcesses) {
-        this.log('   🚮    ❨Site.js❩ Killing Hugo server processes.')
+        this.log('   🚮    ❨site.js❩ Killing Hugo server processes.')
         this.hugoServerProcesses.forEach(hugoServerProcess => hugoServerProcess.kill())
       }
 
@@ -724,7 +724,7 @@ class Site {
       // Stop accepting new connections.
       this.server.close( () => {
         // OK, it’s time to go :)
-        this.log('\n   💕    ❨Site.js❩ Goodbye!\n')
+        this.log('\n   💕    ❨site.js❩ Goodbye!\n')
         done()
       })
     }
@@ -803,14 +803,14 @@ class Site {
 
 
   showStatisticsUrl (location) {
-    this.log(`   📊    ❨Site.js❩ For statistics, see https://${location}${this.stats.route}`)
+    this.log(`   📊    ❨site.js❩ For statistics, see https://${location}${this.stats.route}`)
   }
 
 
   // Callback used in regular servers.
   regularCallback (server) {
     const location = this.prettyLocation()
-    this.log(`   🎉    ❨Site.js❩ Serving ${clr(this.pathToServe, 'cyan')} on ${clr(`https://${location}`, 'green')}`)
+    this.log(`   🎉    ❨site.js❩ Serving ${clr(this.pathToServe, 'cyan')} on ${clr(`https://${location}`, 'green')}`)
     this.showStatisticsUrl(location)
   }
 
@@ -818,7 +818,7 @@ class Site {
   // Callback used in proxy servers.
   proxyCallback (server) {
     const location = this.prettyLocation()
-    this.log(`   🚚    ❨Site.js❩ Proxying: HTTP/WS on localhost:${this.proxyPort} ←→ HTTPS/WSS on ${location}`)
+    this.log(`   🚚    ❨site.js❩ Proxying: HTTP/WS on localhost:${this.proxyPort} ←→ HTTPS/WSS on ${location}`)
     this.showStatisticsUrl(location)
   }
 
@@ -889,7 +889,7 @@ class Site {
     // Serve any generated static content (e.g., Hugo output) that might exist.
     const generatedStaticFilesDirectory = path.join(this.pathToServe, '.generated')
     if (fs.existsSync(generatedStaticFilesDirectory)) {
-      this.log(`   🎠    ❨Site.js❩ Serving generated static files.`)
+      this.log(`   🎠    ❨site.js❩ Serving generated static files.`)
       roots.push(generatedStaticFilesDirectory)
     }
 
@@ -936,8 +936,8 @@ class Site {
       })
 
       this.app.__dynamicFileWatcher.on ('all', (event, file) => {
-        this.log(`   🐁    ❨Site.js❩ ${clr('Code updated', 'green')} in ${clr(file, 'cyan')}!`)
-        this.log('   🐁    ❨Site.js❩ Requesting restart…\n')
+        this.log(`   🐁    ❨site.js❩ ${clr('Code updated', 'green')} in ${clr(file, 'cyan')}!`)
+        this.log('   🐁    ❨site.js❩ Requesting restart…\n')
 
         if (process.env.NODE_ENV === 'production') {
           // We’re running production, to restart the daemon, just exit.
@@ -951,7 +951,7 @@ class Site {
           Graceful.off('SIGTERM', this.goodbye)
 
           if (this.hugoServerProcesses) {
-            this.log('   🚮    ❨Site.js❩ Killing Hugo server processes.')
+            this.log('   🚮    ❨site.js❩ Killing Hugo server processes.')
             this.hugoServerProcesses.forEach(hugoServerProcess => hugoServerProcess.kill())
           }
 
@@ -966,7 +966,7 @@ class Site {
             this.server.removeAllListeners('error')
             const {commandPath, args} = cli.initialise(process.argv.slice(2))
             serve(args)
-            this.log('   🐁    ❨Site.js❩ Restarted server.\n')
+            this.log('   🐁    ❨site.js❩ Restarted server.\n')
           })
         }
       })
@@ -983,7 +983,7 @@ class Site {
         const loadHttpsGetRoutesFrom = (httpsGetRoutesDirectory) => {
           const httpsGetRoutes = getRoutes(httpsGetRoutesDirectory)
           httpsGetRoutes.forEach(route => {
-            this.log(`   🐁    ❨Site.js❩ Adding HTTPS GET route: ${route.path}`)
+            this.log(`   🐁    ❨site.js❩ Adding HTTPS GET route: ${route.path}`)
             // Ensure we are loading a fresh copy in case it has changed.
             decache(route.callback)
             this.app.get(route.path, require(route.callback))
@@ -1003,7 +1003,7 @@ class Site {
 
         if (httpsGetRoutesDirectoryExists || httpsPostRoutesDirectoryExists) {
           // Either .get or .post routes directories (or both) exist.
-          this.log('   🐁    ❨Site.js❩ Found .get/.post folders. Will load dynamic routes from there.')
+          this.log('   🐁    ❨site.js❩ Found .get/.post folders. Will load dynamic routes from there.')
           if (httpsGetRoutesDirectoryExists) {
             loadHttpsGetRoutesFrom(httpsGetRoutesDirectory)
           }
@@ -1014,7 +1014,7 @@ class Site {
 
             const httpsPostRoutes = getRoutes(httpsPostRoutesDirectory)
             httpsPostRoutes.forEach(route => {
-              this.log(`   🐁    ❨Site.js❩ Adding HTTPS POST route: ${route.path}`)
+              this.log(`   🐁    ❨site.js❩ Adding HTTPS POST route: ${route.path}`)
               this.app.post(route.path, require(route.callback))
             })
           }
@@ -1037,7 +1037,7 @@ class Site {
       const routesJsFile = path.join(dynamicRoutesDirectory, 'routes.js')
 
       if (fs.existsSync(routesJsFile)) {
-        this.log('   🐁    ❨Site.js❩ Found routes.js file, will load dynamic routes from there.')
+        this.log('   🐁    ❨site.js❩ Found routes.js file, will load dynamic routes from there.')
         // We flag that this needs to be done here and actually require the file
         // once the server has been created so that WebSocket routes can be added also.
         this.routesJsFile = routesJsFile
@@ -1059,7 +1059,7 @@ class Site {
 
       if (httpsRoutesDirectoryExists || wssRoutesDirectoryExists) {
         // Either .https or .wss routes directories (or both) exist.
-        this.log('   🐁    ❨Site.js❩ Found .https/.wss folders. Will load dynamic routes from there.')
+        this.log('   🐁    ❨site.js❩ Found .https/.wss folders. Will load dynamic routes from there.')
         if (httpsRoutesDirectoryExists) {
           loadHttpsRoutesFrom(httpsRoutesDirectory)
         }
@@ -1175,7 +1175,7 @@ class Site {
     let archiveNumber = 0
     archivalCascade.forEach(archivePath => {
       archiveNumber++
-      this.log(`   🌱    ❨Site.js❩ Evergreen web: serving archive #${archiveNumber}`)
+      this.log(`   🌱    ❨site.js❩ Evergreen web: serving archive #${archiveNumber}`)
       this.app.use(express.static(archivePath))
     })
   }
