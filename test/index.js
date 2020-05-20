@@ -121,8 +121,12 @@ test('[site.js] Simple dotJS filesystem-based route loading', async t => {
     t.strictEquals(response.body, 'simple', 'route loads')
 
     server.close()
-    t.end()
+
+    // t.end()
+    return response
   })
+
+  return server
 })
 
 
