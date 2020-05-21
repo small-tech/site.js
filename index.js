@@ -447,7 +447,21 @@ class Site {
           const baseURL = this.global ? globalBaseURL : localBaseURL
 
           // Start the server and await the end of the build process.
-          const { hugoServerProcess, hugoBuildOutput } = await this.hugo.serve(sourcePath, destinationPath, baseURL)
+          let hugoServerProcess, hugoBuildOutput
+          try {
+            const response = await this.hugo.serve(sourcePath, destinationPath, baseURL)
+            hugoServerProcess = response.hugoServerProcess
+            hugoBuildOutput = response.hugoBuildOutput
+          } catch (error) {
+            let errorMessage = error
+
+            if (errorMessage.includes('--appendPort=false not supported when in multihost mode')) {
+              errorMessage = 'Hugo’s Multilingual Multihost mode is not supported in Site.js.'
+            }
+
+            this.log(`   ❌    ❨site.js❩ Could not start Hugo server. ${errorMessage}`)
+            process.exit(1)
+          }
 
           // At this point, the build process is complete and the .generated folder should exist.
 
@@ -459,7 +473,13 @@ class Site {
 
           hugoServerProcess.stderr.on('data', (data) => {
             const lines = data.toString('utf-8').split('\n')
-            lines.forEach(line => this.log(`${Site.HUGO_LOGO} [ERROR] ${line}`))
+            lines.forEach(line => {
+              this.log(`${Site.HUGO_LOGO} [ERROR] ${line}`)
+
+              if (line.includes('panic: runtime error: index out of range [1] with length 1')) {
+                this.log('\n   📎    ❨site.js❩ Looks like you configured Multilingual Multihost mode in Hugo. This is not supported.\n')
+              }
+            })
           })
 
           // Save a reference to all hugo server processes so we can

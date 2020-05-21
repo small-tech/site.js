@@ -641,6 +641,48 @@ The statistics are ephemeral as they are only kept in memory and they reset any 
 
 The statistics are very basic and they’re there only to give an idea about which parts of your site are most popular as well as to highlight missing pages, etc., They’re not there so you can spy on people (if you want to do that, this is not the tool for you).
 
+## Static site generation
+
+As of version 12.11.0, Site.js includes the [Hugo static site generator](https://gohugo.io).
+
+To create a new Hugo site and start serving it:
+
+```shell
+mkdir my-site
+```
+
+__Note:__ During development, this feature uses Site.js’s live reload instead of Hugo’s. Your web page must have at least a `<body>` tag for it to work.
+
+### How it works
+
+If Site.js finds a folder called _.hugo_ in your site’s root, it will build it using its integrated Hugo instance (you don’t need to install Hugo separately) and place the generated files into a folder called _.generated_ in your site’s root. It will also automatically serve these files.
+
+You can pass any command you would normally pass to Hugo using Site.js’s integrated Hugo instance:
+
+```shell
+site hugo [any valid Hugo command]
+```
+
+Please see [the Hugo documentation](https://gohugo.io/documentation/) for detailed information on how Hugo works.
+
+### Mounting Hugo sites
+
+Site.js will automatically mount files in the _.hugo_ directory at your site’s root.
+
+If you want the generated Hugo site to be mounted at a different path, include the path structure you want in the name of the hugo folder, separating paths using two dashes. For example:
+
+Folder name               | Mount path         |
+------------------------- | ------------------ |
+.hugo                     | /                  |
+.hugo--docs               | /docs              |
+.hugo--second-level--blog | /second-level/blog |
+
+You can include any number of Hugo sites in your site and mount them at different paths and the results will be weaved together into the _.generated_ folder. We call this feature… _ahem_… Hugo Weaving (we’ll show ourselves out).
+
+All regular Site.js functionality is still available when using Hugo generation. So you can, for example, have your blog statically-generated using Hugo and extend it using locally-hosted dynamic comments.
+
+__Note:__ Hugo’s [Multilingual Multihost mode](https://gohugo.io/content-management/multilingual/#configure-multilingual-multihost) is _not_ supported.
+
 ## Dynamic sites
 
 You can specify routes with dynamic functionality by specifying HTTPS and WebSocket (WSS) routes in two ways: either using DotJS – a simple file system routing convention ala PHP, but for JavaScript – or through code in a _routes.js_ file.
