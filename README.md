@@ -9,6 +9,12 @@ __Site.js is a [small](https://small-tech.org/about#small-technology) personal w
 
 Most tools today are built for startups and enterprises. Site.js is built for people.
 
+## Like this? Fund us!
+
+[Small Technology Foundation](https://small-tech.org) is a tiny, independent not-for-profit.
+
+We exist in part thanks to patronage by people like you. If you share [our vision](https://small-tech.org/about/#small-technology) and want to support our work, please [become a patron or donate to us](https://small-tech.org/fund-us) today and help us continue to exist.
+
 ## Features
 
   - Zero-configuration – It Just Works 🤞™.
@@ -1183,3 +1189,23 @@ Please [let us know how/if it works](https://github.com/small-tech/site.js/issue
   * [Tim Knip](https://github.com/timknip) for confirming that [the module works with 64-bit Windows](https://github.com/indie-mirror/https-server/issues/2) with the following behaviour: “Install pops up a windows dialog to allow adding the cert.”
 
   * [Run Rabbit Run](https://hackers.town/@nobody) for [the following information](https://hackers.town/@nobody/101670447262172957) on 64-bit Windows: “Win64: works with the windows cert install popup on server launch. Chrome and ie are ok with the site then. FF 65 still throws the cert warning even after restarting.”
+
+
+## Like this? Fund us!
+
+[Small Technology Foundation](https://small-tech.org) is a tiny, independent not-for-profit.
+
+We exist in part thanks to patronage by people like you. If you share [our vision](https://small-tech.org/about/#small-technology) and want to support our work, please [become a patron or donate to us](https://small-tech.org/fund-us) today and help us continue to exist.
+
+## Copyright
+
+&copy; 2020 [Aral Balkan](https://ar.al), [Small Technology Foundation](https://small-tech.org).
+
+Let’s Encrypt is a trademark of the Internet Security Research Group (ISRG). All rights reserved. Node.js is a trademark of Joyent, Inc. and is used with its permission. We are not endorsed by or affiliated with Joyent or ISRG.
+
+## License
+
+[AGPL version 3.0 or later.](https://www.gnu.org/licenses/agpl-3.0.en.html)
+
+
+<img src='images/site.js-logo.svg' alt='Site.js logo: a small sprouting plant with a green leaf on either side of a brown stem' style='display: block; width:4em; margin-left: auto; margin-right: auto; margin-top: 3em;'>
