@@ -1207,5 +1207,5 @@ Let’s Encrypt is a trademark of the Internet Security Research Group (ISRG). A
 
 [AGPL version 3.0 or later.](https://www.gnu.org/licenses/agpl-3.0.en.html)
 
-
-<img src='images/site.js-logo.svg' alt='Site.js logo: a small sprouting plant with a green leaf on either side of a brown stem' style='display: block; width:4em; margin-left: auto; margin-right: auto; margin-top: 3em;'>
+<!-- Yes, this has to be coded like it’s 1999 for it to work, sadly. -->
+<center><img width='76' src='images/site.js-logo.svg' alt='Site.js logo: a small sprouting plant with a green leaf on either side of a brown stem'></center>
