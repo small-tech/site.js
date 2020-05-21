@@ -1,14 +1,25 @@
 {
   "name": "@small-tech/site.js",
   "version": "12.11.0",
-  "description": "Develop, test, and deploy your secure static or dynamic personal web site with zero configuration.",
+  "description": "Small Web construction set.",
   "keywords": [
     "web server",
     "static site generator",
     "dynamic site",
+    "dotJS",
     "hugo",
-    "personal site",
-    "small technology"
+    "let's encrypt",
+    "mkcert",
+    "automatic",
+    "tls",
+    "https",
+    "small web",
+    "personal",
+    "web site",
+    "framework",
+    "platform",
+    "small technology",
+    "small tech"
   ],
   "main": "index.js",
   "bin": "bin/site.js",
