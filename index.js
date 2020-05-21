@@ -80,7 +80,9 @@ class Site {
         binaryVersion: '20000101000000',
         packageVersion: (require(path.join(__dirname, 'package.json'))).version,
         sourceVersion: childProcess.execSync(`pushd ${__dirname} > /dev/null && git log -1 --oneline`,options).toString().match(/^[0-9a-fA-F]{7}/)[0],
-        hugoVersion: (new Hugo()).version
+        hugoVersion: (new Hugo()).version,
+        platform: {linux: 'linux', win32: 'windows', 'darwin': 'macOS'}[os.platform()],
+        architecture: os.arch()
       }
     }
   }
@@ -94,9 +96,11 @@ class Site {
 
   static get releaseChannel () { return this.getFromManifest('releaseChannel') }
   static get binaryVersion  () { return this.getFromManifest('binaryVersion')  }
-  static get packageVersion () { return this.getFromManifest('packageVersion')  }
+  static get packageVersion () { return this.getFromManifest('packageVersion') }
   static get sourceVersion  () { return this.getFromManifest('sourceVersion')  }
-  static get hugoVersion    () { return this.getFromManifest('hugoVersion')  }
+  static get hugoVersion    () { return this.getFromManifest('hugoVersion')    }
+  static get platform       () { return this.getFromManifest('platform')       }
+  static get architecture   () { return this.getFromManifest('architecture')   }
 
   static binaryVersionToHumanReadableDateString (binaryVersion) {
     // Is this the dummy version that signals a development build?
@@ -160,10 +164,12 @@ class Site {
 
       let message = [
         `\n${prefix1}Site.js ${this.releaseChannelFormattedForConsole}\n\n`,
-        `${prefix2}Version ${clr(`${this.humanReadableBinaryVersion} (${this.packageVersion}-${this.sourceVersion})`, 'green')}\n`,
+        `${prefix2}Created ${clr(this.humanReadableBinaryVersion, 'green')}\n`,
         '\n',
+        `${prefix2}Version ${clr(`${this.binaryVersion}-${this.packageVersion}-${this.sourceVersion}-${this.platform}/${this.architecture}`, 'green')}\n`,
         `${prefix2}Node.js ${clr(`${process.version.replace('v', '')}`, 'green')}\n`,
         `${prefix2}Hugo    ${clr(`${this.hugoVersion}`, 'green')}\n`,
+        '\n',
         `${prefix2}Base    ${clr(`https://sitejs.org/nexe/${process.platform}-${process.arch}-${process.version.replace('v', '')}`, 'cyan')}\n`,
         `${prefix2}Source  ${clr(`https://source.small-tech.org/site.js/app/-/tree/${this.sourceVersion}`, 'cyan')}\n\n`,
         `${prefix2}╔═══════════════════════════════════════════╗\n`,

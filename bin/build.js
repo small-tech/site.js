@@ -103,7 +103,6 @@ const manifest = {
   sourceVersion,
   releaseChannel
 }
-fs.writeFileSync('manifest.json', JSON.stringify(manifest), 'utf-8')
 
 const releaseChannelDirectory = path.join('dist', releaseChannel)
 const linuxX64Directory       = path.join(releaseChannelDirectory, 'linux',     binaryVersion)
@@ -286,6 +285,12 @@ async function build () {
     restoreHugoBinary        (platform)
   }
 
+  function writeManifestForPlatformAndArchitecture (platform, architecture) {
+    manifest.platform = platform
+    manifest.architecture = architecture
+    fs.writeFileSync('manifest.json', JSON.stringify(manifest), 'utf-8')
+  }
+
   // Unstrip at start in case last build failed.
   unstrip()
 
@@ -296,6 +301,8 @@ async function build () {
 
   if (buildLinuxX64Version) {
     console.log('   • Building Linux version (x64)…')
+
+    writeManifestForPlatformAndArchitecture('linux', 'x64')
 
     stripForPlatform('linux-amd64')
 
@@ -315,6 +322,8 @@ async function build () {
   if (buildLinuxArmVersion) {
     console.log('   • Building Linux version (ARM)…')
 
+    writeManifestForPlatformAndArchitecture('linux', 'arm')
+
     stripForPlatform('linux-arm')
 
     await compile({
@@ -333,6 +342,8 @@ async function build () {
   if (buildMacVersion) {
     console.log('   • Building macOS version…')
 
+    writeManifestForPlatformAndArchitecture('macOS', 'x64')
+
     stripForPlatform('darwin-amd64')
 
     await compile({
@@ -350,6 +361,8 @@ async function build () {
 
   if (buildWindowsVersion) {
     console.log('   • Building Windows version…')
+
+    writeManifestForPlatformAndArchitecture('windows', 'x64')
 
     stripForPlatform('windows-amd64.exe')
 
