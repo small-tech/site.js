@@ -49,7 +49,7 @@ Copy and paste the following commands into your terminal:
 
 ### Native binaries
 
-__Before you pipe any script into your computer, always view the source code ([Linux and macOS](https://site.js/install), [Windows](https://site.js/windows)) and make sure you understand what it does.__
+__Before you pipe any script into your computer, always view the source code ([Linux and macOS](https://should-i-pipe.it/https://sitejs.org/install), [Windows](https://should-i-pipe.it/https://sitejs.org/install.txt)) and make sure you understand what it does.__
 
 #### Linux
 
