@@ -1,6 +1,7 @@
 # Site.js
+## Small web construction set.
 
-[![Screenshot of the Site.js web site header](images/site.js.jpeg)](https://sitejs.org)
+[![Person lying on the ground, working on a laptop with the Site.js logo on screen](images/person.svg)](https://sitejs.org)
 
 ## Develop, test, and deploy your secure static or dynamic personal web site with zero configuration.
 
