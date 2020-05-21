@@ -618,6 +618,22 @@ If you do not create custom error pages, the built-in default error pages will b
 
 When creating your own servers (see [API](#API)), you can generate the default error pages programmatically using the static methods `Site.default404ErrorPage()` and `Site.default500ErrorPage()`, passing in the missing path and the error message as the argument, respectively to get the HTML string of the error page returned.
 
+## Ephemeral statistics
+
+When Site.js launches, you will see a line similar to the following in the console:
+
+```
+📊    ❨site.js❩ For statistics, see https://localhost/b64bd821d521b6a65a307c2b83060766
+```
+
+This is your private, cryptographically secure URL where you can access ephemeral statistics about your site. If you want to share your statistics, link to them publicly. If you want to keep them private, keep the URL secret.
+
+![Screenshot of the statistics page](/images/statistics.png)
+
+The statistics are ephemeral as they are only kept in memory and they reset any time your server restarts.
+
+The statistics are very basic and they’re there only to give an idea about which parts of your site are most popular as well as to highlight missing pages, etc., They’re not there so you can spy on people (if you want to do that, this is not the tool for you).
+
 ## Dynamic sites
 
 You can specify routes with dynamic functionality by specifying HTTPS and WebSocket (WSS) routes in two ways: either using DotJS – a simple file system routing convention ala PHP, but for JavaScript – or through code in a _routes.js_ file.
