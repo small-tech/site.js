@@ -139,9 +139,11 @@ class Site {
     }
   }
 
-  // The cross-platform hostname (os.hostname() on Linux and macOS, special handling on Windows to return
-  // the full computer name, which can be a domain name and thus the equivalent of hostname on Linux and macOS).
-  static get hostname () { return crossPlatformHostname }
+  // Returns the cross-platform hostname (os.hostname() on Linux and macOS, special handling on Windows to return the
+  // full computer name, which can be a domain name and thus the equivalent of hostname on Linux and macOS).
+  static get hostname () { return this._hostname ? this._hostname : crossPlatformHostname }
+
+  static set hostname (domain) { this._hostname = domain }
 
   // This is the directory that settings and other persistent data is stored for Site.js.
   static get settingsDirectory () { return path.join(os.homedir(), '.small-tech.org', 'site.js') }
@@ -198,6 +200,7 @@ class Site {
   // Creates a Site instance. Customise it by passing an options object with the
   // following properties (all optional):
   //
+  // •    domain: (string)    the main domain to serve (defaults to the hostname)
   // •      path: (string)    the path to serve (defaults to the current working directory).
   // •      port: (integer)   the port to bind to (between 0 - 49,151; the default is 443).
   // •    global: (boolean)   if true, automatically provision an use Let’s Encrypt TLS certificates.
@@ -219,6 +222,9 @@ class Site {
     // The options parameter object and all supported properties on the options parameter
     // object are optional. Check and populate the defaults.
     if (options === undefined) options = {}
+    if (typeof options.domain === 'string') {
+      Site.hostname = options.domain
+    }
     this.pathToServe = typeof options.path === 'string' ? options.path : '.'
     this.absolutePathToServe = path.resolve(this.pathToServe)
     this.port = typeof options.port === 'number' ? options.port : 443
@@ -226,7 +232,7 @@ class Site {
     this.aliases = Array.isArray(options.aliases) ? options.aliases : []
 
     // The www subdomain is a default alias.
-    this.aliases.push(`www.${Site.hostname}`)
+    // this.aliases.push(`www.${Site.hostname}`)
 
     // Has a proxy server been requested? If so, we flag it and save the port
     // we were asked to proxy. In this case, pathToServe is ignored/unused.
@@ -707,10 +713,14 @@ class Site {
       options.domains = domains
 
       // Display aliases we’re responding to.
-      const listOfAliases = this.aliases.reduce((prev, current) => {
-        return `${prev}${current}, `
-      }, '').slice(0, -2)
-      this.log(`   👉    ❨site.js❩ Aliases: also responding for ${listOfAliases}.`)
+      if (this.aliases.length > 0) {
+        const listOfAliases = this.aliases.reduce((prev, current) => {
+          return `${prev}${current}, `
+        }, '').slice(0, -2)
+        this.log(`   👉    ❨site.js❩ Aliases: also responding for ${listOfAliases}.`)
+      } else {
+        this.log(`   👉    ❨site.js❩ No aliases. Only responding for ${Site.hostname}.`)
+      }
     } else {
       this.log('   🚧    ❨site.js❩ Using locally-trusted certificates.')
     }

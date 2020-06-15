@@ -15,12 +15,14 @@
 const fs = require('fs-extra')
 const pathModule = require('path')
 
+const DOMAIN = 'domain'
 const ALIASES = 'aliases'
 const SYNC_TO = 'sync-to'
 const SYNC_FROM = 'sync-from'
 const EXIT_ON_SYNC = 'exit-on-sync'
 const SYNC_FOLDER_AND_CONTENTS = 'sync-folder-and-contents'
 
+let domain = null
 let global = null
 let port = null
 let path = null
@@ -30,6 +32,7 @@ function serve (args) {
 
   // We repeat the assignment to null here to ensure these variables are null
   // in case the server was restarted and the module itself was cached.
+  dinaub = null
   global = null
   port = null
   path = null
@@ -101,6 +104,9 @@ function serve (args) {
   //
   // Parse named arguments.
   //
+
+  // Domain.
+  const domain = args.named[DOMAIN]
 
   // Aliases.
   const _aliases = args.named[ALIASES]
@@ -179,6 +185,7 @@ function serve (args) {
 
 
         const options = {
+          domain,
           path,
           port,
           global,

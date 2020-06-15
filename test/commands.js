@@ -11,6 +11,7 @@
 // Untested: - uninstall, - update
 //
 
+const os = require('os')
 const fs = require('fs-extra')
 const test = require('tape')
 const childProcess = require('child_process')
@@ -73,7 +74,9 @@ function manifest () {
         binaryVersion: '20000101000000',
         packageVersion: (require(path.join('..', 'package.json'))).version,
         sourceVersion: childProcess.execSync('git log -1 --oneline').toString().match(/^[0-9a-fA-F]{7}/)[0],
-        hugoVersion: (new Hugo()).version
+        hugoVersion: (new Hugo()).version,
+        platform: {linux: 'linux', win32: 'windows', 'darwin': 'macOS'}[os.platform()],
+        architecture: os.arch()
       }
     }
   }
@@ -84,8 +87,12 @@ function siteJSHeader () {
   return dehydrate('🌱 Site.js')
 }
 
+function creationDateLine () {
+  return dehydrate(`Created ${Site.binaryVersionToHumanReadableDateString(manifest().binaryVersion)}`)
+}
+
 function binaryVersionLine () {
-  return dehydrate(`Version ${Site.binaryVersionToHumanReadableDateString(manifest().binaryVersion)} (${manifest().packageVersion}-${manifest().sourceVersion})`)
+  return dehydrate(`Version ${manifest().binaryVersion}-${manifest().packageVersion}-${manifest().sourceVersion}-${manifest().platform}/${manifest().architecture}`)
 }
 
 function nodeVersionLine () {
@@ -120,12 +127,13 @@ function _(commandPartial) {
 }
 
 test('[bin/commands] version', t => {
-  t.plan(6)
+  t.plan(7)
 
   const command = _('version')
   const actualOutput = outputForCommand(command)
 
   t.ok(actualOutput.includes(siteJSHeader()), 'version screen includes Site.js header')
+  t.ok(actualOutput.includes(creationDateLine()), 'version screen includes creation date line')
   t.ok(actualOutput.includes(binaryVersionLine()), 'version screen includes binary version line')
   t.ok(actualOutput.includes(nodeVersionLine()), 'version screen includes Node.js version line')
   t.ok(actualOutput.includes(hugoVersionLine()), 'version screen includes Hugo version line')

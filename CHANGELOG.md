@@ -4,11 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased (work in progress on 12.11.0)
+## Unreleased (work in progress on 13.0.0)
+
+### Breaking change
+
+  - Starting a server now only provisions a TLS certificate for and serves _hostname_ (it no longer also provisions a TLS certificate for and aliases the _www_ subdomain). If you want to have _www_ subdomain support, add _www.<hostname>_ via the `--aliases` option manually.
 
 ### Added
 
   - Native support for Hugo static site generator with integrated binary.
+  - Ability to manually set the main domain being served (the default is based on the hostname) using the `--domain` option.
   - QUIET=true environment variable to suppress console output.
   - Unit tests for all CLI commands.
   - Alpha and beta binaries in addition to release binaries.
