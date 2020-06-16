@@ -536,6 +536,7 @@ test('[commands] help', t => {
       Stage using globally-trusted Let’s Encrypt certificates:
 
     • Serve current folder      ▶ site @hostname
+    • Serve current folder at specified domain ▶ site @hostname --domain=my.site
     • Serve current folder also at aliases  ▶ site @hostname --aliases=other.site,www.other.site
     • Serve folder demo        ▶ site demo @hostname
       (shorthand and full)      ▶ site serve demo @hostname

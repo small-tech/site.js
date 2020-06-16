@@ -3,7 +3,7 @@
 
 [![Person lying on the ground, working on a laptop with the Site.js logo on screen](images/person.svg)](https://sitejs.org)
 
-## Develop, test, and deploy your secure static or dynamic personal web site with zero configuration.
+## Develop, test, sync, and deploy (using a single tool that comes in a single binary).
 
 __Site.js is a [small](https://small-tech.org/about#small-technology) personal web tool for Linux, macOS, and Windows 10.__
 
@@ -15,31 +15,45 @@ Most tools today are built for startups and enterprises. Site.js is built for pe
 
 We exist in part thanks to patronage by people like you. If you share [our vision](https://small-tech.org/about/#small-technology) and want to support our work, please [become a patron or donate to us](https://small-tech.org/fund-us) today and help us continue to exist.
 
-## Features
+## Feature Highlights
 
-  - Zero-configuration – It Just Works 🤞™.
+  - __Just works.__ No configuration; [get started in seconds](https://sitejs.org/#get-started).
 
-  - Seamless single binary [install](#install) (thanks to [Nexe](https://github.com/nexe/nexe)).
+  - __Free as in freedom.__ And small as in [small tech](https://small-tech.org/about/#small-technology).
 
-  - Automatically provisions locally-trusted TLS for development (courtesy of [mkcert](https://github.com/FiloSottile/mkcert) seamlessly integrated via [Auto Encrypt Localhost](https://source.small-tech.org/site.js/lib/auto-encrypt-localhost)).
+  - __Seamless single binary [install](#install)__ (thanks to [Nexe](https://github.com/nexe/nexe)).
 
-  - Automatically provisions globally-trusted TLS for staging and production (courtesy of [Let’s Encrypt](https://letsencrypt.org/) seamlessly integrated via [Auto Encrypt]((https://source.small-tech.org/site.js/lib/auto-encrypt) and [systemd](https://freedesktop.org/wiki/Software/systemd/). Your server will score an A on the [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest).)
+  - __Secure by default.__
 
-  - Supports static web sites, dynamic web sites written in JavaScript, and hybrid sites (via integrated [Node.js](https://nodejs.org/) and [Express](https://expressjs.com)).
+    __At localhost:__ Automatically provisions locally-trusted TLS for development (courtesy of [mkcert](https://github.com/FiloSottile/mkcert) seamlessly integrated via [Auto Encrypt Localhost](https://source.small-tech.org/site.js/lib/auto-encrypt-localhost)).
 
-  - Can be used as a proxy server (via integrated [http-proxy-middleware](https://github.com/chimurai/http-proxy-middleware)).
+    __And everywhere else:__ Automatically provisions globally-trusted TLS for staging and production (courtesy of [Let’s Encrypt](https://letsencrypt.org/) seamlessly integrated via [Auto Encrypt](https://source.small-tech.org/site.js/lib/auto-encrypt) and [systemd](https://freedesktop.org/wiki/Software/systemd/)).
 
-  - Supports WebSockets (via integrated [express-ws](https://github.com/HenningM/express-ws), which itself wraps [ws](https://github.com/websockets/ws)).
+    Your server will score an A+ on the [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest).
 
-  - Supports [DotJS](#dotjs) (PHP-like simple routing for Node.js to quickly prototype and build dynamic sites).
+  - __Supports the creation of static web sites, dynamic web sites, and hybrid sites__ (via integrated [Node.js](https://nodejs.org/) and [Express](https://expressjs.com)).
 
-  - And, for full flexibility, you can define your HTTPS and WebSocket (WSS) routes entirely in code in the traditional way for Express apps.
+  - __Supports [DotJS](#dotjs) for dynamic routes.__ (DotJS is PHP-like simple routing for Node.js introduced by Site.js for quickly prototyping and building dynamic sites).
 
-  - Live reload on static pages.
+  - __Includes [Hugo static site generator](#static-site-generation).__
 
-  - Automatic server reload when the source code of your dynamic routes change.
+  - __[Sync](https://github.com/small-tech/site.js#deployment-live-and-one-time-sync) to deploy__ (uses rsync for quick deployments. Can [sync on changes](https://github.com/small-tech/site.js#deployment-live-and-one-time-sync) and be used for live blogging).
 
-  - Auto updates of production servers.
+  - __Has privacy-respecting [ephemeral statics](#ephemeral-statistics)__. Gives you insight into how your site is being used, not into the people using it.
+
+  - __Supports [WebSockets](#websocket-wss-routes)__ (via integrated [express-ws](https://github.com/HenningM/express-ws), which itself wraps [ws](https://github.com/websockets/ws)).
+
+  - __Can be used as a proxy server__ (via integrated [http-proxy-middleware](https://github.com/chimurai/http-proxy-middleware)).
+
+  - __Supports [an evergreen web](#native-support-for-an-evergreen-web).__
+
+    [The archival cascade](#the-archival-cascade) and [Native 404 → 302 support](#native-404--302-support) help you migrate and evolve your existing sites using Site.js without breaking existing links.
+
+  - __Live reload__ on static pages.
+
+  - __Automatic server reload__ when the source code of your dynamic routes change.
+
+  - __Auto updates__ of production servers.
 
   <ins>Note:</ins> Production use via startup daemon is only supported on Linux distributions with systemd.
 
@@ -97,7 +111,7 @@ Servers deployed using release builds check for updates every six hours whereas 
 
 ### Linux
 
-Any recent Linux distribution should work. However, Site.js is most thoroughly tested at Small Technology Foundation on Ubuntu 19.04/Pop!_OS 19.04 (development and staging) and Ubuntu 18.04 LTS (production).
+Any recent Linux distribution should work. However, Site.js is most thoroughly tested at Small Technology Foundation on Ubuntu 20.04/Pop!_OS 20.04 (development and staging) and Ubuntu 18.04 LTS (production).
 
 There are builds available for x64 and ARM.
 
@@ -489,7 +503,9 @@ If `command` is omitted, behaviour defaults to `serve`.
 
 #### For both the `serve` and `enable` commands:
 
-  - `--aliases`: Comma-separated list of additional domains to obtain TLS certificates for and respond to.
+  - `--domain`: The main domain to serve (defaults to system hostname if not specified).
+
+  - `--aliases`: Comma-separated list of additional domains to obtain TLS certificates for and respond to. These domains point to the main domain via a 302 redirect.
 
 #### For the `serve` command:
 
@@ -542,6 +558,7 @@ When you `serve` a site at `@hostname` or use the `enable` command, globally-tru
 | Goal                                      | Command                                                       |
 | ----------------------------------------- | ------------------------------------------------------------- |
 | Serve current folder                      | site @hostname                                                |
+| Serve current folder at specified domain  | site @hostname --domain=my.site                               |
 | Serve current folder also at aliases	    | site @hostname --aliases=other.site,www.other.site            |
 | Serve folder demo*                        | site demo @hostname                                           |
 |                                           | site serve demo @hostname                                     |
@@ -575,7 +592,7 @@ What if links never died? What if we never broke the Web? What if it didn’t in
 
 ### The Archival Cascade
 
-__(As of version 12.11.0)__ If you have static archives of previous versions of your site, you can have Site.js automatically serve them for you.
+__(As of version 13.0.0)__ If you have static archives of previous versions of your site, you can have Site.js automatically serve them for you.
 
 Just put them into folder named `.archive-1`, `.archive-2`, etc.
 
@@ -585,7 +602,7 @@ Paths in your current site will override those in `.archive-2` and those in `.ar
 
 Use the archival  old links will never die but if you do replace them with never content in never versions, those will take precedence.
 
-#### Legacy method (pre version 12.11.0)
+#### Legacy method (pre version 13.0.0)
 
 In older versions, the convention for specifying the archival cascade was as follows:
 
@@ -643,7 +660,7 @@ The statistics are very basic and they’re there only to give an idea about whi
 
 ## Static site generation
 
-As of version 12.11.0, Site.js includes the [Hugo static site generator](https://gohugo.io).
+As of version 13.0.0, Site.js includes the [Hugo static site generator](https://gohugo.io).
 
 To create a new Hugo site and start serving it:
 

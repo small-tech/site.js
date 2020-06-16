@@ -186,7 +186,7 @@ class Help {
       ${heading('Stage using globally-trusted Let’s Encrypt certificates:')}
       `}
     • Serve current folder\t\t\t${prompt} ${appName} ${argument('@hostname')}
-
+    • Serve current folder at specified domain\t${prompt} ${appName} ${argument('@hostname')} ${optionDomain}=${argument('my.site')}
     • Serve current folder also at aliases\t${prompt} ${appName} ${argument('@hostname')} ${optionAliases}=${argument('other.site,www.other.site')}
 
     • Serve folder ${argument('demo')}\t\t\t\t${prompt} ${appName} ${argument('demo')} ${argument('@hostname')}
