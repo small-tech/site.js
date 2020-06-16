@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - QUIET=true environment variable to suppress console output.
   - Unit tests for all CLI commands.
   - Alpha and beta binaries in addition to release binaries.
+  - Local TLS certificate auto-upgrade feature: certificates are now automatically recreated following mkcert binary upgrades.
 
 ### Changed
 
