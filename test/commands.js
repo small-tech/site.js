@@ -399,12 +399,13 @@ test('[commands] help', t => {
 
   For both serve and enable commands:
 
-  --aliases      Specify additional domains to obtain TLS certs for and respond to.
+  --domain          The main domain to serve (defaults to system hostname if not specified).
+  --aliases         Additional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
 
   For serve command:
 
-  --sync-to      The host to sync to.
-  --sync-from      The folder to sync from (only relevant if --sync-to is specified).
+  --sync-to         The host to sync to.
+  --sync-from       The folder to sync from (only relevant if --sync-to is specified).
   --exit-on-sync    Exit once the first sync has occurred. Useful in deployment scripts.
   --sync-folder-and-contents  Sync local folder and contents (default is to sync the folder’s contents only).
 
@@ -497,7 +498,10 @@ test('[commands] help', t => {
     Options:
 
     For both serve and enable commands:
-    --aliases      Specify additional domains to obtain TLS certs for and respond to.
+
+    --domain          The main domain to serve (defaults to system hostname if not specified).
+    --aliases         Additional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
+
     For serve command:
     --sync-to      The host to sync to.
     --sync-from      The folder to sync from (only relevant if --sync-to is specified).
@@ -575,7 +579,9 @@ test('[commands] help', t => {
     Options:
 
     For serve command:
-    --aliases      Specify additional domains to obtain TLS certs for and respond to.
+
+    --domain          The main domain to serve (defaults to system hostname if not specified).
+    --aliases         Additional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
 
     Examples:
       Develop using locally-trusted TLS certificates:
@@ -634,7 +640,10 @@ test('[commands] help', t => {
     Options:
 
     For both serve and enable commands:
-    --aliases      Specify additional domains to obtain TLS certs for and respond to.
+
+    --domain          The main domain to serve (defaults to system hostname if not specified).
+    --aliases         Additional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
+
     For serve command:
     --sync-to      The host to sync to.
     --sync-from      The folder to sync from (only relevant if --sync-to is specified).

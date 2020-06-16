@@ -67,6 +67,7 @@ class Help {
     //
 
     const optionAliases = option('aliases')
+    const optionDomain = option('domain')
 
     const optionSyncFrom = option('sync-from')
     const optionSyncTo = option('sync-to')
@@ -128,11 +129,13 @@ class Help {
     ${ this.isWindows ? `
     For ${commandServe} command:
 
-    ${optionAliases}\t\t\tSpecify additional domains to obtain TLS certs for and respond to.
+    ${optionDomain}\t\t\tThe main domain to serve (defaults to system hostname if not specified).
+    ${optionAliases}\t\t\tAdditional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
     ` : `
     For both ${commandServe} and ${commandEnable} commands:
 
-    ${optionAliases}\t\t\tSpecify additional domains to obtain TLS certs for and respond to.
+    ${optionDomain}\t\t\tThe main domain to serve (defaults to system hostname if not specified).
+    ${optionAliases}\t\t\tAdditional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
 
     For ${commandServe} command:
 
