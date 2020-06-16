@@ -449,7 +449,7 @@ test('[commands] help', t => {
     Regular process:
 
   • Serve current folder      ▶ site @hostname
-
+  • Serve current folder at specified domain	▶ site @hostname --domain=my.site
   • Serve current folder also at aliases  ▶ site @hostname --aliases=other.site,www.other.site
 
   • Serve folder demo        ▶ site demo @hostname
@@ -538,8 +538,10 @@ test('[commands] help', t => {
     • Serve current folder      ▶ site @hostname
     • Serve current folder at specified domain ▶ site @hostname --domain=my.site
     • Serve current folder also at aliases  ▶ site @hostname --aliases=other.site,www.other.site
+
     • Serve folder demo        ▶ site demo @hostname
       (shorthand and full)      ▶ site serve demo @hostname
+
     • Proxy localhost:1313 ⇄ https://hostname  ▶ site serve :1313 @hostname
 
       Static site generation:
@@ -599,7 +601,9 @@ test('[commands] help', t => {
       Stage using globally-trusted Let’s Encrypt certificates:
 
     • Serve current folder      ▶ site "@hostname"
+    • Serve current folder at specified domain ▶ site "@hostname" --domain=my.site
     • Serve current folder also at aliases  ▶ site "@hostname" --aliases=other.site,www.other.site
+
     • Serve folder demo        ▶ site demo "@hostname"
       (shorthand and full)      ▶ site serve demo "@hostname"
     • Proxy localhost:1313 ⇄ https://hostname  ▶ site serve :1313 "@hostname"
@@ -679,7 +683,9 @@ test('[commands] help', t => {
       Stage using globally-trusted Let’s Encrypt certificates:
 
     • Serve current folder      ▶ site @hostname
+    • Serve current folder at specified domain ▶ site @hostname --domain=my.site
     • Serve current folder also at aliases  ▶ site @hostname --aliases=other.site,www.other.site
+
     • Serve folder demo        ▶ site demo @hostname
       (shorthand and full)      ▶ site serve demo @hostname
     • Proxy localhost:1313 ⇄ https://hostname  ▶ site serve :1313 @hostname
