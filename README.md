@@ -258,6 +258,8 @@ Start serving the _my-site_ directory at your _hostname_ as a regular process us
 $ site my-site @hostname
 ```
 
+Note that as of 13.0.0, Site.js will refuse to start the server if your hostname (or the domain you specified manually using the `--domain` option and any aliases you may have specified using the `--aliases` option) fails to resolve or is unreachable. This should help you diagnose and fix typos in domain names as well as DNS misconfiguration and propagation issues.
+
 #### Proxy server
 
 Start serving `http://localhost:1313` and `ws://localhost:1313` at your _hostname_:

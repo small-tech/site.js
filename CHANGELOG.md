@@ -14,10 +14,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - Native support for Hugo static site generator with integrated binary.
   - Ability to manually set the main domain being served (the default is based on the hostname) using the `--domain` option.
-  - QUIET=true environment variable to suppress console output.
-  - Unit tests for all CLI commands.
+  - Pre-flight check for global servers: the server will no longer be started if its main domain or aliases are unreachable. This should make it easier and faster to debug domain propagation and DNS issues (as well as typos in domain names).
   - Alpha and beta binaries in addition to release binaries.
   - Local TLS certificate auto-upgrade feature: certificates are now automatically recreated following mkcert binary upgrades.
+  - QUIET=true environment variable to suppress console output.
+  - Unit tests for all CLI commands.
 
 ### Changed
 
