@@ -726,7 +726,7 @@ class Site {
     }
 
     // Specify custom certificate directory for Site.js.
-    options.certificateDirectory = path.join(os.homedir(), '.small-tech.org', 'site.js', 'tls')
+    options.settingsPath = path.join(os.homedir(), '.small-tech.org', 'site.js', 'tls')
 
     // Create and return the HTTPS server.
     return https.createServer(options, requestListener)
