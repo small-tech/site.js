@@ -450,7 +450,7 @@ test('[commands] help', t => {
 
   • Serve current folder      ▶ site @hostname
   • Serve current folder at specified domain	▶ site @hostname --domain=my.site
-  • Serve current folder also at aliases  ▶ site @hostname --aliases=other.site,www.other.site
+  • Serve current folder also at aliases  ▶ site @hostname --aliases=www,other.site,www.other.site
 
   • Serve folder demo        ▶ site demo @hostname
     (shorthand and full)      ▶ site serve demo @hostname
@@ -537,7 +537,7 @@ test('[commands] help', t => {
 
     • Serve current folder      ▶ site @hostname
     • Serve current folder at specified domain ▶ site @hostname --domain=my.site
-    • Serve current folder also at aliases  ▶ site @hostname --aliases=other.site,www.other.site
+    • Serve current folder also at aliases  ▶ site @hostname --aliases=www,other.site,www.other.site
 
     • Serve folder demo        ▶ site demo @hostname
       (shorthand and full)      ▶ site serve demo @hostname
@@ -602,7 +602,7 @@ test('[commands] help', t => {
 
     • Serve current folder      ▶ site "@hostname"
     • Serve current folder at specified domain ▶ site "@hostname" --domain=my.site
-    • Serve current folder also at aliases  ▶ site "@hostname" --aliases=other.site,www.other.site
+    • Serve current folder also at aliases  ▶ site "@hostname" --aliases=www,other.site,www.other.site
 
     • Serve folder demo        ▶ site demo "@hostname"
       (shorthand and full)      ▶ site serve demo "@hostname"
@@ -684,7 +684,7 @@ test('[commands] help', t => {
 
     • Serve current folder      ▶ site @hostname
     • Serve current folder at specified domain ▶ site @hostname --domain=my.site
-    • Serve current folder also at aliases  ▶ site @hostname --aliases=other.site,www.other.site
+    • Serve current folder also at aliases  ▶ site @hostname --aliases=www,other.site,www.other.site
 
     • Serve folder demo        ▶ site demo @hostname
       (shorthand and full)      ▶ site serve demo @hostname

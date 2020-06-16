@@ -231,8 +231,8 @@ class Site {
     this.global = typeof options.global === 'boolean' ? options.global : false
     this.aliases = Array.isArray(options.aliases) ? options.aliases : []
 
-    // The www subdomain is a default alias.
-    // this.aliases.push(`www.${Site.hostname}`)
+    // Substitute shorthand www alias for full domain.
+    this.aliases = this.aliases.map(alias => alias === 'www' ? `www.${Site.hostname}` : alias)
 
     // Has a proxy server been requested? If so, we flag it and save the port
     // we were asked to proxy. In this case, pathToServe is ignored/unused.

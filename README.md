@@ -505,7 +505,7 @@ If `command` is omitted, behaviour defaults to `serve`.
 
   - `--domain`: The main domain to serve (defaults to system hostname if not specified).
 
-  - `--aliases`: Comma-separated list of additional domains to obtain TLS certificates for and respond to. These domains point to the main domain via a 302 redirect.
+  - `--aliases`: Comma-separated list of additional domains to obtain TLS certificates for and respond to. These domains point to the main domain via a 302 redirect. Note that as of 13.0.0, the _www_ alias is not added automatically. To specify it, you can use the shorthand form:`--aliases=www`
 
 #### For the `serve` command:
 
@@ -559,7 +559,7 @@ When you `serve` a site at `@hostname` or use the `enable` command, globally-tru
 | ----------------------------------------- | ------------------------------------------------------------- |
 | Serve current folder                      | site @hostname                                                |
 | Serve current folder at specified domain  | site @hostname --domain=my.site                               |
-| Serve current folder also at aliases	    | site @hostname --aliases=other.site,www.other.site            |
+| Serve current folder also at aliases	    | site @hostname --aliases=www,other.site,www.other.site        |
 | Serve folder demo*                        | site demo @hostname                                           |
 |                                           | site serve demo @hostname                                     |
 | Proxy localhost:1313 to https://hostname  | site serve :1313 @hostname                                    |

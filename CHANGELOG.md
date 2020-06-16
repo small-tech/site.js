@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Breaking change
 
-  - Starting a server now only provisions a TLS certificate for and serves _hostname_ (it no longer also provisions a TLS certificate for and aliases the _www_ subdomain). If you want to have _www_ subdomain support, add _www.<hostname>_ via the `--aliases` option manually.
+  - Starting a server now only provisions a TLS certificate for and serves _hostname_ (it no longer also provisions a TLS certificate for and aliases the _www_ subdomain). If you want to have _www_ subdomain support, add _www_ via the `--aliases` option manually.
 
 ### Added
 
