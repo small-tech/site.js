@@ -825,7 +825,7 @@ class Site {
 
     // Handle graceful exit.
     this.goodbye = (done) => {
-      this.log('\n   💃    ❨site.js❩ Preparing to exit gracefully, please wait…\n')
+      this.log('\n   💃    ❨site.js❩ Preparing to exit gracefully, please wait…')
 
       if (this.hugoServerProcesses) {
         this.log('   🚮    ❨site.js❩ Killing Hugo server processes.')
