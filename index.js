@@ -22,6 +22,7 @@ const fs                    = require('fs-extra')
 const path                  = require('path')
 const os                    = require('os')
 const childProcess          = require('child_process')
+const http                  = require('http')
 const https                 = require('@small-tech/https')
 const expressWebSocket      = require('@small-tech/express-ws')
 const Hugo                  = require('@small-tech/node-hugo')
@@ -38,10 +39,12 @@ const moment                = require('moment')
 const morgan                = require('morgan')
 const chokidar              = require('chokidar')
 const decache               = require('decache')
+const prepareRequest        = require('bent')
 const clr                   = require('./lib/clr')
 const cli                   = require('./bin/lib/cli')
 const serve                 = require('./bin/commands/serve')
 const Stats                 = require('./lib/Stats')
+const asyncForEach          = require('./lib/async-foreach')
 const errors                = require('./lib/errors')
 
 
@@ -733,11 +736,83 @@ class Site {
   }
 
 
+  // There is no use in starting a server if the domains it will be serving on are not reachable.
+  // If we do, this can lead to all sorts of pain later on. Much better to inform the person early on
+  // that there is a problem with the domain (possibly a typo or a DNS issue) and to go no further.
+  async ensureDomainsAreReachable () {
+    // Note: spacing around this emoji is correct. It requires less than the others.
+    this.log('   🧚‍♀️  ❨site.js❩ Ensuring domains are reachable before starting global server.')
+
+    const reachabilityMessage = 'site.js-domain-is-reachable'
+    const preFlightCheckServer = http.createServer((request, response) => {
+      response.statusCode = 200
+      response.end(reachabilityMessage)
+    })
+
+    await new Promise((resolve, reject) => {
+      try {
+        preFlightCheckServer.listen(80, () => {
+          this.log('   ✨    ❨site.js❩ Pre-flight domain reachability check server started.')
+          resolve()
+        })
+      } catch (error) {
+        this.log('   ❌    ❨site.js❩ Pre-light domain reachability server could not be started. Cannot continue.')
+        process.exit(1)
+      }
+    })
+
+    const domainsToCheck = [Site.hostname].concat(this.aliases)
+
+    await asyncForEach(
+      domainsToCheck,
+      async domain => {
+        try {
+          this.log (`   ✨    ❨site.js❩ Attempting to reach domain ${domain}…`)
+          const domainCheck = prepareRequest('GET', 'string', `http://${domain}`)
+          const response = await domainCheck()
+          if (response !== reachabilityMessage) {
+            // If this happens, there is most likely another site running at this domain.
+            // We cannot continue.
+            let responseToShow = response.length > 100 ? 'response is too long to show' : response
+            if (response.includes('html')) {
+              responseToShow = `${responseToShow.replace('is', 'looks like HTML and is')}`
+            }
+            this.log(`   ❌    ❨site.js❩ Got unexpected response from ${domain} (${responseToShow}).`)
+            process.exit(1)
+          }
+          this.log (`   💖    ❨site.js❩ ${domain} is reachable.`)
+        } catch (error) {
+          // The site is not reachable. We cannot continue.
+          this.log(`   ❌    ❨site.js❩ Domain ${domain} is not reachable. (${error})`)
+
+          process.exit(1)
+        }
+      }
+    )
+
+    await new Promise((resolve, reject) => {
+      preFlightCheckServer.close(() => {
+        resolve()
+      }, error => {
+        this.log(`   ❌    ❨site.js❩ Could not close the pre-flight domain reachability server.`)
+        process.exit(1)
+      })
+    })
+
+    this.log('   ✨    ❨site.js❩ Pre-flight domain reachability check server stopped.')
+  }
+
+
   // Starts serving the site (or starts the proxy server).
   //   • callback: (function) the callback to call once the server is ready (defaults are provided).
   //
   // Can throw.
   async serve (callback) {
+    // Before anything else, if this is a global server, let’s ensure that the domains we are trying to support
+    // are reachable. If it is not, we will be prevented from going any further.
+    if (this.global) {
+        await this.ensureDomainsAreReachable()
+    }
 
     // Before starting the server, we have to configure the app. We do this here
     // instead of in the constructor since the process might have to wait for the

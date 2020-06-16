@@ -22,7 +22,6 @@ const SYNC_FROM = 'sync-from'
 const EXIT_ON_SYNC = 'exit-on-sync'
 const SYNC_FOLDER_AND_CONTENTS = 'sync-folder-and-contents'
 
-let domain = null
 let global = null
 let port = null
 let path = null
