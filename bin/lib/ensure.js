@@ -65,8 +65,8 @@ class Ensure {
   rootOnLinuxesque () {
     if (process.getuid() !== 0) {
       // Requires root but wasn’t run with sudo. Automatically restart using sudo.
-      console.log('   🧙    About to temporarily restart with root privileges.')
-      console.log('   ✨    Restarting…')
+      console.log('   🧙    ❨site.js❩ About to temporarily restart with root privileges.')
+      console.log('   ✨    ❨site.js❩ Restarting…')
       const options = {env: process.env, stdio: 'inherit'}
       try {
         if (runtime.isNode) {

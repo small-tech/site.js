@@ -41,12 +41,12 @@ class WarningBox {
     const boxWidth = this.lines.reduce((longestLineLengthSoFar, currentLine) => Math.max(longestLineLengthSoFar, actualStringLength(currentLine)), /* initial longestLineLengthSoFar value is */ 0) + 2
 
     const repeat = (thisMany, character) => Array(thisMany).fill(character).join('')
-    const renderLine = (line) => `    ║ ${line}${repeat(boxWidth - actualStringLength(line) - 1, ' ')}║\n`
+    const renderLine = (line) => `         ║ ${line}${repeat(boxWidth - actualStringLength(line) - 1, ' ')}║\n`
 
     const horizontalLine = repeat(boxWidth, '═')
-    const top = ` 🔔 ╔${horizontalLine}╗\n`
+    const top = `\n   🔔    ╔${horizontalLine}╗\n`
     const body = this.lines.reduce((body, currentLine) => `${body}${renderLine(currentLine)}`, /* initial body is */ '')
-    const bottom = `    ╚${horizontalLine}╝\n`
+    const bottom = `         ╚${horizontalLine}╝\n`
 
     return top + renderLine('') + body + renderLine('') + bottom
   }
@@ -59,14 +59,14 @@ class WarningBox {
 
 
 async function uninstall (options) {
+  Site.logAppNameAndVersion()
+
   const isWindows = process.platform === 'win32'
 
   if (!isWindows) {
     ensure.systemctl()
     ensure.root('uninstall')
   }
-
-  Site.logAppNameAndVersion()
 
   const { isActive: serverIsActive, isEnabled: serverIsEnabled } = status()
 
@@ -106,14 +106,15 @@ async function uninstall (options) {
     message: 'Are you sure you want to proceed (y/n)?',
     initial: false,
     style: 'invisible',
-    symbol: () => (done, aborted) => aborted ? ' ❌' : done ? ' 😉' : ' 🧐',
+    symbol: () => (done, aborted) => aborted ? '   🛑   ' : done ? '   😉   ' : '   🧐   ',
   })
 
   if (!response.confirmed) {
-    console.log('\n ❌ Aborting…\n')
+    console.log('   🛑    ❨site.js❩ Aborted.')
+    console.log('\n   💕    ❨site.js❩ Goodbye!\n')
     Graceful.exit()
   } else {
-    console.log('\n 👋 Uninstalling…\n')
+    console.log('\n   👋    ❨site.js❩ Uninstalling…\n')
 
     // Disable the server, if it is enabled.
     if (serverIsEnabled) {
@@ -132,7 +133,7 @@ async function uninstall (options) {
         fs.removeSync(Site.settingsDirectory)
         console.log(' ✔ Site.js settings folder removed.')
       } catch (error) {
-        console.log(`\n ❌ Could not remove the Site.js settings folder (${error}).\n`)
+        console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Could not remove the Site.js settings folder (${error}).\n`)
         process.exit(1)
       }
     } else {
@@ -153,18 +154,18 @@ async function uninstall (options) {
           fs.removeSync(siteBinary)
           console.log(' ✔ Site.js binary removed.')
         } catch (error) {
-          console.log(`\n ❌ Could not remove the Site.js binary (${error}).\n`)
+          console.log(`\n   ❌     ${clr('❨site.js❩ Error:', 'red')} Could not remove the Site.js binary (${error}).\n`)
           process.exit(1)
-        } 
+        }
       }
     } else {
-      console.log(' ℹ Site binary does not exist; ignoring.')
+      console.log('   ℹ    Site binary does not exist; ignoring.')
     }
 
     if (!isWindows) {
-      console.log(`\n 🎉 Site.js uninstalled.`)
+      console.log(`   🎉    ❨site.js❩ Uninstalled.`)
     }
-    console.log('\n💖 Goodbye!\n')
+    console.log('\n   💕    ❨site.js❩ Goodbye!\n')
     Graceful.exit()
   }
 }
