@@ -157,7 +157,7 @@ test('[bin/commands] systemd startup daemon', t => {
 
   // Startup daemons are only supported on platforms with systemd.
   if (process.platform === 'win32' || process.platform === 'darwin' || !ensure.commandExists('systemctl')) {
-    const expectedErrorMessage = dehydrate('Sorry, daemons are only supported on Linux systems with systemd (systemctl required).')
+    const expectedErrorMessage = dehydrate('❌ ❨site.js❩ Error: Daemons are only supported on Linux systems with systemd (systemctl required).')
     const commandsToTest = ['enable', 'disable', 'start', 'stop', 'restart', 'status']
 
     commandsToTest.forEach(commandName => {

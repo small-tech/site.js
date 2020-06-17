@@ -85,7 +85,7 @@ class Ensure {
   // Ensure systemctl exists.
   systemctl () {
     if (!this.commandExists('systemctl')) {
-      console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} daemons are only supported on Linux systems with systemd (systemctl required).\n`)
+      console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Daemons are only supported on Linux systems with systemd (systemctl required).\n`)
       process.exit(1)
     }
   }
@@ -94,7 +94,7 @@ class Ensure {
   // Ensure journalctl exists.
   journalctl () {
     if (!this.commandExists('journalctl')) {
-      console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} daemons are only supported on Linux systems with systemd (journalctl required).\n`)
+      console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Daemons are only supported on Linux systems with systemd (journalctl required).\n`)
       process.exit(1)
     }
   }
@@ -133,7 +133,7 @@ class Ensure {
 
         childProcess.execSync('sudo sysctl -w net.ipv4.ip_unprivileged_port_start=0', {env: process.env})
       } catch (error) {
-        console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} could not disable privileged ports. Cannot bind to port 80 and 443. Exiting.`, error)
+        console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Could not disable privileged ports. Cannot bind to port 80 and 443. Exiting.`, error)
         process.exit(1)
       }
     }
