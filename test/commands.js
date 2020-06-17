@@ -193,7 +193,7 @@ test('[bin/commands] systemd startup daemon', t => {
   //
   // Status should display correctly when server is disabled.
   //
-  const expectedOutputForStatusCommandWhenServerIsDisabled = dehydrate('❌ Site.js is inactive and disabled.')
+  const expectedOutputForStatusCommandWhenServerIsDisabled = dehydrate('🛑 ❨site.js❩ Server is inactive and disabled.')
   const actualOutputForStatusCommandWhenServerIsDisabled = outputForCommand(statusCommand)
   t.ok(actualOutputForStatusCommandWhenServerIsDisabled.includes(expectedOutputForStatusCommandWhenServerIsDisabled), 'Server status should display correctly when server is disabled')
 
@@ -201,7 +201,7 @@ test('[bin/commands] systemd startup daemon', t => {
   // Disable command should fail when server is disabled.
   //
 
-  const expectedOutputForDisableCommandWhenServerIsDisabled = dehydrate('👿 Error: Site.js server is not enabled. Nothing to disable.')
+  const expectedOutputForDisableCommandWhenServerIsDisabled = dehydrate('❌ ❨site.js❩ Error: Site.js server is not enabled. Nothing to disable.')
   try {
     outputForCommand(disableCommand)
   } catch (error) {
@@ -213,7 +213,7 @@ test('[bin/commands] systemd startup daemon', t => {
   //
   // Start command should fail when server is disabled.
   //
-  const expectedOutputForStartCommandWhenServerIsDisabled = dehydrate('👿 Error: Site.js daemon is not enabled. Please run site enable to enable it.')
+  const expectedOutputForStartCommandWhenServerIsDisabled = dehydrate('❌ ❨site.js❩ Error: Site.js daemon is not enabled. Please run site enable to enable it.')
   try {
     outputForCommand(startCommand)
   } catch (error) {
@@ -225,7 +225,7 @@ test('[bin/commands] systemd startup daemon', t => {
   //
   // Stop command should fail when server is disabled.
   //
-  const expectedOutputForStopCommandWhenServerIsDisabled = dehydrate('👿 Error: Site.js server is not active. Nothing to stop.')
+  const expectedOutputForStopCommandWhenServerIsDisabled = dehydrate('❌ ❨site.js❩ Error: Site.js server is not active. Nothing to stop.')
   try {
     outputForCommand(stopCommand)
   } catch (error) {
@@ -237,7 +237,7 @@ test('[bin/commands] systemd startup daemon', t => {
   //
   // Restart command should fail when server is disabled.
   //
-  const expectedOutputForRestartCommandWhenServerIsDisabled = dehydrate('👿 Error: Site.js daemon is not enabled. Please run site enable to enable it.')
+  const expectedOutputForRestartCommandWhenServerIsDisabled = dehydrate('❌ ❨site.js❩ Error: Site.js daemon is not enabled. Please run site enable to enable it.')
   try {
     outputForCommand(restartCommand)
   } catch (error) {
@@ -254,11 +254,10 @@ test('[bin/commands] systemd startup daemon', t => {
   // Test: enable when not enabled should succeed.
   //
   const expectedOutputForEnableCommand = dehydrate(`
-    😈 Launched as daemon on https://${Site.hostname} serving test/site
+    😈 ❨site.js❩ Launched as daemon on https://${Site.hostname} serving test/site
+    😈 ❨site.js❩ Installed daemon for auto-launch at startup.
 
-    😈 Installed daemon for auto-launch at startup.
-
-    😁👍 You’re all set!`)
+    👍 ❨site.js❩ You’re all set!`)
 
   const actualOutputForEnableCommand = outputForCommand(enableCommand)
 
@@ -273,7 +272,7 @@ test('[bin/commands] systemd startup daemon', t => {
   //
   // Status should display correctly when server is enabled.
   //
-  const expectedOutputForStatusCommandWhenServerIsEnabled = dehydrate(`✔ Site.js is active and enabled.`)
+  const expectedOutputForStatusCommandWhenServerIsEnabled = dehydrate(`💡 ❨site.js❩ Server is active and enabled.`)
   const actualOutputForStatusCommandWhenServerIsEnabled = outputForCommand(statusCommand)
   t.ok(actualOutputForStatusCommandWhenServerIsEnabled.includes(expectedOutputForStatusCommandWhenServerIsEnabled), 'Server status should display correctly when server is enabled')
 
@@ -281,33 +280,33 @@ test('[bin/commands] systemd startup daemon', t => {
   //
   // Enable command should fail when server is enabled.
   //
-  const expectedOutputForEnableCommandWhenServerIsEnabled = dehydrate(' 👿 Site.js Daemon is already running. Please stop it first with the command: site disable')
+  const expectedOutputForEnableCommandWhenServerIsEnabled = dehydrate('❌ ❨site.js❩ Error: Site.js Daemon is already running. Please stop it before retrying using: site disable')
   try {
     outputForCommand(enableCommand)
   } catch (error) {
     t.pass('Enable command fails as expected when server is enabled')
     const actualOutputForEnableCommandWhenServerIsEnabled = dehydrate(error.stdout)
-    t.strictEquals(actualOutputForEnableCommandWhenServerIsEnabled, expectedOutputForEnableCommandWhenServerIsEnabled, 'Enable command should fail when server is enabled')
+    t.ok(actualOutputForEnableCommandWhenServerIsEnabled.includes(expectedOutputForEnableCommandWhenServerIsEnabled), 'Enable command should fail when server is enabled')
   }
 
   //
   // Stop command should succeed when server is active.
   //
-  const expectedOutputForStopCommandWhenServerIsActive = dehydrate('🎈 Server stopped.')
+  const expectedOutputForStopCommandWhenServerIsActive = dehydrate('🎈 ❨site.js❩ Server stopped.')
   const actualOutputForStopCommandWhenServerIsActive = outputForCommand(stopCommand)
   t.ok(actualOutputForStopCommandWhenServerIsActive.includes(expectedOutputForStopCommandWhenServerIsActive), 'Stop command should succeed when server is active')
 
   //
   // Server status should display correctly when server is enabled but inactive.
   //
-  const expectedOutputForStatusCommandWhenServerIsEnabledButInactive = dehydrate('❌ Site.js is inactive and enabled.')
+  const expectedOutputForStatusCommandWhenServerIsEnabledButInactive = dehydrate('🛑 ❨site.js❩ Server is inactive and enabled.')
   const actualOutputForStatusCommandWhenServerIsEnabledButInactive = outputForCommand(statusCommand)
   t.ok(actualOutputForStatusCommandWhenServerIsEnabledButInactive.includes(expectedOutputForStatusCommandWhenServerIsEnabledButInactive), 'Server status should display correctly when server is enabled but inactive')
 
   //
   // Start command should succeed when server is inactive.
   //
-  const expectedOutputForStartCommandWhenServerIsEnabledButInactive = dehydrate('🎈 Server started.')
+  const expectedOutputForStartCommandWhenServerIsEnabledButInactive = dehydrate('🎈 ❨site.js❩ Server started.')
   const actualOutputForStartCommandWhenServerIsEnabledButInactive = outputForCommand(startCommand)
   t.ok(actualOutputForStartCommandWhenServerIsEnabledButInactive.includes(expectedOutputForStartCommandWhenServerIsEnabledButInactive), 'Start command should succeed when server is inactive')
 
@@ -318,7 +317,7 @@ test('[bin/commands] systemd startup daemon', t => {
   // Stop the server first.
   /* ignore the */ outputForCommand(stopCommand)
 
-  const restartCommandSuccessOutput = dehydrate('🎈 Server restarted.')
+  const restartCommandSuccessOutput = dehydrate('🎈 ❨site.js❩ Server restarted.')
   const expectedOutputForRestartCommandWhenServerIsEnabledButInactive = restartCommandSuccessOutput
   const actualOutputForRestartCommandWhenServerIsEnabledButInactive = outputForCommand(restartCommand)
   t.ok(actualOutputForRestartCommandWhenServerIsEnabledButInactive.includes(expectedOutputForRestartCommandWhenServerIsEnabledButInactive), 'Restart command should succeed when server is enabled but inactive')
@@ -335,7 +334,7 @@ test('[bin/commands] systemd startup daemon', t => {
   // Disable command should succeed when server is enabled.
   //
 
-  const expectedOutputForDisableCommand = dehydrate('🎈 Server stopped and removed from startup.')
+  const expectedOutputForDisableCommand = dehydrate('🎈 ❨site.js❩ Server stopped and removed from startup.')
   const actualOutputForDisableCommand = outputForCommand(disableCommand)
   t.ok(actualOutputForDisableCommand.includes(expectedOutputForDisableCommand), 'Disable command should succeed when server is enabled')
 
@@ -744,7 +743,7 @@ test('[commands] logs', async t => {
     t.strictEquals(error.signal, 'SIGTERM', 'logs process was terminated in the manner we expect')
 
     actualOutput = dehydrate(stdout)
-    t.true(actualOutput.includes(dehydrate('📜 Tailing logs (press Ctrl+C to exit).')), 'stdout includes our header')
+    t.true(actualOutput.includes(dehydrate('📜 ❨site.js❩ Tailing logs (press Ctrl+C to exit).')), 'stdout includes our header')
     t.true(actualOutput.includes(dehydrate('-- Logs begin at')), 'stdout includes journalctl header')
     t.end()
   })

@@ -414,7 +414,7 @@ class Site {
         if (requestedHost === mainHostname) {
           next()
         } else {
-          this.log(` 👉 ❨site.js❩ Redirecting alias ${requestedHost} to main hostname ${mainHostname}.`)
+          this.log(`   👉    ❨site.js❩ Redirecting alias ${requestedHost} to main hostname ${mainHostname}.`)
           response.redirect(`https://${mainHostname}${request.path}`)
         }
       })
@@ -486,7 +486,7 @@ class Site {
               errorMessage = 'Hugo’s Multilingual Multihost mode is not supported in Site.js.'
             }
 
-            this.log(`   ❌    ❨site.js❩ Could not start Hugo server. ${errorMessage}`)
+            this.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Could not start Hugo server. ${errorMessage}\n`)
             process.exit(1)
           }
 
@@ -774,7 +774,7 @@ class Site {
           resolve()
         })
       } catch (error) {
-        this.log('   ❌    ❨site.js❩ Pre-light domain reachability server could not be started. Cannot continue.')
+        this.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Pre-flight domain reachability server could not be started.\n`)
         process.exit(1)
       }
     })
@@ -795,13 +795,13 @@ class Site {
             if (response.includes('html')) {
               responseToShow = `${responseToShow.replace('is', 'looks like HTML and is')}`
             }
-            this.log(`   ❌    ❨site.js❩ Got unexpected response from ${domain} (${responseToShow}).`)
+            this.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Got unexpected response from ${domain} (${responseToShow}).\n`)
             process.exit(1)
           }
           this.log (`   💖    ❨site.js❩ ${domain} is reachable.`)
         } catch (error) {
           // The site is not reachable. We cannot continue.
-          this.log(`   ❌    ❨site.js❩ Error: Domain ${domain} is not reachable. (${error.toString().replace(/Error.*?: /, '')})`)
+          this.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Domain ${domain} is not reachable. (${error.toString().replace(/Error.*?: /, '')})\n`)
 
           process.exit(1)
         }
@@ -812,7 +812,7 @@ class Site {
       preFlightCheckServer.close(() => {
         resolve()
       }, error => {
-        this.log(`   ❌    ❨site.js❩ Could not close the pre-flight domain reachability server.`)
+        this.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Could not close the pre-flight domain reachability server.\n`)
         process.exit(1)
       })
     })
@@ -884,7 +884,7 @@ class Site {
       if (process.env.NODE_ENV === 'production') {
 
         const checkForUpdates = () => {
-          this.log(' 🛰 Running auto update check…')
+          this.log('   🛰    ❨site.js❩ Running auto update check…')
 
           const options = {env: process.env, stdio: 'inherit', shell: 'bash'}
 
@@ -895,14 +895,14 @@ class Site {
 
           childProcess.exec(`${appReference} update`, options, (error, stdout, stderr) => {
             if (error !== null) {
-              this.log(' 😱 Error: Could not check for updates.')
+              this.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Could not check for updates.\n`)
             } else {
               this.log(stdout)
             }
           })
         }
 
-        this.log(' ⏰ Setting up auto-update check interval.')
+        this.log('   ⏰    ❨site.js❩ Setting up auto-update check interval.')
         // Regular and alpha releases check for updates every 6 hours.
         // (You  should not be deploying servers using the alpha release channel.)
         let hours = 6

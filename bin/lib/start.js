@@ -36,7 +36,7 @@ function start () {
     throwError(`Could not start Site.js server (${error}).`)
   }
 
-  console.log('\n   🎈    Server started.\n')
+  console.log('\n   🎈    ❨site.js❩ Server started.\n')
 }
 
 module.exports = start

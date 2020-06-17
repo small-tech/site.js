@@ -216,7 +216,7 @@ function enable (args) {
 
         // Enable.
         childProcess.execSync('sudo systemctl enable site.js', {env: process.env, stdio: 'pipe'})
-        console.log(`   😈    ❨site.js❩ Installed for auto-launch at startup.`)
+        console.log(`   😈    ❨site.js❩ Installed daemon for auto-launch at startup.`)
       } catch (error) {
         console.log(error, `\n   ❌    ${clr('❨site.js❩ Error:', 'red')} could not enable server.\n`)
         process.exit(1)
