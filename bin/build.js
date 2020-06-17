@@ -60,7 +60,7 @@ const nodeVersion       = process.version.slice(1)
 const hugoVersion       = (new Hugo()).version
 const binaryVersion     = moment(new Date()).format('YYYYMMDDHHmmss')
 const packageVersion    = package.version
-const sourceVersion     = (childProcess.execSync('git log -1 --oneline | cut -c1-7')).toString().trim()
+const sourceVersion     = (childProcess.execSync('git log -1 --oneline')).toString().trim().split(' ')[0]
 const binaryName        = 'site'
 const windowsBinaryName = `${binaryName}.exe`
 
