@@ -42,7 +42,7 @@ function disable () {
     throwError(`Could not disable Site.js server (${error}).`)
   }
 
-  console.log('   🎈    ❨site.js❩ Server stopped and removed from startup.\n')
+  console.log('\n   🎈    ❨site.js❩ Server stopped and removed from startup.\n')
 }
 
 module.exports = disable

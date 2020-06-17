@@ -936,14 +936,15 @@ class Site {
 
 
   showStatisticsUrl (location) {
-    this.log(`   📊    ❨site.js❩ For statistics, see https://${location}${this.stats.route}`)
+    this.log(`\n   📊    ❨site.js❩ For statistics, see https://${location}${this.stats.route}\n`)
   }
 
 
   // Callback used in regular servers.
   regularCallback (server) {
     const location = this.prettyLocation()
-    this.log(`   🎉    ❨site.js❩ Serving ${clr(this.pathToServe, 'cyan')} on ${clr(`https://${location}`, 'green')}`)
+    const prettyPathToServe = this.pathToServe === '.' ? 'current directory' : this.pathToServe
+    this.log(`   🎉    ❨site.js❩ Serving ${clr(prettyPathToServe, 'cyan')} on ${clr(`https://${location}`, 'green')}`)
     this.showStatisticsUrl(location)
   }
 

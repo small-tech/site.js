@@ -256,7 +256,7 @@ test('[bin/commands] systemd startup daemon', t => {
   const expectedOutputForEnableCommand = dehydrate(`
     😈 Launched as daemon on https://${Site.hostname} serving test/site
 
-    😈 Installed for auto-launch at startup.
+    😈 Installed daemon for auto-launch at startup.
 
     😁👍 You’re all set!`)
 

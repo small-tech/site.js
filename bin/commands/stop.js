@@ -11,10 +11,10 @@ const ensure = require('../lib/ensure')
 const Site = require('../../index')
 
 function stop () {
+  Site.logAppNameAndVersion()
+
   ensure.systemctl()
   ensure.root('stop')
-
-  Site.logAppNameAndVersion()
 
   try {
     // Stop the web server.

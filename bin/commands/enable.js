@@ -210,8 +210,9 @@ function enable (args) {
       //
       try {
         // Start.
+        const prettyPathToServe = pathToServe === '.' ? 'current directory' : pathToServe
         childProcess.execSync('sudo systemctl start site.js', {env: process.env, stdio: 'pipe'})
-        console.log(`   😈    ❨site.js❩ Launched as daemon on ${clr(`https://${os.hostname()}`, 'green')} serving ${clr(pathToServe, 'cyan')}`)
+        console.log(`   😈    ❨site.js❩ Launched as daemon on ${clr(`https://${os.hostname()}`, 'green')} serving ${clr(prettyPathToServe, 'cyan')}`)
 
         // Enable.
         childProcess.execSync('sudo systemctl enable site.js', {env: process.env, stdio: 'pipe'})
@@ -231,8 +232,7 @@ function enable (args) {
       }
 
       // All OK!
-      console.log('   👍    ❨site.js❩ You’re all set!')
-      console.log('\n   💕    ❨site.js❩ Goodbye!')
+      console.log('\n   👍    ❨site.js❩ You’re all set!\n')
     }
   })
 }

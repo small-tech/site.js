@@ -9,10 +9,10 @@
 const childProcess = require('child_process')
 
 const status = require('../lib/status')
-const ensure = require('../lib/ensure')
+const clr = require('../../lib/clr')
 
 function throwError(errorMessage) {
-  console.log(` 👿 Error: ${errorMessage}\n`)
+  console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} ${errorMessage}\n`)
   throw new Error(errorMessage)
 }
 
@@ -32,7 +32,7 @@ function stop () {
     throwError(`Could not stop Site.js server (${error}).`)
   }
 
-  console.log(' 🎈 Server stopped.\n')
+  console.log('\n   🎈    ❨site.js❩ Server stopped.\n')
 }
 
 module.exports = stop
