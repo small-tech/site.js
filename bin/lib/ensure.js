@@ -85,7 +85,7 @@ class Ensure {
   // Ensure systemctl exists.
   systemctl () {
     if (!this.commandExists('systemctl')) {
-      console.log('\n 👿 Sorry, daemons are only supported on Linux systems with systemd (systemctl required).\n')
+      console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} daemons are only supported on Linux systems with systemd (systemctl required).\n`)
       process.exit(1)
     }
   }
@@ -94,7 +94,7 @@ class Ensure {
   // Ensure journalctl exists.
   journalctl () {
     if (!this.commandExists('journalctl')) {
-      console.log('\n 👿 Sorry, daemons are only supported on Linux systems with systemd (journalctl required).\n')
+      console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} daemons are only supported on Linux systems with systemd (journalctl required).\n`)
       process.exit(1)
     }
   }
@@ -108,7 +108,7 @@ class Ensure {
     const { isActive } = getStatus()
 
     if (isActive) {
-      console.log(`\n 👿 Site.js Daemon is already running.\n\n    ${clr('Please stop it first with the command:', 'yellow')} site ${clr('disable', 'green')}\n`)
+      console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Site.js Daemon is already running.\n\n    ${clr('Please stop it first with the command:', 'yellow')} site ${clr('disable', 'green')}\n`)
       process.exit(1)
     }
   }
@@ -133,7 +133,7 @@ class Ensure {
 
         childProcess.execSync('sudo sysctl -w net.ipv4.ip_unprivileged_port_start=0', {env: process.env})
       } catch (error) {
-        console.log('\n   ❌    [Site.js] Error: could not disable privileged ports. Cannot bind to port 80 and 443. Exiting.', error)
+        console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} could not disable privileged ports. Cannot bind to port 80 and 443. Exiting.`, error)
         process.exit(1)
       }
     }
@@ -145,33 +145,33 @@ class Ensure {
     if (this.commandExists('rsync')) return // Already installed
 
     if (os.platform() === 'darwin') {
-      console.log('\n ⚠️  [Site.js] macOS: rsync should be installed default but isn’t. Please fix this before trying again.\n')
+      console.log('\n   ⚠️    ❨site.js❩ macOS: rsync should be installed default but isn’t. Please fix this before trying again.\n')
       process.exit(1)
     }
 
-    console.log(' 🌠 [Site.js] Installing Rsync dependency…')
+    console.log('   🌠    ❨site.js❩ Installing Rsync dependency…')
     let options = {env: process.env}
     try {
       if (this.commandExists('apt')) {
         options.env.DEBIAN_FRONTEND = 'noninteractive'
         childProcess.execSync('sudo apt-get install -y -q rsync', options)
-        console.log(' 🎉 [Site.js] Rsync installed using apt.\n')
+        console.log('   🎉    ❨site.js❩ Rsync installed using apt.\n')
       } else if (this.commandExists('yum')) {
         // Untested: if you test this, please let me know https://github.com/indie-mirror/https-server/issues
-        console.log('\n 🤪  [Site.js] Attempting to install required dependency using yum. This is currently untested. If it works (or blows up) for you, I’d appreciate it if you could open an issue at https://github.com/indie-mirror/https-server/issues and let me know. Thanks! – Aral\n')
+        console.log('\n   🤪     ❨site.js❩ Attempting to install required dependency using yum. This is currently untested. If it works (or blows up) for you, I’d appreciate it if you could open an issue at https://github.com/indie-mirror/https-server/issues and let me know. Thanks! – Aral\n')
         childProcess.execSync('sudo yum install rsync', options)
-        console.log(' 🎉 [Site.js] Rsync installed using yum.')
+        console.log('   🎉    ❨site.js❩ Rsync installed using yum.')
       } else if (this.commandExists('pacman')) {
         childProcess.execSync('sudo pacman -S rsync', options)
-        console.log(' 🎉 [Site.js] Rsync installed using pacman.')
+        console.log('   🎉    ❨site.js❩ Rsync installed using pacman.')
       } else {
       // No supported package managers installed. Warn the person.
-      console.log('\n ⚠️  [Site.js] Linux: No supported package manager found for installing Rsync on Linux (tried apt, yum, and pacman). Please install Rsync manually and run Site.js again.\n')
+      console.log('\n   ⚠️     ❨site.js❩ Linux: No supported package manager found for installing Rsync on Linux (tried apt, yum, and pacman). Please install Rsync manually and run Site.js again.\n')
       }
       process.exit(1)
     } catch (error) {
       // There was an error and we couldn’t install the dependency. Warn the person.
-      console.log('\n ⚠️  [Site.js] Linux: Failed to install Rsync. Please install it manually and run Site.js again.\n', error)
+      console.log('\n   ⚠️     ❨site.js❩ Linux: Failed to install Rsync. Please install it manually and run Site.js again.\n', error)
       process.exit(1)
     }
   }
