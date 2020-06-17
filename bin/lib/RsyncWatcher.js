@@ -19,6 +19,7 @@ const Rsync = require('rsync')
 const debounce = require('debounce')
 const path = require('path')
 const Graceful = require('node-graceful')
+const clr = require('../../lib/clr')
 
 const consoleTimestamp = require('./console-timestamp')
 
@@ -32,16 +33,16 @@ class RSyncWatcher {
 
     // Exit gracefully.
     const goodbye = (done) => {
-      console.log(`\n   💫    [Sync] Exit request detected.`)
+      console.log(`\n   💫    ❨site.js❩ Sync exit request detected.`)
 
       for (let entry of this.synchronisers) {
           let synchroniser = entry[1]
-          console.log(`   💫    [Sync] Stopping sync process.`)
+          console.log(`   💫    ❨site.js❩ Stopping sync process.`)
           synchroniser.process.kill()
       }
 
       for (let watcher of this.watchers) {
-          console.log(`   🚮    [Watch] Removing watcher.`)
+          console.log(`   🚮    ❨site.js❩ Removing sync watcher.`)
           watcher.watcher.close()
       }
       done()
@@ -97,7 +98,7 @@ class RSyncWatcher {
       rsync.set(optionKey, this.options[project].rsyncOptions[optionKey]);
     }
 
-    console.log(`\n   💫    [Sync] Starting…`)
+    console.log(`   💫    ❨site.js❩ Sync starting…`)
 
     return new Promise((resolve, reject) => {
       const rsyncProcess = rsync.execute((error, code, command) => {
@@ -106,7 +107,7 @@ class RSyncWatcher {
           return
         }
 
-        console.log(`   💫    [Sync] Complete.\n`)
+        console.log(`   💫    ❨site.js❩ Sync complete.`)
         resolve(rsyncProcess.pid)
       }, (data) => {
         const message = data.toString('ascii')
@@ -121,17 +122,17 @@ class RSyncWatcher {
         const statisticsLine2 = message.match(/total size is ([\d\.]+)K/)
 
         if (message === 'sending incremental file list\n') {
-          console.log(`   💫    [Sync] Calculating changes…`)
+          console.log(`   💫    ❨site.js❩ Calculating sync changes…`)
         } else if (statisticsLine1 || statisticsLine2) {
           if (statisticsLine1) {
-            console.log(`   💫    [Sync] ↑ ${statisticsLine1[1]} bytes ↓ ${statisticsLine1[2]} bytes (${statisticsLine1[3]} bytes/sec)`)
+            console.log(`   💫    ❨site.js❩ Sync ↑ ${statisticsLine1[1]} bytes ↓ ${statisticsLine1[2]} bytes (${statisticsLine1[3]} bytes/sec)`)
           }
           if (statisticsLine2) {
-            console.log(`   💫    [Sync] ${statisticsLine2[1]} KB synced.`)
+            console.log(`   💫    ❨site.js❩ ${statisticsLine2[1]} KB synced.`)
           }
         } else {
           const lines = message.split('\n')
-          lines.filter(value => value !== '' && !value.startsWith('\r')).forEach(line => console.log(`   💫    [Sync] ${line}`))
+          lines.filter(value => value !== '' && !value.startsWith('\r')).forEach(line => console.log(`   💫    ❨site.js❩ Sync: ${line}`))
         }
       })
 
@@ -165,7 +166,7 @@ class RSyncWatcher {
     const syncDebounced = debounce(() => {
       this.sync(project)
       .catch(error => {
-          console.log(`   💫    [Sync] Error: ${error}`)
+          console.log(`\n   ❌    ${clr('❨site.js❩ Sync error:', 'red')} ${error}\n`)
       })
     }, 500)
 
