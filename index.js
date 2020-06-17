@@ -127,7 +127,6 @@ class Site {
       // Spells ALPHA in large red block letters.
       case this.RELEASE_CHANNEL.alpha:
         return [
-          '\n',
           `         ${clr(' █████  ██      ██████  ██   ██  █████ ', 'red')}\n`,
           `         ${clr('██   ██ ██      ██   ██ ██   ██ ██   ██ ', 'red')}\n`,
           `         ${clr('███████ ██      ██████  ███████ ███████ ', 'red')}\n`,
@@ -139,7 +138,6 @@ class Site {
       // Spells BETA in large yellow block letters.
       case this.RELEASE_CHANNEL.beta:
         return [
-          '\n',
           `         ${clr('██████  ███████ ████████  █████', 'yellow')}\n`,
           `         ${clr('██   ██ ██         ██    ██   ██', 'yellow')}\n`,
           `         ${clr('██████  █████      ██    ███████', 'yellow')}\n`,
@@ -179,7 +177,7 @@ class Site {
       this.readAndCacheManifest()
 
       let message = [
-        `\n${prefix1}Site.js\n`
+        `\n${prefix1}Site.js\n\n`
       ].concat(this.releaseChannelFormattedForConsole).concat([
         `${prefix2}Created ${clr(this.humanReadableBinaryVersion, 'green')}\n`,
         '\n',
