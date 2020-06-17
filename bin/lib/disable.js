@@ -9,18 +9,19 @@
 
 const fs = require('fs')
 const childProcess = require('child_process')
-
-const Site = require('../../index')
 const status = require('../lib/status')
-const ensure = require('../lib/ensure')
+const Site = require('../../')
+const clr = require('../../lib/clr')
 
 function throwError(errorMessage) {
-  console.log(`   👿    Error: ${errorMessage}\n`)
+  console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} ${errorMessage}\n`)
   throw new Error(errorMessage)
 }
 
 // Note: Ensure that systemctl exists and app is root before calling this function.
 function disable () {
+  Site.logAppNameAndVersion()
+
   const { isActive, isEnabled } = status()
 
   if (!isEnabled) {
@@ -41,7 +42,7 @@ function disable () {
     throwError(`Could not disable Site.js server (${error}).`)
   }
 
-  console.log('   🎈    Server stopped and removed from startup.\n')
+  console.log('   🎈    ❨site.js❩ Server stopped and removed from startup.\n')
 }
 
 module.exports = disable
