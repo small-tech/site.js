@@ -21,6 +21,8 @@ const ensure = require('../lib/ensure')
 const status = require('../lib/status')
 const restart = require('../lib/restart')
 
+const clr = require('../../lib/clr')
+
 async function update () {
   const platform = os.platform()
   const cpuArchitecture = os.arch()
@@ -28,17 +30,16 @@ async function update () {
 
   const releaseChannel = Site.releaseChannel
 
+  Site.logAppNameAndVersion()
   ensure.root('update')
 
-  Site.logAppNameAndVersion()
-
-  console.log(` 🧐 Checking for ${releaseChannel} updates…\n`)
+  console.log(`   🧐    ❨site.js❩ Checking for ${releaseChannel} updates…\n`)
 
   let response
   try {
     response = await secureGet(`https://sitejs.org/version/${releaseChannel}`)
   } catch (error) {
-    console.log(` 🤯 Error: Could not check for ${releaseChannel} updates.\n`)
+    console.log(`   ❌    ${clr('❨site.js❩ Error:', 'red')} Could not check for ${releaseChannel} updates.\n`)
     console.log(error)
     exitGracefully(1)
     return
@@ -53,7 +54,7 @@ async function update () {
   if (currentVersion !== latestVersion) {
     // Are we running a newer version than the latest release version?
     if (currentVersion > latestVersion) {
-      console.log(` 🤓 You are running a newer ${releaseChannel} version (released on ${humanReadableCurrentVersion}) than the latest version released on ${humanReadableLatestVersion}.\n`)
+      console.log(`   🤓    ❨site.js❩ You are running a newer ${releaseChannel} version (released on ${humanReadableCurrentVersion}) than the latest version released on ${humanReadableLatestVersion}.\n`)
       exitGracefully()
       return
     }
@@ -61,7 +62,7 @@ async function update () {
     // The current version is not newer than the latest version and we know
     // that it isn’t equal to the release version so it must be older. Let’s
     // update!
-    console.log(` 🎁 There is a new version of Site.js available in the ${releaseChannel} channel: (${latestVersion} released on ${humanReadableLatestVersion}). You currently have version ${currentVersion} released on ${humanReadableCurrentVersion}.\n`)
+    console.log(`   🎁    ❨site.js❩ There is a new version of Site.js available in the ${releaseChannel} channel: (${latestVersion} released on ${humanReadableLatestVersion}). You currently have version ${currentVersion} released on ${humanReadableCurrentVersion}.\n`)
 
     //
     // Compose the right binary URL for the platform and architecture.
@@ -79,13 +80,13 @@ async function update () {
 
     let binaryUrl = `https://sitejs.org/binaries/${releaseChannel}/${platformPath}/${latestVersion}.tar.gz`
 
-    console.log(` 📡 Downloading Site.js ${releaseChannel} version ${latestVersion}…`)
+    console.log(`   📡    ❨site.js❩ Downloading Site.js ${releaseChannel} version ${latestVersion}…`)
 
     let latestReleaseResponse
     try {
       latestReleaseResponse = await secureGetBinary(binaryUrl)
     } catch (error) {
-      console.log(' 🤯 Error: Could not download update.\n')
+      console.log(`   ❌    ${clr('❨site.js❩ Error:', 'red')} Could not download update.\n`)
       console.log(error)
       exitGracefully(1)
       return
@@ -93,7 +94,7 @@ async function update () {
 
     const latestRelease = latestReleaseResponse.body
 
-    console.log(' 📦 Installing…')
+    console.log('   📦    ❨site.js❩ Installing…')
 
     if (platform === 'win32') {
       // Windows cannot reference count (aww, bless), so, of course, we have
@@ -124,12 +125,12 @@ async function update () {
       if (ensure.commandExists('systemctl')) {
         const { isActive } = status()
         if (isActive) {
-          console.log(` 😈 Daemon is running on old version. Restarting it using Site.js ${releaseChannel} version ${latestVersion}…`)
+          console.log(`   😈    ❨site.js❩ Daemon is running on old version. Restarting it using Site.js ${releaseChannel} version ${latestVersion}…`)
 
           try {
             restart()
           } catch (error) {
-            console.log(' 🤯 Error: Could not restart the Site.js daemon.\n')
+            console.log(`   ❌    ${clr('❨site.js❩ Error:', 'red')} Could not restart the Site.js daemon.\n`)
             console.log(error)
             exitGracefully(1)
             return
@@ -137,9 +138,9 @@ async function update () {
         }
       }
     }
-    console.log(' 🎉 Done!\n')
+    console.log('   🎉    ❨site.js❩ Done!\n')
   } else {
-    console.log(' 😁👍 You’re running the latest version of Site.js!\n')
+    console.log('   👍    ❨site.js❩ You’re running the latest version of Site.js!\n')
   }
   exitGracefully()
   return
@@ -193,7 +194,7 @@ async function extract (release) {
           resolve()
         }))
       } else {
-        console.log(` 🤯 Error: Unknown file encountered: ${header.name}`)
+        console.log(`   ❌    ${clr('❨site.js❩ Error:', 'red')} Unknown file encountered: ${header.name}`)
         reject()
       }
     })
@@ -225,15 +226,15 @@ async function secureGet (url) {
 
     request.on('error', (error) => {
       if (error.code === "ECONNRESET") {
-        console.log(' 😱 Connection timed out while attempting to check for updates.')
+        console.log('   😱    ❨site.js❩ Connection timed out while attempting to check for updates.')
         reject()
         return
       } else if (error.code === 'ECONNREFUSED') {
-        console.log(` 😱 Connection was refused. Site might be down. ${error}`)
+        console.log(`   😱    ❨site.js❩ Connection was refused. Site might be down. ${error}`)
         reject()
       } else {
         // Catch-all. Just display the error.
-        console.log(` 🤯 ${error}`)
+        console.log(`   ❌    ${clr('❨site.js❩ Error:', 'red')} ${error}`)
         reject()
       }
     })
