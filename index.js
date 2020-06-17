@@ -75,14 +75,14 @@ class Site {
       this.#manifest = JSON.parse(fs.readFileSync(path.join(__dirname, 'manifest.json'), 'utf-8'))
     } catch (error) {
       // When running under Node (not wrapped as a binary), there will be no manifest file. So mock one.
-      const options = {shell: '/bin/bash', env: process.env}
+      const options = {shell: os.platform() === 'win32' ? 'powershell' : '/bin/bash', env: process.env}
 
       // Note: we switch to __dirname because we need to if Site.js is running as a daemon from source.
       this.#manifest = {
         releaseChannel: 'npm',
         binaryVersion: '20000101000000',
         packageVersion: (require(path.join(__dirname, 'package.json'))).version,
-        sourceVersion: childProcess.execSync(`pushd ${__dirname} > /dev/null && git log -1 --oneline`,options).toString().match(/^[0-9a-fA-F]{7}/)[0],
+        sourceVersion: childProcess.execSync(`pushd ${__dirname} ${os.platform() === 'win32' ? '' : '> /dev/null'}; git log -1 --oneline`,options).toString().match(/^[0-9a-fA-F]{7}/)[0],
         hugoVersion: (new Hugo()).version,
         platform: {linux: 'linux', win32: 'windows', 'darwin': 'macOS'}[os.platform()],
         architecture: os.arch()
