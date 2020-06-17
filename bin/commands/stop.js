@@ -14,7 +14,7 @@ function stop () {
   ensure.systemctl()
   ensure.root('stop')
 
-  Site.logAppNameAndVersion(/* compact = */ true)
+  Site.logAppNameAndVersion()
 
   try {
     // Stop the web server.

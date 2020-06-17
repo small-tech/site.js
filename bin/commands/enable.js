@@ -87,16 +87,18 @@ function enable (args) {
       // running the current process via sudo).
       const accountUID = parseInt(process.env.SUDO_UID)
       if (!accountUID) {
-        console.log(`\n 👿 Error: could not get account ID.\n`)
+        console.log(`\n ❌ Error: could not get account ID.\n`)
         process.exit(1)
       }
+
+      const launchCommand = `${executable} ${absolutePathToServe} @hostname ${aliases}`
 
       let accountName
       try {
         // Courtesy: https://www.unix.com/302402784-post4.html
         accountName = childProcess.execSync(`awk -v val=${accountUID} -F ":" '$3==val{print $1}' /etc/passwd`, {env: process.env, stdio: 'pipe'}).toString().replace('\n', '')
       } catch (error) {
-        console.log(`\n 👿 Error: could not get account name \n${error}.`)
+        console.log(`\n ❌ Error: could not get account name \n${error}.`)
         process.exit(1)
       }
 
@@ -114,7 +116,7 @@ function enable (args) {
       RestartSec=1
       Restart=always
 
-      ExecStart=${executable} ${absolutePathToServe} @hostname ${aliases}
+      ExecStart=${launchCommand}
 
       [Install]
       WantedBy=multi-user.target
@@ -134,21 +136,21 @@ function enable (args) {
 
         // Sanity check: ensure the /etc/sudoers file exists.
         if (!fs.existsSync('/etc/sudoers')) {
-          console.log('\n 👿 Sorry, could not find /etc/sudoers file. Cannot set up Site.js daemon.\n')
+          console.log('\n ❌ Sorry, could not find /etc/sudoers file. Cannot set up Site.js daemon.\n')
           process.exit(1)
         }
 
         // Sanity check: ensure the /etc/sudoers.d directory exists as this is where we
         // need to put our sudo rule to allow passwordless sudo.
         if (!fs.existsSync('/etc/sudoers.d')) {
-          console.log('\n 👿 Sorry, could not find /etc/sudoers.d directory. Cannot set up Site.js daemon.\n')
+          console.log('\n ❌ Sorry, could not find /etc/sudoers.d directory. Cannot set up Site.js daemon.\n')
           process.exit(1)
         }
 
         // Sanity check: ensure sudo is set up to read sudo rules from /etc/sudoers.d directory.
         const sudoers = fs.readFileSync('/etc/sudoers', 'utf-8')
         if (!sudoers.includes('#includedir /etc/sudoers.d')) {
-          console.log(`\n 👿 Sorry, cannot set up passwordless sudo as /etc/sudoers.d is not included from /etc/sudoers.\n`)
+          console.log(`\n ❌ Sorry, cannot set up passwordless sudo as /etc/sudoers.d is not included from /etc/sudoers.\n`)
           console.log('   Add this line to the end of that file using visudo to fix:\n')
           console.log('   #includedir /etc/sudoers.d\n')
           process.exit(1)
@@ -163,7 +165,7 @@ function enable (args) {
         try {
           childProcess.execSync(`visudo -c -f /tmp/sitejs-passwordless-sudo`)
         } catch (error) {
-          console.log('\n 👿 Error: could not verify that our attempt to set up passwordless sudo would succeed. Aborting.\n${error}')
+          console.log('\n ❌ Error: could not verify that our attempt to set up passwordless sudo would succeed. Aborting.\n${error}')
           process.exit(1)
         }
 
@@ -171,7 +173,7 @@ function enable (args) {
         try {
           childProcess.execSync('sudo cp /tmp/sitejs-passwordless-sudo /etc/sudoers.d/')
         } catch (error) {
-          console.log('\n 👿 Error: could not install the passwordless sudo rule. Aborting.\n${error}')
+          console.log('\n ❌ Error: could not install the passwordless sudo rule. Aborting.\n${error}')
           process.exit(1)
         }
 
@@ -183,20 +185,36 @@ function enable (args) {
       //
       fs.writeFileSync('/etc/systemd/system/site.js.service', unit, 'utf-8')
 
+      // Pre-flight check: run the server normally and ensure that it starts up properly
+      // before installing it as a daemon. If there are any issues we want to catch it here
+      // ourselves instead of having them manifest when systemd runs it.
+      console.log('   🧚‍♀️  ❨site.js❩ About to carry out server daemon pre-flight check.')
+      console.log('   ✨    ❨site.js❩ Lauching server…')
+      try {
+        const preflightResult = childProcess.execSync(`${launchCommand}  --dont-log-app-name-and-version`, {env: process.env, stdio: 'pipe'})
+      } catch (error) {
+        const stdout = error.stdout.toString()
+        const errorMessage = stdout.slice(stdout.match(/❌.*?/).index)
+
+        console.log(`   ❌    ❨site.js❩ Error: server launch pre-flight check failed: \n  `, errorMessage.replace('❌', '  '))
+        process.exit(1)
+      }
+
+
       //
       // Enable and start systemd service.
       //
       try {
         // Start.
         childProcess.execSync('sudo systemctl start site.js', {env: process.env, stdio: 'pipe'})
-        Site.logAppNameAndVersion(/* compact = */ true)
+        Site.logAppNameAndVersion()
         console.log(` 😈 Launched as daemon on ${clr(`https://${os.hostname()}`, 'green')} serving ${clr(pathToServe, 'cyan')}\n`)
 
         // Enable.
         childProcess.execSync('sudo systemctl enable site.js', {env: process.env, stdio: 'pipe'})
         console.log(` 😈 Installed for auto-launch at startup.\n`)
       } catch (error) {
-        console.log(error, `\n 👿 Error: could not enable server.\n`)
+        console.log(error, `\n ❌ Error: could not enable server.\n`)
         process.exit(1)
       }
 
@@ -234,7 +252,7 @@ function displayConnectionInformation(pathToServe) {
     console.log(` 💫 [Sync] To sync from your local machine, from within your site’s folder, use:`)
     console.log(` 💫 [Sync] site --sync-to=${syncToValue} --exit-on-sync\n`)
   } catch (error) {
-    console.log(error, `\n 👿 Error: could not get connection information.\n`)
+    console.log(error, `\n ❌ Error: could not get connection information.\n`)
     process.exit(1)
   }
 }
@@ -251,7 +269,7 @@ function disableInsecureRsyncDaemon() {
     console.log('done!')
     console.log(` 💫 [Sync] Rsync set up to only allow secure access via ssh.\n`)
   } catch (error) {
-    console.log(error, `\n 👿 Error: could not disable insecure rsync daemon.\n`)
+    console.log(error, `\n ❌ Error: could not disable insecure rsync daemon.\n`)
     process.exit(1)
   }
 }

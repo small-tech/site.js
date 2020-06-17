@@ -14,7 +14,7 @@ const clr = require('../../lib/clr')
 const ensure = require('../lib/ensure')
 
 function status () {
-  Site.logAppNameAndVersion(/* compact = */ true)
+  Site.logAppNameAndVersion()
 
   // Ensure systemctl exists as it is required for getStatus().
   // We cannot check in the function itself as it would create

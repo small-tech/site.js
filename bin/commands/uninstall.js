@@ -66,7 +66,7 @@ async function uninstall (options) {
     ensure.root('uninstall')
   }
 
-  Site.logAppNameAndVersion(/* compact = */ true)
+  Site.logAppNameAndVersion()
 
   const { isActive: serverIsActive, isEnabled: serverIsEnabled } = status()
 

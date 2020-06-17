@@ -30,7 +30,7 @@ async function update () {
 
   ensure.root('update')
 
-  Site.logAppNameAndVersion(/* compact = */ true)
+  Site.logAppNameAndVersion()
 
   console.log(` 🧐 Checking for ${releaseChannel} updates…\n`)
 

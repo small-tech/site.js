@@ -15,7 +15,7 @@ const status = require('../lib/status')
 const ensure = require('../lib/ensure')
 
 function throwError(errorMessage) {
-  console.log(` 👿 Error: ${errorMessage}\n`)
+  console.log(`   👿    Error: ${errorMessage}\n`)
   throw new Error(errorMessage)
 }
 
@@ -41,7 +41,7 @@ function disable () {
     throwError(`Could not disable Site.js server (${error}).`)
   }
 
-  console.log(' 🎈 Server stopped and removed from startup.\n')
+  console.log('   🎈    Server stopped and removed from startup.\n')
 }
 
 module.exports = disable

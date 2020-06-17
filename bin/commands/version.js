@@ -7,7 +7,7 @@
 const Site = require('../../index.js')
 
 function version () {
-  Site.logAppNameAndVersion(/* compact = */ true)
+  Site.logAppNameAndVersion()
   process.exit()
 }
 

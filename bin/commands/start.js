@@ -14,7 +14,7 @@ function start () {
   ensure.systemctl()
   ensure.root('start')
 
-  Site.logAppNameAndVersion(/* compact = */ true)
+  Site.logAppNameAndVersion()
 
   try {
     // Start the web server.

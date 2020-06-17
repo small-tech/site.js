@@ -65,12 +65,14 @@ class Ensure {
   rootOnLinuxesque () {
     if (process.getuid() !== 0) {
       // Requires root but wasn’t run with sudo. Automatically restart using sudo.
+      console.log('   🧙    About to temporarily restart with root privileges.')
+      console.log('   ✨    Restarting…')
       const options = {env: process.env, stdio: 'inherit'}
       try {
         if (runtime.isNode) {
-          childProcess.execSync(`sudo node ${path.join(__dirname, '..', 'site.js')} ${process.argv.slice(2).join(' ')}`, options)
+          childProcess.execSync(`sudo node ${path.join(__dirname, '..', 'site.js')} ${process.argv.slice(2).join(' ').concat([' --dont-log-app-name-and-version'])}`, options)
         } else {
-          childProcess.execSync(`sudo site ${process.argv.slice(2).join(' ')}`, options)
+          childProcess.execSync(`sudo site ${process.argv.slice(2).join(' ').concat([' --dont-log-app-name-and-version'])}`, options)
         }
       } catch (error) {
         process.exit(1)

@@ -12,10 +12,10 @@ const ensure = require('../lib/ensure')
 const Site = require('../../index')
 
 function disable () {
-  ensure.systemctl()
-  ensure.root('disable')
+  Site.logAppNameAndVersion()
 
-  Site.logAppNameAndVersion(/* compact = */ true)
+  ensure.systemctl()
+  ensure.root()
 
   try {
     // Disable and stop the web server.
