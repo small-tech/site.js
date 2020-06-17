@@ -35,7 +35,7 @@ function restart () {
     throwError(`Could not restart Site.js server (${error}).`)
   }
 
-  console.log('   🎈    ❨site.js❩ Server restarted.')
+  console.log('\n   🎈    ❨site.js❩ Server restarted.\n')
 }
 
 module.exports = restart
