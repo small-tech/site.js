@@ -14,6 +14,8 @@ const Graceful = require('node-graceful')
 const Hugo = require('@small-tech/node-hugo')
 const Site = require('../../index')
 
+const clr = require('../../lib/clr')
+
 module.exports = function (args) {
   Site.logAppNameAndVersion()
 
@@ -45,7 +47,7 @@ module.exports = function (args) {
         error.split('\n').forEach(line => {
           console.log(`${Site.HUGO_LOGO} ${line}`)
         })
-        console.log('\n   ❌    Hugo encountered an error. Exiting… ')
+        console.log(`\n   ❌    ${clr('❨site.js❩ Hugo encountered an error.', 'red')} Exiting… `)
         console.log('\n   💕    ❨site.js❩ Goodbye!\n')
         process.exit(1)
       }
@@ -96,7 +98,7 @@ module.exports = function (args) {
         error.message.split('\n').forEach(line => {
           console.log(`${Site.HUGO_LOGO} ${line}`)
         })
-        console.log('\n   ❌    Hugo encountered an error. Exiting… ')
+        console.log(`\n   ❌    ${clr('❨site.js❩ Hugo encountered an error.', 'red')} Exiting… `)
         console.log('\n   💕    ❨site.js❩ Goodbye!\n')
         process.exit(1)
       }

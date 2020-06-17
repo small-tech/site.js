@@ -22,6 +22,9 @@ const SYNC_FROM = 'sync-from'
 const EXIT_ON_SYNC = 'exit-on-sync'
 const SYNC_FOLDER_AND_CONTENTS = 'sync-folder-and-contents'
 
+// Internal: used for pre-flight check to ensure the server can launch before creating a daemon.
+const EXIT_AFTER_LAUNCH = 'exit-after-launch'
+
 let global = null
 let port = null
 let path = null
@@ -31,7 +34,6 @@ function serve (args) {
 
   // We repeat the assignment to null here to ensure these variables are null
   // in case the server was restarted and the module itself was cached.
-  dinaub = null
   global = null
   port = null
   path = null
@@ -111,6 +113,9 @@ function serve (args) {
   const _aliases = args.named[ALIASES]
   const aliases = _aliases === undefined ? [] : _aliases.split(',')
 
+  // Internal: exit on launch. (Used in pre-flight checks to ensure server can launch before installing a daemon.)
+  const exitAfterLaunch = args.named[EXIT_AFTER_LAUNCH]
+
   //
   // Sync options.
   //
@@ -120,7 +125,7 @@ function serve (args) {
 
   // Sync is not supported on Windows as rsync does not exist in that cursed wasteland.
   if (syncRequested && process.platform === 'win32') {
-    console.log(`\n   🤯    Sync is not supported on Windows.\n`)
+    console.log(`\n   ❌    ❨site.js❩ Sync is not supported on Windows.\n`)
     return
   }
 
@@ -171,14 +176,14 @@ function serve (args) {
         if (port === 443) {
           if (ensure.commandExists('systemctl')) {
             if ({ isActive } = status()) {
-              console.log(`\n   🤯    Error: Cannot start server. Site.js is already running as a daemon on port ${clr(port.toString(), 'cyan')}. Use the ${clr('stop', 'green')} command to stop it.\n`)
+              console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Cannot start server. Site.js is already running as a daemon on port ${clr(port.toString(), 'cyan')}. Use the ${clr('stop', 'green')} command to stop it.\n`)
               process.exit(1)
             }
           }
         }
 
         // Generic port-in-use error message.
-        console.log(`\n   🤯    Error: Cannot start server. Port ${clr(port.toString(), 'cyan')} is already in use.\n`)
+        console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Cannot start server. Port ${clr(port.toString(), 'cyan')} is already in use.\n`)
         process.exit(1)
       } else {
 
@@ -204,9 +209,15 @@ function serve (args) {
         // Start serving.
         try {
           await site.serve()
+
+          if (exitAfterLaunch) {
+            console.log('   ✅    Exit after launch requested. Launch successful; exiting…')
+            process.exit(0)
+          }
+
         } catch (error) {
           if (error instanceof errors.InvalidPathToServeError) {
-            console.log(`   🤯    ${clr('Error:', 'red')} The path to serve ${clr(options.path, 'yellow')} does not exist.\n`)
+            console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} The path to serve ${clr(options.path, 'yellow')} does not exist.\n`)
             process.exit(1)
           } else {
             // Rethrow
@@ -234,14 +245,14 @@ function serve (args) {
 // Display a syntax error.
 function syntaxError(message = null) {
   const additionalMessage = message === null ? '' : message
-  console.log(`\n ${clr('Syntax error: ', 'red')}${additionalMessage}`)
+  console.log(`\n   ❌    ${clr('❨site.js❩ Syntax error:', 'red')} ${additionalMessage}`)
   require('./help')()
 }
 
 // Throw a general error.
 function throwError(errorMessage) {
-  console.log(`\n   🤯    ${errorMessage}\n`)
-  throw new Error(errorMessage)
+  console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')}${errorMessage}\n`)
+  throw new Error(`Error: ${errorMessage}`)
 }
 
 function isHostGlobal(host) {
@@ -261,13 +272,13 @@ function ensurePort (port) {
 
   // Invalid port.
   if (isNaN(port)) {
-    throwError(`Error: “${port}” is not a valid port. Try a number ${inTheValidPortRange}.`)
+    throwError(`“${port}” is not a valid port. Try a number ${inTheValidPortRange}.`)
   }
 
   // Check for a valid port range
   // (port above 49,151 are ephemeral ports. See https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic,_private_or_ephemeral_ports)
   if (port < 0 || port > 49151) {
-    throwError(`Error: specified port must be ${inTheValidPortRange}.`)
+    throwError(`specified port must be ${inTheValidPortRange}.`)
   }
 
   return port

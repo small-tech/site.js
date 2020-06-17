@@ -25,9 +25,9 @@ function status () {
   const activeState = isActive ? clr('active', 'green') : clr('inactive', 'red')
   const enabledState = isEnabled ? clr('enabled', 'green') : clr('disabled', 'red')
 
-  const stateEmoji = (isActive && isEnabled) ? '✔' : '❌'
+  const stateEmoji = (isActive && isEnabled) ? '💡' : '🛑'
 
-  console.log(` ${stateEmoji} Site.js is ${activeState} and ${enabledState}.\n`)
+  console.log(`   ${stateEmoji}    ❨site.js❩ Server is ${activeState} and ${enabledState}.\n`)
 }
 
 module.exports = status
