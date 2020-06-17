@@ -7,16 +7,15 @@
 //////////////////////////////////////////////////////////////////////
 
 const childProcess = require('child_process')
-
 const status = require('../lib/status')
+const clr = require('../../lib/clr')
 
 function throwError(errorMessage) {
-  console.log(` 👿 Error: ${errorMessage}\n`)
+  console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} ${errorMessage}\n`)
   throw new Error(errorMessage)
 }
 
 function restart () {
-
   // Note: Ensure that systemctl exists and app is root before calling this function.
 
   const { isEnabled } = status()
@@ -36,7 +35,8 @@ function restart () {
     throwError(`Could not restart Site.js server (${error}).`)
   }
 
-  console.log(' 🎈 Server restarted.\n')
+  console.log('   🎈    ❨site.js❩ Server restarted.')
+  console.log('\n   💕    ❨site.js❩ Goodbye!\n')
 }
 
 module.exports = restart

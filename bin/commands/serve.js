@@ -251,7 +251,7 @@ function syntaxError(message = null) {
 
 // Throw a general error.
 function throwError(errorMessage) {
-  console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')}${errorMessage}\n`)
+  console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} ${errorMessage}\n`)
   throw new Error(`Error: ${errorMessage}`)
 }
 
