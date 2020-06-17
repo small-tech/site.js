@@ -123,22 +123,33 @@ class Site {
 
   static get releaseChannelFormattedForConsole () {
     switch(this.releaseChannel) {
-      // Spells ALPHA in large red block letters.
-      case this.RELEASE_CHANNEL.alpha: return clr(`\n
-          █████  ██      ██████  ██   ██  █████ 
-         ██   ██ ██      ██   ██ ██   ██ ██   ██ 
-         ███████ ██      ██████  ███████ ███████ 
-         ██   ██ ██      ██      ██   ██ ██   ██ 
-         ██   ██ ███████ ██      ██   ██ ██   ██`, 'red')
 
-    // Spells BETA in large yellow block letters.
-    case this.RELEASE_CHANNEL.beta: return clr(`\n
-         ██████  ███████ ████████  █████ 
-         ██   ██ ██         ██    ██   ██ 
-         ██████  █████      ██    ███████ 
-         ██   ██ ██         ██    ██   ██ 
-         ██████  ███████    ██    ██   ██`, 'yellow')
-      default: return ''
+      // Spells ALPHA in large red block letters.
+      case this.RELEASE_CHANNEL.alpha:
+        return [
+          '\n',
+          `         ${clr(' █████  ██      ██████  ██   ██  █████ ', 'red')}\n`,
+          `         ${clr('██   ██ ██      ██   ██ ██   ██ ██   ██ ', 'red')}\n`,
+          `         ${clr('███████ ██      ██████  ███████ ███████ ', 'red')}\n`,
+          `         ${clr('██   ██ ██      ██      ██   ██ ██   ██ ', 'red')}\n`,
+          `         ${clr('██   ██ ███████ ██      ██   ██ ██   ██', 'red')}\n`,
+          '\n'
+        ]
+
+      // Spells BETA in large yellow block letters.
+      case this.RELEASE_CHANNEL.beta:
+        return [
+          '\n',
+          `         ${clr('██████  ███████ ████████  █████', 'yellow')}\n`,
+          `         ${clr('██   ██ ██         ██    ██   ██', 'yellow')}\n`,
+          `         ${clr('██████  █████      ██    ███████', 'yellow')}\n`,
+          `         ${clr('██   ██ ██         ██    ██   ██', 'yellow')}\n`,
+          `         ${clr('██████  ███████    ██    ██   ██', 'yellow')}\n`,
+          '\n'
+        ]
+
+        default:
+          return []
     }
   }
 
@@ -155,20 +166,21 @@ class Site {
   // the version set in the package.json file to console.
   // (Only once per Site lifetime.)
   // (Synchronous.)
-  static logAppNameAndVersion () {
+  static logAppNameAndVersion (compact = false) {
 
     if (process.env.QUIET) {
       return
     }
 
     if (!Site.#appNameAndVersionAlreadyLogged && !process.argv.includes('--dont-log-app-name-and-version')) {
-      let prefix1 = '   🌱    '
+      let prefix1 = compact ? ' 🌱 ' : '   🌱    '
       let prefix2 = '         '
 
       this.readAndCacheManifest()
 
       let message = [
-        `\n${prefix1}Site.js ${this.releaseChannelFormattedForConsole}\n\n`,
+        `\n${prefix1}Site.js\n`
+      ].concat(this.releaseChannelFormattedForConsole).concat([
         `${prefix2}Created ${clr(this.humanReadableBinaryVersion, 'green')}\n`,
         '\n',
         `${prefix2}Version ${clr(`${this.binaryVersion}-${this.packageVersion}-${this.sourceVersion}-${this.platform}/${this.architecture}`, 'green')}\n`,
@@ -183,7 +195,13 @@ class Site {
         `${prefix2}║ We’re a tiny, independent not-for-profit. ║\n`,
         `${prefix2}║ https://small-tech.org/fund-us            ║\n`,
         `${prefix2}╚═══════════════════════════════════════════╝\n`,
-      ].join('')
+      ])
+
+      if (compact) {
+        message = message.map(l => l.replace(/^     /, ''))
+      }
+
+      message = message.join('')
 
       console.log(message)
 

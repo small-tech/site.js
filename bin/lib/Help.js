@@ -81,7 +81,7 @@ class Help {
     // Linux, macOS, and Windows).
     const prompt = clr('▶', 'blue')
 
-    Site.logAppNameAndVersion()
+    Site.logAppNameAndVersion(/* compact */ true)
 
     const usage = `
     ${heading('Usage:')}
