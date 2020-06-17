@@ -108,7 +108,7 @@ class Ensure {
     const { isActive } = getStatus()
 
     if (isActive) {
-      console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Site.js Daemon is already running.\n\n    ${clr('Please stop it first with the command:', 'yellow')} site ${clr('disable', 'green')}\n`)
+      console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Site.js Daemon is already running.\n\n         ${clr('Please stop it before retrying using:', 'yellow')} site ${clr('disable', 'green')}\n`)
       process.exit(1)
     }
   }

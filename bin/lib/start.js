@@ -7,11 +7,11 @@
 //////////////////////////////////////////////////////////////////////
 
 const childProcess = require('child_process')
-
 const status = require('../lib/status')
+const clr = require('../../lib/clr')
 
 function throwError(errorMessage) {
-  console.log(` 👿 Error: ${errorMessage}\n`)
+  console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} ${errorMessage}\n`)
   throw new Error(errorMessage)
 }
 
@@ -36,7 +36,7 @@ function start () {
     throwError(`Could not start Site.js server (${error}).`)
   }
 
-  console.log(' 🎈 Server started.\n')
+  console.log('   🎈    Server started.\n')
 }
 
 module.exports = start

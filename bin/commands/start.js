@@ -11,10 +11,10 @@ const ensure = require('../lib/ensure')
 const Site = require('../../index')
 
 function start () {
+  Site.logAppNameAndVersion()
+
   ensure.systemctl()
   ensure.root('start')
-
-  Site.logAppNameAndVersion()
 
   try {
     // Start the web server.

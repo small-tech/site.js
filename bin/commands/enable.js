@@ -24,6 +24,9 @@ const clr = require('../../lib/clr')
 const Site = require('../../index')
 
 function enable (args) {
+  Site.logAppNameAndVersion()
+
+
   //
   // Sanity checks.
   //
@@ -208,7 +211,6 @@ function enable (args) {
       try {
         // Start.
         childProcess.execSync('sudo systemctl start site.js', {env: process.env, stdio: 'pipe'})
-        Site.logAppNameAndVersion()
         console.log(`   😈    ❨site.js❩ Launched as daemon on ${clr(`https://${os.hostname()}`, 'green')} serving ${clr(pathToServe, 'cyan')}`)
 
         // Enable.

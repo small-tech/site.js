@@ -36,7 +36,6 @@ function restart () {
   }
 
   console.log('   🎈    ❨site.js❩ Server restarted.')
-  console.log('\n   💕    ❨site.js❩ Goodbye!\n')
 }
 
 module.exports = restart
