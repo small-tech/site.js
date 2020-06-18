@@ -64,7 +64,7 @@ if [[ "$binaryVersion" == "00000000000000" ]]; then
 fi
 
 echo
-echo " 📡 Downloading Site.js version ${binaryVersion} (${packageversion}/${sourceVersion})…"
+echo " 📡 Downloading Site.js version ${binaryVersion} (${packageVersion}/${sourceVersion})…"
 
 # Mark alpha and beta releases prominently.
 if [[ "$releaseChannel" == "alpha" ]]; then
