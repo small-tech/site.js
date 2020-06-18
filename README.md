@@ -353,7 +353,7 @@ __Available on Linux distributions with systemd (most Linux distributions, but [
 
 ---
 
-__Note: version 13.0.0 is not currently ready for production use.__ Please use [version 12.10.5](https://sitejs.org/releases/linux/12.10.5.tar.gz) in production until this message is removed. 12.10.5 will auto-update to 13.0.x when the remaining issues have been resolved.
+__Note: version 13.0.0 is not currently ready for production use.__ Please use [version 12.10.5](https://sitejs.org/releases/linux/12.10.5.tar.gz) in production until this message is removed. 12.10.5 will auto-update to 13.0.x when [the remaining issues](https://source.small-tech.org/site.js/app/-/milestones/13) have been resolved.
 
 ---
 
