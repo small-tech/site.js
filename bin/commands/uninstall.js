@@ -65,7 +65,7 @@ async function uninstall (options) {
 
   if (!isWindows) {
     ensure.systemctl()
-    ensure.root('uninstall')
+    ensure.root()
   }
 
   const { isActive: serverIsActive, isEnabled: serverIsEnabled } = status()

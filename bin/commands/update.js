@@ -31,7 +31,7 @@ async function update () {
   const releaseChannel = Site.releaseChannel
 
   Site.logAppNameAndVersion()
-  ensure.root('update')
+  ensure.root()
 
   console.log(`   🧐    ❨site.js❩ Checking for ${releaseChannel} updates…\n`)
 

@@ -14,7 +14,7 @@ function start () {
   Site.logAppNameAndVersion()
 
   ensure.systemctl()
-  ensure.root('start')
+  ensure.root()
 
   try {
     // Start the web server.
