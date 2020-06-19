@@ -890,7 +890,7 @@ class Site {
           if (appReference.includes('node')) {
             appReference = `${appReference} ${path.join(__dirname, 'bin', 'site.js')}`
           }
-          const updateCommand = `${appReference} update`
+          const updateCommand = `${appReference} update --dont-log-app-name-and-version`
           childProcess.exec(updateCommand, options, (error, stdout, stderr) => {
             if (error !== null) {
               this.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Could not check for updates.\n`, error)
