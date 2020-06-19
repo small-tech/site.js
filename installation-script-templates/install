@@ -41,9 +41,9 @@ alphaBinaryVersion=00000000000000
 alphaPackageVersion=00.00.00
 alphaSourceVersion=bedface
 
-betaBinaryVersion=20200619170717
-betaPackageVersion=13.0.1
-betaSourceVersion=b464e8c
+betaBinaryVersion=00000000000000
+betaPackageVersion=00.00.00
+betaSourceVersion=bedface
 
 releaseBinaryVersion=20200619163733
 releasePackageVersion=13.0.1
