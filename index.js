@@ -884,16 +884,16 @@ class Site {
         const checkForUpdates = () => {
           this.log('   🛰    ❨site.js❩ Running auto update check…')
 
-          const options = {env: process.env, stdio: 'inherit', shell: 'bash'}
+          const options = {env: process.env, stdio: 'inherit'}
 
           let appReference = process.title
           if (appReference.includes('node')) {
             appReference = `${appReference} ${path.join(__dirname, 'bin', 'site.js')}`
           }
-
-          childProcess.exec(`${appReference} update`, options, (error, stdout, stderr) => {
+          const updateCommand = `${appReference} update`
+          childProcess.exec(updateCommand, options, (error, stdout, stderr) => {
             if (error !== null) {
-              this.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Could not check for updates.\n`)
+              this.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Could not check for updates.\n`, error)
             } else {
               this.log(stdout)
             }
