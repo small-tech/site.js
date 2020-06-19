@@ -391,6 +391,13 @@ async function build () {
     // Install.
     //
 
+    // Disable the site server if it is enabled
+    try {
+      childProcess.execSync('QUIET=true site disable')
+    } catch (error) {
+      // Ignore error. It just means Site.js was not enabled; which is what we want.
+    }
+
     // TODO: Implement the same logic as in update.js for handling
     // ===== the existing binary (on Windows) and for handling an
     //       active daemon.
