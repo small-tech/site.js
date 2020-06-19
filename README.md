@@ -351,12 +351,6 @@ The above command will result in the following directory structure on the remote
 
 __Available on Linux distributions with systemd (most Linux distributions, but [not these ones](https://sysdfree.wordpress.com/2019/03/09/135/) or on macOS or Windows).__
 
----
-
-__Note: version 13.0.0 is not currently ready for production use.__ Please use [version 12.10.5](https://sitejs.org/releases/linux/12.10.5.tar.gz) in production until this message is removed. 12.10.5 will auto-update to 13.0.x when [the remaining issues](https://source.small-tech.org/site.js/app/-/milestones/13) have been resolved.
-
----
-
 On your live, public server, you can start serving the _my-site_ directory at your _hostname_ as a daemon that is automatically run at system startup and restarted if it crashes with:
 
 ```shell
