@@ -198,7 +198,10 @@ function enable (args) {
       console.log('   🧚‍♀️  ❨site.js❩ About to carry out server daemon pre-flight check.')
       console.log('   ✨    ❨site.js❩ Launching server…')
       try {
-        childProcess.execSync(`${launchCommand}  --dont-log-app-name-and-version --exit-after-launch`, {env: process.env, stdio: 'pipe'})
+        // Note: we are launching Site.js without privileges here as we currently have privileges.
+        // ===== (If we don’t do that, the configuration directories will be created with root as
+        //       the owner and that they cannot be accessed by the regular unprivileged daemon process.)
+        childProcess.execSync(`sudo --user=${accountName} ${launchCommand} --dont-log-app-name-and-version --exit-after-launch`, {env: process.env, stdio: 'pipe'})
         console.log('   ✨    ❨site.js❩ Pre-flight check successful.')
       } catch (error) {
         const stdout = error.stdout.toString()
