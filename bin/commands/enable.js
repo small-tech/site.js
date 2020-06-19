@@ -82,6 +82,10 @@ function enable (args) {
       const _aliases = args.named['aliases']
       const aliases = _aliases === undefined ? '' : `--aliases=${_aliases}`
 
+      // If the domain has been manually specified, pass that on.
+      const _domain = args.named['domain']
+      const domain = args.named['domain'] === undefined ? '' : `--domain=${_domain}`
+
       // Expectation: At this point, regardless of whether we are running as a regular
       // Node script or as a standalone executable created with Nexe, all paths should
       // be set correctly.
@@ -94,7 +98,7 @@ function enable (args) {
         process.exit(1)
       }
 
-      const launchCommand = `${executable} ${absolutePathToServe} @hostname ${aliases}`
+      const launchCommand = `${executable} ${absolutePathToServe} @hostname ${domain} ${aliases}`
 
       let accountName
       try {
@@ -192,7 +196,7 @@ function enable (args) {
       // before installing it as a daemon. If there are any issues we want to catch it here
       // ourselves instead of having them manifest when systemd runs it.
       console.log('   🧚‍♀️  ❨site.js❩ About to carry out server daemon pre-flight check.')
-      console.log('   ✨    ❨site.js❩ Lauching server…')
+      console.log('   ✨    ❨site.js❩ Launching server…')
       try {
         childProcess.execSync(`${launchCommand}  --dont-log-app-name-and-version --exit-after-launch`, {env: process.env, stdio: 'pipe'})
         console.log('   ✨    ❨site.js❩ Pre-flight check successful.')
@@ -212,7 +216,7 @@ function enable (args) {
         // Start.
         const prettyPathToServe = pathToServe === '.' ? 'current directory' : pathToServe
         childProcess.execSync('sudo systemctl start site.js', {env: process.env, stdio: 'pipe'})
-        console.log(`   😈    ❨site.js❩ Launched as daemon on ${clr(`https://${os.hostname()}`, 'green')} serving ${clr(prettyPathToServe, 'cyan')}`)
+        console.log(`   😈    ❨site.js❩ Launched as daemon on ${clr(`https://${domain === '' ? os.hostname() : _domain}`, 'green')} serving ${clr(prettyPathToServe, 'cyan')}`)
 
         // Enable.
         childProcess.execSync('sudo systemctl enable site.js', {env: process.env, stdio: 'pipe'})
