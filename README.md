@@ -93,6 +93,8 @@ npm i -g @small-tech/site.js
 
 ### Alpha and Beta channels
 
+__Note:__ This is a new feature. There have not been any alpha or beta releases yet. The commands below will not work until there are (at which point, this message will removed).
+
 On Linux and macOS, addition to the release build channel, there is also an alpha build and beta build channel available. Pass either `alpha` or `beta` as an argument to the Bash pipe to install the latest build from the respective channel.
 
 For example, to install the latest beta build on Linux:
