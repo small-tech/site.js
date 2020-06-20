@@ -103,8 +103,6 @@ For example, to install the latest beta build on Linux:
 wget -qO- https://sitejs.org/install | bash -s -- beta
 ```
 
-All of our servers at Small Technology Foundation ([Laura’s web site](https://laurakalbag.com), [Aral’s web site](https://ar.al), the [Small Technology Foundation web site](https://small-tech.org), and the [Better Blocker web site](https://better.fyi)) run on the Beta channel of Site.js so we can hopefully catch any issues that may exist in updates before pushing them out to everyone else.
-
 Alpha builds are strictly for local testing and should not, under any circumstances, be used in production. We do not test Alpha builds in production.
 
 Servers deployed using release builds check for updates every six hours whereas beta builds check every 10 minutes.
