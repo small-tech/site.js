@@ -4,18 +4,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [13.0.1] - In progress
+## [13.0.2] - 2020-06-20
 
 ### Fixed
 
-  - Regression: update check failure when running as daemon.
-  - Specifying `--domain` when enabling a daemon works as expected.
-  - Update command no longer displays the header twice in the log when run as a daemon.
-  - Other miscellaneous minor code improvements.
+  - Let’s Encrypt certificate provisioning no longer failing at the finalise stage for some domains due to erroneous carriage returns in the Certificate Signing Request (CSR). (#193)
+
+### Changed
+
+  - Update to https version 1.2.5. (Fixes the issue mentioned above.)
+
+## [13.0.1] - 2020-06-19
 
 ### Changed
 
   - The `site logs` command now shows log history for the current day instead of just the last few entries.
+
+### Fixed
+
+  - Regression: settings directory is created with root permissions as pre-flight check is launched as root (#190).
+  - Regression: update check failure when running as daemon (#192).
+  - Specifying `--domain` when enabling a daemon works as expected.
+  - Update command no longer displays the header twice in the log when run as a daemon.
+  - Other miscellaneous minor code improvements.
 
 ## [13.0.0] - 2020-06-18
 
