@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 
-  - Let’s Encrypt certificate provisioning no longer failing at the finalise stage for some domains due to erroneous carriage returns in the Certificate Signing Request (CSR). (#193)
+  - Let’s Encrypt certificate provisioning no longer fails at the finalise stage for some domains due to erroneous carriage returns in the Certificate Signing Request (CSR). (#193)
 
 ### Changed
 
