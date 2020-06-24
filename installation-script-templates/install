@@ -45,9 +45,9 @@ betaBinaryVersion=00000000000000
 betaPackageVersion=00.00.00
 betaSourceVersion=bedface
 
-releaseBinaryVersion=20200620145452
-releasePackageVersion=13.0.2
-releaseSourceVersion=7e15caf
+releaseBinaryVersion=20200624185010
+releasePackageVersion=13.0.3
+releaseSourceVersion=85ed481
 
 binaryVersionVariableName="${releaseChannel}BinaryVersion"
 packageVersionVariableName="${releaseChannel}PackageVersion"
