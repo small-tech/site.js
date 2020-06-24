@@ -187,14 +187,18 @@ function serve (args) {
         process.exit(1)
       } else {
 
-
-        const options = {
+        let options = {
           domain,
           path,
           port,
           global,
           proxyPort,
           aliases
+        }
+
+        if (syncRequested) {
+          // Add the syncHost
+          options.syncHost = syncOptions.host
         }
 
         // Start serving the site.

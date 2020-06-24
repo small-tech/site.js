@@ -469,7 +469,14 @@ class Site {
 
           const localBaseURL = `https://localhost${mountPath}`
           const globalBaseURL = `https://${Site.hostname}${mountPath}`
-          const baseURL = this.global ? globalBaseURL : localBaseURL
+          let baseURL = this.global ? globalBaseURL : localBaseURL
+
+          // If a syncHost is provided (because we are about to sync), that overrides the calculated base
+          // URL as we are generating the content not for localhost or the current machine’s hostname but
+          // for the remote machine’s host name.
+          if (options.syncHost !== undefined) {
+            baseURL = `https://${options.syncHost}`
+          }
 
           // Start the server and await the end of the build process.
           let hugoServerProcess, hugoBuildOutput
