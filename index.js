@@ -249,6 +249,7 @@ class Site {
     this.port = typeof options.port === 'number' ? options.port : 443
     this.global = typeof options.global === 'boolean' ? options.global : false
     this.aliases = Array.isArray(options.aliases) ? options.aliases : []
+    this.syncHost = options.syncHost
 
     // Substitute shorthand www alias for full domain.
     this.aliases = this.aliases.map(alias => alias === 'www' ? `www.${Site.hostname}` : alias)
@@ -474,7 +475,7 @@ class Site {
           // If a syncHost is provided (because we are about to sync), that overrides the calculated base
           // URL as we are generating the content not for localhost or the current machine’s hostname but
           // for the remote machine’s host name.
-          if (options.syncHost !== undefined) {
+          if (this.syncHost !== undefined) {
             baseURL = `https://${options.syncHost}`
           }
 
