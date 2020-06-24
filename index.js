@@ -476,7 +476,7 @@ class Site {
           // URL as we are generating the content not for localhost or the current machine’s hostname but
           // for the remote machine’s host name.
           if (this.syncHost !== undefined) {
-            baseURL = `https://${options.syncHost}`
+            baseURL = `https://${this.syncHost}`
           }
 
           // Start the server and await the end of the build process.
