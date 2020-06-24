@@ -37,9 +37,9 @@ if [[ "$releaseChannel" == "" ]]; then
   releaseChannel='release'
 fi
 
-alphaBinaryVersion=20200624182933
+alphaBinaryVersion=20200624183247
 alphaPackageVersion=13.0.2
-alphaSourceVersion=ededa82
+alphaSourceVersion=1ee924f
 
 betaBinaryVersion=00000000000000
 betaPackageVersion=00.00.00
