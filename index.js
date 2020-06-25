@@ -1316,7 +1316,7 @@ class Site {
     archivalCascade.forEach(archivePath => {
       archiveNumber++
       this.log(`   🌱    ❨site.js❩ Evergreen web: serving archive #${archiveNumber}`)
-      this.app.use(express.static(archivePath))
+      this.app.use(express.static(archivePath.startsWith('/') ? archivePath : path.join(absolutePathToServe, archivePath)))
     })
   }
 }
