@@ -403,9 +403,9 @@ test('[commands] help', t => {
 
   For serve command:
 
-  --sync-to         The host to sync to.
-  --sync-from       The folder to sync from (only relevant if --sync-to is specified).
-  --exit-on-sync    Exit once the first sync has occurred. Useful in deployment scripts.
+  --sync-to         The host to sync to (other sync options only relevant if this is supplied).
+  --sync-from       The folder to sync from.
+  --live-sync       Watch for changes and live sync them to a remote server.
   --sync-folder-and-contents  Sync local folder and contents (default is to sync the folder’s contents only).
 
   For enable command:
@@ -428,20 +428,12 @@ test('[commands] help', t => {
   • Proxy localhost:1313 ⇄ https://localhost  ▶ site :1313
     (shorthand and full)      ▶ site serve :1313 @localhost:443
 
-  • Serve current folder, sync it to my.site  ▶ site --sync-to=my.site
-    (shorthand and full)      ▶ site serve . @localhost:443 --sync-to=my.site
+  • Sync demo folder to my.site             ▶ site demo --sync-to=my.site
+  • Ditto, but use account me on my.site    ▶ site demo --sync-to=me@my.site
+  • Ditto, but sync to remote folder ~/www  ▶ site demo --sync-to=me@my.site:www
+  • Ditto, but specify absolute path        ▶ site demo --sync-to=me@my.site:/home/me/www
 
-  • Serve demo folder, sync it to my.site  ▶ site serve demo --sync-to=my.site
-  • Ditto, but use account me on my.site  ▶ site serve demo --sync-to=me@my.site
-  • Ditto, but sync to remote folder ~/www  ▶ site serve demo --sync-to=me@my.site:www
-  • Ditto, but specify absolute path    ▶ site serve demo --sync-to=me@my.site:/home/me/www
-
-  • Sync current folder, proxy localhost:1313  ▶ site serve :1313 --sync-from=. --sync-to=my.site
-
-  • Sync current folder to my.site and exit  ▶ site --sync-to=my.site --exit-on-sync
-
-  • Sync demo folder to my.site and exit  ▶ site demo --sync-to=my.site --exit-on-sync
-    (alternative forms)      ▶ site --sync-from=demo --sync-to=my.site --exit-on-sync
+  • Live Sync current folder to my.site     ▶ site --sync-to=my.site --live-sync
 
     Stage and deploy using globally-trusted Let’s Encrypt certificates:
 
@@ -502,9 +494,9 @@ test('[commands] help', t => {
     --aliases         Additional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
 
     For serve command:
-    --sync-to      The host to sync to.
-    --sync-from      The folder to sync from (only relevant if --sync-to is specified).
-    --exit-on-sync    Exit once the first sync has occurred. Useful in deployment scripts.
+    --sync-to                   The host to sync to (other sync options only relevant if this is supplied).
+    --sync-from                 The folder to sync from.
+    --live-sync                 Watch for changes and live sync them to a remote server.
     --sync-folder-and-contents  Sync local folder and contents (default is to sync the folder’s contents only).
     For enable command:
     --ensure-can-sync    Ensure server can rsync via ssh.
@@ -521,16 +513,12 @@ test('[commands] help', t => {
     • Proxy localhost:1313 ⇄ https://localhost  ▶ site :1313
       (shorthand and full)      ▶ site serve :1313 @localhost:443
 
-    • Serve current folder, sync it to my.site  ▶ site --sync-to=my.site
-      (shorthand and full)      ▶ site serve . @localhost:443 --sync-to=my.site
-    • Serve demo folder, sync it to my.site  ▶ site serve demo --sync-to=my.site
-    • Ditto, but use account me on my.site  ▶ site serve demo --sync-to=me@my.site
-    • Ditto, but sync to remote folder ~/www  ▶ site serve demo --sync-to=me@my.site:www
-    • Ditto, but specify absolute path    ▶ site serve demo --sync-to=me@my.site:/home/me/www
-    • Sync current folder, proxy localhost:1313  ▶ site serve :1313 --sync-from=. --sync-to=my.site
-    • Sync current folder to my.site and exit  ▶ site --sync-to=my.site --exit-on-sync
-    • Sync demo folder to my.site and exit  ▶ site demo --sync-to=my.site --exit-on-sync
-      (alternative forms)      ▶ site --sync-from=demo --sync-to=my.site --exit-on-sync
+    • Sync demo folder to my.site             ▶ site demo --sync-to=my.site
+    • Ditto, but use account me on my.site    ▶ site demo --sync-to=me@my.site
+    • Ditto, but sync to remote folder ~/www  ▶ site demo --sync-to=me@my.site:www
+    • Ditto, but specify absolute path        ▶ site demo --sync-to=me@my.site:/home/me/www
+
+    • Live Sync current folder to my.site     ▶ site --sync-to=my.site --live-sync
 
       Stage using globally-trusted Let’s Encrypt certificates:
 
@@ -649,9 +637,9 @@ test('[commands] help', t => {
     --aliases         Additional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
 
     For serve command:
-    --sync-to      The host to sync to.
-    --sync-from      The folder to sync from (only relevant if --sync-to is specified).
-    --exit-on-sync    Exit once the first sync has occurred. Useful in deployment scripts.
+    --sync-to                   The host to sync to (other sync options only relevant if this is supplied).
+    --sync-from                 The folder to sync from.
+    --live-sync                 Watch for changes and live sync them to a remote server.
     --sync-folder-and-contents  Sync local folder and contents (default is to sync the folder’s contents only).
     For enable command:
     --ensure-can-sync    Ensure server can rsync via ssh.
@@ -668,16 +656,12 @@ test('[commands] help', t => {
     • Proxy localhost:1313 ⇄ https://localhost  ▶ site :1313
       (shorthand and full)      ▶ site serve :1313 @localhost:443
 
-    • Serve current folder, sync it to my.site  ▶ site --sync-to=my.site
-      (shorthand and full)      ▶ site serve . @localhost:443 --sync-to=my.site
-    • Serve demo folder, sync it to my.site  ▶ site serve demo --sync-to=my.site
-    • Ditto, but use account me on my.site  ▶ site serve demo --sync-to=me@my.site
-    • Ditto, but sync to remote folder ~/www  ▶ site serve demo --sync-to=me@my.site:www
-    • Ditto, but specify absolute path    ▶ site serve demo --sync-to=me@my.site:/home/me/www
-    • Sync current folder, proxy localhost:1313  ▶ site serve :1313 --sync-from=. --sync-to=my.site
-    • Sync current folder to my.site and exit  ▶ site --sync-to=my.site --exit-on-sync
-    • Sync demo folder to my.site and exit  ▶ site demo --sync-to=my.site --exit-on-sync
-      (alternative forms)      ▶ site --sync-from=demo --sync-to=my.site --exit-on-sync
+    • Sync demo folder to my.site             ▶ site demo --sync-to=my.site
+    • Ditto, but use account me on my.site    ▶ site demo --sync-to=me@my.site
+    • Ditto, but sync to remote folder ~/www  ▶ site demo --sync-to=me@my.site:www
+    • Ditto, but specify absolute path        ▶ site demo --sync-to=me@my.site:/home/me/www
+
+    • Live Sync current folder to my.site     ▶ site --sync-to=my.site --live-sync
 
       Stage using globally-trusted Let’s Encrypt certificates:
 

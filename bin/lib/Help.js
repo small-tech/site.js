@@ -73,7 +73,7 @@ class Help {
     const optionSyncTo = option('sync-to')
 
     const optionEnsureCanSync = option('ensure-can-sync')
-    const optionExitOnSync = option('exit-on-sync')
+    const optionLiveSync = option('live-sync')
     const optionSyncFolderAndContents = option('sync-folder-and-contents')
 
     // Black right-pointing triangle (U+25B6)
@@ -139,9 +139,9 @@ class Help {
 
     For ${commandServe} command:
 
-    ${optionSyncTo}\t\t\tThe host to sync to.
-    ${optionSyncFrom}\t\t\tThe folder to sync from (only relevant if ${optionSyncTo} is specified).
-    ${optionExitOnSync}\t\tExit once the first sync has occurred. Useful in deployment scripts.
+    ${optionSyncTo}\t\t\tThe host to sync to (other sync options only relevant if this is supplied).
+    ${optionSyncFrom}\t\t\tThe folder to sync from.
+    ${optionLiveSync}\t\t\tWatch for changes and live sync them to a remote server.
     ${optionSyncFolderAndContents}\tSync local folder and contents (default is to sync the folder’s contents only).
 
     For ${commandEnable} command:
@@ -164,20 +164,12 @@ class Help {
     • Proxy ${argument('localhost:1313')} ⇄ https://localhost\t${prompt} ${appName} ${argument(':1313')}
       (shorthand and full)\t\t\t${prompt} ${appName} ${commandServe} ${argument(':1313')} ${argument('@localhost:443')}
     ${ this.isWindows ? '' : `
-    • Serve current folder, sync it to ${argument('my.site')}\t${prompt} ${appName} ${optionSyncTo}=${argument('my.site')}
-      (shorthand and full)\t\t\t${prompt} ${appName} ${commandServe} ${argument('.')} ${argument('@localhost:443')} ${optionSyncTo}=${argument('my.site')}
+    • Sync ${argument('demo')} folder to ${argument('my.site')}\t\t${prompt} ${appName} ${argument('demo')} ${optionSyncTo}=${argument('my.site')}
+    • Ditto, but use account ${argument('me')} on ${argument('my.site')}\t${prompt} ${appName} ${argument('demo')} ${optionSyncTo}=${argument('me@my.site')}
+    • Ditto, but sync to remote folder ${argument('~/www')}\t${prompt} ${appName} ${argument('demo')} ${optionSyncTo}=${argument('me@my.site:www')}
+    • Ditto, but specify absolute path\t\t${prompt} ${appName} ${argument('demo')} ${optionSyncTo}=${argument('me@my.site:/home/me/www')}
 
-    • Serve ${argument('demo')} folder, sync it to ${argument('my.site')}\t${prompt} ${appName} ${commandServe} ${argument('demo')} ${optionSyncTo}=${argument('my.site')}
-    • Ditto, but use account ${argument('me')} on ${argument('my.site')}\t${prompt} ${appName} ${commandServe} ${argument('demo')} ${optionSyncTo}=${argument('me@my.site')}
-    • Ditto, but sync to remote folder ${argument('~/www')}\t${prompt} ${appName} ${commandServe} ${argument('demo')} ${optionSyncTo}=${argument('me@my.site:www')}
-    • Ditto, but specify absolute path\t\t${prompt} ${appName} ${commandServe} ${argument('demo')} ${optionSyncTo}=${argument('me@my.site:/home/me/www')}
-
-    • Sync current folder, proxy ${argument('localhost:1313')}\t${prompt} ${appName} ${commandServe} ${argument(':1313')} ${optionSyncFrom}=${argument('.')} ${optionSyncTo}=${argument('my.site')}
-
-    • Sync current folder to ${argument('my.site')} and exit\t${prompt} ${appName} ${optionSyncTo}=${argument('my.site')} ${optionExitOnSync}
-
-    • Sync ${argument('demo')} folder to ${argument('my.site')} and exit\t${prompt} ${appName} ${argument('demo')} ${optionSyncTo}=${argument('my.site')} ${optionExitOnSync}
-      (alternative forms)\t\t\t${prompt} ${appName} ${optionSyncFrom}=${argument('demo')} ${optionSyncTo}=${argument('my.site')} ${optionExitOnSync}
+    • Live Sync current folder to ${argument('my.site')} \t${prompt} ${appName} ${optionSyncTo}=${argument('my.site')} ${optionLiveSync}
     `}${ this.systemdExists ? `
       ${heading('Stage and deploy using globally-trusted Let’s Encrypt certificates:')}
 

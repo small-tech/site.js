@@ -37,7 +37,7 @@ We exist in part thanks to patronage by people like you. If you share [our visio
 
   - __Includes [Hugo static site generator](#static-site-generation).__
 
-  - __[Sync](https://github.com/small-tech/site.js#deployment-live-and-one-time-sync) to deploy__ (uses rsync for quick deployments. Can [sync on changes](https://github.com/small-tech/site.js#deployment-live-and-one-time-sync) and be used for live blogging).
+  - __[Sync](https://github.com/small-tech/site.js#sync) to deploy__ (uses rsync for quick deployments). Can also [Live Sync](https://github.com/small-tech/site.js#deployment-live-and-one-time-sync) for live blogging, etc.
 
   - __Has privacy-respecting [ephemeral statics](#ephemeral-statistics)__. Gives you insight into how your site is being used, not into the people using it.
 
@@ -301,21 +301,20 @@ Use a service like [ngrok](https://ngrok.com/) (Pro+) to point a custom domain n
 
 When you start your server, it will run as a regular process. It will not be restarted if it crashes or if you exit the foreground process or restart the computer.
 
-### Deployment (live and one-time sync)
+### Deployment
 
-Site.js can also help you when you want to deploy your site to your live server with its sync feature. You can even have Site.js watch for changes and sync them to your server in real-time (e.g., if you want to live blog something or want to keep a page updated with local data you’re collecting from a sensor):
+#### Sync
+
+Site.js can help you deploy your site to your live server with its sync feature.
 
 ```shell
 $ site my-demo --sync-to=my-demo.site
 ```
 
-The above command will start a local development server at _https://localhost_. Additionally, it will watch the folder _my-demo_ for changes and sync any changes to its contents via rsync over ssh to the host _my-demo.site_.
+The above command will:
 
-If don’t want Site.js to start a server and you want to perform just a one-time sync, use the `--exit-on-sync` flag.
-
-```shell
-$ site my-demo --sync-to=my-demo.site --exit-on-sync
-```
+  1. Generate any Hugo content that might need to be generated.
+  2. Sync your site from the local _my-demo_ folder via rsync over ssh to the host _my-demo.site_.
 
 Without any customisations, the sync feature assumes that your account on your remote server has the same name as your account on your local machine and that the folder you are watching (_my-demo_, in the example above) is located at _/home/your-account/my-demo_ on the remote server. Also, by default, the contents of the folder will be synced, not the folder itself. You can change these defaults by specifying a full-qualified remote connection string as the `--sync-to` value.
 
@@ -331,14 +330,6 @@ For example:
 $ site my-folder --sync-to=someOtherAccount@my-demo.site:/var/www
 ```
 
-If you want to sync a different folder to the one you’re serving or if you’re running a proxy server (or if you just want to be as explicit as possible about your intent) you can use the `--sync-from` option to specify the folder to sync:
-
-```shell
-$ site :1313 --sync-from=public --sync-to=my-demo.site
-```
-
-(The above command will start a proxy server that forwards requests to and responses from http://localhost to https://localhost and sync the folder called `public` to the host `my-demo.site`.)
-
 If you want to sync not the folder’s contents but the folder itself, use the `--sync-folder-and-contents` flag. e.g.,
 
 ```shell
@@ -346,6 +337,21 @@ $ site my-local-folder --sync-to=me@my.site:my-remote-folder --sync-folder-and-c
 ```
 
 The above command will result in the following directory structure on the remote server: _/home/me/my-remote-folder/my-local-folder_. It also demonstrates that if you specify a relative folder, Site.js assumes you mean the folder exists in the home directory of the account on the remote server.
+
+#### Live Sync
+
+With the Live Sync feature, you can have Site.js watch for changes to your content and sync them to your server in real-time (e.g., if you want to live blog something or want to keep a page updated with local data you’re collecting from a sensor).
+
+To start a live sync server, provide the `--live-sync` flag to your sync request.
+
+For example:
+
+```shell
+$ site my-demo --sync-to=my-demo.site --live-sync
+```
+
+The above command will start a local development server at _https://localhost_. Additionally, it will watch the folder _my-demo_ for changes and sync any changes to its contents via rsync over ssh to the host _my-demo.site_.
+
 
 ### Production
 
@@ -515,7 +521,7 @@ If `command` is omitted, behaviour defaults to `serve`.
 
   - `--sync-from`: The folder to sync from (only relevant if `--sync-to` is specified).
 
-  - `--exit-on-sync`: Exit once the first sync has occurred (only relevant if `--sync-to` is specified). Useful in deployment scripts.
+  - `--live-sync`: Watch for changes and live sync them to a remote server (only relevant if `--sync-to` is specified).
 
   - `--sync-folder-and-contents`: Sync folder and contents (default is to sync the folder’s contents only).
 
@@ -542,16 +548,11 @@ When you `serve` a site at `@hostname` or use the `enable` command, globally-tru
 | Serve folder demo on port 666             | site serve demo @localhost:666                                |
 | Proxy localhost:1313 to https://localhost*| site :1313                                                    |
 |                                           | site serve :1313 @localhost:443                               |
-| Serve current folder, sync it to my.site* | site --sync-to=my.site                                        |
-|                                           | site serve . @localhost:443 --sync-to=my.site                 |
-| Serve demo folder, sync it to my.site     | site serve demo --sync-to=my.site                             |
-| Ditto, but use account me on my.site      | site serve demo --sync-to=me@my.site                          |
-| Ditto, but sync to remote folder ~/www    | site serve demo --sync-to=me@my.site:www                      |
-| Ditto, but specify absolute path          | site serve demo --sync-to=me@my.site:/home/me/www             |
-| Sync current folder, proxy localhost:1313 | site serve :1313 --sync-from=. --sync-to=my.site              |
-| Sync current folder to my.site and exit   | site --sync-to=my.site --exit-on-sync                         |
-| Sync demo folder to my.site and exit*     | site demo --sync-to=my.site --exit-on-sync                    |
-|                                           | site --sync-from=demo --sync-to=my.site --exit-on-sync        |
+| Sync demo folder to my.site               | site demo --sync-to=my.site                                   |
+| Ditto, but use account me on my.site      | site demo --sync-to=me@my.site                                |
+| Ditto, but sync to remote folder ~/www    | site demo --sync-to=me@my.site:www                            |
+| Ditto, but specify absolute path          | site demo --sync-to=me@my.site:/home/me/www                   |
+| Live sync current folder to my.site       | site --sync-to=my.site --live-sync                            |
 
 ### Stage and deploy using globally-trusted Let’s Encrypt certificates
 
@@ -584,7 +585,6 @@ When you `serve` a site at `@hostname` or use the `enable` command, globally-tru
 | Goal                                      | Command                                                       |
 | ----------------------------------------- | ------------------------------------------------------------- |
 | Check for updates and update if found     | site update                                                   |
-
 
 \* _Alternative, equivalent forms listed (some commands have shorthands)._
 

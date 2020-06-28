@@ -99,9 +99,8 @@ function sync (options) {
         // Sync succeeded.
         console.log(`   💫    ❨site.js❩ Local folder ${clr(options.from, 'cyan')} synced to ${clr(options.host, 'cyan')}`)
 
-        if (options.exit) {
+        if (!options.live) {
           // We've been asked to exit once we’ve successfully synced. Do so.
-          console.log('   👋     ❨site.js❩ Exit on sync requested, exiting…')
           console.log('\n   💕    ❨site.js❩ Goodbye!\n')
           Graceful.exit()
         }

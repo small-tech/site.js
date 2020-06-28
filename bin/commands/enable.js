@@ -261,7 +261,7 @@ function displayConnectionInformation(pathToServe) {
     const syncToValue = `${account}@${hostname}:${absolutePathToServe}`
 
     console.log(` 💫 [Sync] To sync from your local machine, from within your site’s folder, use:`)
-    console.log(` 💫 [Sync] site --sync-to=${syncToValue} --exit-on-sync\n`)
+    console.log(` 💫 [Sync] site --sync-to=${syncToValue}\n`)
   } catch (error) {
     console.log(error, `\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Could not get connection information.\n`)
     process.exit(1)

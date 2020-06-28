@@ -1,6 +1,6 @@
 {
   "name": "@small-tech/site.js",
-  "version": "13.0.4",
+  "version": "14.0.0",
   "description": "Small Web construction set.",
   "keywords": [
     "web server",
@@ -55,7 +55,7 @@
     "@small-tech/express-ws": "^1.0.0",
     "@small-tech/https": "^1.2.5",
     "@small-tech/instant": "^1.1.0",
-    "@small-tech/node-hugo": "^1.4.0",
+    "@small-tech/node-hugo": "^1.4.1",
     "@small-tech/web-routes-from-files": "^2.0.0",
     "ansi-escape-sequences": "^4.1.0",
     "bent": "^7.3.4",
