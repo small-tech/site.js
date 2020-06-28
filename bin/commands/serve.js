@@ -145,6 +145,8 @@ function serve (args) {
     if (!syncOptions.live) {
       Site.logAppNameAndVersion()
 
+      const absolutePathToServe = pathModule.resolve(path)
+
       // Delete the .generated folder so that a full
       // generation can happen as we’re about to deploy.
       const generatedContentPath = pathModule.join(absolutePathToServe, '.generated')
@@ -157,7 +159,6 @@ function serve (args) {
         // specifies a custom mount path (double dashes are converted
         // to forward slashes when determining the mount path).
         const hugoSourceFolderPrefixRegExp = /^.hugo(--)?/
-        const absolutePathToServe = pathModule.resolve(path)
 
         const files = fs.readdirSync(absolutePathToServe)
 
