@@ -145,6 +145,11 @@ function serve (args) {
     if (!syncOptions.live) {
       Site.logAppNameAndVersion()
 
+      // Delete the .generated folder so that a full
+      // generation can happen as we’re about to deploy.
+      const generatedContentPath = pathModule.join(absolutePathToServe, '.generated')
+      fs.removeSync(generatedContentPath)
+
       ;(async () => {
         // Generate any Hugo content they might be.
         // Hugo source folder names must begin with either
@@ -160,12 +165,6 @@ function serve (args) {
 
         await asyncForEach(files, async file => {
           if (file.match(hugoSourceFolderPrefixRegExp)) {
-
-            // Delete the .generated folder so that a full
-            // generation can happen as we’re about to deploy.
-            const generatedContentPath = pathModule.join(absolutePathToServe, '.generated')
-            fs.removeSync(generatedContentPath)
-
             const hugoSourceDirectory = pathModule.join(absolutePathToServe, file)
 
             let mountPath = '/'

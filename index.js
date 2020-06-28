@@ -427,6 +427,13 @@ class Site {
   // Auto detect and support hugo source directories if they exist.
   async addHugoSupport() {
 
+    if (this.syncHost !== undefined) {
+      // If about to sync to a remote host, delete the .generated folder so that a full
+      // generation can happen as we’re about to deploy.
+      const generatedContentPath = path.join(this.absolutePathToServe, '.generated')
+      fs.removeSync(generatedContentPath)
+    }
+
     // Hugo source folder names must begin with either
     // .hugo or .hugo--. Anything after the first double-dash
     // specifies a custom mount path (double dashes are converted
@@ -475,14 +482,18 @@ class Site {
           // If a syncHost is provided (because we are about to sync), that overrides the calculated base
           // URL as we are generating the content not for localhost or the current machine’s hostname but
           // for the remote machine’s host name.
+          let buildDrafts = true
           if (this.syncHost !== undefined) {
             baseURL = `https://${this.syncHost}`
+
+            // Also, if syncing to a remote host, do NOT build drafts as we do not want to publish drafts.
+            buildDrafts = false
           }
 
           // Start the server and await the end of the build process.
           let hugoServerProcess, hugoBuildOutput
           try {
-            const response = await this.hugo.serve(sourcePath, destinationPath, baseURL)
+            const response = await this.hugo.serve(sourcePath, destinationPath, baseURL, buildDrafts)
             hugoServerProcess = response.hugoServerProcess
             hugoBuildOutput = response.hugoBuildOutput
           } catch (error) {
