@@ -33,7 +33,6 @@ class RSyncWatcher {
 
     // Exit gracefully.
     const goodbye = (done) => {
-      console.log(`\n   💫    ❨site.js❩ Sync exit request detected.`)
 
       for (let entry of this.synchronisers) {
           let synchroniser = entry[1]

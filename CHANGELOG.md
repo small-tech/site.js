@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [14.0.0] - Work in progress
+
+### Changed
+
+  - Default behaviour of sync is to exit once sync is complete.
+
+### Removed
+
+  - `--exit-on-sync` flag.
+
+### Added
+
+  - `--live-sync` flag. If you specify this flag, the behaviour of Site.js will match the default sync behaviour from previous releases (Site.js server will be started, will sync to the destination, will start watching for changes and sync to destination on changes).
+
+### Fixed
+
+  - Hugo drafts are no longer published to production site (#204).
+
 ## [13.0.4] - 2020-06-25
 
 ### Fixed
@@ -43,9 +61,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [13.0.0] - 2020-06-18
 
-### Breaking change
+### Changed
 
-  - Starting a server now only provisions a TLS certificate for and serves _hostname_ (it no longer also provisions a TLS certificate for and aliases the _www_ subdomain). If you want to have _www_ subdomain support, add _www_ via the `--aliases` option manually.
+  - __(Breaking change)__ Starting a server now only provisions a TLS certificate for and serves _hostname_ (it no longer also provisions a TLS certificate for and aliases the _www_ subdomain). If you want to have _www_ subdomain support, add _www_ via the `--aliases` option manually.
 
 ### Added
 
