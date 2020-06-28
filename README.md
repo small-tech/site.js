@@ -602,7 +602,7 @@ If a path cannot be found in your current site, Site.js will search for it first
 
 Paths in your current site will override those in `.archive-2` and those in `.archive-2` will, similarly, override those in `.archive-1`.
 
-Use the archival  old links will never die but if you do replace them with never content in never versions, those will take precedence.
+Use the archival  old links will never die but if you do replace them with newer content in newer versions, those will take precedence.
 
 #### Legacy method (pre version 13.0.0)
 
