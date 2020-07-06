@@ -648,6 +648,13 @@ class Site {
   // Finish configuring the app. These are the routes that come at the end.
   // (We need to add the WebSocket (WSS) routes after the server has been created).
   endAppConfiguration () {
+
+    // For local servers, serve the root certificate authority’s public key at the
+    // /.ca path so it can be easily installed on other devices.
+    if (!this.global) {
+      this.appAddLocalRootCertificateAuthorityPublicKeyRoute()
+    }
+
     // If we need to load dynamic routes from a routesJS file, do it now.
     if (this.routesJsFile !== undefined) {
       this.createWebSocketServer()
@@ -1027,6 +1034,23 @@ class Site {
         next()
       }
     })
+  }
+
+
+  appAddLocalRootCertificateAuthorityPublicKeyRoute () {
+    const localRootCertificateAuthorityPublicKeyPath = path.join(Site.settingsDirectory, 'tls', 'local', 'rootCA.pem')
+    if (fs.existsSync(localRootCertificateAuthorityPublicKeyPath)) {
+      this.app.get('/.ca', (request, response) => {
+        response.download(localRootCertificateAuthorityPublicKeyPath, 'rootCA.pem', error => {
+          if (error) {
+            this.log('   ❌    ❨site.js❩ Error: could not serve rootCA.pem file. ${error}')
+          }
+        })
+      })
+      this.log('   📜    ❨site.js❩ Serving local root certificate authority public key at /.ca')
+    } else {
+      this.log('   ⚠    ❨site.js❩ Could not find local root certificate authority public key. Not serving it.')
+    }
   }
 
 

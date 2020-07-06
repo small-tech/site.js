@@ -228,7 +228,7 @@ test('[site.js] Separate .get and .post folders with dotJS filesystem-based rout
 
 test('[site.js] Separate .https and .wss folders with separate .get and .post folders in the .https folder with dotJS filesystem-based route loading', async t => {
 
-  t.plan(44)
+  t.plan(45)
 
   const site = new Site({path: 'test/site-dynamic-dotjs-separate-https-and-wss-and-separate-get-and-post'})
   await site.serve()
@@ -240,21 +240,27 @@ test('[site.js] Separate .https and .wss folders with separate .get and .post fo
 
   // Indices up to 16 have been covered by runDotJsSeparateGetAndPostTests() above.
   // Index 17 is that static router.
-  // The WSS routes start at index 18.
 
-  const webSocketFileNameAsRouteNameRoute = routerStack[18].route
+  // Test Index 18: the new local root certificate public key serving route (only on local servers).
+  const localRootCertificateRoute = routerStack[18].route
+  t.true(localRootCertificateRoute.methods.get, 'request method should be GET')
+  t.strictEquals(localRootCertificateRoute.path, '/.ca', 'path should be correct')
+
+    // The WSS routes start at index 19.
+
+  const webSocketFileNameAsRouteNameRoute = routerStack[19].route
   t.true(webSocketFileNameAsRouteNameRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
   t.strictEquals(webSocketFileNameAsRouteNameRoute.path, '/file-name-as-route-name/.websocket', 'path should be correct')
 
-  const webSocketIndexRoute = routerStack[19].route
+  const webSocketIndexRoute = routerStack[20].route
   t.true(webSocketIndexRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
   t.strictEquals(webSocketIndexRoute.path, '/.websocket', 'path should be correct')
 
-  const webSocketSubRouteFileNameAsRouteNameRoute = routerStack[20].route
+  const webSocketSubRouteFileNameAsRouteNameRoute = routerStack[21].route
   t.true(webSocketSubRouteFileNameAsRouteNameRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
   t.strictEquals(webSocketSubRouteFileNameAsRouteNameRoute.path, '/sub-route/file-name-as-route-name/.websocket', 'path should be correct')
 
-  const webSocketSubRouteIndexRoute = routerStack[21].route
+  const webSocketSubRouteIndexRoute = routerStack[22].route
   t.true(webSocketSubRouteIndexRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
   t.strictEquals(webSocketSubRouteIndexRoute.path, '/sub-route/.websocket', 'path should be correct')
 
@@ -300,11 +306,11 @@ test('[site.js] dynamic route loading from routes.js file', async t => {
 
   const routerStack = site.app._router.stack
 
-  const getRouteWithParameter = routerStack[10].route
+  const getRouteWithParameter = routerStack[11].route
   t.true(getRouteWithParameter.methods.get, 'request method should be GET')
   t.strictEquals(getRouteWithParameter.path, '/hello/:thing', 'path should be correct and contain parameter')
 
-  const wssRoute = routerStack[11].route
+  const wssRoute = routerStack[12].route
   t.true(wssRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
   t.strictEquals(wssRoute.path, '/echo/.websocket', 'path should be correct and contain parameter')
 
