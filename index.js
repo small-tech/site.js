@@ -649,12 +649,6 @@ class Site {
   // (We need to add the WebSocket (WSS) routes after the server has been created).
   endAppConfiguration () {
 
-    // For local servers, serve the root certificate authority’s public key at the
-    // /.ca path so it can be easily installed on other devices.
-    if (!this.global) {
-      this.appAddLocalRootCertificateAuthorityPublicKeyRoute()
-    }
-
     // If we need to load dynamic routes from a routesJS file, do it now.
     if (this.routesJsFile !== undefined) {
       this.createWebSocketServer()
@@ -672,6 +666,12 @@ class Site {
         decache(route.callback)
         this.app.ws(route.path, require(route.callback))
       })
+    }
+
+    // For local servers, serve the root certificate authority’s public key at the
+    // /.ca path so it can be easily installed on other devices.
+    if (!this.global) {
+      this.appAddLocalRootCertificateAuthorityPublicKeyRoute()
     }
 
     // The error routes go at the very end.
