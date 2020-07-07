@@ -61,6 +61,8 @@ We exist in part thanks to patronage by people like you. If you share [our visio
 
 Copy and paste the following commands into your terminal:
 
+__(Note: all commands should be run in your regular account, not as root.)__
+
 ### Native binaries
 
 __Before you pipe any script into your computer, always view the source code ([Linux and macOS](https://should-i-pipe.it/https://sitejs.org/install), [Windows](https://should-i-pipe.it/https://sitejs.org/install.txt)) and make sure you understand what it does.__
@@ -375,6 +377,10 @@ The above command will start a local development server at _https://localhost_. 
 ### Production
 
 __Available on Linux distributions with systemd (most Linux distributions, but [not these ones](https://sysdfree.wordpress.com/2019/03/09/135/) or on macOS or Windows).__
+
+__For production use, passwordless sudo is required.__ On systems where the sudo configuration directory is set to `/etc/sudoers.d`, Site.js will automatically install this rule. On other systems, you might have to [set it up yourself](https://serverfault.com/questions/160581/how-to-setup-passwordless-sudo-on-linux).
+
+__Please make sure that you are NOT running as root.__
 
 On your live, public server, you can start serving the _my-site_ directory at your _hostname_ as a daemon that is automatically run at system startup and restarted if it crashes with:
 

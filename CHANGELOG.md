@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - When running a local server, you can go to http://(IPv4 address)/.ca to download the local root certificate authority’s public key. You must install this in the certificate stores of any devices you want to access the local server from via your local area network.
 
+  - Note to documentation that the installer should not be run as root.
+
 ## [14.0.1] - 2020-07-03
 
 ### Fixed
