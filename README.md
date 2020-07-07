@@ -279,7 +279,7 @@ Start serving the _my-site_ directory at your _hostname_ as a regular process us
 $ site my-site @hostname
 ```
 
-Note that as of 13.0.0, Site.js will refuse to start the server if your hostname (or the domain you specified manually using the `--domain` option and any aliases you may have specified using the `--aliases` option) fails to resolve or is unreachable. This should help you diagnose and fix typos in domain names as well as DNS misconfiguration and propagation issues.
+Note that as of 13.0.0, Site.js will refuse to start the server if your hostname (or the domain you specified manually using the `--domain` option and any aliases you may have specified using the `--aliases` option) fails to resolve or is unreachable. This should help you diagnose and fix typos in domain names as well as DNS misconfiguration and propagation issues. As of 14.1.0, you can use the `--skip-domain-reachability-check` flag to override this behaviour and skip the pre-flight checks.
 
 #### Proxy server
 
@@ -388,11 +388,13 @@ On your live, public server, you can start serving the _my-site_ directory at yo
 $ site enable my-site
 ```
 
-The `enable` command sets up your server to start automatically when your server starts and restart automatically if it crashes. Requires superuser privileges on first run to set up the launch item.
+The `enable` command sets up your server to start automatically when your server starts and restart automatically if it crashes.
 
 For example, if you run the command on a connected server that has the ar.al domain pointing to it and `ar.al` set in _/etc/hostname_, you will be able to access the site at https://ar.al. (Yes, of course, [ar.al](https://ar.al) runs on Site.js.) The first time you hit your live site, it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by Auto Encrypt.
 
 The automatic TLS certificate provisioning will get certificates for the naked domain and the _www_ subdomain. There is currently no option to add other subdomains. Also, please ensure that both the naked domain and the _www_ subdomain are pointing to your server before you enable your server and hit it to ensure that the provisioning works. This is especially important if you are migrating an existing site.
+
+__Note:__ As of 13.0.0, the `enable` will run pre-flight checks and refuse to install the service if the domain name and any aliases you have specified are not reachable. As of 14.1.0, you can use the `--skip-domain-reachability-check` flag to override this behaviour and skip the pre-flight checks. Note that if you use this flag, the server launched by the installed service will also not check for reachability. This is useful if you want to set up a server via a script prior to DNS propagation. Just make sure you haven’t made any typos in any of the domain names as you will not be warned about any mistakes.
 
 When the server is enabled, you can also use the following commands:
 
@@ -539,6 +541,8 @@ If `command` is omitted, behaviour defaults to `serve`.
   - `--domain`: The main domain to serve (defaults to system hostname if not specified).
 
   - `--aliases`: Comma-separated list of additional domains to obtain TLS certificates for and respond to. These domains point to the main domain via a 302 redirect. Note that as of 13.0.0, the _www_ alias is not added automatically. To specify it, you can use the shorthand form:`--aliases=www`
+
+  - `--skip-domain-reachability-check`:	Do not run pre-flight check for domain reachability.
 
 #### For the `serve` command:
 
