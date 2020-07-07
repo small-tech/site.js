@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [14.1.0] - 2020-07-07
+
+### Added
+
+  - Local servers now redirect HTTP to HTTPS just like global servers.
+
+  - You can now access local servers via their IPv4 address over a local area network. This is useful when you want to test your site with different devices without having to expose your server over the Internet using a service like ngrok.
+
+  - When running a local server, you can go to http://(IPv4 address)/.ca to download the local root certificate authority’s public key. You must install this in the certificate stores of any devices you want to access the local server from via your local area network.
+
 ## [14.0.1] - 2020-07-03
 
 ### Fixed

@@ -205,6 +205,25 @@ That, again, is shorthand for the full version of the command, which is:
 $ site serve . @localhost:666
 ```
 
+#### Accessing your local server over the local area network
+
+You can access local servers via their IPv4 address over a local area network.
+
+This is useful when you want to test your site with different devices without having to expose your server over the Internet using a service like ngrok. For example, if your machine’s IPv4 address on the local area network is 192.168.2.42, you can just enter that IP to access it from, say, your iPhone.
+
+To access your local machine from a different device on your local area network, you must transfer the public key of your generated local root certificate authority to that device and install and trust it.
+
+For example, if you’re on an iPhone, hit the `/.ca` route in your browser:
+
+```
+http://192.168.2.42/.ca
+```
+
+The browser will download the local root certificate authority’s public key and prompt you to install profile on your iPhone. You then have to go to Settings → Profile Downloaded → Tap Install when the Install Profile pop-up appears showing you the mkcert certificate you downloaded. Then, go to Settings → General → About → Certificate Trust Settings → Turn on the switch next to the mkcert certificate you downloaded. You should now be able to hit `https://192.168.2.42` and see your site from your iPhone.
+
+You can also tranfer your key to your other devices manually. You can find the key at `~/.small-tech/site.js/tls/local/rootCA.pem` after you’ve created a local server at least once. For more details on transferring your key to other devices, please refer to [the relevant section in the mkcert documentation](https://github.com/FiloSottile/mkcert#mobile-devices).
+
+
 #### Proxy server
 
 You can use Site.js as a development-time reverse proxy for HTTP and WebSocket connections. This is useful if you have a web app written in any language that only supports HTTP (not TLS) that you want to deploy securely.
