@@ -250,6 +250,7 @@ class Site {
     this.global = typeof options.global === 'boolean' ? options.global : false
     this.aliases = Array.isArray(options.aliases) ? options.aliases : []
     this.syncHost = options.syncHost
+    this.skipDomainReachabilityCheck = options.skipDomainReachabilityCheck
 
     // Substitute shorthand www alias for full domain.
     this.aliases = this.aliases.map(alias => alias === 'www' ? `www.${Site.hostname}` : alias)
@@ -845,8 +846,13 @@ class Site {
   async serve (callback) {
     // Before anything else, if this is a global server, let’s ensure that the domains we are trying to support
     // are reachable. If it is not, we will be prevented from going any further.
+    // Note: this feature can be disabled by specifying the --skip-domain-reachability-check flag.
     if (this.global) {
+      if (this.skipDomainReachabilityCheck !== true) {
         await this.ensureDomainsAreReachable()
+      } else {
+        this.log('\n   🐇    ❨site.js❩ Skipping domain reachability check as requested.')
+      }
     }
 
     // Before starting the server, we have to configure the app. We do this here

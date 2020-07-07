@@ -22,6 +22,11 @@ const SYNC_FROM = 'sync-from'
 const LIVE_SYNC = 'live-sync'
 const SYNC_FOLDER_AND_CONTENTS = 'sync-folder-and-contents'
 
+// This will skip the domain reachability check when starting a global server. Useful if you are setting up a server
+// where you know that the DNS has not propagated yet. Note that if you specify this flag, you double check that you’ve
+// specified the domain and any aliases correctly as you will not be warned if you make a mistake.
+const SKIP_DOMAIN_REACHABILITY_CHECK = 'skip-domain-reachability-check'
+
 // Internal: used for pre-flight check to ensure the server can launch before creating a daemon.
 const EXIT_AFTER_LAUNCH = 'exit-after-launch'
 
@@ -112,6 +117,11 @@ function serve (args) {
   // Aliases.
   const _aliases = args.named[ALIASES]
   const aliases = _aliases === undefined ? [] : _aliases.split(',')
+
+  // This will skip the domain reachability check when starting a global server. Useful if you are setting up a server
+  // where you know that the DNS has not propagated yet. Note that if you specify this flag, you double check that
+  // you’ve specified the domain and any aliases correctly as you will not be warned if you make a mistake.
+  const skipDomainReachabilityCheck = args.named[SKIP_DOMAIN_REACHABILITY_CHECK]
 
   // Internal: exit on launch. (Used in pre-flight checks to ensure server can launch before installing a daemon.)
   const exitAfterLaunch = args.named[EXIT_AFTER_LAUNCH]
@@ -265,7 +275,8 @@ function serve (args) {
         port,
         global,
         proxyPort,
-        aliases
+        aliases,
+        skipDomainReachabilityCheck
       }
 
       if (syncRequested) {

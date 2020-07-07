@@ -68,6 +68,7 @@ class Help {
 
     const optionAliases = option('aliases')
     const optionDomain = option('domain')
+    const optionSkipDomainReachabilityCheck = option('skip-domain-reachability-check')
 
     const optionSyncFrom = option('sync-from')
     const optionSyncTo = option('sync-to')
@@ -129,16 +130,18 @@ class Help {
     ${ this.isWindows ? `
     For ${commandServe} command:
 
-    ${optionDomain}\t\t\tThe main domain to serve (defaults to system hostname if not specified).
-    ${optionAliases}\t\t\tAdditional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
+    ${optionDomain}\t\t\t\tThe main domain to serve (defaults to system hostname if not specified).
+    ${optionAliases}\t\t\t\tAdditional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
+    ${optionSkipDomainReachabilityCheck}\tDo not run pre-flight check for domain reachability.
     ` : `
-    For both ${commandServe} and ${commandEnable} commands:
+    For${ this.systemdExists ? ' both ' : '' } ${commandServe}${ this.systemdExists ? ` and ${commandEnable} ` : '' } command${ this.systemdExists ? 's' : '' }:
 
-    ${optionDomain}\t\t\tThe main domain to serve (defaults to system hostname if not specified).
-    ${optionAliases}\t\t\tAdditional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
+    ${optionDomain}\t\t\t\tThe main domain to serve (defaults to system hostname if not specified).
+    ${optionAliases}\t\t\t\tAdditional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
+    ${optionSkipDomainReachabilityCheck}\tDo not run pre-flight check for domain reachability.
 
-    For ${commandServe} command:
-
+    ${ this.systemdExists ? `For ${commandServe} command:
+    ` : '' }
     ${optionSyncTo}\t\t\tThe host to sync to (other sync options only relevant if this is supplied).
     ${optionSyncFrom}\t\t\tThe folder to sync from.
     ${optionLiveSync}\t\t\tWatch for changes and live sync them to a remote server.

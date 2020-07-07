@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - Note to documentation that the installer should not be run as root.
 
+  - `--skip-domain-reachability-check` flag. This will skip the domain reachability check when starting a global server. Useful if you are setting up a server where you know that the DNS has not propagated yet. Note that if you specify this flag, you double check that you’ve specified the domain and any aliases correctly as you will not be warned if you make a mistake.
+
 ## [14.0.1] - 2020-07-03
 
 ### Fixed

@@ -398,8 +398,9 @@ test('[commands] help', t => {
 
   For both serve and enable commands:
 
-  --domain          The main domain to serve (defaults to system hostname if not specified).
-  --aliases         Additional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
+  --domain                          The main domain to serve (defaults to system hostname if not specified).
+  --aliases                         Additional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
+  --skip-domain-reachability-check  Do not run pre-flight check for domain reachability.
 
   For serve command:
 
@@ -488,12 +489,12 @@ test('[commands] help', t => {
     If command is omitted, behaviour defaults to serve.
     Options:
 
-    For both serve and enable commands:
+    For serve command:
 
     --domain          The main domain to serve (defaults to system hostname if not specified).
     --aliases         Additional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
+    --skip-domain-reachability-check  Do not run pre-flight check for domain reachability.
 
-    For serve command:
     --sync-to                   The host to sync to (other sync options only relevant if this is supplied).
     --sync-from                 The folder to sync from.
     --live-sync                 Watch for changes and live sync them to a remote server.
@@ -570,8 +571,9 @@ test('[commands] help', t => {
 
     For serve command:
 
-    --domain          The main domain to serve (defaults to system hostname if not specified).
-    --aliases         Additional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
+    --domain                        The main domain to serve (defaults to system hostname if not specified).
+    --aliases                       Additional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
+    --skip-domain-reachability-check  Do not run pre-flight check for domain reachability.
 
     Examples:
       Develop using locally-trusted TLS certificates:
@@ -631,12 +633,12 @@ test('[commands] help', t => {
     If command is omitted, behaviour defaults to serve.
     Options:
 
-    For both serve and enable commands:
-
-    --domain          The main domain to serve (defaults to system hostname if not specified).
-    --aliases         Additional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
-
     For serve command:
+
+    --domain                        The main domain to serve (defaults to system hostname if not specified).
+    --aliases                       Additional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
+    --skip-domain-reachability-check  Do not run pre-flight check for domain reachability.
+
     --sync-to                   The host to sync to (other sync options only relevant if this is supplied).
     --sync-from                 The folder to sync from.
     --live-sync                 Watch for changes and live sync them to a remote server.

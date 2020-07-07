@@ -86,6 +86,10 @@ function enable (args) {
       const _domain = args.named['domain']
       const domain = args.named['domain'] === undefined ? '' : `--domain=${_domain}`
 
+      // This will skip the domain reachability check when starting a global server.
+      const skipDomainReachabilityCheck = args.named['skip-domain-reachability-check'] === true ? ' --skip-domain-reachability-check ' : ''
+
+
       // Expectation: At this point, regardless of whether we are running as a regular
       // Node script or as a standalone executable created with Nexe, all paths should
       // be set correctly.
@@ -98,7 +102,7 @@ function enable (args) {
         process.exit(1)
       }
 
-      const launchCommand = `${executable} ${absolutePathToServe} @hostname ${domain} ${aliases}`
+      const launchCommand = `${executable} ${absolutePathToServe} @hostname ${domain} ${aliases} ${skipDomainReachabilityCheck}`
 
       let accountName
       try {
@@ -201,7 +205,7 @@ function enable (args) {
         // Note: we are launching Site.js without privileges here as we currently have privileges.
         // ===== (If we don’t do that, the configuration directories will be created with root as
         //       the owner and that they cannot be accessed by the regular unprivileged daemon process.)
-        childProcess.execSync(`sudo --user=${accountName} ${launchCommand} --dont-log-app-name-and-version --exit-after-launch`, {env: process.env, stdio: 'pipe'})
+        childProcess.execSync(`sudo --user=${accountName} ${launchCommand} --dont-log-app-name-and-version --exit-after-launch ${skipDomainReachabilityCheck}`, {env: process.env, stdio: 'pipe'})
         console.log('   ✨    ❨site.js❩ Pre-flight check successful.')
       } catch (error) {
         const stdout = error.stdout.toString()
