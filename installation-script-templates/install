@@ -41,9 +41,9 @@ alphaBinaryVersion=20200624183247
 alphaPackageVersion=13.0.2
 alphaSourceVersion=1ee924f
 
-betaBinaryVersion=20200703185033
-betaPackageVersion=14.0.0
-betaSourceVersion=d6f1a08
+betaBinaryVersion=20200710135219
+betaPackageVersion=14.1.1
+betaSourceVersion=afde7bd
 
 releaseBinaryVersion=20200707181615
 releasePackageVersion=14.1.0
