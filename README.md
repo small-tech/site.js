@@ -115,9 +115,7 @@ Servers deployed using release builds check for updates every six hours whereas 
 
 Any recent Linux distribution should work. However, Site.js is most thoroughly tested at Small Technology Foundation on Ubuntu 20.04/Pop!_OS 20.04 (development and staging) and Ubuntu 18.04 LTS (production).
 
-There are builds available for x64 and ARM.
-
-ARM builds currently only tested and supported on Raspberry Pi Zero W, 3B+, and 4B (armv6l and armv7l). If you are successfully running Site.js on other ARM architectures, please [let us know by opening an issue with the details](https://github.com/small-tech/site.js/issues) and we’ll update the documentation accordingly.
+There are builds available for x64, ARM, and ARM64.
 
 For production use, [systemd](https://en.wikipedia.org/wiki/Systemd) is required.
 
