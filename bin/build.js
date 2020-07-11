@@ -470,11 +470,11 @@ async function build () {
     // gzip directly as that does not maintain the executable flag on the binary.
     const zipFileName                = `${binaryVersion}.tar.gz`
     const mainSourceDirectory        = path.join(__dirname, '..')
-    const linuxX64WorkingDirectory   = path.join(mainSourceDirectory, linuxX64Directory)
-    const linuxArmWorkingDirectory   = path.join(mainSourceDirectory, linuxArmDirectory)
-    const linuxArm64WorkingDirectory = path.join(mainSourceDirectory, linuxArmDirectory)
-    const macOsWorkingDirectory      = path.join(mainSourceDirectory, macOsDirectory   )
-    const windowsWorkingDirectory    = path.join(mainSourceDirectory, windowsDirectory )
+    const linuxX64WorkingDirectory   = path.join(mainSourceDirectory, linuxX64Directory  )
+    const linuxArmWorkingDirectory   = path.join(mainSourceDirectory, linuxArmDirectory  )
+    const linuxArm64WorkingDirectory = path.join(mainSourceDirectory, linuxArm64Directory)
+    const macOsWorkingDirectory      = path.join(mainSourceDirectory, macOsDirectory     )
+    const windowsWorkingDirectory    = path.join(mainSourceDirectory, windowsDirectory   )
 
     childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: linuxX64WorkingDirectory})
     childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: linuxArmWorkingDirectory})
@@ -535,11 +535,11 @@ async function build () {
       const macOsVersionZipFilePath       = path.join(macOsWorkingDirectory,      zipFileName)
       const windowsVersionZipFilePath     = path.join(windowsWorkingDirectory,    zipFileName)
 
-      const websitePathForLinuxX64Version   = path.join(websitePathForBinaries, 'linux'    )
-      const websitePathForLinuxArmVersion   = path.join(websitePathForBinaries, 'linux-arm')
-      const websitePathForLinuxArm64Version = path.join(websitePathForBinaries, 'linux-arm')
-      const websitePathForMacVersion        = path.join(websitePathForBinaries, 'macos'    )
-      const websitePathForWindowsVersion    = path.join(websitePathForBinaries, 'windows'  )
+      const websitePathForLinuxX64Version   = path.join(websitePathForBinaries, 'linux'      )
+      const websitePathForLinuxArmVersion   = path.join(websitePathForBinaries, 'linux-arm'  )
+      const websitePathForLinuxArm64Version = path.join(websitePathForBinaries, 'linux-arm64')
+      const websitePathForMacVersion        = path.join(websitePathForBinaries, 'macos'      )
+      const websitePathForWindowsVersion    = path.join(websitePathForBinaries, 'windows'    )
 
       fs.ensureDirSync(websitePathForBinaries, {recursive: true})
       fs.ensureDirSync(websitePathForLinuxX64Version  )
@@ -548,11 +548,11 @@ async function build () {
       fs.ensureDirSync(websitePathForMacVersion       )
       fs.ensureDirSync(websitePathForWindowsVersion   )
 
-      fs.copyFileSync(linuxX64VersionZipFilePath,   path.join(websitePathForLinuxX64Version, zipFileName))
-      fs.copyFileSync(linuxArmVersionZipFilePath,   path.join(websitePathForLinuxArmVersion, zipFileName))
-      fs.copyFileSync(linuxArm64VersionZipFilePath, path.join(websitePathForLinuxArmVersion, zipFileName))
-      fs.copyFileSync(macOsVersionZipFilePath,      path.join(websitePathForMacVersion,      zipFileName))
-      fs.copyFileSync(windowsVersionZipFilePath,    path.join(websitePathForWindowsVersion,  zipFileName))
+      fs.copyFileSync(linuxX64VersionZipFilePath,   path.join(websitePathForLinuxX64Version,   zipFileName))
+      fs.copyFileSync(linuxArmVersionZipFilePath,   path.join(websitePathForLinuxArmVersion,   zipFileName))
+      fs.copyFileSync(linuxArm64VersionZipFilePath, path.join(websitePathForLinuxArm64Version, zipFileName))
+      fs.copyFileSync(macOsVersionZipFilePath,      path.join(websitePathForMacVersion,        zipFileName))
+      fs.copyFileSync(windowsVersionZipFilePath,    path.join(websitePathForWindowsVersion,    zipFileName))
 
       // Write out a dynamic route on the SiteJS.org web site to return the binary version. This endpoint is used by
       // the auto-update feature to decide whether the binary should be updated.
