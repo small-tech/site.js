@@ -456,6 +456,14 @@ sudo ln -s "$NVM_DIR/versions/node/v12.16.2/bin/node" "/usr/local/bin/node"
 sudo ln -s "$NVM_DIR/versions/node/v12.16.2/bin/npm" "/usr/local/bin/npm"
 ```
 
+If you forget to do this and run `site enable`, you will find the following error in the systemctl logs: `/etc/systemd/system/site.js.service:15: Executable "node" not found in path`. The command itself will fail with:
+
+```
+Error: Command failed: sudo systemctl start site.js
+Failed to start site.js.service: Unit site.js.service has a bad unit file setting.
+See system logs and 'systemctl status site.js.service' for details.
+```
+
 ### Native binaries
 
 After you install the source and run tests:
