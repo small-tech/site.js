@@ -720,8 +720,8 @@ test('[commands] logs', async t => {
 
   t.plan(5)
 
-  const optionsWithOneSecondTimeout = options(1000)
-  childProcess.exec(_('logs'), optionsWithOneSecondTimeout, (error, stdout, stderr) => {
+  const optionsWithThreeSecondTimeout = options(3000)
+  childProcess.exec(_('logs'), optionsWithThreeSecondTimeout, (error, stdout, stderr) => {
 
     // This will end with an error due to the timeout. Ensure that the error is the one we expect.
     t.true(error, 'process termination is as expected')
