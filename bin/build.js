@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
 //
-// Builds Linux x86 & ARM, macOS, and Windows 10 binaries of Site.js.
+// Builds Linux x86/ARM/ARM64, macOS, and Windows 10 binaries of Site.js.
 //
 // Run with: npm run build
 //       or: npm run deploy
 //
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////s
 
 const fs              = require('fs-extra')
 const path            = require('path')
@@ -30,8 +30,8 @@ if (commandLineOptions._.length !== 0 || commandLineOptions.h || commandLineOpti
 }
 
 // Check for supported CPU architectures (currently only x86 and ARM)
-if (cpuArchitecture !== 'x64' && cpuArchitecture !== 'arm') {
-  console.log(`❌ Error: The build script is currently only supported on x64 and ARM architectures.\n`)
+if (cpuArchitecture !== 'x64' && cpuArchitecture !== 'arm' && cpuArchitecture !== 'arm64') {
+  console.log(`❌ Error: The build script is currently only supported on x64, ARM, and ARM64 architectures.\n`)
   process.exit(1)
 }
 
@@ -105,21 +105,24 @@ const manifest = {
 }
 
 const releaseChannelDirectory = path.join('dist', releaseChannel)
-const linuxX64Directory       = path.join(releaseChannelDirectory, 'linux',     binaryVersion)
-const linuxArmDirectory       = path.join(releaseChannelDirectory, 'linux-arm', binaryVersion)
-const macOsDirectory          = path.join(releaseChannelDirectory, 'macos',     binaryVersion)
-const windowsDirectory        = path.join(releaseChannelDirectory, 'windows',   binaryVersion)
+const linuxX64Directory       = path.join(releaseChannelDirectory, 'linux',       binaryVersion)
+const linuxArmDirectory       = path.join(releaseChannelDirectory, 'linux-arm',   binaryVersion)
+const linuxArm64Directory     = path.join(releaseChannelDirectory, 'linux-arm64', binaryVersion)
+const macOsDirectory          = path.join(releaseChannelDirectory, 'macos',       binaryVersion)
+const windowsDirectory        = path.join(releaseChannelDirectory, 'windows',     binaryVersion)
 
 fs.ensureDirSync(releaseChannelDirectory)
-fs.ensureDirSync(linuxX64Directory   )
-fs.ensureDirSync(linuxArmDirectory   )
-fs.ensureDirSync(macOsDirectory      )
-fs.ensureDirSync(windowsDirectory    )
+fs.ensureDirSync(linuxX64Directory      )
+fs.ensureDirSync(linuxArmDirectory      )
+fs.ensureDirSync(linuxArm64Directory    )
+fs.ensureDirSync(macOsDirectory         )
+fs.ensureDirSync(windowsDirectory       )
 
-const linuxX64BinaryPath = path.join(linuxX64Directory, binaryName       )
-const linuxArmBinaryPath = path.join(linuxArmDirectory, binaryName       )
-const macOsBinaryPath    = path.join(macOsDirectory,    binaryName       )
-const windowsBinaryPath  = path.join(windowsDirectory,  windowsBinaryName)
+const linuxX64BinaryPath   = path.join(linuxX64Directory,   binaryName       )
+const linuxArmBinaryPath   = path.join(linuxArmDirectory,   binaryName       )
+const linuxArm64BinaryPath = path.join(linuxArm64Directory, binaryName       )
+const macOsBinaryPath      = path.join(macOsDirectory,      binaryName       )
+const windowsBinaryPath    = path.join(windowsDirectory,    windowsBinaryName)
 
 const binaryPaths = {
   // Note: We have a special check for Linux on ARM, later.
@@ -134,21 +137,24 @@ const binaryPaths = {
 //       downloaded from our own remote repository, not from the official Nexe releases
 //       (so we can include platforms – like ARM – that aren’t covered yet by the
 //       official releases).
-const remote  = 'https://sitejs.org/nexe/'
-const linuxX64Target = `linux-x64-${nodeVersion}`
-const linuxArmTarget = `linux-arm-${nodeVersion}`
-const macOsTarget    = `mac-x64-${nodeVersion}`
-const windowsTarget  = `windows-x64-${nodeVersion}`
+const remote           = 'https://sitejs.org/nexe/'
+const linuxX64Target   = `linux-x64-${nodeVersion}`
+const linuxArmTarget   = `linux-arm-${nodeVersion}`
+const linuxArm64Target = `linux-arm64-${nodeVersion}`
+const macOsTarget      = `mac-x64-${nodeVersion}`
+const windowsTarget    = `windows-x64-${nodeVersion}`
 
 // Only build for the current platform unless a deployment build is requested via --deploy.
 const platform = os.platform()
-const buildLinuxX64Version = commandLineOptions.deploy || commandLineOptions.all || (platform === 'linux' && cpuArchitecture === 'x64')
-const buildLinuxArmVersion = commandLineOptions.deploy || commandLineOptions.all || (platform === 'linux' && cpuArchitecture === 'arm')
-const buildMacVersion = commandLineOptions.deploy || commandLineOptions.all || (platform === 'darwin')
-const buildWindowsVersion = commandLineOptions.deploy || commandLineOptions.all || (platform === 'win32')
+const buildLinuxX64Version   = commandLineOptions.deploy || commandLineOptions.all || (platform === 'linux' && cpuArchitecture === 'x64')
+const buildLinuxArmVersion   = commandLineOptions.deploy || commandLineOptions.all || (platform === 'linux' && cpuArchitecture === 'arm')
+const buildLinuxArm64Version = commandLineOptions.deploy || commandLineOptions.all || (platform === 'linux' && cpuArchitecture === 'arm64')
+const buildMacVersion        = commandLineOptions.deploy || commandLineOptions.all || (platform === 'darwin')
+const buildWindowsVersion    = commandLineOptions.deploy || commandLineOptions.all || (platform === 'win32')
 
 let currentPlatformBinaryPath = binaryPaths[['linux', 'darwin', 'win32'].find(_ => _ === platform)]
-if (platform === 'linux' && cpuArchitecture === 'arm') { currentPlatformBinaryPath = linuxArmBinaryPath }
+if (platform === 'linux' && cpuArchitecture === 'arm'  ) { currentPlatformBinaryPath = linuxArmBinaryPath   }
+if (platform === 'linux' && cpuArchitecture === 'arm64') { currentPlatformBinaryPath = linuxArm64BinaryPath }
 
 //
 // Resources
@@ -279,8 +285,8 @@ async function build () {
   }
 
   function stripForPlatform  (platform) {
-    removeAllMkcertPlatforms (platform)
-    removeAllHugoPlatforms   (platform)
+    removeAllMkcertPlatforms ()
+    removeAllHugoPlatforms   ()
     restoreMkcertBinary      (platform)
     restoreHugoBinary        (platform)
   }
@@ -331,6 +337,26 @@ async function build () {
       remote,
       output    : linuxArmBinaryPath,
       target    : linuxArmTarget,
+      resources,
+    })
+
+    unstrip()
+
+    console.log('     Done ✔\n')
+  }
+
+  if (buildLinuxArm64Version) {
+    console.log('   • Building Linux version (ARM64)…')
+
+    writeManifestForPlatformAndArchitecture('linux', 'arm64')
+
+    stripForPlatform('linux-arm')
+
+    await compile({
+      input,
+      remote,
+      output    : linuxArm64BinaryPath,
+      target    : linuxArm64Target,
       resources,
     })
 

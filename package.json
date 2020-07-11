@@ -53,9 +53,9 @@
   "dependencies": {
     "@small-tech/cross-platform-hostname": "^1.0.0",
     "@small-tech/express-ws": "^1.0.0",
-    "@small-tech/https": "^1.5.1",
+    "@small-tech/https": "^1.6.0",
     "@small-tech/instant": "^1.1.0",
-    "@small-tech/node-hugo": "^1.4.1",
+    "@small-tech/node-hugo": "^1.5.0",
     "@small-tech/web-routes-from-files": "^2.0.0",
     "ansi-escape-sequences": "^4.1.0",
     "bent": "^7.3.4",
