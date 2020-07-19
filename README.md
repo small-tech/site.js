@@ -37,7 +37,7 @@ We exist in part thanks to patronage by people like you. If you share [our visio
 
   - __Includes [Hugo static site generator](#static-site-generation).__
 
-  - __[Sync](https://github.com/small-tech/site.js#sync) to deploy__ (uses rsync for quick deployments). Can also [Live Sync](https://github.com/small-tech/site.js#live-sync) for live blogging, etc.
+  - __[Sync](#sync) to deploy__ (uses rsync for quick deployments). Can also [Live Sync](#live-sync) for live blogging, etc.
 
   - __Has privacy-respecting [ephemeral statics](#ephemeral-statistics)__. Gives you insight into how your site is being used, not into the people using it.
 
