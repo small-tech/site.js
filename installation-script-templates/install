@@ -37,9 +37,9 @@ if [[ "$releaseChannel" == "" ]]; then
   releaseChannel='release'
 fi
 
-alphaBinaryVersion=20200624183247
-alphaPackageVersion=13.0.2
-alphaSourceVersion=1ee924f
+alphaBinaryVersion=20200711213202
+alphaPackageVersion=14.2.0
+alphaSourceVersion=e6b5412
 
 betaBinaryVersion=20200710135219
 betaPackageVersion=14.1.1
@@ -105,6 +105,9 @@ if [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux-gnueabihf" ]]; then
   elif [[ "$cpuArchitecture" == "armv7l" || "$cpuArchitecture" == "armv6l" ]]; then
     # Linux on ARM. Tested on Raspberry Pi Zero W (armv6l), 3B+ and 4B (both reporting armv7l).
     wget -q "https://sitejs.org/binaries/${releaseChannel}/linux-arm/${binaryVersion}.tar.gz"
+  elif [[ "$cpuArchitecture" == "aarch64" ]]; then
+    # Linux on ARM64. Tested with Pinebook Pro.
+    wget -q "https://sitejs.org/binaries/${releaseChannel}/linux-arm64/${binaryVersion}.tar.gz"
   else
     # Error: unsupported architecture.
     echo

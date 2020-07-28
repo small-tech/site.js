@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
 //
-// Builds Linux x86 & ARM, macOS, and Windows 10 binaries of Site.js.
+// Builds Linux x86/ARM/ARM64, macOS, and Windows 10 binaries of Site.js.
 //
 // Run with: npm run build
 //       or: npm run deploy
 //
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
 
 const fs              = require('fs-extra')
 const path            = require('path')
@@ -30,8 +30,8 @@ if (commandLineOptions._.length !== 0 || commandLineOptions.h || commandLineOpti
 }
 
 // Check for supported CPU architectures (currently only x86 and ARM)
-if (cpuArchitecture !== 'x64' && cpuArchitecture !== 'arm') {
-  console.log(`❌ Error: The build script is currently only supported on x64 and ARM architectures.\n`)
+if (cpuArchitecture !== 'x64' && cpuArchitecture !== 'arm' && cpuArchitecture !== 'arm64') {
+  console.log(`❌ Error: The build script is currently only supported on x64, ARM, and ARM64 architectures.\n`)
   process.exit(1)
 }
 
@@ -105,21 +105,24 @@ const manifest = {
 }
 
 const releaseChannelDirectory = path.join('dist', releaseChannel)
-const linuxX64Directory       = path.join(releaseChannelDirectory, 'linux',     binaryVersion)
-const linuxArmDirectory       = path.join(releaseChannelDirectory, 'linux-arm', binaryVersion)
-const macOsDirectory          = path.join(releaseChannelDirectory, 'macos',     binaryVersion)
-const windowsDirectory        = path.join(releaseChannelDirectory, 'windows',   binaryVersion)
+const linuxX64Directory       = path.join(releaseChannelDirectory, 'linux',       binaryVersion)
+const linuxArmDirectory       = path.join(releaseChannelDirectory, 'linux-arm',   binaryVersion)
+const linuxArm64Directory     = path.join(releaseChannelDirectory, 'linux-arm64', binaryVersion)
+const macOsDirectory          = path.join(releaseChannelDirectory, 'macos',       binaryVersion)
+const windowsDirectory        = path.join(releaseChannelDirectory, 'windows',     binaryVersion)
 
 fs.ensureDirSync(releaseChannelDirectory)
-fs.ensureDirSync(linuxX64Directory   )
-fs.ensureDirSync(linuxArmDirectory   )
-fs.ensureDirSync(macOsDirectory      )
-fs.ensureDirSync(windowsDirectory    )
+fs.ensureDirSync(linuxX64Directory      )
+fs.ensureDirSync(linuxArmDirectory      )
+fs.ensureDirSync(linuxArm64Directory    )
+fs.ensureDirSync(macOsDirectory         )
+fs.ensureDirSync(windowsDirectory       )
 
-const linuxX64BinaryPath = path.join(linuxX64Directory, binaryName       )
-const linuxArmBinaryPath = path.join(linuxArmDirectory, binaryName       )
-const macOsBinaryPath    = path.join(macOsDirectory,    binaryName       )
-const windowsBinaryPath  = path.join(windowsDirectory,  windowsBinaryName)
+const linuxX64BinaryPath   = path.join(linuxX64Directory,   binaryName       )
+const linuxArmBinaryPath   = path.join(linuxArmDirectory,   binaryName       )
+const linuxArm64BinaryPath = path.join(linuxArm64Directory, binaryName       )
+const macOsBinaryPath      = path.join(macOsDirectory,      binaryName       )
+const windowsBinaryPath    = path.join(windowsDirectory,    windowsBinaryName)
 
 const binaryPaths = {
   // Note: We have a special check for Linux on ARM, later.
@@ -134,21 +137,24 @@ const binaryPaths = {
 //       downloaded from our own remote repository, not from the official Nexe releases
 //       (so we can include platforms – like ARM – that aren’t covered yet by the
 //       official releases).
-const remote  = 'https://sitejs.org/nexe/'
-const linuxX64Target = `linux-x64-${nodeVersion}`
-const linuxArmTarget = `linux-arm-${nodeVersion}`
-const macOsTarget    = `mac-x64-${nodeVersion}`
-const windowsTarget  = `windows-x64-${nodeVersion}`
+const remote           = 'https://sitejs.org/nexe/'
+const linuxX64Target   = `linux-x64-${nodeVersion}`
+const linuxArmTarget   = `linux-arm-${nodeVersion}`
+const linuxArm64Target = `linux-arm64-${nodeVersion}`
+const macOsTarget      = `mac-x64-${nodeVersion}`
+const windowsTarget    = `windows-x64-${nodeVersion}`
 
 // Only build for the current platform unless a deployment build is requested via --deploy.
 const platform = os.platform()
-const buildLinuxX64Version = commandLineOptions.deploy || commandLineOptions.all || (platform === 'linux' && cpuArchitecture === 'x64')
-const buildLinuxArmVersion = commandLineOptions.deploy || commandLineOptions.all || (platform === 'linux' && cpuArchitecture === 'arm')
-const buildMacVersion = commandLineOptions.deploy || commandLineOptions.all || (platform === 'darwin')
-const buildWindowsVersion = commandLineOptions.deploy || commandLineOptions.all || (platform === 'win32')
+const buildLinuxX64Version   = commandLineOptions.deploy || commandLineOptions.all || (platform === 'linux' && cpuArchitecture === 'x64')
+const buildLinuxArmVersion   = commandLineOptions.deploy || commandLineOptions.all || (platform === 'linux' && cpuArchitecture === 'arm')
+const buildLinuxArm64Version = commandLineOptions.deploy || commandLineOptions.all || (platform === 'linux' && cpuArchitecture === 'arm64')
+const buildMacVersion        = commandLineOptions.deploy || commandLineOptions.all || (platform === 'darwin')
+const buildWindowsVersion    = commandLineOptions.deploy || commandLineOptions.all || (platform === 'win32')
 
 let currentPlatformBinaryPath = binaryPaths[['linux', 'darwin', 'win32'].find(_ => _ === platform)]
-if (platform === 'linux' && cpuArchitecture === 'arm') { currentPlatformBinaryPath = linuxArmBinaryPath }
+if (platform === 'linux' && cpuArchitecture === 'arm'  ) { currentPlatformBinaryPath = linuxArmBinaryPath   }
+if (platform === 'linux' && cpuArchitecture === 'arm64') { currentPlatformBinaryPath = linuxArm64BinaryPath }
 
 //
 // Resources
@@ -279,8 +285,8 @@ async function build () {
   }
 
   function stripForPlatform  (platform) {
-    removeAllMkcertPlatforms (platform)
-    removeAllHugoPlatforms   (platform)
+    removeAllMkcertPlatforms ()
+    removeAllHugoPlatforms   ()
     restoreMkcertBinary      (platform)
     restoreHugoBinary        (platform)
   }
@@ -331,6 +337,26 @@ async function build () {
       remote,
       output    : linuxArmBinaryPath,
       target    : linuxArmTarget,
+      resources,
+    })
+
+    unstrip()
+
+    console.log('     Done ✔\n')
+  }
+
+  if (buildLinuxArm64Version) {
+    console.log('   • Building Linux version (ARM64)…')
+
+    writeManifestForPlatformAndArchitecture('linux', 'arm64')
+
+    stripForPlatform('linux-arm')
+
+    await compile({
+      input,
+      remote,
+      output    : linuxArm64BinaryPath,
+      target    : linuxArm64Target,
       resources,
     })
 
@@ -442,15 +468,17 @@ async function build () {
     // We use tar and gzip here instead of zip as unzip is not a standard
     // part of Linux distributions whereas tar and gzip are. We do not use
     // gzip directly as that does not maintain the executable flag on the binary.
-    const zipFileName              = `${binaryVersion}.tar.gz`
-    const mainSourceDirectory      = path.join(__dirname, '..')
-    const linuxX64WorkingDirectory = path.join(mainSourceDirectory, linuxX64Directory)
-    const linuxArmWorkingDirectory = path.join(mainSourceDirectory, linuxArmDirectory)
-    const macOsWorkingDirectory    = path.join(mainSourceDirectory, macOsDirectory   )
-    const windowsWorkingDirectory  = path.join(mainSourceDirectory, windowsDirectory )
+    const zipFileName                = `${binaryVersion}.tar.gz`
+    const mainSourceDirectory        = path.join(__dirname, '..')
+    const linuxX64WorkingDirectory   = path.join(mainSourceDirectory, linuxX64Directory  )
+    const linuxArmWorkingDirectory   = path.join(mainSourceDirectory, linuxArmDirectory  )
+    const linuxArm64WorkingDirectory = path.join(mainSourceDirectory, linuxArm64Directory)
+    const macOsWorkingDirectory      = path.join(mainSourceDirectory, macOsDirectory     )
+    const windowsWorkingDirectory    = path.join(mainSourceDirectory, windowsDirectory   )
 
     childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: linuxX64WorkingDirectory})
     childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: linuxArmWorkingDirectory})
+    childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: linuxArm64WorkingDirectory})
     childProcess.execSync(`tar -cvzf ${zipFileName} ${binaryName}`, {env: process.env, cwd: macOsWorkingDirectory   })
     childProcess.execSync(`tar -cvzf ${zipFileName} ${windowsBinaryName}`, {env: process.env, cwd: windowsWorkingDirectory})
 
@@ -501,26 +529,30 @@ async function build () {
     if (fs.existsSync(websitePath)) {
       console.log('   • Copying release binaries to the Site.js web site…')
 
-      const linuxX64VersionZipFilePath    = path.join(linuxX64WorkingDirectory, zipFileName)
-      const linuxArmVersionZipFilePath    = path.join(linuxArmWorkingDirectory, zipFileName)
-      const macOsVersionZipFilePath       = path.join(macOsWorkingDirectory,    zipFileName)
-      const windowsVersionZipFilePath     = path.join(windowsWorkingDirectory,  zipFileName)
+      const linuxX64VersionZipFilePath    = path.join(linuxX64WorkingDirectory,   zipFileName)
+      const linuxArmVersionZipFilePath    = path.join(linuxArmWorkingDirectory,   zipFileName)
+      const linuxArm64VersionZipFilePath  = path.join(linuxArm64WorkingDirectory, zipFileName)
+      const macOsVersionZipFilePath       = path.join(macOsWorkingDirectory,      zipFileName)
+      const windowsVersionZipFilePath     = path.join(windowsWorkingDirectory,    zipFileName)
 
-      const websitePathForLinuxX64Version = path.join(websitePathForBinaries, 'linux'    )
-      const websitePathForLinuxArmVersion = path.join(websitePathForBinaries, 'linux-arm')
-      const websitePathForMacVersion      = path.join(websitePathForBinaries, 'macos'    )
-      const websitePathForWindowsVersion  = path.join(websitePathForBinaries, 'windows'  )
+      const websitePathForLinuxX64Version   = path.join(websitePathForBinaries, 'linux'      )
+      const websitePathForLinuxArmVersion   = path.join(websitePathForBinaries, 'linux-arm'  )
+      const websitePathForLinuxArm64Version = path.join(websitePathForBinaries, 'linux-arm64')
+      const websitePathForMacVersion        = path.join(websitePathForBinaries, 'macos'      )
+      const websitePathForWindowsVersion    = path.join(websitePathForBinaries, 'windows'    )
 
       fs.ensureDirSync(websitePathForBinaries, {recursive: true})
-      fs.ensureDirSync(websitePathForLinuxX64Version)
-      fs.ensureDirSync(websitePathForLinuxArmVersion)
-      fs.ensureDirSync(websitePathForMacVersion     )
-      fs.ensureDirSync(websitePathForWindowsVersion )
+      fs.ensureDirSync(websitePathForLinuxX64Version  )
+      fs.ensureDirSync(websitePathForLinuxArmVersion  )
+      fs.ensureDirSync(websitePathForLinuxArm64Version)
+      fs.ensureDirSync(websitePathForMacVersion       )
+      fs.ensureDirSync(websitePathForWindowsVersion   )
 
-      fs.copyFileSync(linuxX64VersionZipFilePath, path.join(websitePathForLinuxX64Version, zipFileName))
-      fs.copyFileSync(linuxArmVersionZipFilePath, path.join(websitePathForLinuxArmVersion, zipFileName))
-      fs.copyFileSync(macOsVersionZipFilePath,    path.join(websitePathForMacVersion,      zipFileName))
-      fs.copyFileSync(windowsVersionZipFilePath,  path.join(websitePathForWindowsVersion,  zipFileName))
+      fs.copyFileSync(linuxX64VersionZipFilePath,   path.join(websitePathForLinuxX64Version,   zipFileName))
+      fs.copyFileSync(linuxArmVersionZipFilePath,   path.join(websitePathForLinuxArmVersion,   zipFileName))
+      fs.copyFileSync(linuxArm64VersionZipFilePath, path.join(websitePathForLinuxArm64Version, zipFileName))
+      fs.copyFileSync(macOsVersionZipFilePath,      path.join(websitePathForMacVersion,        zipFileName))
+      fs.copyFileSync(windowsVersionZipFilePath,    path.join(websitePathForWindowsVersion,    zipFileName))
 
       // Write out a dynamic route on the SiteJS.org web site to return the binary version. This endpoint is used by
       // the auto-update feature to decide whether the binary should be updated.
