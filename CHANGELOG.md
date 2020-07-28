@@ -4,11 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [14.2.0] - in progress
+## [14.2.0] - 2020-07-28
 
 ### Added
 
-  - ARM64 support on Linux. Among other things, this means that Site.js now runs on the Pinebook Pro and PinePhone. (Note that localhost servers are not supported on PinePhone at this time as a build of certutil does not exist in the packate manager for UBPorts.)
+  - ARM64 support on Linux. Among other things, this means that Site.js now runs on the Pinebook Pro and PinePhone. (Note that localhost servers are not supported on PinePhone at this time as a build of certutil/NSS does not exist in the package manager for UBPorts.)
 
 ## [14.1.1] - 2020-07-10
 
