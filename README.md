@@ -138,14 +138,16 @@ _Production use is not possible under Windows._
 Site.js tries to seamlessly install the dependencies it needs when run. That said, there are certain basic components it expects on a Linux-like system. These are:
 
   - `sudo`
-  - `libcap2-bin` (we use `setcap` to escalate privileges on the binary as necessary)
-  - `bash` (on Linux, macOS, etc.)
-
-__For production use, passwordless sudo is required.__ On systems where the sudo configuration directory is set to `/etc/sudoers.d`, Site.js will automatically install this rule. On other systems, you might have to [set it up yourself](https://serverfault.com/questions/160581/how-to-setup-passwordless-sudo-on-linux).
+  - `bash` (on Linux, macOS, etc.) or `PowerShell` running under [Windows Terminal](https://github.com/Microsoft/Terminal) (on Windows 10).
+  - `wget` or `curl` (on Linux and macOS) us required to download the installation script when installing Site.js using the one-line installation command. On Linux, you can install either via your distribution’s package manager (e.g., `sudo apt install wget` on Ubuntu-like systems). macOS comes with curl installed.
 
 If it turns out that any of these prerequisites are a widespread cause of first-run woe, we can look into having them installed automatically in the future. Please [open an issue](https://github.com/small-tech/site.js/issues) if any of these affects you during your deployments or in everyday use.
 
-To install Site.js using the one-line installation command on Linux and macOS, you will need `wget` (or `curl`) installed to download the installation script. On Linux, you can install either via your distribution’s package manager (e.g., `sudo apt install wget` on Ubuntu-like systems). macOS comes with curl installed.
+### Automatically-installed dependencies
+
+__For production use, passwordless sudo is required.__ On systems where the sudo configuration directory is set to `/etc/sudoers.d`, Site.js will automatically install this rule. On other systems, you might have to [set it up yourself](https://serverfault.com/questions/160581/how-to-setup-passwordless-sudo-on-linux).
+
+__For localhost servers__, the bundled [mkcert](https://github.com/FiloSottile/mkcert) requires [certutil](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/tools/NSS_Tools_certutil) and the [Network Security Services](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS) (NSS) dynamic libraries. Site.js will attempt to automatically install the required libraries using popular package managers. Please note that this will fail on PinePhones running UBPorts as NSS is missing from the apt package manager for that distribution.
 
 ## Update (as of version 12.9.5; properly functioning as of version 12.9.6)
 

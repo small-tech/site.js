@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-  - ARM64 support on Linux. Among other things, this means that Site.js now runs on the Pinebook Pro and PinePhone.
+  - ARM64 support on Linux. Among other things, this means that Site.js now runs on the Pinebook Pro and PinePhone. (Note that localhost servers are not supported on PinePhone at this time as a build of certutil does not exist in the packate manager for UBPorts.)
 
 ## [14.1.1] - 2020-07-10
 
