@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - `push` command (#221) TODO
   - `pull` command (#222) TODO
+  - Support for sync on Windows 10 (#224) TODO
 
 ### Fixed
 
