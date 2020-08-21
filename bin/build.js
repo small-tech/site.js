@@ -179,7 +179,11 @@ const resources = [
 
   // Not sure if this is a different regression in Nexe 4’s resolve dependencies.
   // Afaik, it was being included correctly before.
-  'node_modules/@small-tech/instant/client/bundle.js'
+  'node_modules/@small-tech/instant/client/bundle.js',
+
+  // For sync support on Windows, include our own portable bundle of rsync and ssh running
+  // under cygwin.
+  'node_modules/@small-tech/portable-rsync-with-ssh-for-windows/**/*'
 ]
 
 const input = 'bin/site.js'
