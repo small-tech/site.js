@@ -181,7 +181,7 @@ class Ensure {
           const fileBuffer = fs.readFileSync(path.join(internalBinDirectory, fileToCopy), 'binary')
           fs.writeFileSync(path.join(externalBinDirectory, fileToCopy), fileBuffer, {encoding: 'binary', mode: 0o755})
         } catch (error) {
-          throw new Error(` 🤯 [portable-rsync-with-ssh-for-windows] Panic: Could not copy bin file to external directory: ${error.message}`)
+          throw new Error(`   ❌    ❨site.js❩ Panic: Could not copy bin file to external directory: ${error.message}`)
         }
       })
       
@@ -190,7 +190,7 @@ class Ensure {
           const fileBuffer = fs.readFileSync(path.join(internalEtcDirectory, fileToCopy), 'binary')
           fs.writeFileSync(path.join(externalEtcDirectory, fileToCopy), fileBuffer, {encoding: 'binary', mode: 0o755})
         } catch (error) {
-          throw new Error(` 🤯 [portable-rsync-with-ssh-for-windows] Panic: Could not copy etc file to external directory: ${error.message}`)
+          throw new Error(`   ❌    ❨site.js❩ Panic: Could not copy etc file to external directory: ${error.message}`)
         }
       })
 
