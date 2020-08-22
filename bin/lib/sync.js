@@ -123,6 +123,27 @@ function sync (options) {
     }
   }
 
+  // Add Windows support if necessary.
+  if (process.platform === 'win32') {
+    console.log('   ✨    ❨site.js❩ Configuring sync to use our bundled rsync and ssh on Windows.')
+
+    //
+    // First off, our bundled ssh that runs under a cygwin emulation layer will choke if the ssh key
+    // on Windows has Windows line endings (CRLF). So, if a key file exists using Small Web conventions
+    // for this project (e.g., id-me.small-web.org if the project folder is me.small-web.org/) or for
+    // popular default keys (id_rsa and id_rsa.pub), we read the key in and write it out again as Node
+    // always writes Linux-style line endings (LF). The OpenSSH that ships with Windows 10 can handle
+    // key files with LF line endings so this should not break anything.
+    //
+    // Ah, Windows...
+    //
+    console.log('FROM: ', rsyncOptions.from)
+    process.exit()
+
+    // const _ = rsyncOptions.rsyncOptions
+    // _.
+  }
+
   // Create the rsync watcher.
   new RsyncWatcher(rsyncOptions)
 

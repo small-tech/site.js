@@ -7,6 +7,7 @@
 
 const childProcess = require('child_process')
 const os = require('os')
+const fs = require('fs-extra')
 const path = require('path')
 
 const Site = require('../../index')
@@ -140,9 +141,17 @@ class Ensure {
   // (This will install it automatically if a supported package manager exists.)
   rsyncExists() {
 
-    const ryncOnWindowsPath = path.join(os.homedir(), '.small-tech.org', 'site.js', 'portable-rsync-with-ssh-for-windows')
+    const rsyncOnWindowsPath = path.join(os.homedir(), '.small-tech.org', 'site.js', 'portable-rsync-with-ssh-for-windows')
 
-    if (this.commandExists('rsync') || fs.existsSync(rsyncOnWindowsPath)) return // Already installed
+    console.log('>>>>', fs.existsSync(rsyncOnWindowsPath))
+
+    if (os.platform() === 'win32') {
+      if (fs.existsSync(rsyncOnWindowsPath)) return // Already installed.
+    } else {
+      if (this.commandExists('rsync')) return // Already installed. 
+    }
+
+    console.log('moo')
 
     if (os.platform() === 'darwin') {
       console.log('\n   ⚠️    ❨site.js❩ macOS: rsync should be installed default but isn’t. Please fix this before trying again.\n')
@@ -162,14 +171,15 @@ class Ensure {
       //
       console.log('   🌠    ❨site.js❩ Unbundling cygwin emulated rsync and ssh for Windows…')
 
-      const internalRsyncBundleDirectory = path.join(__dirname, 'node_modules', '@small-tech', 'portable-rsync-with-ssh-for-windows')
+      const appRootDirectory = path.join(__dirname, '..', '..')
+      const internalRsyncBundleDirectory = path.join(appRootDirectory, 'node_modules', '@small-tech', 'portable-rsync-with-ssh-for-windows')
       const internalBinDirectory = path.join(internalRsyncBundleDirectory, 'bin')
       const internalEtcDirectory = path.join(internalRsyncBundleDirectory, 'etc')
       
       const binFiles = fs.readdirSync(internalBinDirectory)
       const etcFiles = fs.readdirSync(internalEtcDirectory)
             
-      const externalRsyncBundleDirectory = ryncOnWindowsPath
+      const externalRsyncBundleDirectory = rsyncOnWindowsPath
       const externalBinDirectory = path.join(externalRsyncBundleDirectory, 'bin')
       const externalEtcDirectory = path.join(externalRsyncBundleDirectory, 'etc')
       
