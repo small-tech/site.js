@@ -154,10 +154,10 @@ function sync (options) {
     // Resolve the from path so it is correclty handled under Windows.
     rsyncOptions.sync.from = path.resolve(rsyncOptions.sync.from)
 
+    // Add back the final slashes removed by path.resolve so that the directory's contents
+    // are synced not the directory itself.
     if (!rsyncOptions.sync.from.endsWith('\\\\')) {
-      console.log('WINDOWS: ADDING FILE SLASHES')
       rsyncOptions.sync.from = `${rsyncOptions.sync.from}\\\\`
-      console.log('>>>>>>>>>>>>>', rsyncOptions.sync.from )
     }
 
     // Configure the rsync library to use our bundled rsync executable instead of the system one.
@@ -211,8 +211,6 @@ function sync (options) {
       rsyncOptions.sync.rsyncOptions.rsh = sshExecutable
     }
   }
-
-  console.log('Rsync options', rsyncOptions)
 
   // Create the rsync watcher.
   new RsyncWatcher(rsyncOptions)
