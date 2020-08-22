@@ -143,15 +143,13 @@ class Ensure {
 
     const rsyncOnWindowsPath = path.join(os.homedir(), '.small-tech.org', 'site.js', 'portable-rsync-with-ssh-for-windows')
 
-    console.log('>>>>', fs.existsSync(rsyncOnWindowsPath))
+    console.log('Windows rsync and ssh (bundled) path exists >>>>', fs.existsSync(rsyncOnWindowsPath))
 
     if (os.platform() === 'win32') {
       if (fs.existsSync(rsyncOnWindowsPath)) return // Already installed.
     } else {
       if (this.commandExists('rsync')) return // Already installed. 
     }
-
-    console.log('moo')
 
     if (os.platform() === 'darwin') {
       console.log('\n   ⚠️    ❨site.js❩ macOS: rsync should be installed default but isn’t. Please fix this before trying again.\n')
