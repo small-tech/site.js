@@ -143,8 +143,6 @@ class Ensure {
 
     const rsyncOnWindowsPath = path.join(os.homedir(), '.small-tech.org', 'site.js', 'portable-rsync-with-ssh-for-windows')
 
-    console.log('Windows rsync and ssh (bundled) path exists >>>>', fs.existsSync(rsyncOnWindowsPath))
-
     if (os.platform() === 'win32') {
       if (fs.existsSync(rsyncOnWindowsPath)) return // Already installed.
     } else {
