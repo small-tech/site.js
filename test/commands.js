@@ -126,7 +126,7 @@ function _(commandPartial) {
   return `node ${path.join('bin', 'site.js')} ${commandPartial}`
 }
 
-test('[bin/commands] version', t => {
+test('[commands] version', t => {
   t.plan(7)
 
   const command = _('version')
@@ -143,7 +143,7 @@ test('[bin/commands] version', t => {
 })
 
 
-test('[bin/commands] systemd startup daemon', t => {
+test('[commands] systemd startup daemon', t => {
 
   //
   // Commands used in the tests.

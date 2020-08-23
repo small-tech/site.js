@@ -20,7 +20,7 @@ class Ensure {
   // Does the passed command exist? Returns: bool.
   commandExists (command) {
     try {
-      const commandToUse = (process.platform === 'win32') ? 'where.exe' : 'which'
+      const commandToUse = (process.platform === 'win32') ? 'where.exe /Q' : 'which'
       childProcess.execFileSync(commandToUse, [command], {env: process.env})
       return true
     } catch (error) {
