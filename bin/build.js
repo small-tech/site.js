@@ -180,10 +180,6 @@ const resources = [
   // Not sure if this is a different regression in Nexe 4’s resolve dependencies.
   // Afaik, it was being included correctly before.
   'node_modules/@small-tech/instant/client/bundle.js',
-
-  // For sync support on Windows, include our own portable bundle of rsync and ssh running
-  // under cygwin.
-  'node_modules/@small-tech/portable-rsync-with-ssh-for-windows/**/*'
 ]
 
 const input = 'bin/site.js'
@@ -392,6 +388,11 @@ async function build () {
   if (buildWindowsVersion) {
     console.log('   • Building Windows version…')
 
+    // For sync support on Windows, include our own portable bundle of rsync and ssh running under cygwin.
+    // We don’t need this included for any other platform.
+    const windowsResources = resources.slice(0) // make a copy of the resources array
+    windowsResources.push('node_modules/@small-tech/portable-rsync-with-ssh-for-windows/**/*')
+
     writeManifestForPlatformAndArchitecture('windows', 'x64')
 
     stripForPlatform('windows-amd64.exe')
@@ -401,7 +402,7 @@ async function build () {
       remote,
       output    : windowsBinaryPath,
       target    : windowsTarget,
-      resources,
+      resources : windowsResources,
     })
 
     unstrip()
