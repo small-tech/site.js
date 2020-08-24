@@ -7,6 +7,7 @@
 
 const childProcess = require('child_process')
 const os = require('os')
+const fs = require('fs-extra')
 const path = require('path')
 
 const Site = require('../../index')
@@ -17,13 +18,10 @@ const clr = require('../../lib/clr')
 class Ensure {
 
   // Does the passed command exist? Returns: bool.
-  // Note: on Windows this will always fail because which does not exist.
-  // ===== This currently does not appear to have any side-effects but it’s
-  //       worth considering whether we should add special handling for that
-  //       platform here.
   commandExists (command) {
     try {
-      childProcess.execFileSync('which', [command], {env: process.env})
+      const commandToUse = (process.platform === 'win32') ? 'where.exe /Q' : 'which'
+      childProcess.execFileSync(commandToUse, [command], {env: process.env})
       return true
     } catch (error) {
       return false
@@ -142,14 +140,76 @@ class Ensure {
   // If the sync option is specified, ensure that Rsync exists on the system.
   // (This will install it automatically if a supported package manager exists.)
   rsyncExists() {
-    if (this.commandExists('rsync')) return // Already installed
+
+    const rsyncOnWindowsPath = path.join(os.homedir(), '.small-tech.org', 'site.js', 'portable-rsync-with-ssh-for-windows')
+
+    if (os.platform() === 'win32') {
+      if (fs.existsSync(rsyncOnWindowsPath)) return // Already installed.
+    } else {
+      if (this.commandExists('rsync')) return // Already installed. 
+    }
 
     if (os.platform() === 'darwin') {
       console.log('\n   ⚠️    ❨site.js❩ macOS: rsync should be installed default but isn’t. Please fix this before trying again.\n')
       process.exit(1)
     }
 
+    if (os.platform() === 'win32') {
+      //
+      // Since Windows does not have rsync, we use the @small-tech/portable-rsync-with-ssh-for-windows package to include a portable
+      // build of rsync and ssh that uses cygwin emulation. 
+      //
+      // We copy all the files to an external directory so that we can call execSync() on it as we’re wrapped in an executable using Nexe
+      // (https://github.com/nexe/nexe).
+      //
+      // We are use readFileSync() and writeFileSync() as, earlier, Nexe did not support copyFileSync(). However, it looks like they
+      // do now so we can test and refactor this later if necessary (see https://github.com/nexe/nexe/issues/607).
+      //
+      console.log('   🌠    ❨site.js❩ Unbundling cygwin emulated rsync and ssh for Windows…')
+
+      const appRootDirectory = path.join(__dirname, '..', '..')
+      const internalRsyncBundleDirectory = path.join(appRootDirectory, 'node_modules', '@small-tech', 'portable-rsync-with-ssh-for-windows')
+      const internalBinDirectory = path.join(internalRsyncBundleDirectory, 'bin')
+      const internalEtcDirectory = path.join(internalRsyncBundleDirectory, 'etc')
+      
+      const binFiles = fs.readdirSync(internalBinDirectory)
+      const etcFiles = fs.readdirSync(internalEtcDirectory)
+            
+      const externalRsyncBundleDirectory = rsyncOnWindowsPath
+      const externalBinDirectory = path.join(externalRsyncBundleDirectory, 'bin')
+      const externalEtcDirectory = path.join(externalRsyncBundleDirectory, 'etc')
+      
+      fs.ensureDirSync(externalBinDirectory)
+      fs.ensureDirSync(externalEtcDirectory)
+      
+      binFiles.forEach(fileToCopy => {
+        try {
+          const fileBuffer = fs.readFileSync(path.join(internalBinDirectory, fileToCopy), 'binary')
+          fs.writeFileSync(path.join(externalBinDirectory, fileToCopy), fileBuffer, {encoding: 'binary', mode: 0o755})
+        } catch (error) {
+          throw new Error(`   ❌    ❨site.js❩ Panic: Could not copy bin file to external directory: ${error.message}`)
+        }
+      })
+      
+      etcFiles.forEach(fileToCopy => {
+        try {
+          const fileBuffer = fs.readFileSync(path.join(internalEtcDirectory, fileToCopy), 'binary')
+          fs.writeFileSync(path.join(externalEtcDirectory, fileToCopy), fileBuffer, {encoding: 'binary', mode: 0o755})
+        } catch (error) {
+          throw new Error(`   ❌    ❨site.js❩ Panic: Could not copy etc file to external directory: ${error.message}`)
+        }
+      })
+
+      console.log('   🎉    ❨site.js❩ Rsync and ssh unbundled into Windows.\n')
+      return
+    }
+
+    //
+    // Attempt to install rsync on Linux-like environments.
+    //
+
     console.log('   🌠    ❨site.js❩ Installing Rsync dependency…')
+
     let options = {env: process.env}
     try {
       if (this.commandExists('apt')) {

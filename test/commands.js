@@ -126,7 +126,7 @@ function _(commandPartial) {
   return `node ${path.join('bin', 'site.js')} ${commandPartial}`
 }
 
-test('[bin/commands] version', t => {
+test('[commands] version', t => {
   t.plan(7)
 
   const command = _('version')
@@ -143,7 +143,7 @@ test('[bin/commands] version', t => {
 })
 
 
-test('[bin/commands] systemd startup daemon', t => {
+test('[commands] systemd startup daemon', t => {
 
   //
   // Commands used in the tests.
@@ -499,8 +499,6 @@ test('[commands] help', t => {
     --sync-from                 The folder to sync from.
     --live-sync                 Watch for changes and live sync them to a remote server.
     --sync-folder-and-contents  Sync local folder and contents (default is to sync the folder’s contents only).
-    For enable command:
-    --ensure-can-sync    Ensure server can rsync via ssh.
 
     Examples:
       Develop using locally-trusted TLS certificates:
@@ -537,7 +535,7 @@ test('[commands] help', t => {
 
     Linux-specific notes:
       - Production use is not available on this Linux distribution as systemd does not exist.
-      - For production use, we currently recommend using Ubuntu 18.04 LTS.
+      - For production use, we currently recommend using Ubuntu 18.04 or 20.04 LTS.
 
     For further information, please see https://sitejs.org
 
@@ -575,6 +573,11 @@ test('[commands] help', t => {
     --aliases                       Additional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
     --skip-domain-reachability-check  Do not run pre-flight check for domain reachability.
 
+    --sync-to                   The host to sync to (other sync options only relevant if this is supplied).
+    --sync-from                 The folder to sync from.
+    --live-sync                 Watch for changes and live sync them to a remote server.
+    --sync-folder-and-contents  Sync local folder and contents (default is to sync the folder’s contents only).
+
     Examples:
       Develop using locally-trusted TLS certificates:
     • Serve current folder       ▶ site
@@ -586,6 +589,13 @@ test('[commands] help', t => {
     • Serve folder demo at port 666    ▶ site serve demo "@localhost:666"
     • Proxy localhost:1313 ⇄ https://localhost  ▶ site :1313
       (shorthand and full)      ▶ site serve :1313 "@localhost:443"
+
+      • Sync demo folder to my.site             ▶ site demo --sync-to=my.site
+      • Ditto, but use account me on my.site    ▶ site demo --sync-to=me@my.site
+      • Ditto, but sync to remote folder ~/www  ▶ site demo --sync-to=me@my.site:www
+      • Ditto, but specify absolute path        ▶ site demo --sync-to=me@my.site:/home/me/www
+
+      • Live Sync current folder to my.site     ▶ site --sync-to=my.site --live-sync
 
       Stage using globally-trusted Let’s Encrypt certificates:
 
@@ -602,7 +612,6 @@ test('[commands] help', t => {
 
     Windows-specific notes:
       - Unlike Linux and macOS, you must use quotation marks around @localhost and @hostname.
-      - The sync feature, available on Linux and macOS, is not available on Windows as rsync is not available.
       - Production use is not available on Windows as it requires Linux with systemd.
 
     For further information, please see https://sitejs.org
@@ -643,8 +652,6 @@ test('[commands] help', t => {
     --sync-from                 The folder to sync from.
     --live-sync                 Watch for changes and live sync them to a remote server.
     --sync-folder-and-contents  Sync local folder and contents (default is to sync the folder’s contents only).
-    For enable command:
-    --ensure-can-sync    Ensure server can rsync via ssh.
 
     Examples:
       Develop using locally-trusted TLS certificates:

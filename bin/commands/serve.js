@@ -133,12 +133,6 @@ function serve (args) {
   const syncRequested = args.named[SYNC_TO] !== undefined
   const liveSync = args.named[LIVE_SYNC]
 
-  // Sync is not supported on Windows as rsync does not exist in that cursed wasteland.
-  if (syncRequested && process.platform === 'win32') {
-    console.log(`\n   ❌    ❨site.js❩ Sync is not supported on Windows.\n`)
-    return
-  }
-
   //
   // Handle initial sync setup-related tasks.
   //

@@ -95,9 +95,7 @@ npm i -g @small-tech/site.js
 
 ### Alpha and Beta channels
 
-__Note:__ This is a new feature. There have not been any alpha or beta releases yet. The commands below will not work until there are (at which point, this message will removed).
-
-On Linux and macOS, addition to the release build channel, there is also an alpha build and beta build channel available. Pass either `alpha` or `beta` as an argument to the Bash pipe to install the latest build from the respective channel.
+On Linux and macOS, in addition to the release build channel, there is also an alpha build and beta build channel available. Pass either `alpha` or `beta` as an argument to the Bash pipe to install the latest build from the respective channel.
 
 For example, to install the latest beta build on Linux:
 
@@ -108,6 +106,8 @@ wget -qO- https://sitejs.org/install | bash -s -- beta
 Alpha builds are strictly for local testing and should not, under any circumstances, be used in production. We do not test Alpha builds in production.
 
 Servers deployed using release builds check for updates every six hours whereas beta builds check every 10 minutes.
+
+Note that the latest alpha or beta build available may be older than the latest release build. You can check the date on the build via the `version` command.
 
 ## System Requirements
 
@@ -129,7 +129,7 @@ _Production use is not possible under macOS._
 
 The current version of Windows 10 is supported with PowerShell running under [Windows Terminal](https://github.com/Microsoft/Terminal).
 
-__Windows Subsystem for Linux is _not_ supported.__
+__Windows Subsystem for Linux (WSL) is _not_ supported.__ (You can install and run Site.js under WSL but seamless TLS certificate handling for local servers will not work out of the box as WSL and Windows 10 do not share certificate stores. If you do want to use Site.js under WSL, you have to first install Site.js on Windows 10 and run a local server (`site`) to create the certificate authority and certificates, then install and run Site.js under WSL and then manually copy the contents of `~/.small-tech.org/site.js/tls/local/` from Windows 10 to WSL.)
 
 _Production use is not possible under Windows._
 
@@ -147,7 +147,7 @@ If it turns out that any of these prerequisites are a widespread cause of first-
 
 __For production use, passwordless sudo is required.__ On systems where the sudo configuration directory is set to `/etc/sudoers.d`, Site.js will automatically install this rule. On other systems, you might have to [set it up yourself](https://serverfault.com/questions/160581/how-to-setup-passwordless-sudo-on-linux).
 
-__For localhost servers__, the bundled [mkcert](https://github.com/FiloSottile/mkcert) requires [certutil](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/tools/NSS_Tools_certutil) and the [Network Security Services](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS) (NSS) dynamic libraries. Site.js will attempt to automatically install the required libraries using popular package managers. Please note that this will fail on PinePhones running UBPorts as NSS is missing from the apt package manager for that distribution.
+__For localhost servers__, the bundled [mkcert](https://github.com/FiloSottile/mkcert) requires [certutil](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/tools/NSS_Tools_certutil) and the [Network Security Services](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS) (NSS) dynamic libraries. Site.js will attempt to automatically install the required libraries using popular package managers. <strike>Please note that this will fail on PinePhones running UBPorts as NSS is missing from the apt package manager for that distribution.</strike> ([The PinePhone issue](https://bugzilla.mozilla.org/show_bug.cgi?id=1652739) has been resolved.)
 
 ## Update (as of version 12.9.5; properly functioning as of version 12.9.6)
 

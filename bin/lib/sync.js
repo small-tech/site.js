@@ -12,11 +12,15 @@
 //
 //////////////////////////////////////////////////////////////////////
 
+const os = require('os')
+const fs = require('fs-extra')
+const path = require('path')
 const Graceful = require('node-graceful')
 
 const RsyncWatcher = require('./RsyncWatcher')
 const ensure = require('./ensure')
 const clr = require('../../lib/clr')
+const { small } = require('@small-tech/cross-platform-hostname')
 
 function sync (options) {
   // Check for prerequisites (sync functionality requires rsync to be installed.)
@@ -123,9 +127,93 @@ function sync (options) {
     }
   }
 
+  // Add Windows support if necessary.
+  if (process.platform === 'win32') {
+    console.log('   💫    ❨site.js❩ Configuring sync to use bundled rsync and ssh on Windows.')
+
+    //
+    // First off, our bundled ssh that runs under a cygwin emulation layer will choke if the ssh key
+    // on Windows has Windows line endings (CRLF). So, if a key file exists using Small Web conventions
+    // for this project (e.g., id-me.small-web.org if the project folder is me.small-web.org/) or for
+    // popular default keys (id_rsa and id_rsa.pub), we read the key in and write it out again as Node
+    // always writes Linux-style line endings (LF). The OpenSSH that ships with Windows 10 can handle
+    // key files with LF line endings so this should not break anything.
+    //
+    // Ah, Windows...
+    //
+    const sshDirectory = path.join(os.homedir(), '.ssh')
+    const ed25519Key = path.join(sshDirectory, 'id_rsa')
+    const rsaKey = path.join(sshDirectory, 'id_ed25519')
+
+    const folderToSyncPathSegments = path.resolve(rsyncOptions.sync.from).split(path.sep)
+    const folderToSyncName = folderToSyncPathSegments[folderToSyncPathSegments.length - 1]
+
+    const keyNameBasedOnFolderName = `id_${folderToSyncName}_ed25519`
+    const ed25519KeyBasedOnFolderName = path.join(sshDirectory, keyNameBasedOnFolderName)
+
+    // Resolve the from path so it is correclty handled under Windows.
+    rsyncOptions.sync.from = path.resolve(rsyncOptions.sync.from)
+
+    // Add back the final slashes removed by path.resolve so that the directory's contents
+    // are synced not the directory itself.
+    if (!rsyncOptions.sync.from.endsWith('\\\\')) {
+      rsyncOptions.sync.from = `${rsyncOptions.sync.from}\\\\`
+    }
+
+    // Configure the rsync library to use our bundled rsync executable instead of the system one.
+    const externalRsyncBundleDirectory = path.join(os.homedir(), '.small-tech.org', 'site.js', 'portable-rsync-with-ssh-for-windows')
+    const externalRsyncBundleBinDirectory = path.join(externalRsyncBundleDirectory, 'bin')
+    const rsyncExecutable = path.join(externalRsyncBundleBinDirectory, 'rsync.exe')
+    const sshExecutable = path.join(externalRsyncBundleBinDirectory, 'ssh.exe')
+    rsyncOptions.sync.config = { executable: rsyncExecutable }
+
+    //
+    // Handle SSH keys.
+    //
+
+    if (fs.existsSync(ed25519KeyBasedOnFolderName)) {
+      // A key for this project exists based on naming convention. Specify the key directly.
+      // We don't need to rewrite the key with Linux line endings since this is our convention and so
+      // we expect that the key was written out from Node with the correct line endings to begin with.
+      console.log('   🔑    ❨site.js❩ Site-specific SSH key for this project found; configuring SSH to use it.')
+      rsyncOptions.sync.rsyncOptions.rsh = `${sshExecutable} -i ${ed25519KeyBasedOnFolderName}`
+    } else {
+      console.log('   🔑    ❨site.js❩ No specific ssh key for this project found.')
+
+      function recreateKeysWithLinuxLineEndings (keyToUpdate) {
+        function recreateKey (keyToUpdate) {
+          console.log(`   🔑    ❨site.js❩ Recreating SSH keys with Linux line endings (${keyToUpdate}).`)
+          try {
+            const fileBuffer = fs.readFileSync(keyToUpdate, 'binary')
+            fs.writeFileSync(keyToUpdate, fileBuffer, {encoding: 'binary', mode: 0o600})
+          } catch (error) {
+            throw new Error(`   ❌    ❨site.js❩ Panic: Could not update SSH key ${keyToUpdate} to Linux line endings: ${error.message}`)
+          }  
+        }
+        recreateKey(keyToUpdate)            // Recreate the private key using Linux line endings.
+        recreateKey(`${keyToUpdate}.pub`)   // Recreate the public key using Linux line endings.
+      }
+
+      // Make sure generic keys have Linux line endings (see longer note, above).
+      const ed25519KeyExists = fs.existsSync(ed25519Key)
+      const rsaKeyExists = fs.existsSync(rsaKey)
+
+      if (!ed25519KeyExists && !rsaKeyExists) {
+        // Note: this does not take into consideration the more esoteric SSH keys but that should be an edge case.
+        throw new Error(`   ❌    ❨site.js❩ Panic: Could not find a site-specific SSH key, ~/.ssh/id_ed25519, or ~/.ssh/id_rsa. Cannot srsync over SSH.`)
+      }
+
+      if (ed25519KeyExists) { recreateKeysWithLinuxLineEndings(ed25519Key) }
+      if (rsaKeyExists) { recreateKeysWithLinuxLineEndings(rsaKey) }
+
+      // Configure the bundled rsync to use the bundled ssh with the generic keys on the system.
+      // Note: ./ refers to the same directory that rsync.exe was run from.
+      rsyncOptions.sync.rsyncOptions.rsh = sshExecutable
+    }
+  }
+
   // Create the rsync watcher.
   new RsyncWatcher(rsyncOptions)
-
 }
 
 module.exports = sync

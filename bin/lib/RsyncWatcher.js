@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 const chokidar = require('chokidar')
-const Rsync = require('rsync')
+const Rsync = require('@small-tech/rsync-with-portable-cygwin-path-support-on-windows')
 const debounce = require('debounce')
 const path = require('path')
 const Graceful = require('node-graceful')
@@ -88,7 +88,9 @@ class RSyncWatcher {
       }
     }
 
-    const rsync = new Rsync()
+    const config = this.options[project].config || {}
+
+    const rsync = new Rsync(config)
     .exclude(this.options[project].exclude || [])
     .source(folderToSync)
     .destination(this.options[project].to)
