@@ -127,13 +127,7 @@ class Help {
     If ${usageCommand} is omitted, behaviour defaults to ${commandServe}.
 
     ${heading('Options:')}
-    ${ this.isWindows ? `
-    For ${commandServe} command:
 
-    ${optionDomain}\t\t\t\tThe main domain to serve (defaults to system hostname if not specified).
-    ${optionAliases}\t\t\t\tAdditional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
-    ${optionSkipDomainReachabilityCheck}\tDo not run pre-flight check for domain reachability.
-    ` : `
     For${ this.systemdExists ? ' both ' : '' } ${commandServe}${ this.systemdExists ? ` and ${commandEnable} ` : '' } command${ this.systemdExists ? 's' : '' }:
 
     ${optionDomain}\t\t\t\tThe main domain to serve (defaults to system hostname if not specified).
@@ -147,10 +141,10 @@ class Help {
     ${optionLiveSync}\t\t\tWatch for changes and live sync them to a remote server.
     ${optionSyncFolderAndContents}\tSync local folder and contents (default is to sync the folder’s contents only).
 
-    For ${commandEnable} command:
+    ${ this.systemdExists ? `For ${commandEnable} command:
 
     ${optionEnsureCanSync}\t\tEnsure server can rsync via ssh.
-    `}
+    ` : ''}
     ${heading('Examples:')}
 
       ${heading('Develop using locally-trusted TLS certificates:')}
@@ -166,14 +160,14 @@ class Help {
 
     • Proxy ${argument('localhost:1313')} ⇄ https://localhost\t${prompt} ${appName} ${argument(':1313')}
       (shorthand and full)\t\t\t${prompt} ${appName} ${commandServe} ${argument(':1313')} ${argument('@localhost:443')}
-    ${ this.isWindows ? '' : `
+
     • Sync ${argument('demo')} folder to ${argument('my.site')}\t\t${prompt} ${appName} ${argument('demo')} ${optionSyncTo}=${argument('my.site')}
     • Ditto, but use account ${argument('me')} on ${argument('my.site')}\t${prompt} ${appName} ${argument('demo')} ${optionSyncTo}=${argument('me@my.site')}
     • Ditto, but sync to remote folder ${argument('~/www')}\t${prompt} ${appName} ${argument('demo')} ${optionSyncTo}=${argument('me@my.site:www')}
     • Ditto, but specify absolute path\t\t${prompt} ${appName} ${argument('demo')} ${optionSyncTo}=${argument('me@my.site:/home/me/www')}
 
     • Live Sync current folder to ${argument('my.site')} \t${prompt} ${appName} ${optionSyncTo}=${argument('my.site')} ${optionLiveSync}
-    `}${ this.systemdExists ? `
+    ${ this.systemdExists ? `
       ${heading('Stage and deploy using globally-trusted Let’s Encrypt certificates:')}
 
       Regular process:
@@ -204,7 +198,6 @@ class Help {
     ${heading('Windows-specific notes:')}
 
       - Unlike Linux and macOS, you must use quotation marks around @localhost and @hostname.
-      - The sync feature, available on Linux and macOS, is not available on Windows as rsync is not available.
       - Production use is not available on Windows as it requires Linux with systemd.
     `: ''}${ this.isMac ? `
     ${heading('Mac-specific notes:')}
@@ -214,7 +207,7 @@ class Help {
     ${heading('Linux-specific notes:')}
 
       - Production use is not available on this Linux distribution as systemd does not exist.
-      - For production use, we currently recommend using Ubuntu 18.04 LTS.
+      - For production use, we currently recommend using Ubuntu 18.04 or 20.04 LTS.
     `: ''}
     ${clr('For further information, please see https://sitejs.org', 'italic')}
     `.replace(/^\n/, '')
