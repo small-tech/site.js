@@ -43,8 +43,6 @@ function push (args) {
 
   Site.logAppNameAndVersion()
 
-  console.log('Options', options)
-
   ;(async () => {
     // Generate any content that needs to be generated (e.g., Hugo content).
     await generateContent(pathToPush)
