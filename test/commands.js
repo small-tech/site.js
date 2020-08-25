@@ -358,7 +358,7 @@ test('[commands] help', t => {
 
 ▶ site [command] [folder|:port] [@host[:port]] [--options]
 
-  command    serve | push | enable | disable | start | stop | restart | logs | status | update | hugo | uninstall | version | help
+  command    serve | pull | push | enable | disable | start | stop | restart | logs | status | update | hugo | uninstall | version | help
   folder|:port  Path of folder to serve (defaults to current folder) or port on localhost to proxy.
   @host[:port]  Host (and, optionally port) to sync. Valid hosts are @localhost and @hostname.
   --options    Settings that alter command behaviour.
@@ -376,7 +376,8 @@ test('[commands] help', t => {
 
       If a port (e.g., :1313) is specified instead of my-folder, start an HTTP/WebSocket proxy.
 
-  push  Push your changes to a remote Small Web server.
+  pull  Pull (download) your site from a remote Small Web server.
+  push  Push (deploy) your site to a remote Small Web server.
 
   enable  Start server as daemon with globally-trusted certificates and add to startup.
   disable  Stop server daemon and remove from startup.
@@ -415,7 +416,7 @@ test('[commands] help', t => {
 
   --ensure-can-sync    Ensure server can rsync via ssh.
 
-  For push command:
+  For both pull and push commands:
 
   --domain         Specify the domain to sync to manually (otherwise derived from the folder name).
 
@@ -475,7 +476,7 @@ test('[commands] help', t => {
   const linuxWithoutSystemdExpectedHelpOutput = dehydrate(`
   Usage:
   ▶ site [command] [folder|:port] [@host[:port]] [--options]
-    command    serve | push | update | hugo | uninstall | version | help
+    command    serve | pull | push | update | hugo | uninstall | version | help
     folder|:port  Path of folder to serve (defaults to current folder) or port on localhost to proxy.
     @host[:port]  Host (and, optionally port) to sync. Valid hosts are @localhost and @hostname.
     --options    Settings that alter command behaviour.
@@ -487,7 +488,8 @@ test('[commands] help', t => {
             ▶ site serve my-folder @localhost
         If a port (e.g., :1313) is specified instead of my-folder, start an HTTP/WebSocket proxy.
 
-    push  Push your changes to a remote Small Web server.
+    pull  Pull (download) your site from a remote Small Web server.
+    push  Push (deploy) your site to a remote Small Web server.
 
     hugo  Passes the remainder of the command string to the integrated Hugo static site generator.
     update  Check for Site.js updates and update if new version is found.
@@ -508,7 +510,7 @@ test('[commands] help', t => {
     --live-sync                 Watch for changes and live sync them to a remote server.
     --sync-folder-and-contents  Sync local folder and contents (default is to sync the folder’s contents only).
 
-    For push command:
+    For both pull and push commands:
 
     --domain         Specify the domain to sync to manually (otherwise derived from the folder name).
 
@@ -559,7 +561,7 @@ test('[commands] help', t => {
   const windowsExpectedHelpOutput = dehydrate(`
   Usage:
   ▶ site [command] [folder|:port] ["@host[:port]"] [--options]
-    command    serve | push | update | hugo | uninstall | version | help
+    command    serve | pull | push | update | hugo | uninstall | version | help
     folder|:port  Path of folder to serve (defaults to current folder) or port on localhost to proxy.
     "@host[:port]"  Host (and, optionally port) to sync. Valid hosts are @localhost and @hostname.
     --options    Settings that alter command behaviour.
@@ -571,7 +573,8 @@ test('[commands] help', t => {
             ▶ site serve my-folder "@localhost"
         If a port (e.g., :1313) is specified instead of my-folder, start an HTTP/WebSocket proxy.
 
-    push  Push your changes to a remote Small Web server.
+    pull  Pull (download) your site from a remote Small Web server.
+    push  Push (deploy) your site to a remote Small Web server.
 
     hugo  Passes the remainder of the command string to the integrated Hugo static site generator.
     update  Check for Site.js updates and update if new version is found.
@@ -592,7 +595,7 @@ test('[commands] help', t => {
     --live-sync                 Watch for changes and live sync them to a remote server.
     --sync-folder-and-contents  Sync local folder and contents (default is to sync the folder’s contents only).
 
-    For push command:
+    For both pull and push commands:
 
     --domain         Specify the domain to sync to manually (otherwise derived from the folder name).
 
@@ -640,7 +643,7 @@ test('[commands] help', t => {
   const macExpectedHelpOutput = dehydrate(`
   Usage:
   ▶ site [command] [folder|:port] [@host[:port]] [--options]
-    command    serve | push | update | hugo | uninstall | version | help
+    command    serve | pull | push | update | hugo | uninstall | version | help
     folder|:port  Path of folder to serve (defaults to current folder) or port on localhost to proxy.
     @host[:port]  Host (and, optionally port) to sync. Valid hosts are @localhost and @hostname.
     --options    Settings that alter command behaviour.
@@ -652,7 +655,8 @@ test('[commands] help', t => {
             ▶ site serve my-folder @localhost
         If a port (e.g., :1313) is specified instead of my-folder, start an HTTP/WebSocket proxy.
 
-    push  Push your changes to a remote Small Web server.
+    pull  Pull (download) your site from a remote Small Web server.
+    push  Push (deploy) your site to a remote Small Web server.
 
     hugo  Passes the remainder of the command string to the integrated Hugo static site generator.
     update  Check for Site.js updates and update if new version is found.
@@ -673,7 +677,7 @@ test('[commands] help', t => {
     --live-sync                 Watch for changes and live sync them to a remote server.
     --sync-folder-and-contents  Sync local folder and contents (default is to sync the folder’s contents only).
 
-    For push command:
+    For both pull and push commands:
 
     --domain         Specify the domain to sync to manually (otherwise derived from the folder name).
 
