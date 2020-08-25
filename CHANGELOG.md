@@ -4,17 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [14.3.0] - In progress
+## [14.4.0] - 2020-08-25
+
+The pull and push commands implement Small Web conventions to enable simple bi-directional data transfer between a local machine and a Small Web server.
 
 ### Added
 
-  - `push` command (#221) TODO
-  - `pull` command (#222) TODO
-  - Support for sync on Windows 10 (#224) TODO
+  - `push` command (#221)
+  - `pull` command (#222)
 
 ### Fixed
 
-  - Daemon now automatically restarts when dynamic routes are first added and synced (#223) TODO
+  - Daemon now automatically restarts when dynamic routes are first added and synced. (#223)
+
+## [14.3.0] - 2020-08-24
+
+### Added
+
+  - Support for sync on Windows 10 (#224)
 
 ## [14.2.0] - 2020-07-28
 

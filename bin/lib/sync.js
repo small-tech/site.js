@@ -127,6 +127,21 @@ function sync (options) {
     }
   }
 
+  const sshDirectory = path.join(os.homedir(), '.ssh')
+  const folderToSyncPathSegments = path.resolve(rsyncOptions.sync.from).split(path.sep)
+  const folderToSyncName = folderToSyncPathSegments[folderToSyncPathSegments.length - 1]
+
+  const keyNameBasedOnFolderName = `id_${folderToSyncName}_ed25519`
+  const ed25519KeyBasedOnFolderName = path.join(sshDirectory, keyNameBasedOnFolderName)
+
+  if (fs.existsSync(ed25519KeyBasedOnFolderName)) {
+    // A key for this project exists based on naming convention. Specify the key directly.
+    // We don't need to rewrite the key with Linux line endings since this is our convention and so
+    // we expect that the key was written out from Node with the correct line endings to begin with.
+    console.log(`   🔑    ❨site.js❩ Using site-specific SSH key: ${ed25519KeyBasedOnFolderName}`)
+    rsyncOptions.sync.rsyncOptions.rsh = `ssh -i ${ed25519KeyBasedOnFolderName}`
+  }
+
   // Add Windows support if necessary.
   if (process.platform === 'win32') {
     console.log('   💫    ❨site.js❩ Configuring sync to use bundled rsync and ssh on Windows.')
@@ -141,17 +156,10 @@ function sync (options) {
     //
     // Ah, Windows...
     //
-    const sshDirectory = path.join(os.homedir(), '.ssh')
     const ed25519Key = path.join(sshDirectory, 'id_rsa')
     const rsaKey = path.join(sshDirectory, 'id_ed25519')
 
-    const folderToSyncPathSegments = path.resolve(rsyncOptions.sync.from).split(path.sep)
-    const folderToSyncName = folderToSyncPathSegments[folderToSyncPathSegments.length - 1]
-
-    const keyNameBasedOnFolderName = `id_${folderToSyncName}_ed25519`
-    const ed25519KeyBasedOnFolderName = path.join(sshDirectory, keyNameBasedOnFolderName)
-
-    // Resolve the from path so it is correclty handled under Windows.
+    // Resolve the from path so it is correctly handled under Windows.
     rsyncOptions.sync.from = path.resolve(rsyncOptions.sync.from)
 
     // Add back the final slashes removed by path.resolve so that the directory's contents
@@ -175,7 +183,7 @@ function sync (options) {
       // A key for this project exists based on naming convention. Specify the key directly.
       // We don't need to rewrite the key with Linux line endings since this is our convention and so
       // we expect that the key was written out from Node with the correct line endings to begin with.
-      console.log('   🔑    ❨site.js❩ Site-specific SSH key for this project found; configuring SSH to use it.')
+      console.log('   🔑    ❨site.js❩ Updating configuration of site-specific SSH key for Windows.')
       rsyncOptions.sync.rsyncOptions.rsh = `${sshExecutable} -i ${ed25519KeyBasedOnFolderName}`
     } else {
       console.log('   🔑    ❨site.js❩ No specific ssh key for this project found.')
@@ -188,7 +196,7 @@ function sync (options) {
             fs.writeFileSync(keyToUpdate, fileBuffer, {encoding: 'binary', mode: 0o600})
           } catch (error) {
             throw new Error(`   ❌    ❨site.js❩ Panic: Could not update SSH key ${keyToUpdate} to Linux line endings: ${error.message}`)
-          }  
+          }
         }
         recreateKey(keyToUpdate)            // Recreate the private key using Linux line endings.
         recreateKey(`${keyToUpdate}.pub`)   // Recreate the public key using Linux line endings.
@@ -211,6 +219,8 @@ function sync (options) {
       rsyncOptions.sync.rsyncOptions.rsh = sshExecutable
     }
   }
+
+  rsyncOptions.sync.isPull = options.isPull
 
   // Create the rsync watcher.
   new RsyncWatcher(rsyncOptions)

@@ -90,10 +90,13 @@ class RSyncWatcher {
 
     const config = this.options[project].config || {}
 
+    const source = this.options[project].isPull ? this.options[project].to : folderToSync
+    const destination = this.options[project].isPull ?  folderToSync : this.options[project].to
+
     const rsync = new Rsync(config)
     .exclude(this.options[project].exclude || [])
-    .source(folderToSync)
-    .destination(this.options[project].to)
+    .source(source)
+    .destination(destination)
 
     for (let optionKey in (this.options[project].rsyncOptions || {})) {
       rsync.set(optionKey, this.options[project].rsyncOptions[optionKey]);

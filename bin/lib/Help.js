@@ -47,6 +47,9 @@ class Help {
 
     const commandServe = command('serve')
 
+    const commandPull = command('pull')
+    const commandPush = command('push')
+
     const commandEnable = command('enable')
     const commandDisable = command('disable')
     const commandStart = command('start')
@@ -89,7 +92,7 @@ class Help {
 
   ${prompt} ${clr(appName, 'bold')} [${usageCommand}] [${usageFolderOrPort}] [${usageHostAndPort}] [${usageOptions}]
 
-    ${usageCommand}\t\t${commandServe}${this.systemdExists ? ` | ${commandEnable} | ${commandDisable} | ${commandStart} | ${commandStop} | ${commandRestart} | ${commandLogs} | ${commandStatus}` : ''} | ${commandUpdate} | ${commandHugo} | ${commandUninstall} | ${commandVersion} | ${commandHelp}
+    ${usageCommand}\t\t${commandServe} | ${commandPull} | ${commandPush}${this.systemdExists ? ` | ${commandEnable} | ${commandDisable} | ${commandStart} | ${commandStop} | ${commandRestart} | ${commandLogs} | ${commandStatus}` : ''} | ${commandUpdate} | ${commandHugo} | ${commandUninstall} | ${commandVersion} | ${commandHelp}
     ${usageFolderOrPort}\tPath of folder to serve (defaults to current folder) or port on localhost to proxy.
     ${usageHostAndPort}\tHost (and, optionally port) to sync. Valid hosts are @localhost and @hostname.
     ${usageOptions}\t\tSettings that alter command behaviour.
@@ -106,6 +109,9 @@ class Help {
     \t      ${prompt} ${appName} ${commandServe} ${argument('my-folder')} ${argument('@localhost')}
 
     \t\tIf a port (e.g., ${argument(':1313')}) is specified instead of ${argument('my-folder')}, start an HTTP/WebSocket proxy.
+
+    ${commandPull}\tPull (download) your site from a remote Small Web server.
+    ${commandPush}\tPush (deploy) your site to a remote Small Web server.
     ${this.systemdExists ?
       `
     ${commandEnable}\tStart server as daemon with globally-trusted certificates and add to startup.
@@ -128,7 +134,7 @@ class Help {
 
     ${heading('Options:')}
 
-    For${ this.systemdExists ? ' both ' : '' } ${commandServe}${ this.systemdExists ? ` and ${commandEnable} ` : '' } command${ this.systemdExists ? 's' : '' }:
+    For${ this.systemdExists ? ' both' : '' } ${commandServe}${ this.systemdExists ? ` and ${commandEnable}` : '' } command${ this.systemdExists ? 's' : '' }:
 
     ${optionDomain}\t\t\t\tThe main domain to serve (defaults to system hostname if not specified).
     ${optionAliases}\t\t\t\tAdditional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
@@ -136,15 +142,19 @@ class Help {
 
     ${ this.systemdExists ? `For ${commandServe} command:
     ` : '' }
-    ${optionSyncTo}\t\t\tThe host to sync to (other sync options only relevant if this is supplied).
-    ${optionSyncFrom}\t\t\tThe folder to sync from.
-    ${optionLiveSync}\t\t\tWatch for changes and live sync them to a remote server.
-    ${optionSyncFolderAndContents}\tSync local folder and contents (default is to sync the folder’s contents only).
+    ${optionSyncTo}\t\t\t\tThe host to sync to (other sync options only relevant if this is supplied).
+    ${optionSyncFrom}\t\t\t\tThe folder to sync from.
+    ${optionLiveSync}\t\t\t\tWatch for changes and live sync them to a remote server.
+    ${optionSyncFolderAndContents}\t\tSync local folder and contents (default is to sync the folder’s contents only).
 
     ${ this.systemdExists ? `For ${commandEnable} command:
 
-    ${optionEnsureCanSync}\t\tEnsure server can rsync via ssh.
+    ${optionEnsureCanSync}\t\t\tEnsure server can rsync via ssh.
     ` : ''}
+    For both ${commandPull} and ${commandPush} commands:
+
+    ${optionDomain}\t\t\t\tSpecify the domain to sync to manually (otherwise derived from the folder name).
+
     ${heading('Examples:')}
 
       ${heading('Develop using locally-trusted TLS certificates:')}

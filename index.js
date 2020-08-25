@@ -631,6 +631,11 @@ class Site {
         this.log('   ⏰    ❨site.js❩ Cleared auto-update check interval.')
       }
 
+      if (this.app.__dynamicFolderWatcher !== undefined) {
+        this.app.__dynamicFolderWatcher.close()
+        this.log (`   🚮    ❨site.js❩ Removed root file watcher.`)
+      }
+
       // Ensure dynamic route watchers are removed.
       if (this.app.__dynamicFileWatcher !== undefined) {
         this.app.__dynamicFileWatcher.close()
@@ -1076,6 +1081,66 @@ class Site {
 
   appAddDynamicRoutes () {
 
+    // Restarts the server.
+    const restartServer = () => {
+      if (process.env.NODE_ENV === 'production') {
+        // We’re running production, to restart the daemon, just exit.
+        // (We let ourselves fall, knowing that systemd will catch us.) ;)
+        process.exit()
+      } else {
+        // We’re running as a regular process. Just restart the server, not the whole process.
+
+        // Do some housekeeping.
+        Graceful.off('SIGINT', this.goodbye)
+        Graceful.off('SIGTERM', this.goodbye)
+
+        if (this.hugoServerProcesses) {
+          this.log('   🚮    ❨site.js❩ Killing Hugo server processes.')
+          this.hugoServerProcesses.forEach(hugoServerProcess => hugoServerProcess.kill())
+        }
+
+        // Destroy the current server (so we do not get a port conflict on restart before
+        // we’ve had a chance to terminate our own process).
+        this.server.destroy()
+
+        // Stop accepting new connections.
+        this.server.close(() => {
+          // Restart the server.
+          this.server.removeAllListeners('close')
+          this.server.removeAllListeners('error')
+          const {commandPath, args} = cli.initialise(process.argv.slice(2))
+          serve(args)
+          this.log('   🐁    ❨site.js❩ Restarted server.\n')
+        })
+      }
+    }
+
+    // Regardless of whether there is a .dynamic folder or not, add a watcher
+    // to watch for a change in the existence of the .dynamic folder itself. This can happen
+    // if it is created or deleted locally or on a remote server as the result of a sync to
+    // the remote server. In either case, we want to restart the server so that the new
+    // routes are added or removed accordingly.
+    //
+    // Note: Chokidar appears to have an issue where changes are no longer picked up if
+    // ===== a created folder is then removed. This should not be a big problem in actual
+    //       usage, but let’s keep an eye on this. (Note that if you listen for the 'raw'
+    //       event, it gets triggered with a 'rename' when a removed/recreated folder
+    //       is affected.) See: https://github.com/paulmillr/chokidar/issues/404#issuecomment-666669336
+
+    const dynamicFolderWatchPath = `${this.pathToServe.replace(/\\/g, '/')}/**/*`
+    this.app.__dynamicFolderWatcher = chokidar.watch(dynamicFolderWatchPath, {
+      persistent: true,
+      ignoreInitial: true
+    })
+
+    this.app.__dynamicFolderWatcher.on ('addDir', file => {
+      if (file.endsWith('.dynamic')) {
+        this.log(`   🐁    ❨site.js❩ ${clr(`Dynamic folder created!`, 'green')}`)
+        this.log('   🐁    ❨site.js❩ Requesting restart…\n')
+        restartServer()
+      }
+    })
+
     // Initially check if a dynamic routes directory exists. If it does not,
     // we don’t need to take this any further.
     const dynamicRoutesDirectory = path.join(this.pathToServe, '.dynamic')
@@ -1096,36 +1161,7 @@ class Site {
         this.log(`   🐁    ❨site.js❩ ${clr('Code updated', 'green')} in ${clr(file, 'cyan')}!`)
         this.log('   🐁    ❨site.js❩ Requesting restart…\n')
 
-        if (process.env.NODE_ENV === 'production') {
-          // We’re running production, to restart the daemon, just exit.
-          // (We let ourselves fall, knowing that systemd will catch us.) ;)
-          process.exit()
-        } else {
-          // We’re running as a regular process. Just restart the server, not the whole process.
-
-          // Do some housekeeping.
-          Graceful.off('SIGINT', this.goodbye)
-          Graceful.off('SIGTERM', this.goodbye)
-
-          if (this.hugoServerProcesses) {
-            this.log('   🚮    ❨site.js❩ Killing Hugo server processes.')
-            this.hugoServerProcesses.forEach(hugoServerProcess => hugoServerProcess.kill())
-          }
-
-          // Destroy the current server (so we do not get a port conflict on restart before
-          // we’ve had a chance to terminate our own process).
-          this.server.destroy()
-
-          // Stop accepting new connections.
-          this.server.close(() => {
-            // Restart the server.
-            this.server.removeAllListeners('close')
-            this.server.removeAllListeners('error')
-            const {commandPath, args} = cli.initialise(process.argv.slice(2))
-            serve(args)
-            this.log('   🐁    ❨site.js❩ Restarted server.\n')
-          })
-        }
+        restartServer()
       })
 
       const addBodyParser = () => {

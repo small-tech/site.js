@@ -37,7 +37,7 @@ We exist in part thanks to patronage by people like you. If you share [our visio
 
   - __Includes [Hugo static site generator](#static-site-generation).__
 
-  - __[Sync](#sync) to deploy__ (uses rsync for quick deployments). Can also [Live Sync](#live-sync) for live blogging, etc.
+  - __[Sync](#sync) to deploy__ (uses rsync for quick deployments). Can also [Live Sync](#live-sync) for live blogging, etc. For sites that implement the [Small Web](https://ar.al/2020/08/07/what-is-the-small-web/) conventions, you can also use the simplified [pull and push commands](#pull-and-push).
 
   - __Has privacy-respecting [ephemeral statics](#ephemeral-statistics)__. Gives you insight into how your site is being used, not into the people using it.
 
@@ -323,6 +323,34 @@ Use a service like [ngrok](https://ngrok.com/) (Pro+) to point a custom domain n
 When you start your server, it will run as a regular process. It will not be restarted if it crashes or if you exit the foreground process or restart the computer.
 
 ### Deployment
+
+#### Pull and push
+
+As of version 14.4.0, you can use the simplified `pull` and `push` commands if your local and remote setup adheres to the following Small Web conventions:
+
+##### Local
+
+  - The name of your local working folder is the same as your domain (if not, specify the domain using the `--domain` oiption)
+  - Your SSH key is either found at `~/.ssh/id_{your domain}_ed25519` or you have an _id_25519_ or _id_rsa_ file in your `~/.ssh` folder. (The former is a Small Web convention, the latter is a fallback general convention.)
+
+##### Remote
+
+  - __Account name:__ `site`
+  - __Folder being served:__ `/home/site/public`
+
+If those requirements are met, from within your site’s folder on your local machine, you can pull (download) your site using:
+
+```shell
+site pull
+```
+
+And you can push (deploy) your site using:
+
+```shell
+site push
+```
+
+The legacy `sync` command will continue to work as before and is documented below.
 
 #### Sync
 
