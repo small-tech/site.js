@@ -188,7 +188,7 @@ function sync (options) {
             fs.writeFileSync(keyToUpdate, fileBuffer, {encoding: 'binary', mode: 0o600})
           } catch (error) {
             throw new Error(`   ❌    ❨site.js❩ Panic: Could not update SSH key ${keyToUpdate} to Linux line endings: ${error.message}`)
-          }  
+          }
         }
         recreateKey(keyToUpdate)            // Recreate the private key using Linux line endings.
         recreateKey(`${keyToUpdate}.pub`)   // Recreate the public key using Linux line endings.

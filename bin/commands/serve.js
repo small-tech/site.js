@@ -11,8 +11,7 @@
 
 // Note: requires are at the bottom to avoid a circular reference as ../../index (Site)
 // ===== also requires this module.
-
-const fs = require('fs-extra')
+const generateContent = require('../lib/generate-content')
 const pathModule = require('path')
 
 const DOMAIN = 'domain'
@@ -149,83 +148,12 @@ function serve (args) {
     if (!syncOptions.live) {
       Site.logAppNameAndVersion()
 
-      const absolutePathToServe = pathModule.resolve(path)
-
-      // Delete the .generated folder so that a full
-      // generation can happen as we’re about to deploy.
-      const generatedContentPath = pathModule.join(absolutePathToServe, '.generated')
-      fs.removeSync(generatedContentPath)
-
       ;(async () => {
-        // Generate any Hugo content they might be.
-        // Hugo source folder names must begin with either
-        // .hugo or .hugo--. Anything after the first double-dash
-        // specifies a custom mount path (double dashes are converted
-        // to forward slashes when determining the mount path).
-        const hugoSourceFolderPrefixRegExp = /^.hugo(--)?/
-
-        const files = fs.readdirSync(absolutePathToServe)
-
-        let hugo = null
-
-        await asyncForEach(files, async file => {
-          if (file.match(hugoSourceFolderPrefixRegExp)) {
-            const hugoSourceDirectory = pathModule.join(absolutePathToServe, file)
-
-            let mountPath = '/'
-            // Check for custom mount path naming convention.
-            if (hugoSourceDirectory.includes('--')) {
-              // Double dashes are translated into forward slashes.
-              const fragments = hugoSourceDirectory.split('--')
-
-              // Discard the first '.hugo' bit.
-              fragments.shift()
-
-              const _mountPath = fragments.reduce((accumulator, currentValue) => {
-                return accumulator += `/${currentValue}`
-              }, /* initial value = */ '')
-
-              mountPath = _mountPath
-            }
-
-            if (fs.existsSync(hugoSourceDirectory)) {
-              const sourceDetails = clr(`${file}${pathModule.sep}`, 'green')
-              console.log(`   🎠    ❨site.js❩ Building Hugo source at ${sourceDetails}`)
-
-              // Create a node-hugo instance when first needed.
-              if (hugo === null) {
-                hugo = new Hugo(pathModule.join(Site.settingsDirectory, 'node-hugo'))
-              }
-
-              const sourcePath = pathModule.join(path, file)
-              const destinationPath = `../.generated${mountPath}`
-              const baseURL = `https://${syncOptions.host}`
-
-              // Run the Hugo build.
-              try {
-                const hugoBuildOutput = await hugo.build(sourcePath, destinationPath, baseURL)
-
-                // Print the output received so far.
-                hugoBuildOutput.split('\n').forEach(line => {
-                  console.log(`${Site.HUGO_LOGO} ${line}`)
-                })
-              } catch (error) {
-                let errorMessage = error
-
-                if (errorMessage.includes('--appendPort=false not supported when in multihost mode')) {
-                  errorMessage = 'Hugo’s Multilingual Multihost mode is not supported in Site.js.'
-                }
-
-                console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Could run Hugo build. ${errorMessage}\n`)
-                process.exit(1)
-              }
-            }
-          }
-        })
+        // Generate any content that needs to be generated (e.g., Hugo content).
+        await generateContent(path)
 
         // Any content that needs to be generated has been generated. Ready to sync.
         sync(syncOptions)
-
       })()
 
       return
@@ -496,5 +424,4 @@ const status = require('../lib/status')
 const tcpPortUsed = require('tcp-port-used')
 const clr = require('../../lib/clr')
 const errors = require('../../lib/errors')
-const asyncForEach = require('../../lib/async-foreach')
 const Site = require('../../index')

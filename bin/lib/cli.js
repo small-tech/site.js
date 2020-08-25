@@ -20,6 +20,8 @@ class CommandLineInterface {
     const commands = [
       ['serve', arg0 === 'serve'],
 
+      ['push', arg0 === 'push'],
+
       ['enable', arg0 === 'enable'],
       ['disable', arg0 === 'disable'],
       ['start', arg0 === 'start'],
