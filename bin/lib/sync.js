@@ -220,6 +220,8 @@ function sync (options) {
     }
   }
 
+  rsyncOptions.sync.isPull = options.isPull
+
   // Create the rsync watcher.
   new RsyncWatcher(rsyncOptions)
 }

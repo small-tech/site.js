@@ -12,6 +12,7 @@ const path = require('path')
 const Site = require('../../index')
 const sync = require('../lib/sync')
 const generateContent = require('../lib/generate-content')
+const clr = require('../../lib/clr')
 
 function push (args) {
   // Make sure the local path ends with the path separator so that the contents of the folder
@@ -46,6 +47,8 @@ function push (args) {
   ;(async () => {
     // Generate any content that needs to be generated (e.g., Hugo content).
     await generateContent(pathToPush)
+
+    console.log(`\n   ⏩    ❨site.js❩ Pushing from ${clr(pathToPush, 'yellow')} to ${clr(host, 'yellow')}…\n`)
 
     // Any content that needs to be generated has been generated. Ready to sync.
     sync(options)

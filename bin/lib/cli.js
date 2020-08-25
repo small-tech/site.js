@@ -21,6 +21,7 @@ class CommandLineInterface {
       ['serve', arg0 === 'serve'],
 
       ['push', arg0 === 'push'],
+      ['pull', arg0 === 'pull'],
 
       ['enable', arg0 === 'enable'],
       ['disable', arg0 === 'disable'],
