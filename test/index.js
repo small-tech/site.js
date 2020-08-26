@@ -369,8 +369,7 @@ test('[site.js] wildcard routes', async t => {
 
                     <body>
                     <script>
-                      // Site.js: add window.routeName and window.arguments objects
-                      // to wildcard route.
+                      // Site.js: add window.routeName and window.arguments objects to wildcard route.
                       __site_js__pathFragments =  document.location.pathname.split('/')
                       window.route = __site_js__pathFragments[1]
                       window.arguments = __site_js__pathFragments.slice(2).filter(value => value !== '')
