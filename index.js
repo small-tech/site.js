@@ -562,6 +562,7 @@ class Site {
     this.appAddTest500ErrorPage()
     this.appAddDynamicRoutes()
     this.appAddStaticRoutes()
+    this.appAddWildcardRoutes()
     this.appAddArchivalCascade()
   }
 
@@ -1062,6 +1063,70 @@ class Site {
     this.app.use(this.app.__staticRoutes)
   }
 
+  // Add wildcard routes.
+  //
+  // Wildcard routes are static routes where any path under https://your.site/x will route to .wildcard/x/index.html
+  // if that file exists. So, for example, https://your.site/x/y, https://your.site/x/y/z, etc., will all route to the
+  // same static file. Use this if you want to allow path-style arguments in your URLs but carry out client-side
+  // processing. This saves you from having to create .dynamic routes for that use case.
+  appAddWildcardRoutes () {
+    const wildcardRoutesDirectory = path.join(this.pathToServe, '.wildcard')
+
+    const wildcards = {}
+
+    if (fs.existsSync(wildcardRoutesDirectory)) {
+
+      fs.readdirSync(wildcardRoutesDirectory, {withFileTypes: true}).forEach(file => {
+        if (file.isDirectory()) {
+          const wildcard = file.name
+          const wildcardIndexFilePath = path.join(wildcardRoutesDirectory, wildcard, 'index.html')
+
+          if (fs.existsSync(wildcardIndexFilePath)) {
+            this.log(`   🃏    ❨site.js❩ Serving wildcard route: ${clr(`https://${this.prettyLocation()}/${wildcard}/**/*`, 'green')} → ${clr(`/.wildcard/${wildcard}/index.html`, 'cyan')}`)
+
+            // Read the HTML content and inject some javascript to make it easy to access the route
+            // name and the arguments from window.route and and window.arguments.
+            const wildcardIndexFilePath = path.join(wildcardRoutesDirectory, wildcard, 'index.html')
+            wildcards[wildcard] = fs.readFileSync(wildcardIndexFilePath, 'utf-8').replace('<body>', `
+              <body>
+              <script>
+                // Site.js: add window.routeName and window.arguments objects
+                // to wildcard route.
+                __site_js__pathFragments =  document.location.pathname.split('/')
+                window.route = __site_js__pathFragments[1]
+                window.arguments = __site_js__pathFragments.slice(2).filter(value => value !== '')
+                delete __site_js__pathFragments
+              </script>
+            `)
+
+            this.app.use(`/${wildcard}`, (() => {
+              // Capture the current wildcard
+              const __wildcard = wildcard
+              return (request, response, next) => {
+                console.log('wild')
+                const pathFragments = request.path.split('/')
+                console.log(pathFragments)
+                if (pathFragments.length >= 2 && pathFragments[1] !== '') {
+                  // OK, we have a sub-path, so serve the wildcard.
+                  console.log('wildcard', __wildcard)
+                  response
+                    .type('html')
+                    .end(wildcards[__wildcard])
+                } else {
+                  // No sub-path, ignore this request.
+                  next()
+                }
+              }
+            })())
+          } else {
+            // We found a directory inside of the .wildcard directory but it doesn’t have an index.html
+            // file inside it with the content to serve. Warn the person.
+            this.log(`   ❗    ❨site.js❩ Wilcard directory found at /.wildcard/${wildcard} but there is no index.html inside it. Ignoring…`)
+          }
+        }
+      })
+    }
+  }
 
   // Add dynamic routes, if any, if a <pathToServe>/.dynamic/ folder exists.
   // If there are errors in any of your dynamic routes, you will get 500 (server) errors.
