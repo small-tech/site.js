@@ -62,7 +62,7 @@
     "ansi-escape-sequences": "^4.1.0",
     "bent": "^7.3.4",
     "body-parser": "^1.19.0",
-    "chokidar": "^3.3.0",
+    "chokidar": "^3.4.2",
     "concat-stream": "^2.0.0",
     "debounce": "^1.2.0",
     "decache": "^4.5.1",
