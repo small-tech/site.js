@@ -1137,7 +1137,19 @@ class Site {
   //       event, it gets triggered with a 'rename' when a removed/recreated folder
   //       is affected.) See: https://github.com/paulmillr/chokidar/issues/404#issuecomment-666669336
   createFileWatcher () {
-    const fileWatchPath = `${this.pathToServe.replace(/\\/g, '/')}/**/*`
+
+    // Workaround for #227: https://source.small-tech.org/site.js/app/-/issues/227
+    //
+    // If the path to serve is the current path, Chokidar doesn’t pick up changes (e.g., to ./**/*).
+    // However, it does if a relative path is specified. So, as a workaround, we target
+    // ../<name of current folder>/**/* instead.
+    const relativePath = this.pathToServe === '.' ? (() => {
+      const pathFragments = path.resolve('.').split(path.sep)
+      const currentDirectoryName = pathFragments[pathFragments.length - 1]
+      return `../${currentDirectoryName}`
+    })() : this.pathToServe
+
+    const fileWatchPath = `${relativePath.replace(/\\/g, '/')}/**/*`
 
     this.app.__fileWatcher = chokidar.watch(fileWatchPath, {
       persistent: true,
