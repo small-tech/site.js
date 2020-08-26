@@ -635,32 +635,12 @@ class Site {
         this.log('   ⏰    ❨site.js❩ Cleared auto-update check interval.')
       }
 
-      if (this.app.__wildcardsWatcher !== undefined) {
+      if (this.app.__fileWatcher !== undefined) {
         try {
-          await this.app.__wildcardsWatcher.close()
-          this.log (`   🚮    ❨site.js❩ Removed wildcard folder watcher.`)
+          await this.app.__fileWatcher.close()
+          this.log (`   🚮    ❨site.js❩ Removed file watcher.`)
         } catch (error) {
-          this.log(`   ❌    ❨site.js❩ Could not remove wildcard folder watcher: ${error}`)
-        }
-      }
-
-      if (this.app.__dynamicFolderWatcher !== undefined) {
-        try {
-          await this.app.__dynamicFolderWatcher.close()
-          this.log (`   🚮    ❨site.js❩ Removed dynamic folder watcher.`)
-        } catch (error) {
-          this.log(`   ❌    ❨site.js❩ Could not remove dynamic folder watcher: ${error}`)
-        }
-      }
-
-      // Ensure dynamic route watchers are removed.
-      if (this.app.__dynamicFileWatcher !== undefined) {
-
-        try {
-          await this.app.__dynamicFileWatcher.close()
-          this.log (`   🚮    ❨site.js❩ Removed dynamic file watchers.`)
-        } catch (error) {
-          this.log(`   ❌    ❨site.js❩ Could not remove dynamic file watchers: ${error}`)
+          this.log(`   ❌    ❨site.js❩ Could not remove file watcher: ${error}`)
         }
       }
 
@@ -682,6 +662,9 @@ class Site {
   // Finish configuring the app. These are the routes that come at the end.
   // (We need to add the WebSocket (WSS) routes after the server has been created).
   endAppConfiguration () {
+    // Create the file watcher to watch for changes on dynamic and wildcard routes.
+    this.createFileWatcher()
+
     // If we need to load dynamic routes from a routesJS file, do it now.
     if (this.routesJsFile !== undefined) {
       this.createWebSocketServer()
@@ -1144,6 +1127,45 @@ class Site {
     }[event])
   }
 
+  // Creates a file watcher to restart the server if a dynamic or wildcard route changes.
+  // (Changes to static files do not cause a server restart and are handled by the instant module
+  // with live reload.)
+  //
+  // Note: Chokidar appears to have an issue where changes are no longer picked up if
+  // ===== a created folder is then removed. This should not be a big problem in actual
+  //       usage, but let’s keep an eye on this. (Note that if you listen for the 'raw'
+  //       event, it gets triggered with a 'rename' when a removed/recreated folder
+  //       is affected.) See: https://github.com/paulmillr/chokidar/issues/404#issuecomment-666669336
+  createFileWatcher () {
+    const fileWatchPath = `${this.pathToServe.replace(/\\/g, '/')}/**/*`
+
+    this.app.__fileWatcher = chokidar.watch(fileWatchPath, {
+      persistent: true,
+      ignoreInitial: true
+    })
+
+    this.app.__fileWatcher.on ('all', (event, file) => {
+      if (file.includes('/.dynamic')) {
+        //
+        // Dynamic route change.
+        //
+        this.log(`   🐁    ❨site.js❩ Dynamic route change: ${clr(`${this.prettyFileWatcherEvent(event)}`, 'green')} (${clr(file, 'cyan')}).`)
+        this.log('\n   🐁    ❨site.js❩ Requesting restart…\n')
+        this.restartServer()
+      } else if (file.includes('/.wildcard')) {
+        //
+        // Wildcard route change.
+        //
+        this.log(`   🐁    ❨site.js❩ Wildcard route change: ${clr(`${this.prettyFileWatcherEvent(event)}`, 'green')} (${clr(file, 'cyan')}).`)
+        this.log('\n   🐁    ❨site.js❩ Requesting restart…\n')
+        this.restartServer()
+      }
+    })
+
+    this.log('   🐁    ❨site.js❩ Watching for changes to dynamic and wildcard routes.')
+  }
+
+
   // Add wildcard routes.
   //
   // Wildcard routes are static routes where any path under https://your.site/x will route to .wildcard/x/index.html
@@ -1154,20 +1176,6 @@ class Site {
     const wildcardRoutesDirectory = path.join(this.pathToServe, '.wildcard')
 
     const wildcards = {}
-
-    const wildcardsWatchPath = `${this.pathToServe.replace(/\\/g, '/')}/**/*`
-    this.app.__wildcardsWatcher = chokidar.watch(wildcardsWatchPath, {
-      persistent: true,
-      ignoreInitial: true
-    })
-
-    this.app.__wildcardsWatcher.on ('all', (event, file) => {
-      if (file.includes('/.wildcard')) {
-        this.log(`   🐁    ❨site.js❩ Wildcards changed: ${clr(`${this.prettyFileWatcherEvent(event)}`, 'green')} (${clr(file, 'cyan')}).`)
-        this.log('\n   🐁    ❨site.js❩ Requesting restart…\n')
-        this.restartServer()
-      }
-    })
 
     if (fs.existsSync(wildcardRoutesDirectory)) {
 
@@ -1237,55 +1245,11 @@ class Site {
   // For full details, please see the readme file.
 
   appAddDynamicRoutes () {
-    // Regardless of whether there is a .dynamic folder or not, add a watcher
-    // to watch for a change in the existence of the .dynamic folder itself. This can happen
-    // if it is created or deleted locally or on a remote server as the result of a sync to
-    // the remote server. In either case, we want to restart the server so that the new
-    // routes are added or removed accordingly.
-    //
-    // Note: Chokidar appears to have an issue where changes are no longer picked up if
-    // ===== a created folder is then removed. This should not be a big problem in actual
-    //       usage, but let’s keep an eye on this. (Note that if you listen for the 'raw'
-    //       event, it gets triggered with a 'rename' when a removed/recreated folder
-    //       is affected.) See: https://github.com/paulmillr/chokidar/issues/404#issuecomment-666669336
-
-    const dynamicFolderWatchPath = `${this.pathToServe.replace(/\\/g, '/')}/**/*`
-    this.app.__dynamicFolderWatcher = chokidar.watch(dynamicFolderWatchPath, {
-      persistent: true,
-      ignoreInitial: true
-    })
-
-    this.app.__dynamicFolderWatcher.on ('addDir', file => {
-      if (file.endsWith('.dynamic')) {
-        this.log(`   🐁    ❨site.js❩ ${clr(`Dynamic folder created!`, 'green')}`)
-        this.log('\n   🐁    ❨site.js❩ Requesting restart…\n')
-        this.restartServer()
-      }
-    })
-
     // Initially check if a dynamic routes directory exists. If it does not,
     // we don’t need to take this any further.
     const dynamicRoutesDirectory = path.join(this.pathToServe, '.dynamic')
 
     if (fs.existsSync(dynamicRoutesDirectory)) {
-      // Watch .dynamic directory (recursively) so we can restart server when code changes.
-      // Windows-style slashes are not part of the glob standard so we have to ensure all
-      // slashes are forward slashes to ensure correct functioning on Windows 10
-      // (see https://github.com/paulmillr/chokidar#api).
-      const watchPath = `${dynamicRoutesDirectory.replace(/\\/g, '/')}/**`
-
-      this.app.__dynamicFileWatcher = chokidar.watch(watchPath, {
-        persistent: true,
-        ignoreInitial: true
-      })
-
-      this.app.__dynamicFileWatcher.on ('all', (event, file) => {
-        this.log(`   🐁    ❨site.js❩ ${clr('Code updated', 'green')} in ${clr(file, 'cyan')}!`)
-        this.log('\n   🐁    ❨site.js❩ Requesting restart…\n')
-
-        this.restartServer()
-      })
-
       const addBodyParser = () => {
         this.app.use(bodyParser.json())
         this.app.use(bodyParser.urlencoded({ extended: true }))
