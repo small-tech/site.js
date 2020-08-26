@@ -1133,6 +1133,17 @@ class Site {
     }
   }
 
+  // Returns a pretty human-readable string describing the file watcher change reflected in the event.
+  prettyFileWatcherEvent (event) {
+    return ({
+      'add': 'file added',
+      'addDir': 'directory added',
+      'change': 'file changed',
+      'unlink': 'file deleted',
+      'unlinkDir': 'directory deleted'
+    }[event])
+  }
+
   // Add wildcard routes.
   //
   // Wildcard routes are static routes where any path under https://your.site/x will route to .wildcard/x/index.html
@@ -1150,10 +1161,12 @@ class Site {
       ignoreInitial: true
     })
 
-    this.app.__wildcardsWatcher.on ('all', file => {
-      this.log(`   🐁    ❨site.js❩ ${clr(`Wildcards changed:`, 'green')} ${clr(file, 'cyan')}`)
-      this.log('\n   🐁    ❨site.js❩ Requesting restart…\n')
-      this.restartServer()
+    this.app.__wildcardsWatcher.on ('all', (event, file) => {
+      if (file.includes('/.wildcard')) {
+        this.log(`   🐁    ❨site.js❩ Wildcards changed: ${clr(`${this.prettyFileWatcherEvent(event)}`, 'green')} (${clr(file, 'cyan')}).`)
+        this.log('\n   🐁    ❨site.js❩ Requesting restart…\n')
+        this.restartServer()
+      }
     })
 
     if (fs.existsSync(wildcardRoutesDirectory)) {
