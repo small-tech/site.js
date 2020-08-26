@@ -27,6 +27,13 @@ function localhost(path) {
   return `https://localhost${path}`
 }
 
+function dehydrate (str) {
+  if (typeof str !== 'string') {
+    str = str.toString('utf-8')
+  }
+  return str.replace(/\s/g, '')
+}
+
 async function secureGet (url) {
   return new Promise((resolve, reject) => {
     https.get(url, (response) => {
@@ -332,6 +339,59 @@ test('[site.js] dynamic route loading from routes.js file', async t => {
     site.server.close()
     t.end()
   })
+})
+
+
+test('[site.js] wildcard routes', async t => {
+
+  t.plan(2)
+
+  const site = new Site({path: 'test/site-wildcard-routes'})
+  await site.serve()
+
+  let response
+  try {
+    response = await secureGet('https://localhost/hello/there/who/is/this')
+  } catch (error) {
+    console.log(error)
+    process.exit(1)
+  }
+
+  t.strictEquals(response.statusCode, 200, 'request succeeds')
+  t.strictEquals(dehydrate(response.body).toLowerCase(), dehydrate(`
+      <!DOCTYPE html>
+      <html lang='en'>
+      <head>
+        <meta charset='UTF-8'>
+        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+        <title>Wildcard: hello</title>
+      </head>
+
+                    <body>
+                    <script>
+                      // Site.js: add window.routeName and window.arguments objects
+                      // to wildcard route.
+                      __site_js__pathFragments =  document.location.pathname.split('/')
+                      window.route = __site_js__pathFragments[1]
+                      window.arguments = __site_js__pathFragments.slice(2).filter(value => value !== '')
+                      delete __site_js__pathFragments
+                    </script>
+
+        <script>
+          document.write(\`<h1><em>\${window.route}</em> wildcard route</h1>\`)
+          document.write('<p>Called with the following arguments:</p>')
+          document.write('<ol>')
+          window.arguments.forEach(argument => {
+            document.write(\`<li>\${argument}</li>\`)
+          })
+          document.write('</ol>')
+        </script>
+        <script src="/instant/client/bundle.js"></script>
+      </body>
+      </html>
+  `).toLowerCase(), 'wildcard route body is as expected')
+
+  site.server.close()
 })
 
 
