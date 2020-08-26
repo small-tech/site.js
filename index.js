@@ -21,6 +21,7 @@
 const fs                    = require('fs-extra')
 const path                  = require('path')
 const os                    = require('os')
+const EventEmitter          = require('events')
 const childProcess          = require('child_process')
 const http                  = require('http')
 const https                 = require('@small-tech/https')
@@ -234,6 +235,8 @@ class Site {
   constructor (options) {
     // Introduce ourselves.
     Site.logAppNameAndVersion()
+
+    this.eventEmitter = new EventEmitter()
 
     // Ensure that the settings directory exists and create it if it doesn’t.
     fs.ensureDirSync(Site.settingsDirectory)
@@ -562,6 +565,7 @@ class Site {
     this.appAddTest500ErrorPage()
     this.appAddDynamicRoutes()
     this.appAddStaticRoutes()
+    this.appAddWildcardRoutes()
     this.appAddArchivalCascade()
   }
 
@@ -624,36 +628,43 @@ class Site {
     // Enable the ability to destroy the server (close all active connections).
     enableDestroy(this.server)
 
-    this.server.on('close', () => {
+    this.server.on('close', async () => {
       // Clear the auto update check interval.
       if (this.autoUpdateCheckInterval !== undefined) {
         clearInterval(this.autoUpdateCheckInterval)
         this.log('   ⏰    ❨site.js❩ Cleared auto-update check interval.')
       }
 
-      if (this.app.__dynamicFolderWatcher !== undefined) {
-        this.app.__dynamicFolderWatcher.close()
-        this.log (`   🚮    ❨site.js❩ Removed root file watcher.`)
-      }
-
-      // Ensure dynamic route watchers are removed.
-      if (this.app.__dynamicFileWatcher !== undefined) {
-        this.app.__dynamicFileWatcher.close()
-        this.log (`   🚮    ❨site.js❩ Removed dynamic file watchers.`)
+      if (this.app.__fileWatcher !== undefined) {
+        try {
+          await this.app.__fileWatcher.close()
+          this.log (`   🚮    ❨site.js❩ Removed file watcher.`)
+        } catch (error) {
+          this.log(`   ❌    ❨site.js❩ Could not remove file watcher: ${error}`)
+        }
       }
 
       // Ensure that the static route file watchers are removed.
       if (this.app.__staticRoutes !== undefined) {
-        this.app.__staticRoutes.cleanUp(() => {
-          this.log('   🚮    ❨site.js❩ Live reload file system watchers removed from static web routes on server close.')
+        await new Promise((resolve, reject) => {
+          this.app.__staticRoutes.cleanUp(() => {
+            this.log('   🚮    ❨site.js❩ Live reload file system watchers removed from static web routes on server close.')
+            resolve()
+          })
         })
       }
+
+      this.log('   🚮    ❨site.js❩ Housekeeping is done!')
+      this.eventEmitter.emit('housekeepingIsDone')
     })
   }
 
   // Finish configuring the app. These are the routes that come at the end.
   // (We need to add the WebSocket (WSS) routes after the server has been created).
   endAppConfiguration () {
+    // Create the file watcher to watch for changes on dynamic and wildcard routes.
+    this.createFileWatcher()
+
     // If we need to load dynamic routes from a routesJS file, do it now.
     if (this.routesJsFile !== undefined) {
       this.createWebSocketServer()
@@ -1063,6 +1074,159 @@ class Site {
   }
 
 
+  // Restarts the server.
+  restartServer () {
+    if (process.env.NODE_ENV === 'production') {
+      // We’re running production, to restart the daemon, just exit.
+      // (We let ourselves fall, knowing that systemd will catch us.) ;)
+      process.exit()
+    } else {
+      // We’re running as a regular process. Just restart the server, not the whole process.
+
+      // Do some housekeeping.
+      Graceful.off('SIGINT', this.goodbye)
+      Graceful.off('SIGTERM', this.goodbye)
+
+      if (this.hugoServerProcesses) {
+        this.log('   🚮    ❨site.js❩ Killing Hugo server processes.')
+        this.hugoServerProcesses.forEach(hugoServerProcess => hugoServerProcess.kill())
+      }
+
+      // Wait until housekeeping is done cleaning up after the server is destroyed before
+      // restarting the server.
+      this.eventEmitter.on('housekeepingIsDone', () => {
+        // Restart the server.
+        this.eventEmitter.removeAllListeners()
+        this.log('\n   🐁    ❨site.js❩ Restarting server…\n')
+        const {commandPath, args} = cli.initialise(process.argv.slice(2))
+        serve(args)
+        this.log('\n   🐁    ❨site.js❩ Server restarted.\n')
+      })
+
+      // Destroy the current server (so we do not get a port conflict on restart before
+      // we’ve had a chance to terminate our own process).
+      this.server.destroy()
+
+      // Stop accepting new connections.
+      this.server.close(() => {
+        this.log('\n   🐁    ❨site.js❩ Server is closed.\n')
+        this.server.removeAllListeners('close')
+        this.server.removeAllListeners('error')
+      })
+    }
+  }
+
+  // Returns a pretty human-readable string describing the file watcher change reflected in the event.
+  prettyFileWatcherEvent (event) {
+    return ({
+      'add': 'file added',
+      'addDir': 'directory added',
+      'change': 'file changed',
+      'unlink': 'file deleted',
+      'unlinkDir': 'directory deleted'
+    }[event])
+  }
+
+  // Creates a file watcher to restart the server if a dynamic or wildcard route changes.
+  // (Changes to static files do not cause a server restart and are handled by the instant module
+  // with live reload.)
+  //
+  // Note: Chokidar appears to have an issue where changes are no longer picked up if
+  // ===== a created folder is then removed. This should not be a big problem in actual
+  //       usage, but let’s keep an eye on this. (Note that if you listen for the 'raw'
+  //       event, it gets triggered with a 'rename' when a removed/recreated folder
+  //       is affected.) See: https://github.com/paulmillr/chokidar/issues/404#issuecomment-666669336
+  createFileWatcher () {
+    const fileWatchPath = `${this.pathToServe.replace(/\\/g, '/')}/**/*`
+
+    this.app.__fileWatcher = chokidar.watch(fileWatchPath, {
+      persistent: true,
+      ignoreInitial: true
+    })
+
+    this.app.__fileWatcher.on ('all', (event, file) => {
+      if (file.includes('/.dynamic')) {
+        //
+        // Dynamic route change.
+        //
+        this.log(`   🐁    ❨site.js❩ Dynamic route change: ${clr(`${this.prettyFileWatcherEvent(event)}`, 'green')} (${clr(file, 'cyan')}).`)
+        this.log('\n   🐁    ❨site.js❩ Requesting restart…\n')
+        this.restartServer()
+      } else if (file.includes('/.wildcard')) {
+        //
+        // Wildcard route change.
+        //
+        this.log(`   🐁    ❨site.js❩ Wildcard route change: ${clr(`${this.prettyFileWatcherEvent(event)}`, 'green')} (${clr(file, 'cyan')}).`)
+        this.log('\n   🐁    ❨site.js❩ Requesting restart…\n')
+        this.restartServer()
+      }
+    })
+
+    this.log('   🐁    ❨site.js❩ Watching for changes to dynamic and wildcard routes.')
+  }
+
+
+  // Add wildcard routes.
+  //
+  // Wildcard routes are static routes where any path under https://your.site/x will route to .wildcard/x/index.html
+  // if that file exists. So, for example, https://your.site/x/y, https://your.site/x/y/z, etc., will all route to the
+  // same static file. Use this if you want to allow path-style arguments in your URLs but carry out client-side
+  // processing. This saves you from having to create .dynamic routes for that use case.
+  appAddWildcardRoutes () {
+    const wildcardRoutesDirectory = path.join(this.pathToServe, '.wildcard')
+
+    const wildcards = {}
+
+    if (fs.existsSync(wildcardRoutesDirectory)) {
+
+      fs.readdirSync(wildcardRoutesDirectory, {withFileTypes: true}).forEach(file => {
+        if (file.isDirectory()) {
+          const wildcard = file.name
+          const wildcardIndexFilePath = path.join(wildcardRoutesDirectory, wildcard, 'index.html')
+
+          if (fs.existsSync(wildcardIndexFilePath)) {
+            this.log(`   🃏    ❨site.js❩ Serving wildcard route: ${clr(`https://${this.prettyLocation()}/${wildcard}/**/*`, 'green')} → ${clr(`/.wildcard/${wildcard}/index.html`, 'cyan')}`)
+
+            // Read the HTML content and inject some javascript to make it easy to access the route
+            // name and the arguments from window.route and and window.arguments.
+            const wildcardIndexFilePath = path.join(wildcardRoutesDirectory, wildcard, 'index.html')
+            wildcards[wildcard] = fs.readFileSync(wildcardIndexFilePath, 'utf-8').replace('<body>', `
+              <body>
+              <script>
+                // Site.js: add window.routeName and window.arguments objects to wildcard route.
+                __site_js__pathFragments =  document.location.pathname.split('/')
+                window.route = __site_js__pathFragments[1]
+                window.arguments = __site_js__pathFragments.slice(2).filter(value => value !== '')
+                delete __site_js__pathFragments
+              </script>
+            `)
+
+            this.app.use(`/${wildcard}`, (() => {
+              // Capture the current wildcard
+              const __wildcard = wildcard
+              return (request, response, next) => {
+                const pathFragments = request.path.split('/')
+                if (pathFragments.length >= 2 && pathFragments[1] !== '') {
+                  // OK, we have a sub-path, so serve the wildcard.
+                  response
+                    .type('html')
+                    .end(wildcards[__wildcard])
+                } else {
+                  // No sub-path, ignore this request.
+                  next()
+                }
+              }
+            })())
+          } else {
+            // We found a directory inside of the .wildcard directory but it doesn’t have an index.html
+            // file inside it with the content to serve. Warn the person.
+            this.log(`   ❗    ❨site.js❩ Wilcard directory found at /.wildcard/${wildcard} but there is no index.html inside it. Ignoring…`)
+          }
+        }
+      })
+    }
+  }
+
   // Add dynamic routes, if any, if a <pathToServe>/.dynamic/ folder exists.
   // If there are errors in any of your dynamic routes, you will get 500 (server) errors.
   //
@@ -1080,90 +1244,11 @@ class Site {
   // For full details, please see the readme file.
 
   appAddDynamicRoutes () {
-
-    // Restarts the server.
-    const restartServer = () => {
-      if (process.env.NODE_ENV === 'production') {
-        // We’re running production, to restart the daemon, just exit.
-        // (We let ourselves fall, knowing that systemd will catch us.) ;)
-        process.exit()
-      } else {
-        // We’re running as a regular process. Just restart the server, not the whole process.
-
-        // Do some housekeeping.
-        Graceful.off('SIGINT', this.goodbye)
-        Graceful.off('SIGTERM', this.goodbye)
-
-        if (this.hugoServerProcesses) {
-          this.log('   🚮    ❨site.js❩ Killing Hugo server processes.')
-          this.hugoServerProcesses.forEach(hugoServerProcess => hugoServerProcess.kill())
-        }
-
-        // Destroy the current server (so we do not get a port conflict on restart before
-        // we’ve had a chance to terminate our own process).
-        this.server.destroy()
-
-        // Stop accepting new connections.
-        this.server.close(() => {
-          // Restart the server.
-          this.server.removeAllListeners('close')
-          this.server.removeAllListeners('error')
-          const {commandPath, args} = cli.initialise(process.argv.slice(2))
-          serve(args)
-          this.log('   🐁    ❨site.js❩ Restarted server.\n')
-        })
-      }
-    }
-
-    // Regardless of whether there is a .dynamic folder or not, add a watcher
-    // to watch for a change in the existence of the .dynamic folder itself. This can happen
-    // if it is created or deleted locally or on a remote server as the result of a sync to
-    // the remote server. In either case, we want to restart the server so that the new
-    // routes are added or removed accordingly.
-    //
-    // Note: Chokidar appears to have an issue where changes are no longer picked up if
-    // ===== a created folder is then removed. This should not be a big problem in actual
-    //       usage, but let’s keep an eye on this. (Note that if you listen for the 'raw'
-    //       event, it gets triggered with a 'rename' when a removed/recreated folder
-    //       is affected.) See: https://github.com/paulmillr/chokidar/issues/404#issuecomment-666669336
-
-    const dynamicFolderWatchPath = `${this.pathToServe.replace(/\\/g, '/')}/**/*`
-    this.app.__dynamicFolderWatcher = chokidar.watch(dynamicFolderWatchPath, {
-      persistent: true,
-      ignoreInitial: true
-    })
-
-    this.app.__dynamicFolderWatcher.on ('addDir', file => {
-      if (file.endsWith('.dynamic')) {
-        this.log(`   🐁    ❨site.js❩ ${clr(`Dynamic folder created!`, 'green')}`)
-        this.log('   🐁    ❨site.js❩ Requesting restart…\n')
-        restartServer()
-      }
-    })
-
     // Initially check if a dynamic routes directory exists. If it does not,
     // we don’t need to take this any further.
     const dynamicRoutesDirectory = path.join(this.pathToServe, '.dynamic')
 
     if (fs.existsSync(dynamicRoutesDirectory)) {
-      // Watch .dynamic directory (recursively) so we can restart server when code changes.
-      // Windows-style slashes are not part of the glob standard so we have to ensure all
-      // slashes are forward slashes to ensure correct functioning on Windows 10
-      // (see https://github.com/paulmillr/chokidar#api).
-      const watchPath = `${dynamicRoutesDirectory.replace(/\\/g, '/')}/**`
-
-      this.app.__dynamicFileWatcher = chokidar.watch(watchPath, {
-        persistent: true,
-        ignoreInitial: true
-      })
-
-      this.app.__dynamicFileWatcher.on ('all', (event, file) => {
-        this.log(`   🐁    ❨site.js❩ ${clr('Code updated', 'green')} in ${clr(file, 'cyan')}!`)
-        this.log('   🐁    ❨site.js❩ Requesting restart…\n')
-
-        restartServer()
-      })
-
       const addBodyParser = () => {
         this.app.use(bodyParser.json())
         this.app.use(bodyParser.urlencoded({ extended: true }))
