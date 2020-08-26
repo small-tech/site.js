@@ -33,6 +33,8 @@ We exist in part thanks to patronage by people like you. If you share [our visio
 
   - __Supports the creation of static web sites, dynamic web sites, and hybrid sites__ (via integrated [Node.js](https://nodejs.org/) and [Express](https://expressjs.com)).
 
+  - __Supports [Wildcard routes](#wildcard-routes)__ for purely client-side specialisation using path-based parameters.
+
   - __Supports [DotJS](#dotjs) for dynamic routes.__ (DotJS is PHP-like simple routing for Node.js introduced by Site.js for quickly prototyping and building dynamic sites).
 
   - __Includes [Hugo static site generator](#static-site-generation).__
@@ -1204,6 +1206,66 @@ const appPath = require.main.filename.replace('bin/site.js', '')
 ### Security
 
 The code within your JavaScript routes is executed on the server. Exercise the same caution as you would when creating any Node.js app (sanitise input, etc.)
+
+## Wildcard routes
+
+As of version 14.5.0, if all you want to do is to customise the behaviour of your pages using client-side JavaScript based on parameters provided through the URL path, you don’t have to use dynamic routes and a `routes.js` file, you can use wildcard routes instead, which are much simpler.
+
+So say, for example, that you want your app to greet people based on the URL that’s provided:
+
+  - https://my.site/hello/aral should say “Hello, Aral”
+  - https://my.site/hello/laura should say “Hello, Laura”
+  - etc.
+
+To do this using wildcard routes:
+
+1. Create a folder called `.wildcard` in the root directory of your site.
+2. Inside that folder, create a folder named `hello`
+3. In the `hello` folder, create an `index.html` with the following code:
+
+    ```html
+    <!doctype html>
+    <html lang='en'>
+    <head>
+      <meta charset='utf-8'>
+      <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+      <title>Hello!</title>
+    </head>
+    <body>
+      <script>
+        function capitaliseFirstLetter (word) {
+          return word.split('').map((letter,index) => !index ? letter.toUpperCase() : letter).join('')
+        }
+
+        const name = capitaliseFirstLetter(window.arguments[0])
+        document.write(`<h1>Hello, ${name}</h1>`)
+      </script>
+    </body>
+    </html>
+    ```
+
+### How it works
+
+When Site.js finds a `.wildcard` folder, it adds every first-level sub-folder in it as a route that maps to the `index.html` file in it. In the example above, `/hello/aral` and `hello/what/is/this/about` will both map to the same file.
+
+Any path fragment after the route name itself is treated as a positional argument.
+
+Although you could parse the `document.location` yourself to get at the arguments and the route name, Site.js makes it even easier for you by injecting a tiny bit of JavaScript at the top of your page that exposes these as:
+
+  - `window.route`: the name of your route. In the above example, this is `hello`.
+  - `window.arguments`: an array of arguments. For `/hello/what/is/this/about`, this would be `['hello', 'what', 'is', 'this', 'about']`
+
+This is the JavaScript that’s injected into your page:
+
+```html
+<script>
+  // Site.js: add window.routeName and window.arguments objects to wildcard route.
+  __site_js__pathFragments =  document.location.pathname.split('/')
+  window.route = __site_js__pathFragments[1]
+  window.arguments = __site_js__pathFragments.slice(2).filter(value => value !== '')
+  delete __site_js__pathFragments
+</script>
+```
 
 ## API
 
