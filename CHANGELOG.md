@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [14.5.0] - In progress…
+
+### Added
+
+  - Wildcard static route support. Any path under https://your.site/x will route to .wildcard/x/index.html if that file exists. So, for example, https://your.site/x/y, https://your.site/x/y/z, etc., will all route to the same static file. Use this if you want to allow path-style arguments in your URLs but carry out client-side processing. This saves you from having to create .dynamic routes for that use case.
+
 ## [14.4.0] - 2020-08-25
 
 The pull and push commands implement Small Web conventions to enable simple bi-directional data transfer between a local machine and a Small Web server.
