@@ -21,6 +21,7 @@
 const fs                    = require('fs-extra')
 const path                  = require('path')
 const os                    = require('os')
+const EventEmitter          = require('events')
 const childProcess          = require('child_process')
 const http                  = require('http')
 const https                 = require('@small-tech/https')
@@ -234,6 +235,8 @@ class Site {
   constructor (options) {
     // Introduce ourselves.
     Site.logAppNameAndVersion()
+
+    this.eventEmitter = new EventEmitter()
 
     // Ensure that the settings directory exists and create it if it doesn’t.
     fs.ensureDirSync(Site.settingsDirectory)
@@ -625,30 +628,54 @@ class Site {
     // Enable the ability to destroy the server (close all active connections).
     enableDestroy(this.server)
 
-    this.server.on('close', () => {
+    this.server.on('close', async () => {
       // Clear the auto update check interval.
       if (this.autoUpdateCheckInterval !== undefined) {
         clearInterval(this.autoUpdateCheckInterval)
         this.log('   ⏰    ❨site.js❩ Cleared auto-update check interval.')
       }
 
+      if (this.app.__wildcardsWatcher !== undefined) {
+        try {
+          await this.app.__wildcardsWatcher.close()
+          this.log (`   🚮    ❨site.js❩ Removed wildcard folder watcher.`)
+        } catch (error) {
+          this.log(`   ❌    ❨site.js❩ Could not remove wildcard folder watcher: ${error}`)
+        }
+      }
+
       if (this.app.__dynamicFolderWatcher !== undefined) {
-        this.app.__dynamicFolderWatcher.close()
-        this.log (`   🚮    ❨site.js❩ Removed root file watcher.`)
+        try {
+          await this.app.__dynamicFolderWatcher.close()
+          this.log (`   🚮    ❨site.js❩ Removed dynamic folder watcher.`)
+        } catch (error) {
+          this.log(`   ❌    ❨site.js❩ Could not remove dynamic folder watcher: ${error}`)
+        }
       }
 
       // Ensure dynamic route watchers are removed.
       if (this.app.__dynamicFileWatcher !== undefined) {
-        this.app.__dynamicFileWatcher.close()
-        this.log (`   🚮    ❨site.js❩ Removed dynamic file watchers.`)
+
+        try {
+          await this.app.__dynamicFileWatcher.close()
+          this.log (`   🚮    ❨site.js❩ Removed dynamic file watchers.`)
+        } catch (error) {
+          this.log(`   ❌    ❨site.js❩ Could not remove dynamic file watchers: ${error}`)
+        }
       }
 
       // Ensure that the static route file watchers are removed.
       if (this.app.__staticRoutes !== undefined) {
-        this.app.__staticRoutes.cleanUp(() => {
-          this.log('   🚮    ❨site.js❩ Live reload file system watchers removed from static web routes on server close.')
+        await new Promise((resolve, reject) => {
+          this.app.__staticRoutes.cleanUp(() => {
+            this.log('   🚮    ❨site.js❩ Live reload file system watchers removed from static web routes on server close.')
+            resolve()
+          })
         })
       }
+
+      this.log('   🚮    ❨site.js❩ Housekeeping is done!')
+      this.eventEmitter.emit('housekeepingIsDone')
     })
   }
 
@@ -1063,6 +1090,49 @@ class Site {
     this.app.use(this.app.__staticRoutes)
   }
 
+
+  // Restarts the server.
+  restartServer () {
+    if (process.env.NODE_ENV === 'production') {
+      // We’re running production, to restart the daemon, just exit.
+      // (We let ourselves fall, knowing that systemd will catch us.) ;)
+      process.exit()
+    } else {
+      // We’re running as a regular process. Just restart the server, not the whole process.
+
+      // Do some housekeeping.
+      Graceful.off('SIGINT', this.goodbye)
+      Graceful.off('SIGTERM', this.goodbye)
+
+      if (this.hugoServerProcesses) {
+        this.log('   🚮    ❨site.js❩ Killing Hugo server processes.')
+        this.hugoServerProcesses.forEach(hugoServerProcess => hugoServerProcess.kill())
+      }
+
+      // Wait until housekeeping is done cleaning up after the server is destroyed before
+      // restarting the server.
+      this.eventEmitter.on('housekeepingIsDone', () => {
+        // Restart the server.
+        this.eventEmitter.removeAllListeners()
+        this.log('\n   🐁    ❨site.js❩ Restarting server…\n')
+        const {commandPath, args} = cli.initialise(process.argv.slice(2))
+        serve(args)
+        this.log('\n   🐁    ❨site.js❩ Server restarted.\n')
+      })
+
+      // Destroy the current server (so we do not get a port conflict on restart before
+      // we’ve had a chance to terminate our own process).
+      this.server.destroy()
+
+      // Stop accepting new connections.
+      this.server.close(() => {
+        this.log('\n   🐁    ❨site.js❩ Server is closed.\n')
+        this.server.removeAllListeners('close')
+        this.server.removeAllListeners('error')
+      })
+    }
+  }
+
   // Add wildcard routes.
   //
   // Wildcard routes are static routes where any path under https://your.site/x will route to .wildcard/x/index.html
@@ -1073,6 +1143,18 @@ class Site {
     const wildcardRoutesDirectory = path.join(this.pathToServe, '.wildcard')
 
     const wildcards = {}
+
+    const wildcardsWatchPath = `${this.pathToServe.replace(/\\/g, '/')}/**/*`
+    this.app.__wildcardsWatcher = chokidar.watch(wildcardsWatchPath, {
+      persistent: true,
+      ignoreInitial: true
+    })
+
+    this.app.__wildcardsWatcher.on ('all', file => {
+      this.log(`   🐁    ❨site.js❩ ${clr(`Wildcards changed:`, 'green')} ${clr(file, 'cyan')}`)
+      this.log('\n   🐁    ❨site.js❩ Requesting restart…\n')
+      this.restartServer()
+    })
 
     if (fs.existsSync(wildcardRoutesDirectory)) {
 
@@ -1103,12 +1185,9 @@ class Site {
               // Capture the current wildcard
               const __wildcard = wildcard
               return (request, response, next) => {
-                console.log('wild')
                 const pathFragments = request.path.split('/')
-                console.log(pathFragments)
                 if (pathFragments.length >= 2 && pathFragments[1] !== '') {
                   // OK, we have a sub-path, so serve the wildcard.
-                  console.log('wildcard', __wildcard)
                   response
                     .type('html')
                     .end(wildcards[__wildcard])
@@ -1145,41 +1224,6 @@ class Site {
   // For full details, please see the readme file.
 
   appAddDynamicRoutes () {
-
-    // Restarts the server.
-    const restartServer = () => {
-      if (process.env.NODE_ENV === 'production') {
-        // We’re running production, to restart the daemon, just exit.
-        // (We let ourselves fall, knowing that systemd will catch us.) ;)
-        process.exit()
-      } else {
-        // We’re running as a regular process. Just restart the server, not the whole process.
-
-        // Do some housekeeping.
-        Graceful.off('SIGINT', this.goodbye)
-        Graceful.off('SIGTERM', this.goodbye)
-
-        if (this.hugoServerProcesses) {
-          this.log('   🚮    ❨site.js❩ Killing Hugo server processes.')
-          this.hugoServerProcesses.forEach(hugoServerProcess => hugoServerProcess.kill())
-        }
-
-        // Destroy the current server (so we do not get a port conflict on restart before
-        // we’ve had a chance to terminate our own process).
-        this.server.destroy()
-
-        // Stop accepting new connections.
-        this.server.close(() => {
-          // Restart the server.
-          this.server.removeAllListeners('close')
-          this.server.removeAllListeners('error')
-          const {commandPath, args} = cli.initialise(process.argv.slice(2))
-          serve(args)
-          this.log('   🐁    ❨site.js❩ Restarted server.\n')
-        })
-      }
-    }
-
     // Regardless of whether there is a .dynamic folder or not, add a watcher
     // to watch for a change in the existence of the .dynamic folder itself. This can happen
     // if it is created or deleted locally or on a remote server as the result of a sync to
@@ -1201,8 +1245,8 @@ class Site {
     this.app.__dynamicFolderWatcher.on ('addDir', file => {
       if (file.endsWith('.dynamic')) {
         this.log(`   🐁    ❨site.js❩ ${clr(`Dynamic folder created!`, 'green')}`)
-        this.log('   🐁    ❨site.js❩ Requesting restart…\n')
-        restartServer()
+        this.log('\n   🐁    ❨site.js❩ Requesting restart…\n')
+        this.restartServer()
       }
     })
 
@@ -1224,9 +1268,9 @@ class Site {
 
       this.app.__dynamicFileWatcher.on ('all', (event, file) => {
         this.log(`   🐁    ❨site.js❩ ${clr('Code updated', 'green')} in ${clr(file, 'cyan')}!`)
-        this.log('   🐁    ❨site.js❩ Requesting restart…\n')
+        this.log('\n   🐁    ❨site.js❩ Requesting restart…\n')
 
-        restartServer()
+        this.restartServer()
       })
 
       const addBodyParser = () => {
