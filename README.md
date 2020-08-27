@@ -797,8 +797,7 @@ let counter = 0
 
 module.exports = (request, response) => {
   response
-    .type('html')
-    .end(`
+    .html(`
       <h1>Hello, world!</h1>
       <p>I’ve been called ${++counter} time${counter > 1 ? 's': ''} since the server started.</p>
     `)
@@ -826,9 +825,7 @@ function serverStats (request, response) {
 
   const page = `<html><head><title>Server statistics</title><style>body {font-family: sans-serif;}</style></head><body><h1>Server statistics</h1><h2>Load averages</h2>${loadAverages}<h2>Free memory</h2>${freeMemory}</body></html>`
 
-  response
-    .type('html')
-    .end(page)
+  response.html(page)
 }
 
 module.exports = serverStats
@@ -889,29 +886,27 @@ module.exports = function (request, response) {
     return `#${c()}${c()}${c()}`
   }
 
-  response
-    .type('html')
-    .end(`
-      <!doctype html>
-      <html lang='en'>
-      <head>
-        <meta charset='utf-8'>
-        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-        <title>Cows!</title>
-        <style>
-          html { font-family: sans-serif; color: dark-grey; background-color: ${randomColor()}; }
-          body {
-            display: grid; align-items: center; justify-content: center;
-            height: 100vh; vertical-align: top; margin: 0;
-          }
-          pre { font-size: 24px; color: ${randomColor()}; mix-blend-mode: difference;}
-        </style>
-      </head>
-      <body>
-          <pre>${randomCow}</pre>
-      </body>
-      </html>
-    `)
+  response.html(`
+    <!doctype html>
+    <html lang='en'>
+    <head>
+      <meta charset='utf-8'>
+      <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+      <title>Cows!</title>
+      <style>
+        html { font-family: sans-serif; color: dark-grey; background-color: ${randomColor()}; }
+        body {
+          display: grid; align-items: center; justify-content: center;
+          height: 100vh; vertical-align: top; margin: 0;
+        }
+        pre { font-size: 24px; color: ${randomColor()}; mix-blend-mode: difference;}
+      </style>
+    </head>
+    <body>
+        <pre>${randomCow}</pre>
+    </body>
+    </html>
+  `)
 }
 ```
 
@@ -1002,7 +997,7 @@ module.exports = function (request, response) {
   // … because the HTML template references the rendered CSS template.
   const html = render(htmlTemplate)
 
-  response.type('html').end(html)
+  response.html(html)
 }
 ```
 
@@ -1119,9 +1114,7 @@ The _routes.js_ file should export a function that accepts a reference to the Ex
 module.exports = app => {
   // HTTPS route with a parameter called thing.
   app.get('/hello/:thing', (request, response) => {
-    response
-      .type('html')
-      .end(`<h1>Hello, ${request.params.thing}!</h1>`)
+    response.html(`<h1>Hello, ${request.params.thing}!</h1>`)
   })
 
   // WebSocket route: echos messages back to the client that sent them.

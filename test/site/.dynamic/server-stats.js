@@ -23,7 +23,7 @@ function serverStats (request, response, next) {
     </html>
   `
 
-  response.type('html').end(page)
+  response.html(page)
 }
 
 module.exports = serverStats
