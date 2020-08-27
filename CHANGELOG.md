@@ -4,11 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [14.5.2] - 2020-08-27
+
+### Fixes
+
+  - Proper fix for issue #227 (https://source.small-tech.org/site.js/app/-/issues/227, see 14.5.1, below.)
+
 ## [14.5.1] - 2020-08-26
 
 ### Fixes
 
-  - File watches now also work when serving the current directory (without a path specified).
+  - File watches now also work when serving the current directory (without a path specified). (#227)
 
 ## [14.5.0] - 2020-08-26
 
