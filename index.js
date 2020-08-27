@@ -1137,7 +1137,21 @@ class Site {
   //       event, it gets triggered with a 'rename' when a removed/recreated folder
   //       is affected.) See: https://github.com/paulmillr/chokidar/issues/404#issuecomment-666669336
   createFileWatcher () {
-    const fileWatchPath = `${this.pathToServe.replace(/\\/g, '/')}/**/*`
+
+    // Workaround for #227: https://source.small-tech.org/site.js/app/-/issues/227
+    //
+    // When the app is wrapped with Nexe, if the path to serve is the current path, Chokidar doesn’t pick up
+    // changes (e.g., to ./**/*). However, it does if a relative path is specified. So, as a workaround, we target
+    // ../<name of current folder>/**/* instead.
+    // (This also means we can look for changes to /.dynamic and /.wildcard instead of just .dynamic and .wildcard
+    // and this gives us a little bit more safety in case those terms are found as part of a file name somewhere.)
+    const relativePath = this.pathToServe === '.' ? (() => {
+      const pathFragments = path.resolve('.').split(path.sep)
+      const currentDirectoryName = pathFragments[pathFragments.length - 1]
+      return `../${currentDirectoryName}`
+    })() : this.pathToServe
+
+    const fileWatchPath = `${relativePath.replace(/\\/g, '/')}/**/*`
 
     this.app.__fileWatcher = chokidar.watch(fileWatchPath, {
       persistent: true,
@@ -1145,14 +1159,14 @@ class Site {
     })
 
     this.app.__fileWatcher.on ('all', (event, file) => {
-      if (file.includes('.dynamic')) {
+      if (file.includes('/.dynamic')) {
         //
         // Dynamic route change.
         //
         this.log(`   🐁    ❨site.js❩ Dynamic route change: ${clr(`${this.prettyFileWatcherEvent(event)}`, 'green')} (${clr(file, 'cyan')}).`)
         this.log('\n   🐁    ❨site.js❩ Requesting restart…\n')
         this.restartServer()
-      } else if (file.includes('.wildcard')) {
+      } else if (file.includes('/.wildcard')) {
         //
         // Wildcard route change.
         //
