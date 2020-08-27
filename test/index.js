@@ -39,6 +39,7 @@ async function secureGet (url) {
     https.get(url, (response) => {
       const statusCode = response.statusCode
       const location = response.headers.location
+      const contentType = response.headers['content-type']
 
       // Reject if it’s not one of the status codes we are testing.
       if (statusCode !== 200 && statusCode !== 404 && statusCode !== 500 && statusCode !== 302) {
@@ -48,7 +49,7 @@ async function secureGet (url) {
       let body = ''
       response.on('data', _ => body += _)
       response.on('end', () => {
-        resolve({statusCode, location, body})
+        resolve({statusCode, contentType, location, body})
       })
     })
   })
@@ -114,7 +115,7 @@ test('[site.js] Simple dotJS filesystem-based route loading', async t => {
 
     // Ensure the route is loaded as we expect.
     const routerStack = site.app._router.stack
-    t.strictEquals(routerStack[7].route.path, '/simple', 'the route is as expected in the router stack')
+    t.strictEquals(routerStack[8].route.path, '/simple', 'the route is as expected in the router stack')
 
     let response
     try {
@@ -140,37 +141,37 @@ async function runDotJsSeparateGetAndPostTests (t, site) {
 
   const routerStack = site.app._router.stack
 
-  const getFileNameAsRouteNameRoute = routerStack[7].route
+  const getFileNameAsRouteNameRoute = routerStack[8].route
   t.true(getFileNameAsRouteNameRoute.methods.get, 'request method should be GET')
   t.strictEquals(getFileNameAsRouteNameRoute.path, '/file-name-as-route-name', 'path should be correct')
 
-  const getIndexRoute = routerStack[8].route
+  const getIndexRoute = routerStack[9].route
   t.true(getIndexRoute.methods.get, 'request method should be GET')
   t.strictEquals(getIndexRoute.path, '/', 'path should be correct')
 
-  const getSubRouteFileNameAsRouteNameRoute = routerStack[9].route
+  const getSubRouteFileNameAsRouteNameRoute = routerStack[10].route
   t.true(getSubRouteFileNameAsRouteNameRoute.methods.get, 'request method should be GET')
   t.strictEquals(getSubRouteFileNameAsRouteNameRoute.path, '/sub-route/file-name-as-route-name', 'path should be correct')
 
-  const getSubRouteIndexRoute = routerStack[10].route
+  const getSubRouteIndexRoute = routerStack[11].route
   t.true(getSubRouteIndexRoute.methods.get, 'request method should be GET')
   t.strictEquals(getSubRouteIndexRoute.path, '/sub-route', 'path should be correct')
 
   // Next two routes are the body parser and JSON parser, so we skip those.
 
-  const postFileNameAsRouteNameRoute = routerStack[13].route
+  const postFileNameAsRouteNameRoute = routerStack[14].route
   t.true(postFileNameAsRouteNameRoute.methods.post, 'request method should be POST')
   t.strictEquals(postFileNameAsRouteNameRoute.path, '/file-name-as-route-name', 'path should be correct')
 
-  const postIndexRoute = routerStack[14].route
+  const postIndexRoute = routerStack[15].route
   t.true(postIndexRoute.methods.post, 'request method should be POST')
   t.strictEquals(postIndexRoute.path, '/', 'path should be correct')
 
-  const postSubRouteFileNameAsRouteNameRoute = routerStack[15].route
+  const postSubRouteFileNameAsRouteNameRoute = routerStack[16].route
   t.true(postSubRouteFileNameAsRouteNameRoute.methods.post, 'request method should be POST')
   t.strictEquals(postSubRouteFileNameAsRouteNameRoute.path, '/sub-route/file-name-as-route-name', 'path should be correct')
 
-  const postSubRouteIndexRoute = routerStack[16].route
+  const postSubRouteIndexRoute = routerStack[17].route
   t.true(postSubRouteIndexRoute.methods.post, 'request method should be POST')
   t.strictEquals(postSubRouteIndexRoute.path, '/sub-route', 'path should be correct')
 
@@ -249,19 +250,19 @@ test('[site.js] Separate .https and .wss folders with separate .get and .post fo
   // Index 17 is that static router.
   // The WSS routes start at index 18.
 
-  const webSocketFileNameAsRouteNameRoute = routerStack[18].route
+  const webSocketFileNameAsRouteNameRoute = routerStack[19].route
   t.true(webSocketFileNameAsRouteNameRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
   t.strictEquals(webSocketFileNameAsRouteNameRoute.path, '/file-name-as-route-name/.websocket', 'path should be correct')
 
-  const webSocketIndexRoute = routerStack[19].route
+  const webSocketIndexRoute = routerStack[20].route
   t.true(webSocketIndexRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
   t.strictEquals(webSocketIndexRoute.path, '/.websocket', 'path should be correct')
 
-  const webSocketSubRouteFileNameAsRouteNameRoute = routerStack[20].route
+  const webSocketSubRouteFileNameAsRouteNameRoute = routerStack[21].route
   t.true(webSocketSubRouteFileNameAsRouteNameRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
   t.strictEquals(webSocketSubRouteFileNameAsRouteNameRoute.path, '/sub-route/file-name-as-route-name/.websocket', 'path should be correct')
 
-  const webSocketSubRouteIndexRoute = routerStack[21].route
+  const webSocketSubRouteIndexRoute = routerStack[22].route
   t.true(webSocketSubRouteIndexRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
   t.strictEquals(webSocketSubRouteIndexRoute.path, '/sub-route/.websocket', 'path should be correct')
 
@@ -307,11 +308,11 @@ test('[site.js] dynamic route loading from routes.js file', async t => {
 
   const routerStack = site.app._router.stack
 
-  const getRouteWithParameter = routerStack[10].route
+  const getRouteWithParameter = routerStack[11].route
   t.true(getRouteWithParameter.methods.get, 'request method should be GET')
   t.strictEquals(getRouteWithParameter.path, '/hello/:thing', 'path should be correct and contain parameter')
 
-  const wssRoute = routerStack[11].route
+  const wssRoute = routerStack[12].route
   t.true(wssRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
   t.strictEquals(wssRoute.path, '/echo/.websocket', 'path should be correct and contain parameter')
 
@@ -339,6 +340,27 @@ test('[site.js] dynamic route loading from routes.js file', async t => {
     site.server.close()
     t.end()
   })
+})
+
+test ('[site.js] response.html()', async t=> {
+  t.plan(3)
+
+  const site = new Site({path: 'test/site-response-html'})
+  await site.serve()
+
+  let response
+  try {
+    response = await secureGet('https://localhost/')
+  } catch (error) {
+    console.log(error)
+    process.exit(1)
+  }
+
+  t.strictEquals(response.statusCode, 200, 'request succeeds')
+  t.strictEquals(response.contentType, 'text/html; charset=utf-8', 'response type is HTML')
+  t.strictEquals(response.body, 'response.html() works', 'response body is as expected')
+
+  site.server.close()
 })
 
 
