@@ -1,9 +1,13 @@
 const fs = require('fs-extra')
 const path = require('path')
+const clr = require('../../lib/clr')
+
+const Hugo = require('@small-tech/node-hugo')
+const Site = require('../../index')
 
 const asyncForEach = require('../../lib/async-foreach')
 
-async function generateContent (workingPath) {
+async function generateContent (workingPath, host) {
 
   const absolutePathToServe = path.resolve(workingPath)
 
@@ -54,7 +58,7 @@ async function generateContent (workingPath) {
 
         const sourcePath = path.join(workingPath, file)
         const destinationPath = `../.generated${mountPath}`
-        const baseURL = `https://${syncOptions.host}`
+        const baseURL = `https://${host}`
 
         // Run the Hugo build.
         try {

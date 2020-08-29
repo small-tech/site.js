@@ -150,7 +150,7 @@ function serve (args) {
 
       ;(async () => {
         // Generate any content that needs to be generated (e.g., Hugo content).
-        await generateContent(path)
+        await generateContent(path, syncOptions.host)
 
         // Any content that needs to be generated has been generated. Ready to sync.
         sync(syncOptions)
@@ -417,7 +417,6 @@ module.exports = serve
 // Note: requires are at the bottom to avoid a circular reference as ../../index (Site)
 // ===== also requires this module.
 
-const Hugo = require('@small-tech/node-hugo')
 const sync = require('../lib/sync')
 const ensure = require('../lib/ensure')
 const status = require('../lib/status')

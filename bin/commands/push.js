@@ -46,7 +46,7 @@ function push (args) {
 
   ;(async () => {
     // Generate any content that needs to be generated (e.g., Hugo content).
-    await generateContent(pathToPush)
+    await generateContent(pathToPush, host)
 
     console.log(`\n   ⏩    ❨site.js❩ Pushing from ${clr(pathToPush, 'yellow')} to ${clr(host, 'yellow')}…\n`)
 
