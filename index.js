@@ -1115,7 +1115,7 @@ class Site {
         this.log('\n   🐁    ❨site.js❩ Restarting server…\n')
         const {commandPath, args} = cli.initialise(process.argv.slice(2))
         this.serve(args)
-        this.log('\n   🐁    ❨site.js❩ Server restarted.\n')
+        this.log('   🐁    ❨site.js❩ Server restarted.\n')
       })
 
       // Destroy the current server (so we do not get a port conflict on restart before
