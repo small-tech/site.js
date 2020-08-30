@@ -1114,7 +1114,7 @@ class Site {
         this.eventEmitter.removeAllListeners()
         this.log('\n   🐁    ❨site.js❩ Restarting server…\n')
         const {commandPath, args} = cli.initialise(process.argv.slice(2))
-        serve(args)
+        this.serve(args)
         this.log('\n   🐁    ❨site.js❩ Server restarted.\n')
       })
 
