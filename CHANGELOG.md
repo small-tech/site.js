@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [15.0.0] - In progress…
+
+### Added
+
+  - [TODO] (Breaking change.) DotJS routes can now specify any number of parameters and static route fragments. This is potentially a breaking change for existing sites if they used underscores in the names of dynamic routes as these have now gained special significance and will be interpreted as parameter (single) and path (double) delimiters. (#230)
+
+### Fixed
+
+  - [TODO] Restart requests that are fired while a restart is already in progress no longer fail. (Regular processes, as daemon processes use a different – simpler – technique and are not affected by this bug.) (#231)
+
 ## [14.6.2] - 2020-08-30
 
 ### Fixed
