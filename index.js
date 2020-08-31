@@ -906,10 +906,7 @@ class Site {
 
       // Close all active connections on the server.
       // (This is so that long-running connections – e.g., WebSockets – do not block the exit.)
-      this.server.destroy()
-
-      // Stop accepting new connections.
-      this.server.close( () => {
+      this.server.destroy(() => {
         // OK, it’s time to go :)
         this.log('\n   💕    ❨site.js❩ Goodbye!\n')
         done()
@@ -1090,13 +1087,19 @@ class Site {
 
 
   // Restarts the server.
-  restartServer () {
+  async restartServer () {
     if (process.env.NODE_ENV === 'production') {
       // We’re running production, to restart the daemon, just exit.
       // (We let ourselves fall, knowing that systemd will catch us.) ;)
       process.exit()
     } else {
       // We’re running as a regular process. Just restart the server, not the whole process.
+      if (this.restartingRegularProcess) {
+        this.log('   🙈    ❨site.js❩ Server restart requested while one is already in process. Ignoring…')
+        return
+      }
+
+      this.restartingRegularProcess = true
 
       // Do some housekeeping.
       Graceful.off('SIGINT', this.goodbye)
@@ -1109,24 +1112,20 @@ class Site {
 
       // Wait until housekeeping is done cleaning up after the server is destroyed before
       // restarting the server.
-      this.eventEmitter.on('housekeepingIsDone', () => {
+      this.eventEmitter.on('housekeepingIsDone', async () => {
         // Restart the server.
         this.eventEmitter.removeAllListeners()
         this.log('\n   🐁    ❨site.js❩ Restarting server…\n')
         const {commandPath, args} = cli.initialise(process.argv.slice(2))
-        this.serve(args)
-        this.log('   🐁    ❨site.js❩ Server restarted.\n')
+        await this.serve(args)
+        this.log('\n   🐁    ❨site.js❩ Server restarted.\n')
+        this.restartingRegularProcess = false
       })
 
       // Destroy the current server (so we do not get a port conflict on restart before
       // we’ve had a chance to terminate our own process).
-      this.server.destroy()
-
-      // Stop accepting new connections.
-      this.server.close(() => {
-        this.log('\n   🐁    ❨site.js❩ Server is closed.\n')
-        this.server.removeAllListeners('close')
-        this.server.removeAllListeners('error')
+      this.server.destroy(() => {
+        this.log('\n   🐁    ❨site.js❩ Server destroyed.\n')
       })
     }
   }
@@ -1173,21 +1172,21 @@ class Site {
       ignoreInitial: true
     })
 
-    this.app.__fileWatcher.on ('all', (event, file) => {
+    this.app.__fileWatcher.on ('all', async (event, file) => {
       if (file.includes('/.dynamic')) {
         //
         // Dynamic route change.
         //
         this.log(`   🐁    ❨site.js❩ Dynamic route change: ${clr(`${this.prettyFileWatcherEvent(event)}`, 'green')} (${clr(file, 'cyan')}).`)
         this.log('\n   🐁    ❨site.js❩ Requesting restart…\n')
-        this.restartServer()
+        await this.restartServer()
       } else if (file.includes('/.wildcard')) {
         //
         // Wildcard route change.
         //
         this.log(`   🐁    ❨site.js❩ Wildcard route change: ${clr(`${this.prettyFileWatcherEvent(event)}`, 'green')} (${clr(file, 'cyan')}).`)
         this.log('\n   🐁    ❨site.js❩ Requesting restart…\n')
-        this.restartServer()
+        await this.restartServer()
       }
     })
 

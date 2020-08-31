@@ -10,9 +10,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - [TODO] (Breaking change.) DotJS routes can now specify any number of parameters and static route fragments. This is potentially a breaking change for existing sites if they used underscores in the names of dynamic routes as these have now gained special significance and will be interpreted as parameter (single) and path (double) delimiters. (#230)
 
+## [14.6.3] - 2020-08-31
+
 ### Fixed
 
-  - [TODO] Restart requests that are fired while a restart is already in progress no longer fail. (Regular processes, as daemon processes use a different – simpler – technique and are not affected by this bug.) (#231)
+  - Redundant server close call causing subsequent restart attempts to fail (#231)
 
 ## [14.6.2] - 2020-08-30
 
