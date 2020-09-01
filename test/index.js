@@ -133,6 +133,40 @@ test('[site.js] Simple dotJS filesystem-based route loading', async t => {
   })
 })
 
+test('[site.js] DotJS parameters', async t => {
+
+  t.plan(4)
+
+  const site = new Site({path: 'test/site-dynamic-dotjs-parameters'})
+
+  const server = await site.serve(async () => {
+
+    let response
+    try {
+      response = await secureGet('https://localhost/rabbit/Laura')
+    } catch (error) {
+      console.log(error)
+      process.exit(1)
+    }
+
+    t.strictEquals(response.statusCode, 200, 'rabbit request succeeds')
+    t.strictEquals(response.body, 'The rabbit’s name is Laura.', 'rabbit response is as expected')
+
+    try {
+      response = await secureGet('https://localhost/person/philip-pullman/book/his-dark-materials')
+    } catch (error) {
+      console.log(error)
+      process.exit(1)
+    }
+
+    t.strictEquals(response.statusCode, 200, 'person request succeeds')
+    t.strictEquals(response.body, '{"personId":"philip-pullman","bookId":"his-dark-materials"}', 'person response is as expected')
+
+    server.close()
+    t.end()
+  })
+})
+
 
 // Runs the tests for routes within separate .get and .https folders.
 async function runDotJsSeparateGetAndPostTests (t, site) {
