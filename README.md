@@ -835,6 +835,66 @@ Site.js will load your dynamic route at startup and you can test it by hitting _
 
 __Note:__ You could also have named your route _.dynamic/server-stats/index.js_ and still hit it from _https://localhost/server-stats_. It’s best to keep to one or other convention (either using file names as route names or directory names as route names). Using both in the same app will probably confuse you (see [Precedence](#Precendence), below).
 
+##### Specifying parameters
+
+Your DotJS routes can also define named parameters that will be passed to your routes when they are triggered.
+
+To specify a named parameter, separate it from the rest of the route name using an underscore (`_`). At use, named parameters are provided to the route via the request path and are made available in the route callback as properties on the `request.params` object.
+
+For example, to have a route that greets people by their first name, create a file called:
+
+```
+.dynamic/hello_name.js
+```
+
+And add the following content:
+
+```js
+module.exports = (request, response) => {
+  response.html(`<h1>Hello, ${request.params.name}!</h1>`)
+}
+```
+
+Now run a local server (`site`) and hit `https://localhost/hello/Laura` to see `Hello, Laura!` in the browser.
+
+You can also specify static path fragments that must be included verbatim in between parameters. You do this by using two underscores (`__`) instead of one.
+
+For example, to have a route that returns the author ID and book ID that it is passed in a JSON structure, create a file called:
+
+```
+.dynamic/author/index_authorId__book_bookId.js
+```
+
+(Note: you can also call it `.dynamic/author_authorId__book_bookId.js`. Just make sure you pick one convention and stick to it so you don’t confuse yourself later on.)
+
+Then, add the following content to it:
+
+```js
+module.exports = (request, response) => {
+  response.json({
+    authorId: request.params.authorId,
+    bookId: request.params.bookId
+  })
+}
+```
+
+Now run a local server (`site`) and hit:
+
+```
+https://localhost/author/philip-pullman/book/his-dark-materials
+```
+
+To see the following JSON object returned:
+
+```json
+{
+  "authorId": "philip-pullman",
+  "bookId": "his-dark-materials"
+}
+```
+
+DotJS parameters save you from having to use [advanced routing](#advanced-routing-routesjs-file) if all you want are named parameters for your routes. The only time you should have to use the latter is if you want to use regular expressions in your route definitions.
+
 ##### Using node modules
 
 Since Site.js contains Node.js, anything you can do with Node.js, you do with Site.js, including using node modules and [npm](https://www.npmjs.com/). To use custom node modules, initialise your _.dynamic_ folder using `npm init` and use `npm install`. Once you’ve done that, any modules you `require()` from your DotJS routes will be properly loaded and used.

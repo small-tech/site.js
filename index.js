@@ -267,6 +267,9 @@ class Site {
       this.proxyPort = options.proxyPort
     }
 
+    // Also save a copy of the options.
+    this.options = options
+
     //
     // Create the Express app. We will configure it later.
     //
@@ -1117,15 +1120,18 @@ class Site {
         this.eventEmitter.removeAllListeners()
         this.log('\n   🐁    ❨site.js❩ Restarting server…\n')
         const {commandPath, args} = cli.initialise(process.argv.slice(2))
-        await this.serve(args)
+        const newSite = new Site(this.options)
+        await newSite.serve(args)
         this.log('\n   🐁    ❨site.js❩ Server restarted.\n')
         this.restartingRegularProcess = false
+        delete this
       })
 
       // Destroy the current server (so we do not get a port conflict on restart before
       // we’ve had a chance to terminate our own process).
       this.server.destroy(() => {
         this.log('\n   🐁    ❨site.js❩ Server destroyed.\n')
+        this.server.removeAllListeners()
       })
     }
   }
@@ -1290,9 +1296,19 @@ class Site {
           const httpsGetRoutes = getRoutes(httpsGetRoutesDirectory)
           httpsGetRoutes.forEach(route => {
             this.log(`   🐁    ❨site.js❩ Adding HTTPS GET route: ${route.path}`)
+
             // Ensure we are loading a fresh copy in case it has changed.
             decache(route.callback)
-            this.app.get(route.path, require(route.callback))
+            try {
+              this.app.get(route.path, require(route.callback))
+            } catch (error) {
+              if (error.message.includes('requires a callback function but got a [object Object]')) {
+                console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Could not find callback in route ${route.path}\n\n         ❨site.js❩ ${clr('Hint:', 'green')} Make sure your DotJS routes include a ${clr('module.exports = (request, response) => {}', 'cyan')} declaration.\n`)
+              } else {
+                console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} ${error}`)
+              }
+              process.exit()
+            }
           })
         }
 
