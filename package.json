@@ -1,6 +1,6 @@
 {
   "name": "@small-tech/site.js",
-  "version": "15.0.0",
+  "version": "15.0.1",
   "description": "Small Web construction set.",
   "keywords": [
     "web server",
@@ -58,7 +58,7 @@
     "@small-tech/node-hugo": "^1.5.0",
     "@small-tech/portable-rsync-with-ssh-for-windows": "^1.0.0",
     "@small-tech/rsync-with-portable-cygwin-path-support-on-windows": "^1.0.0",
-    "@small-tech/web-routes-from-files": "^3.0.0",
+    "@small-tech/web-routes-from-files": "^3.0.1",
     "ansi-escape-sequences": "^4.1.0",
     "bent": "^7.3.4",
     "body-parser": "^1.19.0",
