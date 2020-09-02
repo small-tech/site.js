@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Wildcard: goodbye</title>
+</head>
+<body>
+  <script>
+    document.write(`<h1><em>${window.route}</em> wildcard route</h1>`)
+    document.write('<p>Called with the following arguments:</p>')
+    document.write('<ol>')
+    window.arguments.forEach(argument => {
+      document.write(`<li>${argument}</li>`)
+    })
+    document.write('</ol>')
+  </script>
+</body>
+</html>

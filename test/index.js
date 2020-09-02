@@ -400,7 +400,7 @@ test ('[site.js] response.html()', async t=> {
 
 test('[site.js] wildcard routes', async t => {
 
-  t.plan(2)
+  t.plan(4)
 
   const site = new Site({path: 'test/site-wildcard-routes'})
   await site.serve()
@@ -413,7 +413,7 @@ test('[site.js] wildcard routes', async t => {
     process.exit(1)
   }
 
-  t.strictEquals(response.statusCode, 200, 'request succeeds')
+  t.strictEquals(response.statusCode, 200, 'wildcard “hello” request succeeds')
   t.strictEquals(dehydrate(response.body).toLowerCase(), dehydrate(`
       <!DOCTYPE html>
       <html lang='en'>
@@ -422,16 +422,14 @@ test('[site.js] wildcard routes', async t => {
         <meta name='viewport' content='width=device-width, initial-scale=1.0'>
         <title>Wildcard: hello</title>
       </head>
-
-                    <body>
-                    <script>
-                      // Site.js: add window.routeName and window.arguments objects to wildcard route.
-                      __site_js__pathFragments =  document.location.pathname.split('/')
-                      window.route = __site_js__pathFragments[1]
-                      window.arguments = __site_js__pathFragments.slice(2).filter(value => value !== '')
-                      delete __site_js__pathFragments
-                    </script>
-
+      <body>
+        <script>
+          // Site.js: add window.routeName and window.arguments objects to wildcard route.
+          __site_js__pathFragments =  document.location.pathname.split('/')
+          window.route = __site_js__pathFragments[1]
+          window.arguments = __site_js__pathFragments.slice(2).filter(value => value !== '')
+          delete __site_js__pathFragments
+        </script>
         <script>
           document.write(\`<h1><em>\${window.route}</em> wildcard route</h1>\`)
           document.write('<p>Called with the following arguments:</p>')
@@ -444,7 +442,48 @@ test('[site.js] wildcard routes', async t => {
         <script src="/instant/client/bundle.js"></script>
       </body>
       </html>
-  `).toLowerCase(), 'wildcard route body is as expected')
+  `).toLowerCase(), 'wildcard “hello” route body is as expected')
+
+  // Test routes defined with the name of the HTML file.
+
+  try {
+    response = await secureGet('https://localhost/goodbye/see/you/later')
+  } catch (error) {
+    console.log(error)
+    process.exit(1)
+  }
+
+  t.strictEquals(response.statusCode, 200, 'wildcard “goodbye” request succeeds')
+  t.strictEquals(dehydrate(response.body).toLowerCase(), dehydrate(`
+  <!DOCTYPE html>
+  <html lang='en'>
+  <head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Wildcard: goodbye</title>
+  </head>
+  <body>
+    <script>
+      // Site.js: add window.routeName and window.arguments objects to wildcard route.
+      __site_js__pathFragments =  document.location.pathname.split('/')
+      window.route = __site_js__pathFragments[1]
+      window.arguments = __site_js__pathFragments.slice(2).filter(value => value !== '')
+      delete __site_js__pathFragments
+    </script>
+    <script>
+      document.write(\`<h1><em>\${window.route}</em> wildcard route</h1>\`)
+      document.write('<p>Called with the following arguments:</p>')
+      document.write('<ol>')
+      window.arguments.forEach(argument => {
+        document.write(\`<li>\${argument}</li>\`)
+      })
+      document.write('</ol>')
+    </script>
+    <script src="/instant/client/bundle.js"></script>
+  </body>
+  </html>
+
+  `).toLowerCase(), 'wildcard “goodbye” route body is as expected')
 
   site.server.close()
 })

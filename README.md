@@ -1301,6 +1301,8 @@ To do this using wildcard routes:
 
 When Site.js finds a `.wildcard` folder, it adds every first-level sub-folder in it as a route that maps to the `index.html` file in it. In the example above, `/hello/aral` and `hello/what/is/this/about` will both map to the same file.
 
+Similarly, (as of 15.1.0) any HTML file found in the `.wildcard` folder will also be mapped to a wildcard route. So you could have created the same route in `.wildcard/hello.html` instead.
+
 Any path fragment after the route name itself is treated as a positional argument.
 
 Although you could parse the `document.location` yourself to get at the arguments and the route name, Site.js makes it even easier for you by injecting a tiny bit of JavaScript at the top of your page that exposes these as:

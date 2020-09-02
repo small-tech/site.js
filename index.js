@@ -1214,48 +1214,60 @@ class Site {
     if (fs.existsSync(wildcardRoutesDirectory)) {
 
       fs.readdirSync(wildcardRoutesDirectory, {withFileTypes: true}).forEach(file => {
-        if (file.isDirectory()) {
-          const wildcard = file.name
-          const wildcardIndexFilePath = path.join(wildcardRoutesDirectory, wildcard, 'index.html')
+        let wildcard = file.name
 
-          if (fs.existsSync(wildcardIndexFilePath)) {
-            this.log(`   🃏    ❨site.js❩ Serving wildcard route: ${clr(`https://${this.prettyLocation()}/${wildcard}/**/*`, 'green')} → ${clr(`/.wildcard/${wildcard}/index.html`, 'cyan')}`)
-
-            // Read the HTML content and inject some javascript to make it easy to access the route
-            // name and the arguments from window.route and and window.arguments.
-            const wildcardIndexFilePath = path.join(wildcardRoutesDirectory, wildcard, 'index.html')
-            wildcards[wildcard] = fs.readFileSync(wildcardIndexFilePath, 'utf-8').replace('<body>', `
-              <body>
-              <script>
-                // Site.js: add window.routeName and window.arguments objects to wildcard route.
-                __site_js__pathFragments =  document.location.pathname.split('/')
-                window.route = __site_js__pathFragments[1]
-                window.arguments = __site_js__pathFragments.slice(2).filter(value => value !== '')
-                delete __site_js__pathFragments
-              </script>
-            `)
-
-            this.app.use(`/${wildcard}`, (() => {
-              // Capture the current wildcard
-              const __wildcard = wildcard
-              return (request, response, next) => {
-                const pathFragments = request.path.split('/')
-                if (pathFragments.length >= 2 && pathFragments[1] !== '') {
-                  // OK, we have a sub-path, so serve the wildcard.
-                  response
-                    .type('html')
-                    .end(wildcards[__wildcard])
-                } else {
-                  // No sub-path, ignore this request.
-                  next()
-                }
-              }
-            })())
+        let wildcardFilePath
+        let wildcardFilePathPretty
+        if (file.isDirectory(wildcard)) {
+          wildcardFilePath = path.join(wildcardRoutesDirectory, wildcard, 'index.html')
+          wildcardFilePathPretty = `${wildcard}/index.html`
+        } else {
+          if (!wildcard.endsWith('.html')) {
+            this.log(`   ❗    ❨site.js❩ Non-HTML file (${wildcard}) found in wildcards directory, ignoring.`)
+            return // from forEach.
           } else {
-            // We found a directory inside of the .wildcard directory but it doesn’t have an index.html
-            // file inside it with the content to serve. Warn the person.
-            this.log(`   ❗    ❨site.js❩ Wilcard directory found at /.wildcard/${wildcard} but there is no index.html inside it. Ignoring…`)
+            wildcardFilePath = path.join(wildcardRoutesDirectory, wildcard)
+            wildcardFilePathPretty = wildcard
+            wildcard = wildcard.replace('.html', '')
           }
+        }
+
+        if (fs.existsSync(wildcardFilePath)) {
+          this.log(`   🃏    ❨site.js❩ Serving wildcard route: ${clr(`https://${this.prettyLocation()}/${wildcard}/**/*`, 'green')} → ${clr(`/.wildcard/${wildcardFilePathPretty}`, 'cyan')}`)
+
+          // Read the HTML content and inject some javascript to make it easy to access the route
+          // name and the arguments from window.route and and window.arguments.
+          wildcards[wildcard] = fs.readFileSync(wildcardFilePath, 'utf-8').replace('<body>', `
+            <body>
+            <script>
+              // Site.js: add window.routeName and window.arguments objects to wildcard route.
+              __site_js__pathFragments =  document.location.pathname.split('/')
+              window.route = __site_js__pathFragments[1]
+              window.arguments = __site_js__pathFragments.slice(2).filter(value => value !== '')
+              delete __site_js__pathFragments
+            </script>
+          `)
+
+          this.app.use(`/${wildcard}`, (() => {
+            // Capture the current wildcard
+            const __wildcard = wildcard
+            return (request, response, next) => {
+              const pathFragments = request.path.split('/')
+              if (pathFragments.length >= 2 && pathFragments[1] !== '') {
+                // OK, we have a sub-path, so serve the wildcard.
+                response
+                  .type('html')
+                  .end(wildcards[__wildcard])
+              } else {
+                // No sub-path, ignore this request.
+                next()
+              }
+            }
+          })())
+        } else {
+          // We found a directory inside of the .wildcard directory but it doesn’t have an index.html
+          // file inside it with the content to serve. Warn the person.
+          this.log(`   ❗    ❨site.js❩ Wilcard directory found at /.wildcard/${wildcard} but there is no index.html inside it. Ignoring…`)
         }
       })
     }
