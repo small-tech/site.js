@@ -3,11 +3,9 @@ const path = require('path')
 const clr = require('../../lib/clr')
 
 const Hugo = require('@small-tech/node-hugo')
-const Site = require('../../index')
-
 const asyncForEach = require('../../lib/async-foreach')
 
-async function generateContent (workingPath, host) {
+async function generateContent (workingPath, host, Site) {
 
   const absolutePathToServe = path.resolve(workingPath)
 

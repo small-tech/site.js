@@ -150,7 +150,7 @@ function serve (args) {
 
       ;(async () => {
         // Generate any content that needs to be generated (e.g., Hugo content).
-        await generateContent(path, syncOptions.host)
+        await generateContent(path, syncOptions.host, Site)
 
         // Any content that needs to be generated has been generated. Ready to sync.
         sync(syncOptions)
