@@ -937,7 +937,7 @@ class Site {
               }
               return globalThis._db
             }).bind(this),
-            set: (function (value) { globalThis.db = value }).bind(this)
+            set: (function (value) { if (value !== globalThis.db) { globalThis.db = value} }).bind(this)
           })
         }
       }
