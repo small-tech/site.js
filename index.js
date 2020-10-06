@@ -30,6 +30,7 @@ const Hugo                  = require('@small-tech/node-hugo')
 const instant               = require('@small-tech/instant')
 const crossPlatformHostname = require('@small-tech/cross-platform-hostname')
 const getRoutes             = require('@small-tech/web-routes-from-files')
+const JSDB                  = require('@small-tech/jsdb')
 const Graceful              = require('node-graceful')
 const express               = require('express')
 const bodyParser            = require('body-parser')
@@ -50,6 +51,11 @@ const errors                = require('./lib/errors')
 
 
 class Site {
+
+  //
+  // Class.
+  //
+
   static #appNameAndVersionAlreadyLogged = false
   static #manifest = null
 
@@ -217,6 +223,10 @@ class Site {
     return `<!doctype html><html lang="en" style="font-family: sans-serif; background-color: #eae7e1"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error 500: Internal Server Error</title></head><body style="display: grid; align-items: center; justify-content: center; height: 100vh; vertical-align: top; margin: 0;"><main><h1 style="font-size: 16vw; color: black; text-align:center; line-height: 0.25">5🔥😱</h1><p style="font-size: 4vw; text-align: center; padding-left: 2vw; padding-right: 2vw;"><span>Internal Server Error</span><br><br><span style="color: grey;">${errorMessage}</span></p></main></body></html>`
   }
 
+  //
+  // Instance.
+  //
+
   // Creates a Site instance. Customise it by passing an options object with the
   // following properties (all optional):
   //
@@ -232,6 +242,7 @@ class Site {
   // ===== e.g., use require('lib/ensure').disablePrivilegedPorts()
   //
   //       For details, see: https://source.small-tech.org/site.js/app/-/issues/169
+
   constructor (options) {
     // Introduce ourselves.
     Site.logAppNameAndVersion()
@@ -249,6 +260,7 @@ class Site {
     }
     this.pathToServe = typeof options.path === 'string' ? options.path : '.'
     this.absolutePathToServe = path.resolve(this.pathToServe)
+    this.databasePath = path.join(this.absolutePathToServe, '.db')
     this.port = typeof options.port === 'number' ? options.port : 443
     this.global = typeof options.global === 'boolean' ? options.global : false
     this.aliases = Array.isArray(options.aliases) ? options.aliases : []
@@ -672,6 +684,11 @@ class Site {
         })
       }
 
+      if (globalThis._db) {
+        this.log('   🚮    ❨site.js❩ Closing database.')
+        await globalThis._db.close()
+      }
+
       this.log('   🚮    ❨site.js❩ Housekeeping is done!')
       this.eventEmitter.emit('housekeepingIsDone')
     })
@@ -893,6 +910,35 @@ class Site {
     // instead of in the constructor since the process might have to wait for the
     // Hugo build process to complete.
     await this.configureApp()
+
+    // If a JavaScript Database (JSDB) database exists for the current app, load it in right now (since this is a
+    // relatively slow process, we want it to happen at server start, not while the server is up and running and during
+    // a request.). If a database doesn’t already exist, we don’t want to pollute the project directory with a database
+    // directory unnecessarily so we  create a global property accessor to instantiates a database instance on first
+    // attempt to access it.
+    if (!this.isProxyServer) {
+      if (fs.existsSync(this.databasePath)) {
+        // We still create the _db property so we can use that to check if a database exist during graceful shutdown
+        // instead of possibly accessing the accessor defined in the other branch of this conditional, thereby
+        // triggering it to be created when all we want to do is perform housekeeping.
+        globalThis._db = JSDB.open(this.databasePath)
+        globalThis.db = globalThis._db
+      } else {
+        // We check for existence first as the property will already exist if this is a server restart.
+        if (!globalThis.db) {
+          Object.defineProperty(globalThis, 'db', {
+            get: (function () {
+              if (!globalThis._db) {
+                this.log('\n   💾    ❨site.js❩ Lazily creating database.')
+                globalThis._db = JSDB.open(this.pathToServe)
+                this.log('\n   💾    ❨site.js❩ Database ready.')
+              }
+              return globalThis._db
+            }).bind(this)
+          })
+        }
+      }
+    }
 
     if (typeof callback !== 'function') {
       callback = this.isProxyServer ? this.proxyCallback : this.regularCallback
