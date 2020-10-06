@@ -921,8 +921,10 @@ class Site {
         // We still create the _db property so we can use that to check if a database exist during graceful shutdown
         // instead of possibly accessing the accessor defined in the other branch of this conditional, thereby
         // triggering it to be created when all we want to do is perform housekeeping.
+        this.log('\n   💾    ❨site.js❩ Opening database.')
         globalThis._db = JSDB.open(this.databasePath)
         globalThis.db = globalThis._db
+        this.log('\n   💾    ❨site.js❩ Database ready.')
       } else {
         // We check for existence first as the property will already exist if this is a server restart.
         if (!globalThis.db) {
@@ -930,11 +932,12 @@ class Site {
             get: (function () {
               if (!globalThis._db) {
                 this.log('\n   💾    ❨site.js❩ Lazily creating database.')
-                globalThis._db = JSDB.open(this.pathToServe)
+                globalThis._db = JSDB.open(this.databasePath)
                 this.log('\n   💾    ❨site.js❩ Database ready.')
               }
               return globalThis._db
-            }).bind(this)
+            }).bind(this),
+            set: (function (value) { globalThis.db = value }).bind(this)
           })
         }
       }
