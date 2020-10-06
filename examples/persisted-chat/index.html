@@ -246,10 +246,19 @@
       })
 
       // Handle incoming messages.
-      socket.onmessage = message => {
-        // Deserialise the message string and display it.
-        message = JSON.parse(message.data)
-        displayMessage(message)
+      socket.onmessage = websocketMessage => {
+        // Deserialise the data.
+        const data = JSON.parse(websocketMessage.data)
+
+        console.log('Got data:', data)
+
+        if (Array.isArray(data)) {
+          // Display initial list of messages (this is what we get when we first join a room.)
+          data.forEach(message => displayMessage(message))
+        } else {
+          // Display a single message.
+          displayMessage(data)
+        }
       }
 
     </script>

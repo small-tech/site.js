@@ -10,10 +10,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
 module.exports = function (client, request) {
+  // Ensure the messages table exists.
+  if (!db.messages) {
+    db.messages = []
+  }
+
   // New client connection: persist client’s “room”
   // based on request path.
   client.room = this.setRoom(request)
+
+  // Send any existing messages to clients when they first join.
+  client.send(JSON.stringify(db.messages))
 
   // Log the connection.
   console.log(`New client connected to ${client.room}`)
@@ -29,15 +38,7 @@ module.exports = function (client, request) {
     }
 
     // Persist the message.
-    if (!db.messages) {
-      db.messages = []
-    }
     db.messages.push(theMessage)
-
-    // console.log(db.messages)
-
-    const messagesForMonkey = db.messages.where('text').includes('Monkey').get()
-    console.log(messagesForMonkey)
 
     // Broadcast it to all other clients in the same room.
     const numberOfRecipients = this.broadcast(client, message)
