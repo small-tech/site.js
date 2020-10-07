@@ -15,6 +15,7 @@
 const os = require('os')
 const fs = require('fs-extra')
 const path = require('path')
+const childProcess = require('child_process')
 const Graceful = require('node-graceful')
 
 const RsyncWatcher = require('./RsyncWatcher')
@@ -137,8 +138,6 @@ function sync (options) {
     console.log('   💫    ❨site.js❩ Sync will include the database as requested.')
   }
 
-  console.log('rsyncOptions.sync.exclude', rsyncOptions.sync.exclude) // debug
-
   const sshDirectory = path.join(os.homedir(), '.ssh')
   const folderToSyncPathSegments = path.resolve(rsyncOptions.sync.from).split(path.sep)
   const folderToSyncName = folderToSyncPathSegments[folderToSyncPathSegments.length - 1]
@@ -235,7 +234,25 @@ function sync (options) {
   rsyncOptions.sync.isPull = options.isPull
 
   // Create the rsync watcher.
-  new RsyncWatcher(rsyncOptions)
+  const rsyncWatcher = new RsyncWatcher(rsyncOptions)
+
+  // If the database is being synced to a deployment machine, also issue an ssh command to
+  // restart the server on the remote machine so that the database has immediate effect.
+  if (!options.isPull && options.includeDatabase) {
+    rsyncWatcher.addListener('rsync-complete', () => {
+      console.log('   💫    ❨site.js❩ Requesting restart of remote server for database changes to take immediate effect…')
+      const sshBinary = rsyncOptions.sync.rsyncOptions.rsh
+      const sshHost = options.to.split(':')[0]
+      const sshCommand = `${sshBinary} ${sshHost} "site restart"`
+
+      try {
+        childProcess.execSync(sshCommand)
+        console.log('   💫    ❨site.js❩ Remote server restarted.')
+      } catch (error) {
+        console.log(`\n   ⚠    ${clr('❨site.js❩ Warning:', 'yellow')} Could not restart remote server!`, error)
+      }
+    })
+  }
 }
 
 module.exports = sync
