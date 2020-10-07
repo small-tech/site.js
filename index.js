@@ -1242,13 +1242,6 @@ class Site {
         this.log(`   🐁    ❨site.js❩ Wildcard route change: ${clr(`${this.prettyFileWatcherEvent(event)}`, 'green')} (${clr(file, 'cyan')}).`)
         this.log('\n   🐁    ❨site.js❩ Requesting restart…\n')
         await this.restartServer()
-      } else if (file.includes('/.db')) {
-        //
-        // Database changed due to sync (pull/push).
-        //
-        this.log(`   🐁    ❨site.js❩ Database updated outside of process: ${clr(`${this.prettyFileWatcherEvent(event)}`, 'green')} (${clr(file, 'cyan')}).`)
-        this.log('\n   🐁    ❨site.js❩ Requesting restart…\n')
-        await this.restartServer()
       }
     })
 
