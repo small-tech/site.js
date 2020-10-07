@@ -6,7 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [15.2.0] - In progress
 
-  - Add [JavaScript Database (JSDB)](https://github.com/small-tech/jsdb) support. You can now create server-side databases.
+### Added
+
+  - Add [JavaScript Database (JSDB)](https://github.com/small-tech/jsdb) support. You can now create server-side databases. (#236)
+
+### Fixed
+
+  - Don’t sync .git folders (the contents of the folder were already correctly not being synced). (#238)
 
 ## [15.1.1] - 2020-09-11
 

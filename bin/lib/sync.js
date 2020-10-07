@@ -39,10 +39,12 @@ function sync (options) {
       'exclude': [
         '.DS_Store',
         '.gitignore',
-        '.hugo*',
-        '.hugo*/*',
-        '.dat/*',
-        '.git/*'
+        '.hugo*',   // Exclude Hugo source directories…
+        '.hugo*/*', // …and their contents.
+        '.dat',     // Exclude Dat directory…
+        '.dat/*',   // …and its contents.
+        '.git',     // Exclude Git directory…
+        '.git/*'    // …and its contents
       ],
       'rsyncOptions': {
         'archive': null,
@@ -126,6 +128,16 @@ function sync (options) {
       }
     }
   }
+
+  // The default is to exclude databases from syncs.
+  if (!options.includeDatabase) {
+    rsyncOptions.sync.exclude.push('.db')
+    rsyncOptions.sync.exclude.push('.db/*')
+  } else {
+    console.log('   💫    ❨site.js❩ Sync will include the database as requested.')
+  }
+
+  console.log('rsyncOptions.sync.exclude', rsyncOptions.sync.exclude) // debug
 
   const sshDirectory = path.join(os.homedir(), '.ssh')
   const folderToSyncPathSegments = path.resolve(rsyncOptions.sync.from).split(path.sep)
