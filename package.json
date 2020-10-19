@@ -55,7 +55,7 @@
     "@small-tech/express-ws": "^1.0.0",
     "@small-tech/https": "^1.6.0",
     "@small-tech/instant": "^1.1.0",
-    "@small-tech/jsdb": "file:../lib/jsdb",
+    "@small-tech/jsdb": "^1.0.0",
     "@small-tech/node-hugo": "^1.5.0",
     "@small-tech/portable-rsync-with-ssh-for-windows": "^1.0.0",
     "@small-tech/rsync-with-portable-cygwin-path-support-on-windows": "^1.0.0",
