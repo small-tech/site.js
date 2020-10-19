@@ -33,6 +33,8 @@ We exist in part thanks to patronage by people like you. If you share [our visio
 
   - __Supports the creation of static web sites, dynamic web sites, and hybrid sites__ (via integrated [Node.js](https://nodejs.org/) and [Express](https://expressjs.com)).
 
+  - __Includes a simple database__ ([JSDB](https://github.com/small-tech/jsdb)).
+
   - __Supports [Wildcard routes](#wildcard-routes)__ for purely client-side specialisation using path-based parameters.
 
   - __Supports [DotJS](#dotjs) for dynamic routes.__ (DotJS is PHP-like simple routing for Node.js introduced by Site.js for quickly prototyping and building dynamic sites).
@@ -1138,7 +1140,7 @@ socket.send('Hello!')
 
 For a slightly more sophisticated example that doesn’t broadcast a client’s own messages to itself and selectively broadcasts to only the clients in the same “rooms”, see the [Simple Chat example](examples/simple-chat). And here’s [a step-by-step tutorial](https://ar.al/2019/10/11/build-a-simple-chat-app-with-site.js/) that takes you through how to build it.
 
-Here’s a simplified listing of the code for the server component of this example:
+Here’s a simplified listing of the code for the server component of that example:
 
 ```js
 module.exports = function (client, request) {
@@ -1157,6 +1159,91 @@ module.exports = function (client, request) {
   })
 }
 ```
+
+### Persisting data on the server with JavaScript Database (JSDB)
+
+The chat examples so far have been ephemeral; the chat log is not stored anywhere. While that has its uses, it does mean, for example, that someone coming into a conversation after it has already started will not see what was said. You can easily implement that feature using the bundled JavaScript Database (JSDB).
+
+JSDB is a transparent, in-memory, streaming write-on-update JavaScript database for Small Web applications that persists to a JavaScript transaction log.
+
+What that means in practice is that it’s very simple to use and great for storing small pieces of data on the server. (Note that whenever possible, you should store data on the client not the server for privacy reasons.)
+
+Your Site.js server has a global database called `db` that you can use from any route.
+
+Here’s how you would persist the data in our simple chat example using JSDB:
+
+```js
+// Ensure the messages table exists.
+if (!db.messages) {
+  db.messages = []
+}
+
+module.exports = function (client, request) {
+  // A new client connection has been made.
+  // Persist the client’s room based on the path in the request.
+  client.room = this.setRoom(request)
+
+  console.log(`New client connected to ${client.room}`)
+
+  // Send new clients all existing messages.
+  client.send(JSON.stringify(db.messages))
+
+  client.on('message', message => {
+    // Persist the message.
+    db.messages.push(message)
+
+    // A new message has been received from a client.
+    // Broadcast it to every other client in the same room.
+    const numberOfRecipients = this.broadcast(client, message)
+
+    console.log(`${client.room} message broadcast to ${numberOfRecipients} recipient${numberOfRecipients === 1 ? '' : 's'}.`)
+  })
+}
+```
+
+Here’s a break down of the changes:
+
+  1. You implement a global check that occurs when the module of your route is loaded to create the `messages` table (in this case, an array, although it can also be an object):
+
+      ```js
+      if (!db.messages) {
+        db.messages = []
+      }
+      ```
+
+  2. When a new client joins, you serialise the messages array in JSON format and send it to that client.
+
+      ```js
+      client.send(JSON.stringify(db.messages))
+      ```
+
+  3. When a message is sent by a client, you persist it in the `messages` table.
+
+      ```js
+      db.messages.push(message)
+      ```
+
+If none of this feels like you’re using a database, that’s by design. JSDB is in-process, in-memory, and JavaScript through and through. It uses proxies to make it feel like you’re just working with plain old JavaScript objects. It even persists the data as JavaScript code (not JSON) in a format called JavaScript Data Format (JSDF).
+
+And you’re not limited to only persisting and loading data, you can also query it. You do so using the JavaScript Query Language (JSQL).
+
+Just like the other aspects of JSDB, JSQL is designed for ease of use. For most regular use, it should feel like you’re asking a question in plain English.
+
+For example, if you wanted to get all the messages send by the person whose nickname is `Aral`, you would write the following:
+
+```js
+db.messages.where('nickname').is('Aral').get()
+```
+
+The result would be an array of messages.
+
+Similarly, if you wanted just the first message that contained the word `kitten`, you would write:
+
+```js
+db.messages.where('text').includes('kitten').getFirst()
+```
+
+You can learn more about JSDB in the [JSDB documentation](https://github.com/small-tech/jsdb/blob/master/README.md).
 
 ### Advanced routing (routes.js file)
 
