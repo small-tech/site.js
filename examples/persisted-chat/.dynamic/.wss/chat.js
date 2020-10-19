@@ -10,6 +10,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Clear the chat log (delete the messages table) every hour in this demo.
+if (!globalThis.clearChatIntervalId) {
+  console.log(`   💬    ❨Chat example❩ Demo housekeeping: set up timer to clear chat log every hour.`)
+  globalThis.clearChatIntervalId = setInterval(async () => {
+    await db.messages.delete()
+    console.log(`   💬    ❨Chat example❩ Demo housekeeping: chat log cleared.`)
+  }, 60 /* mins */ * 60 /* seconds */ * 1000 /* milliseconds */)
+}
+
 
 module.exports = function (client, request) {
   // Ensure the messages table exists.
@@ -25,7 +34,7 @@ module.exports = function (client, request) {
   client.send(JSON.stringify(db.messages))
 
   // Log the connection.
-  console.log(`New client connected to ${client.room}`)
+  console.log(`   💬    ❨Chat example❩ New client connected to ${client.room}`)
 
   client.on('message', message => {
     // New message received.
@@ -33,8 +42,14 @@ module.exports = function (client, request) {
 
     // Perform basic validation.
     if (!isValidMessage(theMessage)) {
-      console.log(`Message is invalid; not broadcasting.`)
+      console.log(`   💬    ❨Chat example❩ Message is invalid; not broadcasting.`)
       return
+    }
+
+    // Ensure the messages table exists.
+    // (We do this again here as the messages table is periodically cleared in this demo.)
+    if (!db.messages) {
+      db.messages = []
     }
 
     // Persist the message.
@@ -45,7 +60,7 @@ module.exports = function (client, request) {
 
     // Log the number of recipients message was sent to
     // and make sure we pluralise the log message properly.
-    console.log(`${client.room} message broadcast to `
+    console.log(`   💬    ❨Chat example❩ ${client.room} message broadcast to `
       + `${numberOfRecipients} recipient`
       + `${numberOfRecipients === 1 ? '' : 's'}`)
   })
