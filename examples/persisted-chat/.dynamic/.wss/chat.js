@@ -2,7 +2,7 @@
 //
 // Basic chat app with Site.js (server).
 //
-// For a step-by-step tutorial of how to build this example, see:
+// For a step-by-step tutorial of how to build this demo, see:
 // https://ar.al/2019/10/10/build-a-simple-chat-app-with-site.js
 //
 // Copyright ⓒ 2019 Aral Balkan.
@@ -12,11 +12,15 @@
 
 // Clear the chat log (delete the messages table) every hour in this demo.
 if (!globalThis.clearChatIntervalId) {
-  console.log(`   💬    ❨Chat example❩ Demo housekeeping: set up timer to clear chat log every hour.`)
+  console.log(`   💬    ❨Chat❩ Housekeeping: set up timer to clear chat log every hour.`)
   globalThis.clearChatIntervalId = setInterval(async () => {
-    await db.messages.delete()
-    console.log(`   💬    ❨Chat example❩ Demo housekeeping: chat log cleared.`)
-  }, 60 /* mins */ * 60 /* seconds */ * 1000 /* milliseconds */)
+    if (db.messages) {
+      await db.messages.delete()
+      console.log(`   💬    ❨Chat❩ Housekeeping: chat log cleared.`)
+    } else {
+      console.log(`   💬    ❨Chat❩ Housekeeping: chat log already empty.`)
+    }
+  }, 60 /* minutes */ * 60 /* seconds */ * 1000 /* milliseconds */)
 }
 
 
@@ -34,7 +38,7 @@ module.exports = function (client, request) {
   client.send(JSON.stringify(db.messages))
 
   // Log the connection.
-  console.log(`   💬    ❨Chat example❩ New client connected to ${client.room}`)
+  console.log(`   💬    ❨Chat❩ New client connected to room ${client.room}.`)
 
   client.on('message', message => {
     // New message received.
@@ -42,7 +46,7 @@ module.exports = function (client, request) {
 
     // Perform basic validation.
     if (!isValidMessage(theMessage)) {
-      console.log(`   💬    ❨Chat example❩ Message is invalid; not broadcasting.`)
+      console.log(`   💬    ❨Chat❩ Message is invalid; not broadcasting.`)
       return
     }
 
@@ -60,9 +64,7 @@ module.exports = function (client, request) {
 
     // Log the number of recipients message was sent to
     // and make sure we pluralise the log message properly.
-    console.log(`   💬    ❨Chat example❩ ${client.room} message broadcast to `
-      + `${numberOfRecipients} recipient`
-      + `${numberOfRecipients === 1 ? '' : 's'}`)
+    console.log(`   💬    ❨Chat❩ message broadcast to ${numberOfRecipients} recipient${numberOfRecipients === 1 ? '' : 's'} in room ${client.room}.`)
   })
 }
 
