@@ -39,7 +39,12 @@ function push (args) {
     account,
     host,
     remotePath,
-    live: false
+    live: false,
+    includeDatabase: false
+  }
+
+  if (args.named.db) {
+    options.includeDatabase = true
   }
 
   Site.logAppNameAndVersion()

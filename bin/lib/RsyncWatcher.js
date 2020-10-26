@@ -20,12 +20,15 @@ const debounce = require('debounce')
 const path = require('path')
 const Graceful = require('node-graceful')
 const clr = require('../../lib/clr')
+const { EventEmitter } = require('events')
 
 const consoleTimestamp = require('./console-timestamp')
 
-class RSyncWatcher {
+class RSyncWatcher extends EventEmitter {
 
   constructor (options) {
+
+    super()
 
     this.options = options
     this.synchronisers = new Map()
@@ -112,6 +115,7 @@ class RSyncWatcher {
         }
 
         console.log(`   💫    ❨site.js❩ Sync complete.`)
+        this.emit('rsync-complete')
         resolve(rsyncProcess.pid)
       }, (data) => {
         const message = data.toString('ascii')

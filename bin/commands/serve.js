@@ -143,6 +143,11 @@ function serve (args) {
       live: liveSync || false,
     })
 
+    // Should the database be included in the sync. Default is not to include it.
+    if (args.named.db) {
+      syncOptions.includeDatabase = true
+    }
+
     // Unless Live Sync has been requested, we will generate any necessary content,
     // sync, and exit.
     if (!syncOptions.live) {

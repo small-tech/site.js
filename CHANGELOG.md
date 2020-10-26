@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [15.2.0] - In progress
+
+### Added
+
+  - Add [JavaScript Database (JSDB)](https://github.com/small-tech/jsdb) support. You can now create server-side databases. (#236)
+
+### Fixed
+
+  - Don’t sync .git folders (the contents of the folder were already correctly not being synced). (#238)
+
 ## [15.1.1] - 2020-09-11
 
 ### Fixed

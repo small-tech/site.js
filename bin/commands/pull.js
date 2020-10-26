@@ -13,7 +13,6 @@ const Site = require('../../index')
 const sync = require('../lib/sync')
 const clr = require('../../lib/clr')
 
-
 function pull (args) {
   // Make sure the local path ends with the path separator so that the contents of the folder
   // are synced and not the folder itself.
@@ -40,7 +39,12 @@ function pull (args) {
     host,
     remotePath,
     isPull: true,
-    live: false
+    live: false,
+    includeDatabase: false
+  }
+
+  if (args.named.db) {
+    options.includeDatabase = true
   }
 
   Site.logAppNameAndVersion()
