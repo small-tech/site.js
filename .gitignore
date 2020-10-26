@@ -4,3 +4,4 @@ dist
 manifest.json
 .DS_Store
 .db
+.generated
