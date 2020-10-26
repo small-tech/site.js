@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [15.2.1] - 2020-10-26
+
+### Fixed
+
+  - Node module upgrades included in 15.2.0 added 45MB to the binary size. Until I know why and can handle it properly, I’m reverting the node modules to the versions they were at in 15.1.1 to bring the binary size back down. (#240)
+
 ## [15.2.0] - 2020-10-26
 
 ### Added
