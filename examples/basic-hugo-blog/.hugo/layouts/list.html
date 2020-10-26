@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>{{.Site.Title}}</title>
+  <link rel='stylesheet' href='/styles.css'></style>
+</head>
+<body>
+  <h1>{{.Site.Title}}</h1>
+  <h2>Index</h2>
+  <ul>
+    {{ range .Pages }}
+      <li>{{ .Date.Format "2006-01-02" }} <a href='{{.Permalink}}'>{{ .Title }}</a></li>
+    {{ end }}
+  </ul>
+</body>
+</html>
