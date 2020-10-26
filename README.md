@@ -33,7 +33,7 @@ We exist in part thanks to patronage by people like you. If you share [our visio
 
   - __Supports the creation of static web sites, dynamic web sites, and hybrid sites__ (via integrated [Node.js](https://nodejs.org/) and [Express](https://expressjs.com)).
 
-  - __Includes a simple database__ ([JSDB](https://github.com/small-tech/jsdb)).
+  - __Includes a fast and simple database__ ([JSDB](https://github.com/small-tech/jsdb)).
 
   - __Supports [Wildcard routes](#wildcard-routes)__ for purely client-side specialisation using path-based parameters.
 
