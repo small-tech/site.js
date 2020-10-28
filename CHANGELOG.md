@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [15.2.2] - 2020-10-28
+
+### Improved
+
+  - Upgrade [JSDB](https://github.com/small-tech/jsdb/) to [version 1.1.3](https://github.com/small-tech/jsdb/blob/master/CHANGELOG.md#113---2020-10-28) (improves query security).
+
 ## [15.2.1] - 2020-10-26
 
 ### Fixed
