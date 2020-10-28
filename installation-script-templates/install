@@ -45,9 +45,9 @@ betaBinaryVersion=20200710135219
 betaPackageVersion=14.1.1
 betaSourceVersion=afde7bd
 
-releaseBinaryVersion=20201028142140
-releasePackageVersion=15.2.2
-releaseSourceVersion=21eb5fd
+releaseBinaryVersion=20201028185348
+releasePackageVersion=15.3.0
+releaseSourceVersion=6da396b
 
 binaryVersionVariableName="${releaseChannel}BinaryVersion"
 packageVersionVariableName="${releaseChannel}PackageVersion"
