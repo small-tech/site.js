@@ -14,7 +14,7 @@ const test = require('tape')
 const Site = require('../index.js')
 const https = require('https')
 
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 
 const queryString = require('querystring')
@@ -92,21 +92,19 @@ async function securePost (hostname, path, data = {}, isJSON = false) {
 
 
 test('[site.js] constructor', t => {
-  t.plan(2)
   const server = new Site().server
   t.ok(server instanceof https.Server, 'is https.Server')
 
   server.listen(443, () => {
     t.equal(server.address().port, 443, 'the requested port is set on returned https.Server')
-    t.end()
-    server.close()
+    server.close(() => {
+      t.end()
+    })
   })
 })
 
 
 test('[site.js] Simple dotJS filesystem-based route loading', async t => {
-
-  t.plan(3)
 
   const site = new Site({path: 'test/site-dynamic-dotjs-simple'})
 
@@ -128,14 +126,14 @@ test('[site.js] Simple dotJS filesystem-based route loading', async t => {
     t.strictEquals(response.statusCode, 200, 'request succeeds')
     t.strictEquals(response.body, 'simple', 'route loads')
 
-    server.close()
-    t.end()
+    server.close(() => {
+      t.end()
+    })
   })
 })
 
-test('[site.js] DotJS parameters', async t => {
 
-  t.plan(4)
+test('[site.js] DotJS parameters', async t => {
 
   const site = new Site({path: 'test/site-dynamic-dotjs-parameters'})
 
@@ -162,16 +160,15 @@ test('[site.js] DotJS parameters', async t => {
     t.strictEquals(response.statusCode, 200, 'person request succeeds')
     t.strictEquals(response.body, '{"personId":"philip-pullman","bookId":"his-dark-materials"}', 'person response is as expected')
 
-    server.close()
-    t.end()
+    server.close(() => {
+      t.end()
+    })
   })
 })
 
 
 // Runs the tests for routes within separate .get and .https folders.
 async function runDotJsSeparateGetAndPostTests (t, site) {
-
-  // 32 tests.
 
   const routerStack = site.app._router.stack
 
@@ -255,22 +252,18 @@ async function runDotJsSeparateGetAndPostTests (t, site) {
 
 test('[site.js] Separate .get and .post folders with dotJS filesystem-based route loading', async t => {
 
-  t.plan(32)
-
   const site = new Site({path: 'test/site-dynamic-dotjs-separate-get-and-post'})
   await site.serve()
 
   await runDotJsSeparateGetAndPostTests(t, site)
 
-  site.server.close()
-
-  t.end()
+  site.server.close(() => {
+    t.end()
+  })
 })
 
 
 test('[site.js] Separate .https and .wss folders with separate .get and .post folders in the .https folder with dotJS filesystem-based route loading', async t => {
-
-  t.plan(44)
 
   const site = new Site({path: 'test/site-dynamic-dotjs-separate-https-and-wss-and-separate-get-and-post'})
   await site.serve()
@@ -327,14 +320,13 @@ test('[site.js] Separate .https and .wss folders with separate .get and .post fo
   await testWebSocketPath('/sub-route/file-name-as-route-name')
   await testWebSocketPath('/sub-route')
 
-  site.server.close()
-  t.end()
+  site.server.close(() => {
+    t.end()
+  })
 })
 
 
 test('[site.js] dynamic route loading from routes.js file', async t => {
-
-  t.plan(7)
 
   const site = new Site({path: 'test/site-dynamic-routes-js'})
 
@@ -371,14 +363,14 @@ test('[site.js] dynamic route loading from routes.js file', async t => {
     ws.close()
     t.strictEquals(data, 'test', 'the correct message is echoed back')
 
-    site.server.close()
-    t.end()
+    site.server.close(() => {
+      t.end()
+    })
   })
 })
 
-test ('[site.js] response.html()', async t=> {
-  t.plan(3)
 
+test('[site.js] response.html()', async t => {
   const site = new Site({path: 'test/site-response-html'})
   await site.serve()
 
@@ -394,13 +386,58 @@ test ('[site.js] response.html()', async t=> {
   t.strictEquals(response.contentType, 'text/html; charset=utf-8', 'response type is HTML')
   t.strictEquals(response.body, 'response.html() works', 'response body is as expected')
 
-  site.server.close()
+  site.server.close(() => {
+    t.end()
+  })
 })
 
 
-test('[site.js] wildcard routes', async t => {
+test('[site.js] database', async t => {
 
-  t.plan(4)
+  // Delete the existing database if there is one.
+  console.log('>>>>>', globalThis.db)
+  const databasePath = path.join(__dirname, 'site-database', '.db')
+  fs.removeSync(databasePath)
+
+  const site = new Site({path: 'test/site-database'})
+  await site.serve()
+
+  // On start-up, the database and a table called test should have been created.
+
+  const tablePath = path.join(databasePath, 'test.js')
+  t.ok(fs.existsSync(databasePath), 'database is created')
+  t.ok(fs.existsSync(tablePath), 'table is created')
+
+  const table = require(tablePath)
+
+  t.ok(Array.isArray(table), 'table is an array')
+  t.strictEquals(table.length, 2, 'table has two item')
+  t.strictEquals(table[0].name, 'Aral', 'first person’s name is as expected')
+  t.strictEquals(table[0].age, 44, 'first person’s initial age is as expected')
+  t.strictEquals(table[1].name, 'Laura', 'second person’s name is as expected')
+  t.strictEquals(table[1].age, 32, 'second person’s initial age is as expected')
+
+  // Now, let’s hit the index route, which should decrease the first person’s
+  // age by one year and increase the second person’s age by one year and
+  // return a JSON representation of the latest state of the data.
+  let response
+  try {
+    response = await secureGet('https://localhost')
+  } catch (error) {
+    console.log(error)
+    process.exit(1)
+  }
+
+  t.strictEquals(response.statusCode, 200, 'request succeeds')
+  t.strictEquals(response.contentType, 'application/json; charset=utf-8', 'response type is JSON')
+  t.strictEquals(response.body, '[{"name":"Aral","age":43},{"name":"Laura","age":33}]', 'table state after call is as expected')
+
+  site.server.close(() => {
+    t.end()
+  })
+})
+
+test('[site.js] wildcard routes', async t => {
 
   const site = new Site({path: 'test/site-wildcard-routes'})
   await site.serve()
@@ -485,13 +522,13 @@ test('[site.js] wildcard routes', async t => {
 
   `).toLowerCase(), 'wildcard “goodbye” route body is as expected')
 
-  site.server.close()
+  site.server.close(() => {
+    t.end()
+  })
 })
 
 
 test('[site.js] archival cascade', async t => {
-  t.plan(8)
-
   const archivalCascadeRoot = path.join(__dirname, 'archival-cascade')
 
   const mainSiteIndexPath = path.join(archivalCascadeRoot, 'site', 'index.html')
@@ -545,14 +582,14 @@ test('[site.js] archival cascade', async t => {
   t.equal(responseUnique2.body, archive2UniqueContent, 'archive 2 unique content loads')
   t.equal(responseOverride.body, archive2OverrideContent, 'archive 2 content overrides archive 1 content')
 
-  site.server.close()
-  t.end()
+  site.server.close(() => {
+    t.end()
+  })
 })
+
 
 test('[site.js] 4042302', async t => {
   // See https://4042302.org/get-started/
-  t.plan(2)
-
   const _4042302FilePath = path.join(__dirname, 'site', '4042302')
   fs.writeFileSync(_4042302FilePath, 'https://my-previous.site', 'utf-8')
 
@@ -571,8 +608,9 @@ test('[site.js] 4042302', async t => {
   t.equal(response.location, 'https://my-previous.site/this-page-exists-on-my-previous-site')
 
   fs.unlinkSync(_4042302FilePath)
-  server.close()
-  t.end()
+  server.close(() => {
+    t.end()
+  })
 })
 
 
@@ -583,8 +621,6 @@ test('[site.js] serve method default 404 and 500 responses', async t => {
   // We rename the folders of the custom messages so that they are not used
   // and we rename them back once we’re done.
   //
-
-  t.plan(4)
 
   const custom404Folder = path.join(__dirname, 'site', '404')
   const backup404Folder = path.join(__dirname, 'site', 'backup-404')
@@ -636,14 +672,13 @@ test('[site.js] serve method default 404 and 500 responses', async t => {
   t.equal(responseDefault500.statusCode, 500, 'response status code is 500')
   t.equal(responseDefault500.body.replace(/\s/g, ''), expectedDefault500ResponseBodyDeflated, 'default 500 response body is as expected')
 
-  t.end()
-
-  server.close()
+  server.close(() => {
+    t.end()
+  })
 })
 
 
 test('[site.js] serve method', async t => {
-  t.plan(7)
   const site = new Site({path: 'test/site'})
   const server = await site.serve()
 
@@ -699,7 +734,7 @@ test('[site.js] serve method', async t => {
   t.equal(responseCustom500.statusCode, 500, 'response status code is 500')
   t.equal(responseCustom500.body.replace(/\s/g, ''), expectedCustom500ResponseBodyDeflated, 'custom 500 response body is as expected')
 
-  t.end()
-
-  server.close()
+  server.close(() => {
+    t.end()
+  })
 })
