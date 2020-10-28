@@ -688,6 +688,7 @@ class Site {
         this.log('   🚮    ❨site.js❩ Closing database.')
         await globalThis._db.close()
       }
+      delete globalThis.db
 
       this.log('   🚮    ❨site.js❩ Housekeeping is done!')
       this.eventEmitter.emit('housekeepingIsDone')
@@ -906,11 +907,6 @@ class Site {
       }
     }
 
-    // Before starting the server, we have to configure the app. We do this here
-    // instead of in the constructor since the process might have to wait for the
-    // Hugo build process to complete.
-    await this.configureApp()
-
     // If a JavaScript Database (JSDB) database exists for the current app, load it in right now (since this is a
     // relatively slow process, we want it to happen at server start, not while the server is up and running and during
     // a request.). If a database doesn’t already exist, we don’t want to pollute the project directory with a database
@@ -937,11 +933,17 @@ class Site {
               }
               return globalThis._db
             }).bind(this),
-            set: (function (value) { if (value !== globalThis.db) { globalThis.db = value} }).bind(this)
+            set: (function (value) { if (value !== globalThis.db) { globalThis.db = value} }).bind(this),
+            configurable: true
           })
         }
       }
     }
+
+    // Before starting the server, we have to configure the app. We do this here
+    // instead of in the constructor since the process might have to wait for the
+    // Hugo build process to complete.
+    await this.configureApp()
 
     if (typeof callback !== 'function') {
       callback = this.isProxyServer ? this.proxyCallback : this.regularCallback
