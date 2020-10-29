@@ -18,36 +18,36 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-const fs                    = require('fs-extra')
-const path                  = require('path')
-const os                    = require('os')
-const EventEmitter          = require('events')
-const childProcess          = require('child_process')
-const http                  = require('http')
-const https                 = require('@small-tech/https')
-const expressWebSocket      = require('@small-tech/express-ws')
-const Hugo                  = require('@small-tech/node-hugo')
-const instant               = require('@small-tech/instant')
-const crossPlatformHostname = require('@small-tech/cross-platform-hostname')
-const getRoutes             = require('@small-tech/web-routes-from-files')
-const JSDB                  = require('@small-tech/jsdb')
-const Graceful              = require('node-graceful')
-const express               = require('express')
-const bodyParser            = require('body-parser')
-const helmet                = require('helmet')
-const httpProxyMiddleware   = require('http-proxy-middleware')
-const enableDestroy         = require('server-destroy')
-const moment                = require('moment')
-const morgan                = require('morgan')
-const chokidar              = require('chokidar')
-const decache               = require('decache')
-const prepareRequest        = require('bent')
-const clr                   = require('./lib/clr')
-const cli                   = require('./bin/lib/cli')
-const serve                 = require('./bin/commands/serve')
-const Stats                 = require('./lib/Stats')
-const asyncForEach          = require('./lib/async-foreach')
-const errors                = require('./lib/errors')
+const fs                        = require('fs-extra')
+const path                      = require('path')
+const os                        = require('os')
+const EventEmitter              = require('events')
+const childProcess              = require('child_process')
+const http                      = require('http')
+const https                     = require('@small-tech/https')
+const expressWebSocket          = require('@small-tech/express-ws')
+const Hugo                      = require('@small-tech/node-hugo')
+const instant                   = require('@small-tech/instant')
+const crossPlatformHostname     = require('@small-tech/cross-platform-hostname')
+const getRoutes                 = require('@small-tech/web-routes-from-files')
+const JSDB                      = require('@small-tech/jsdb')
+const Graceful                  = require('node-graceful')
+const express                   = require('express')
+const bodyParser                = require('body-parser')
+const helmet                    = require('helmet')
+const { createProxyMiddleware } = require('http-proxy-middleware')
+const enableDestroy             = require('server-destroy')
+const moment                    = require('moment')
+const morgan                    = require('morgan')
+const chokidar                  = require('chokidar')
+const decache                   = require('decache')
+const prepareRequest            = require('bent')
+const clr                       = require('./lib/clr')
+const cli                       = require('./bin/lib/cli')
+const serve                     = require('./bin/commands/serve')
+const Stats                     = require('./lib/Stats')
+const asyncForEach              = require('./lib/async-foreach')
+const errors                    = require('./lib/errors')
 
 
 class Site {
@@ -616,7 +616,7 @@ class Site {
       return { log: prettyLog, debug: prettyLog, info: prettyLog, warn: prettyLog, error: prettyLog }
     }
 
-    const webSocketProxy = httpProxyMiddleware({
+    const webSocketProxy = createProxyMiddleware({
       target: proxyWebSocketUrl,
       ws: true,
       changeOrigin:false,
@@ -624,7 +624,7 @@ class Site {
       logLevel: 'info'
     })
 
-    const httpsProxy = httpProxyMiddleware({
+    const httpsProxy = createProxyMiddleware({
       target: proxyHttpUrl,
       changeOrigin: true,
       logProvider,
