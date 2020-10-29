@@ -20,6 +20,7 @@ const path = require('path')
 const queryString = require('querystring')
 
 const WebSocket = require('ws')
+const { resolve } = require('path')
 
 process.env['QUIET'] = true
 
@@ -109,27 +110,29 @@ test('[site.js] Simple dotJS filesystem-based route loading', async t => {
   const site = new Site({path: 'test/site-dynamic-dotjs-simple'})
 
   // Hit the route to ensure we get the response we expect.
-  const server = await site.serve(async () => {
+  await new Promise(async (resolve, reject) => {
+    const server = await site.serve(async () => {
+      // Ensure the route is loaded as we expect.
+      const routerStack = site.app._router.stack
+      t.strictEquals(routerStack[8].route.path, '/simple', 'the route is as expected in the router stack')
 
-    // Ensure the route is loaded as we expect.
-    const routerStack = site.app._router.stack
-    t.strictEquals(routerStack[8].route.path, '/simple', 'the route is as expected in the router stack')
+      let response
+      try {
+        response = await secureGet('https://localhost/simple')
+      } catch (error) {
+        reject(error)
+      }
 
-    let response
-    try {
-      response = await secureGet('https://localhost/simple')
-    } catch (error) {
-      console.log(error)
-      process.exit(1)
-    }
+      t.strictEquals(response.statusCode, 200, 'request succeeds')
+      t.strictEquals(response.body, 'simple', 'route loads')
 
-    t.strictEquals(response.statusCode, 200, 'request succeeds')
-    t.strictEquals(response.body, 'simple', 'route loads')
-
-    server.close(() => {
-      t.end()
+      server.close(() => {
+        resolve()
+      })
     })
   })
+
+  t.end()
 })
 
 
@@ -137,33 +140,38 @@ test('[site.js] DotJS parameters', async t => {
 
   const site = new Site({path: 'test/site-dynamic-dotjs-parameters'})
 
-  const server = await site.serve(async () => {
+  await new Promise (async (resolve, reject) => {
+    const server = await site.serve(async () => {
 
-    let response
-    try {
-      response = await secureGet('https://localhost/rabbit/Laura')
-    } catch (error) {
-      console.log(error)
-      process.exit(1)
-    }
+      let response
+      try {
+        response = await secureGet('https://localhost/rabbit/Laura')
+      } catch (error) {
+        console.log(error)
+        process.exit(1)
+      }
 
-    t.strictEquals(response.statusCode, 200, 'rabbit request succeeds')
-    t.strictEquals(response.body, 'The rabbit’s name is Laura.', 'rabbit response is as expected')
+      t.strictEquals(response.statusCode, 200, 'rabbit request succeeds')
+      t.strictEquals(response.body, 'The rabbit’s name is Laura.', 'rabbit response is as expected')
 
-    try {
-      response = await secureGet('https://localhost/person/philip-pullman/book/his-dark-materials')
-    } catch (error) {
-      console.log(error)
-      process.exit(1)
-    }
+      try {
+        response = await secureGet('https://localhost/person/philip-pullman/book/his-dark-materials')
+      } catch (error) {
+        console.log(error)
+        process.exit(1)
+      }
 
-    t.strictEquals(response.statusCode, 200, 'person request succeeds')
-    t.strictEquals(response.body, '{"personId":"philip-pullman","bookId":"his-dark-materials"}', 'person response is as expected')
+      t.strictEquals(response.statusCode, 200, 'person request succeeds')
+      t.strictEquals(response.body, '{"personId":"philip-pullman","bookId":"his-dark-materials"}', 'person response is as expected')
 
-    server.close(() => {
-      t.end()
+      server.close(error => {
+        if (error) reject(error)
+        resolve()
+      })
     })
   })
+
+  t.end()
 })
 
 
@@ -257,9 +265,14 @@ test('[site.js] Separate .get and .post folders with dotJS filesystem-based rout
 
   await runDotJsSeparateGetAndPostTests(t, site)
 
-  site.server.close(() => {
-    t.end()
+  await new Promise((resolve, reject) => {
+    site.server.close(error => {
+      if (error) reject(error)
+      resolve()
+    })
   })
+
+  t.end()
 })
 
 
@@ -320,16 +333,20 @@ test('[site.js] Separate .https and .wss folders with separate .get and .post fo
   await testWebSocketPath('/sub-route/file-name-as-route-name')
   await testWebSocketPath('/sub-route')
 
-  site.server.close(() => {
-    t.end()
+  await new Promise ((resolve, reject) => {
+    site.server.close(error => {
+      if (error) reject(error)
+      resolve()
+    })
   })
+
+  t.end()
 })
 
 
 test('[site.js] dynamic route loading from routes.js file', async t => {
 
   const site = new Site({path: 'test/site-dynamic-routes-js'})
-
   await site.serve()
 
   const routerStack = site.app._router.stack
@@ -355,18 +372,24 @@ test('[site.js] dynamic route loading from routes.js file', async t => {
   t.strictEquals(response.body, 'Hello, world!', 'route loads with correct message')
 
   // Test the WSS route.
-  const ws = new WebSocket('wss://localhost/echo', { rejectUnauthorized: false })
 
-  ws.on('open', () => { ws.send('test') })
+  await new Promise ((resolve, reject) => {
+    const ws = new WebSocket('wss://localhost/echo', { rejectUnauthorized: false })
 
-  ws.on('message', (data) => {
-    ws.close()
-    t.strictEquals(data, 'test', 'the correct message is echoed back')
+    ws.on('open', () => { ws.send('test') })
 
-    site.server.close(() => {
-      t.end()
+    ws.on('message', (data) => {
+      ws.close()
+      t.strictEquals(data, 'test', 'the correct message is echoed back')
+
+      site.server.close(error => {
+        if (error) reject(error)
+        resolve()
+      })
     })
   })
+
+  t.end()
 })
 
 
@@ -386,16 +409,20 @@ test('[site.js] response.html()', async t => {
   t.strictEquals(response.contentType, 'text/html; charset=utf-8', 'response type is HTML')
   t.strictEquals(response.body, 'response.html() works', 'response body is as expected')
 
-  site.server.close(() => {
-    t.end()
+  await new Promise ((resolve, reject) => {
+    site.server.close(error => {
+      if (error) reject(error)
+      resolve()
+    })
   })
+
+  t.end()
 })
 
 
 test('[site.js] database', async t => {
 
   // Delete the existing database if there is one.
-  console.log('>>>>>', globalThis.db)
   const databasePath = path.join(__dirname, 'site-database', '.db')
   fs.removeSync(databasePath)
 
@@ -432,9 +459,14 @@ test('[site.js] database', async t => {
   t.strictEquals(response.contentType, 'application/json; charset=utf-8', 'response type is JSON')
   t.strictEquals(response.body, '[{"name":"Aral","age":43},{"name":"Laura","age":33}]', 'table state after call is as expected')
 
-  site.server.close(() => {
-    t.end()
+  await new Promise ((resolve, reject) => {
+    site.server.close(error => {
+      if (error) reject(error)
+      resolve()
+    })
   })
+
+  t.end()
 })
 
 test('[site.js] wildcard routes', async t => {
@@ -522,9 +554,14 @@ test('[site.js] wildcard routes', async t => {
 
   `).toLowerCase(), 'wildcard “goodbye” route body is as expected')
 
-  site.server.close(() => {
-    t.end()
+  await new Promise ((resolve, reject) => {
+    site.server.close(error => {
+      if (error) reject(error)
+      resolve()
+    })
   })
+
+  t.end()
 })
 
 
@@ -582,9 +619,14 @@ test('[site.js] archival cascade', async t => {
   t.equal(responseUnique2.body, archive2UniqueContent, 'archive 2 unique content loads')
   t.equal(responseOverride.body, archive2OverrideContent, 'archive 2 content overrides archive 1 content')
 
-  site.server.close(() => {
-    t.end()
+  await new Promise ((resolve, reject) => {
+    site.server.close(error => {
+      if (error) reject(error)
+      resolve()
+    })
   })
+
+  t.end()
 })
 
 
@@ -608,9 +650,15 @@ test('[site.js] 4042302', async t => {
   t.equal(response.location, 'https://my-previous.site/this-page-exists-on-my-previous-site')
 
   fs.unlinkSync(_4042302FilePath)
-  server.close(() => {
-    t.end()
+
+  await new Promise ((resolve, reject) => {
+    site.server.close(error => {
+      if (error) reject(error)
+      resolve()
+    })
   })
+
+  t.end()
 })
 
 
@@ -672,9 +720,14 @@ test('[site.js] serve method default 404 and 500 responses', async t => {
   t.equal(responseDefault500.statusCode, 500, 'response status code is 500')
   t.equal(responseDefault500.body.replace(/\s/g, ''), expectedDefault500ResponseBodyDeflated, 'default 500 response body is as expected')
 
-  server.close(() => {
-    t.end()
+  await new Promise ((resolve, reject) => {
+    site.server.close(error => {
+      if (error) reject(error)
+      resolve()
+    })
   })
+
+  t.end()
 })
 
 
@@ -734,7 +787,12 @@ test('[site.js] serve method', async t => {
   t.equal(responseCustom500.statusCode, 500, 'response status code is 500')
   t.equal(responseCustom500.body.replace(/\s/g, ''), expectedCustom500ResponseBodyDeflated, 'custom 500 response body is as expected')
 
-  server.close(() => {
-    t.end()
+  await new Promise ((resolve, reject) => {
+    site.server.close(error => {
+      if (error) reject(error)
+      resolve()
+    })
   })
+
+  t.end()
 })

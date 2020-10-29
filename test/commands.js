@@ -738,7 +738,7 @@ test('[commands] hugo', t => {
   t.end()
 })
 
-test('[commands] logs', async t => {
+test('[commands] logs', t => {
   // Startup daemons are only supported on platforms with systemd.
   if (process.platform === 'win32' || process.platform === 'darwin' || !ensure.commandExists('systemctl')) {
     const errorMessage = 'Sorry, daemons are only supported on Linux systems with systemd (journalctl required).'
@@ -752,8 +752,6 @@ test('[commands] logs', async t => {
     t.end()
     return
   }
-
-  t.plan(5)
 
   const optionsWithThreeSecondTimeout = options(3000)
   childProcess.exec(_('logs'), optionsWithThreeSecondTimeout, (error, stdout, stderr) => {
