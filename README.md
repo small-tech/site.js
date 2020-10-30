@@ -391,6 +391,8 @@ $ site my-local-folder --sync-to=me@my.site:my-remote-folder --sync-folder-and-c
 
 The above command will result in the following directory structure on the remote server: _/home/me/my-remote-folder/my-local-folder_. It also demonstrates that if you specify a relative folder, Site.js assumes you mean the folder exists in the home directory of the account on the remote server.
 
+(As of 15.4.0) If the sync command cannot connect in 5 seconds, it will time out. If this happens, check that you have the correct host and account details specified. If you do, there might be a problem with your connection.
+
 #### Live Sync
 
 With the Live Sync feature, you can have Site.js watch for changes to your content and sync them to your server in real-time (e.g., if you want to live blog something or want to keep a page updated with local data you’re collecting from a sensor).

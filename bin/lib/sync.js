@@ -21,7 +21,7 @@ const Graceful = require('node-graceful')
 const RsyncWatcher = require('./RsyncWatcher')
 const ensure = require('./ensure')
 const clr = require('../../lib/clr')
-const { small } = require('@small-tech/cross-platform-hostname')
+
 
 function sync (options) {
   // Check for prerequisites (sync functionality requires rsync to be installed.)
@@ -83,7 +83,7 @@ function sync (options) {
         _[30] = 'Timeout in data send/receive'
         _[35] = 'Timeout waiting for daemon connection'
         _[127] = 'Rsync not found; please run site enable --sync'
-        _[255] = `SSH error while connecting to ${clr(options.host, 'cyan')} (is this hostname/SSH certificates correct?)`
+        _[255] = `SSH error while connecting to ${clr(options.host, 'cyan')} – is this hostname/SSH certificates correct?`
 
         // Scrape the error code from the error string (not ideal but it’s all
         // we have to work with).
@@ -94,7 +94,6 @@ function sync (options) {
           const errorMessage = _[errorCode]
           if (typeof errorMessage !== 'undefined') {
             console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} ${errorCode} (${errorMessage})\n`)
-            console.log(error)
             process.exit(1)
           }
         }
@@ -150,7 +149,9 @@ function sync (options) {
     // We don't need to rewrite the key with Linux line endings since this is our convention and so
     // we expect that the key was written out from Node with the correct line endings to begin with.
     console.log(`   🔑    ❨site.js❩ Using site-specific SSH key: ${ed25519KeyBasedOnFolderName}`)
-    rsyncOptions.sync.rsyncOptions.rsh = `ssh -i ${ed25519KeyBasedOnFolderName}`
+    rsyncOptions.sync.rsyncOptions.rsh = `ssh -i ${ed25519KeyBasedOnFolderName} -o ConnectTimeout=5`
+  } else {
+    rsyncOptions.sync.rsyncOptions.rsh = `ssh -o ConnectTimeout=5`
   }
 
   // Add Windows support if necessary.
