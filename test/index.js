@@ -12,6 +12,7 @@
 const test = require('tape')
 
 const Site = require('../index.js')
+const http = require('http')
 const https = require('https')
 
 const fs = require('fs-extra')
@@ -20,7 +21,6 @@ const path = require('path')
 const queryString = require('querystring')
 
 const WebSocket = require('ws')
-const { resolve } = require('path')
 
 process.env['QUIET'] = true
 
@@ -723,6 +723,47 @@ test('[site.js] serve method default 404 and 500 responses', async t => {
   await new Promise ((resolve, reject) => {
     site.server.close(error => {
       if (error) reject(error)
+      resolve()
+    })
+  })
+
+  t.end()
+})
+
+test('[site.js] proxy', async t => {
+  const responseText = 'Original server.'
+  const httpServer = http.createServer((request, response) => {
+    response.setHeader('Content-Type', 'text/plain')
+    response.end(responseText)
+  })
+
+  await new Promise ((resolve, reject) => {
+
+    httpServer.listen(8000, async () => {
+      // OK, the original server is up, now let’s proxy it using Site.js.
+      const site = new Site({proxyPort: 8000})
+      await site.serve()
+
+      let response
+      try {
+        response = await secureGet('https://localhost/index.html')
+      } catch (error) {
+        console.log(error)
+        process.exit(1)
+      }
+
+      t.equal(response.statusCode, 200, 'request succeeds')
+      t.equal(response.body, responseText, 'response from proxy is as expected')
+
+      site.server.close(error => {
+        if (error) reject(error)
+        resolve()
+      })
+    })
+  })
+
+  await new Promise((resolve, reject) => {
+    httpServer.close(() => {
       resolve()
     })
   })
