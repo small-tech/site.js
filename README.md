@@ -1501,6 +1501,46 @@ const Site = require('@small-tech/site.js')
 const server = new Site(proxyPort: 1313, global: true}).serve({)
 ```
 
+## Troubleshooting
+
+This section documents exotic issues that you might run into that are not bugs in Site.js and details how to can fix them.
+
+### Initial run @hostname error on Mac with stale DNS cache
+
+#### The issue
+
+If you are running your site from your host name on your Mac and you:
+
+1. Hit (e.g.) `mac.my.domain` with the DNS not set up for it.
+2. Set up a CNAME for `mac.my.domain`.
+3. Start a server `@hostname` (with your hostname correctly set to the above).
+4. Expose your server via [PageKite](https://pagekite.net/) or ngrok, etc.
+5. Hit the hostname in the browser again.
+
+If Safari/the system caches the incorrect DNS lookup, your automatic Let's Encrypt TLS certificate provisioning can fail with the following error:
+
+```sh
+Error: getaddrinfo ENOTFOUND mac.my.domain mac.my.domain:80
+    at GetAddrInfoReqWrap.onlookup [as oncomplete] (dns.js:56:26)
+Error loading/registering certificate for 'mac.my.domain':
+{ Error: getaddrinfo ENOTFOUND mac.my.domain mac.my.domain:80
+    at GetAddrInfoReqWrap.onlookup [as oncomplete] (dns.js:56:26)
+  errno: 'ENOTFOUND',
+  code: 'ENOTFOUND',
+  syscall: 'getaddrinfo',
+  hostname: 'mac.my.domain',
+  host: 'mac.my.domain',
+  port: 80 }
+```
+
+#### The fix
+
+Clear your DNS cache and try again:
+
+```sh
+sudo killall -HUP mDNSResponder;sudo killall mDNSResponderHelper;sudo dscacheutil -flushcache
+```
+
 ## Contributing
 
 Site.js is [Small Technology](https://ar.al/2019/03/04/small-technology/). The emphasis is on _small_. It is, by design, a zero-configuration tool for creating and hosting single-tenant web applications. It is for humans, by humans. It is non-commercial. (It is not for enterprises, it is not for “startups”, and it is definitely not for unicorns.) As such, any new feature requests will have to be both fit for purpose and survive a trial by fire to be considered.
