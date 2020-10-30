@@ -1478,21 +1478,23 @@ Serve the current directory at https://localhost using locally-trusted TLS certi
 
 ```js
 const Site = require('@small-tech/site.js')
-const server = new Site().serve()
+const server = new Site().serve(() => {
+  console.log('The server is running at https://localhost')
+})
 ```
 
 Serve the current directory at your hostname using globally-trusted Let’s Encrypt TLS certificates:
 
 ```js
 const Site = require('@small-tech/site.js')
-const server = new Site().serve({global: true})
+const server = new Site({global: true}).serve()
 ```
 
 Start a proxy server to proxy local port 1313 at your hostname:
 
 ```js
 const Site = require('@small-tech/site.js')
-const server = new Site().serve({proxyPort: 1313, global: true})
+const server = new Site(proxyPort: 1313, global: true}).serve({)
 ```
 
 ## Contributing
