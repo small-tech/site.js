@@ -107,6 +107,12 @@ For example, to install the latest beta build on Linux:
 wget -qO- https://sitejs.org/install | bash -s -- beta
 ```
 
+__Note:__ On Macs, `wget` is not installed by default but `curl` is so you can use that instead:
+
+```shell
+curl -s https://sitejs.org/install | bash -s -- beta
+```
+
 Alpha builds are strictly for local testing and should not, under any circumstances, be used in production. We do not test Alpha builds in production.
 
 Servers deployed using release builds check for updates every six hours whereas beta builds check every 10 minutes.
