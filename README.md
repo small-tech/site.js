@@ -648,14 +648,14 @@ When you `serve` a site at `@hostname` or use the `enable` command, globally-tru
 
 | Goal                                      | Command                                                       |
 | ----------------------------------------- | ------------------------------------------------------------- |
-| Serve current folder as daemon            | site enable                                                   |
+| Install and serve current folder as daemon| site enable                                                   |
 | Ditto & also ensure it can rsync via ssh  | site enable --ensure-can-sync                                 |
 | Get status of daemon                      | site status                                                   |
 | Start server                              | site start                                                    |
 | Stop server                               | site stop                                                     |
 | Restart server                            | site restart                                                  |
 | Display server logs                       | site logs                                                     |
-| Stop current daemon                       | site disable                                                  |
+| Stop and uninstall current daemon         | site disable                                                  |
 
 #### General:
 

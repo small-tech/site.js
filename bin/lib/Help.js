@@ -195,15 +195,22 @@ class Help {
     ${ this.systemdExists ? `
       Start-up daemon:
 
-    • Serve current folder as daemon\t\t${prompt} ${appName} ${commandEnable}
+    • Install & serve current folder as daemon\t${prompt} ${appName} ${commandEnable}
     • Ditto & also ensure it can rsync via ssh\t${prompt} ${appName} ${commandEnable} ${optionEnsureCanSync}
     • Get status of deamon\t\t\t${prompt} ${appName} ${commandStatus}
+    • Start server\t\t\t\t${prompt} ${appName} ${commandStart}
+    • Stop server\t\t\t\t${prompt} ${appName} ${commandStop}
+    • Restart server\t\t\t\t${prompt} ${appName} ${commandRestart}
     • Display server logs\t\t\t${prompt} ${appName} ${commandLogs}
-    • Stop current daemon\t\t\t${prompt} ${appName} ${commandDisable}
+    • Stop and uninstall current daemon\t\t${prompt} ${appName} ${commandDisable}
     ` : ''}
       ${heading('Static site generation:')}
 
     • Create a new Hugo site\t\t\t${prompt} ${appName} ${commandHugo} ${argument('new site demo')}
+
+      ${heading('General:')}
+
+    • Check for updates and update if found\t${prompt} ${appName} ${commandUpdate}
     ${ this.isWindows ? `
     ${heading('Windows-specific notes:')}
 

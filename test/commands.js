@@ -458,15 +458,22 @@ test('[commands] help', t => {
 
     Start-up daemon:
 
-  • Serve current folder as daemon    ▶ site enable
+  • Install & serve current folder as daemon  ▶ site enable
   • Ditto & also ensure it can rsync via ssh  ▶ site enable --ensure-can-sync
-  • Get status of deamon      ▶ site status
-  • Display server logs      ▶ site logs
-  • Stop current daemon      ▶ site disable
+  • Get status of deamon                      ▶ site status
+  • Start server                              ▶ site start
+  • Stop server                               ▶ site stop
+  • Restart server                            ▶ site restart
+  • Display server logs                       ▶ site logs
+  • Stop and uninstall current daemon         ▶ site disable
 
     Static site generation:
 
   • Create a new Hugo site      ▶ site hugo new site demo
+
+    General:
+
+  • Check for updates and update if found     ▶ site update
 
   For further information, please see https://sitejs.org
   `)
@@ -546,6 +553,10 @@ test('[commands] help', t => {
 
       Static site generation:
     • Create a new Hugo site      ▶ site hugo new site demo
+
+      General:
+
+    • Check for updates and update if found     ▶ site update
 
     Linux-specific notes:
       - Production use is not available on this Linux distribution as systemd does not exist.
@@ -631,6 +642,10 @@ test('[commands] help', t => {
       Static site generation:
     • Create a new Hugo site      ▶ site hugo new site demo
 
+      General:
+
+    • Check for updates and update if found     ▶ site update
+
     Windows-specific notes:
       - Unlike Linux and macOS, you must use quotation marks around @localhost and @hostname.
       - Production use is not available on Windows as it requires Linux with systemd.
@@ -712,6 +727,10 @@ test('[commands] help', t => {
 
       Static site generation:
     • Create a new Hugo site      ▶ site hugo new site demo
+
+      General:
+
+    • Check for updates and update if found     ▶ site update
 
     Mac-specific notes:
       - Production use is not available on macOS as it requires Linux with systemd.
