@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [15.4.0] - In progress…
+
+### Improved
+
+#### General:
+
+  - Implement shorter custom ssh connection timeout for sync for when the host exists but you are not authorised to connect to it. Previously, the timeout was the default TCP connection timeout of 120 seconds which would make it look like the process had hanged. The new timeout is 5 seconds, which provides timely feedback.
+
+#### Documentation:
+
+  - Document initial run `@hostname` error on Mac with stale DNS cache (#138).
+  - Update Help output to add examples for update, start, stop, restart commands and match the readme (#137).
+  - Document that `.generated` folder should be added to `.gitignore` (#197).
+  - Update docs to include Mac install example for alpha/beta installs (#201).
+
 ## [15.3.1] - 2020-10-29
 
 This is a bugfix release that upgrades [JSDB](https://github.com/small-tech/jsdb/) to [version 1.1.4](https://github.com/small-tech/jsdb/blob/master/CHANGELOG.md#114---2020-10-29).
