@@ -1279,7 +1279,7 @@ module.exports = app => {
     client.on('message', (data) => {
       client.send(data)
     })
-  }
+  })
 }
 ```
 
