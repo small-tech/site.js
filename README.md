@@ -1276,9 +1276,10 @@ module.exports = app => {
 
   // WebSocket route: echos messages back to the client that sent them.
   app.ws('/echo', (client, request) => {
-  client.on('message', (data) => {
-    client.send(data)
-  })
+    client.on('message', (data) => {
+      client.send(data)
+    })
+  }
 }
 ```
 
