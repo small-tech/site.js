@@ -10,7 +10,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### General:
 
-  - Implement shorter custom ssh connection timeout for sync for when the host exists but you are not authorised to connect to it. Previously, the timeout was the default TCP connection timeout of 120 seconds which would make it look like the process had hanged. The new timeout is 5 seconds, which provides timely feedback.
+  - Implement shorter custom ssh connection timeout for sync for when the host exists but you are not authorised to connect to it.
+
+    Previously, the timeout was the default TCP connection timeout of 120 seconds which would make it look like the process had hanged. The new timeout is 5 seconds, which provides timely feedback.
 
 #### Documentation:
 
@@ -18,6 +20,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Update Help output to add examples for update, start, stop, restart commands and match the readme (#137).
   - Document that `.generated` folder should be added to `.gitignore` (#197).
   - Update docs to include Mac install example for alpha/beta installs (#201).
+
+### Added
+
+  - New npm build task: `update-nexe`.
+
+    This task updates the Nexe base image for your platform, architecture, and version of Node.js. As you are basically building a modified version of Node.js this will take a while. The --all and --deploy options are not available on the build script when updating Nexe and will result in an error.
 
 ## [15.3.1] - 2020-10-29
 
