@@ -527,12 +527,21 @@ After you install the source and run tests:
 npm run install-locally
 ```
 
-### Deployment
+### Update the Nexe base binary for your platform/architecture and Node version
+
+(You will most likely not need to do this.)
+
+```shell
+npm run update-nexe
+```
+
+### Deploying Site.js itself
+
+(You will most likely not need to do this.)
 
 ```shell
 # To cross-compile binaries for Linux (x64), macOS, and Windows
 # and also copy them over to the Site.js web Site for deployment.
-# (You will most likely not need to do this.)
 npm run deploy
 ```
 

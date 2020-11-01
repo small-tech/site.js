@@ -7,6 +7,15 @@
 // Run with: npm run build
 //       or: npm run deploy
 //
+// The Site.js binary is built from a Nexe base image. If the images
+// do not exist locally, they are automatically downloaded from the
+// remote we host at site.js.
+//
+// Once downloaded, the Nexe base images are stored at ~/.nexe
+//
+// To update the Nexe base image for your platform, pass the 
+// --update-nexe option.
+//
 ///////////////////////////////////////////////////////////////////////////
 
 const fs              = require('fs-extra')
@@ -25,7 +34,7 @@ const commandLineOptions = minimist(process.argv.slice(2), {boolean: true})
 
 // Display help on syntax error or if explicitly requested.
 if (commandLineOptions._.length !== 0 || commandLineOptions.h || commandLineOptions.help) {
-  console.log('\n Usage: npm run build [--deploy] [--all] [--install] [--alpha] [--beta]\n')
+  console.log('\n Usage: npm run build [--deploy] [--all] [--install] [--alpha] [--beta] [--update-nexe]\n')
   process.exit()
 }
 
@@ -63,6 +72,13 @@ const packageVersion    = package.version
 const sourceVersion     = (childProcess.execSync('git log -1 --oneline')).toString().trim().split(' ')[0]
 const binaryName        = 'site'
 const windowsBinaryName = `${binaryName}.exe`
+const updateNexe        = commandLineOptions['update-nexe'] || false
+
+if (updateNexe && (commandLineOptions.all || commandLineOptions.deploy)) {
+  console.log('\n ❌ Error: Cannot update Nexe when more than one platform is specified (via --deploy or --all).')
+  console.log('    (Nexe binary base images are built on the platform and architecture they are for.)\n')
+  process.exit(1)
+}
 
 function presentBinaryVersion (binaryVersion) {
   const m = moment(binaryVersion, 'YYYYMMDDHHmmss')
@@ -92,7 +108,11 @@ console.log(`\n ⚙️ Site.js build started on ${presentBinaryVersion(binaryVer
     Source version : ${sourceVersion}
     Node version   : ${nodeVersion}
     Hugo version   : ${hugoVersion}
-    \n`)
+`)
+
+if (updateNexe) {
+  console.log(' 📦 Asked to update Nexe base image (this will recompile Node and take a while).\n')
+}
 
 // Write out the manifest file. This will be included in the build so that the binary knows what type of release it is.
 // This allows it to modify its behaviour at runtime (e.g., auto-update from beta releases if it’s a beta release).
@@ -131,13 +151,21 @@ const binaryPaths = {
   'win32': windowsBinaryPath
 }
 
+//
 // Note: Ensure that a Nexe build exists for the Node version you’re running as that is
 // ===== what will be used. This is by design as you should be deploying with the Node
 //       version that you’re developing and testing with. Pre-built Nexe base images are
 //       downloaded from our own remote repository, not from the official Nexe releases
 //       (so we can include platforms – like ARM – that aren’t covered yet by the
-//       official releases).
+//       official releases). If the --update-nexe option is passed, instead of the remote
+//       image, the Nexe base image for your platform is recreated using your current
+//       version of Node.js.
+//
+
+// One of these will be added to the compile options based on whether --update-nexe is true.
 const remote           = 'https://sitejs.org/nexe/'
+const build            = true
+
 const linuxX64Target   = `linux-x64-${nodeVersion}`
 const linuxArmTarget   = `linux-arm-${nodeVersion}`
 const linuxArm64Target = `linux-arm64-${nodeVersion}`
@@ -194,9 +222,9 @@ const input = 'bin/site.js'
 // Start the build.
 //
 
-build()
+buildBinary()
 
-async function build () {
+async function buildBinary () {
   //
   // Build.
   //
@@ -312,13 +340,12 @@ async function build () {
 
     stripForPlatform('linux-amd64')
 
-    await compile({
+    await compile(Object.assign({
       input,
-      remote,
       output    : linuxX64BinaryPath,
       target    : linuxX64Target,
       resources,
-    })
+    }, updateNexe ? {build} : {remote}))
 
     unstrip()
 
@@ -332,13 +359,12 @@ async function build () {
 
     stripForPlatform('linux-arm')
 
-    await compile({
+    await compile(Object.assign({
       input,
-      remote,
       output    : linuxArmBinaryPath,
       target    : linuxArmTarget,
       resources,
-    })
+    }, updateNexe ? {build} : {remote}))
 
     unstrip()
 
@@ -352,13 +378,12 @@ async function build () {
 
     stripForPlatform('linux-arm')
 
-    await compile({
+    await compile(Object.assign({
       input,
-      remote,
       output    : linuxArm64BinaryPath,
       target    : linuxArm64Target,
       resources,
-    })
+    }, updateNexe ? {build} : {remote}))
 
     unstrip()
 
@@ -372,13 +397,12 @@ async function build () {
 
     stripForPlatform('darwin-amd64')
 
-    await compile({
+    await compile(Object.assign({
       input,
-      remote,
       output    : macOsBinaryPath,
       target    : macOsTarget,
       resources,
-    })
+    }, updateNexe ? {build} : {remote}))
 
     unstrip()
 
@@ -397,13 +421,12 @@ async function build () {
 
     stripForPlatform('windows-amd64.exe')
 
-    await compile({
+    await compile(Object.assign({
       input,
-      remote,
       output    : windowsBinaryPath,
       target    : windowsTarget,
       resources : windowsResources,
-    })
+    }, updateNexe ? {build} : {remote}))
 
     unstrip()
 
@@ -447,6 +470,31 @@ async function build () {
     } else {
       childProcess.execSync(`sudo cp ${currentPlatformBinaryPath} /usr/local/bin`)
     }
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // Update Nexe.
+  //
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  if (updateNexe) {
+    // At this point, the new Nexe binary will be at ~/.nexe/<node version>/out/Release/node and
+    // needs to be copied to ~/.nexe/<platform>-<cpu architecture>-<node version>
+
+    const nexeBaseBinariesPath = path.join(os.homedir(), '.nexe')
+    const compiledNexeBaseBinaryPath = path.join(nexeBaseBinariesPath, nodeVersion, 'out', 'Release', 'node')
+    const nexeBaseBinaryNewName = `${platform}-${cpuArchitecture}-${nodeVersion}`
+    const nexeBaseBinaryNewPath = path.join(nexeBaseBinariesPath, nexeBaseBinaryNewName)
+
+    try {
+      fs.copyFileSync(compiledNexeBaseBinaryPath, nexeBaseBinaryNewPath)
+    } catch (error) {
+      console.log(`\n ❌ Error: could not copy new Nexe base binary from ${compiledNexeBaseBinaryPath} to ${nexeBaseBinaryNewPath}.\n`, error)
+      process.exit(1)
+    }
+
+    console.log('\n 📦 New Nexe base image is ready at ${nexeBaseBinaryNewPath}\n')
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////

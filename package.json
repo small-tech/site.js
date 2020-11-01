@@ -25,6 +25,7 @@
   "bin": "bin/site.js",
   "scripts": {
     "build": "node bin/build.js",
+    "update-nexe": "node bin/build.js --update-nexe",
     "deploy": "bin/build.js --deploy",
     "install-locally": "node bin/build.js --install",
     "build-alpha": "node bin/build.js --alpha",
