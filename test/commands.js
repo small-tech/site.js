@@ -83,8 +83,8 @@ function manifest () {
   return _manifest
 }
 
-function siteJSHeader () {
-  return dehydrate('🌱 Site.js')
+function siteJSLogo () {
+  return dehydrate('🌱')
 }
 
 function creationDateLine () {
@@ -132,7 +132,7 @@ test('[commands] version', t => {
   const command = _('version')
   const actualOutput = outputForCommand(command)
 
-  t.ok(actualOutput.includes(siteJSHeader()), 'version screen includes Site.js header')
+  t.ok(actualOutput.includes(siteJSLogo()), 'version screen includes Site.js header')
   t.ok(actualOutput.includes(creationDateLine()), 'version screen includes creation date line')
   t.ok(actualOutput.includes(binaryVersionLine()), 'version screen includes binary version line')
   t.ok(actualOutput.includes(nodeVersionLine()), 'version screen includes Node.js version line')
