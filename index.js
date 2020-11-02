@@ -129,15 +129,18 @@ class Site {
   }
 
   static get releaseChannelFormattedForConsole () {
+
+    const siteJSBlue = line => `\u001b[38;173;216;230;0m${line}\u001b[0m\n`
+
     switch(this.releaseChannel) {
 
       // Spells ALPHA in large red block letters.
       case this.RELEASE_CHANNEL.alpha:
         return [
-          `         ${clr(' █████  ██      ██████  ██   ██  █████ ', 'red')}\n`,
-          `         ${clr('██   ██ ██      ██   ██ ██   ██ ██   ██ ', 'red')}\n`,
-          `         ${clr('███████ ██      ██████  ███████ ███████ ', 'red')}\n`,
-          `         ${clr('██   ██ ██      ██      ██   ██ ██   ██ ', 'red')}\n`,
+          `         ${clr(' █████  ██      ██████  ██   ██  █████', 'red')}\n`,
+          `         ${clr('██   ██ ██      ██   ██ ██   ██ ██   ██', 'red')}\n`,
+          `         ${clr('███████ ██      ██████  ███████ ███████', 'red')}\n`,
+          `         ${clr('██   ██ ██      ██      ██   ██ ██   ██', 'red')}\n`,
           `         ${clr('██   ██ ███████ ██      ██   ██ ██   ██', 'red')}\n`,
           '\n'
         ]
@@ -154,7 +157,14 @@ class Site {
         ]
 
         default:
-          return []
+          return [
+            siteJSBlue('███████ ██ ████████ ███████         ██ ███████'),
+            siteJSBlue('         ██      ██    ██    ██              ██ ██     '),
+            siteJSBlue('         ███████ ██    ██    █████           ██ ███████'),
+            siteJSBlue('              ██ ██    ██    ██         ██   ██      ██'),
+            siteJSBlue('         ███████ ██    ██    ███████ ██  █████  ███████'),
+            '\n'
+          ]
     }
   }
 
@@ -183,8 +193,10 @@ class Site {
 
       this.readAndCacheManifest()
 
+      console.log(this.RELEASE_CHANNEL)
+
       let message = [
-        `\n${prefix1}Site.js\n\n`
+        this.releaseChannel === this.RELEASE_CHANNEL.release ? `\n${prefix1}` : `\n${prefix1}Site.js\n\n`
       ].concat(this.releaseChannelFormattedForConsole).concat([
         `${prefix2}Created ${clr(this.humanReadableBinaryVersion, 'green')}\n`,
         '\n',
