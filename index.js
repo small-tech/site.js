@@ -1073,16 +1073,26 @@ class Site {
 
   // Adds custom error page support for 404 and 500 errors.
   addCustomErrorPagesSupport () {
-    // Check if a custom 404 page exists at the conventional path. If it does, load it for use later.
-    const custom404Path = path.join(this.pathToServe, '404', 'index.html')
-    this.hasCustom404 = fs.existsSync(custom404Path)
+    //
+    // Check if a custom 404 page exists at the conventional paths. If it does, load it for use later.
+    //
+    const customStatic404Path = path.join(this.pathToServe, '404', 'index.html')
+    const customHugo404Path = path.join(this.pathToServe, '.generated', '404.html')
+    this.hasCustomStatic404 = fs.existsSync(customStatic404Path)
+    this.hasCustomHugo404 = fs.existsSync(customHugo404Path)
+    this.hasCustom404 = this.hasCustomStatic404 || this.hasCustomHugo404
     this.custom404 = null
-    if (this.hasCustom404) {
-      this.custom404 = fs.readFileSync(custom404Path, 'utf-8')
+    if (this.hasCustomStatic404) {
+      this.custom404 = fs.readFileSync(customStatic404Path, 'utf-8')
+    }
+    if (this.hasCustomHugo404) {
+      this.custom404 = fs.readFileSync(customHugo404Path, 'utf-8')
     }
 
-
+    //
     // Check if a custom 500 page exists at the conventional path. If it does, load it for use later.
+    //
+
     const custom500Path = path.join(this.pathToServe, '500', 'index.html')
     this.hasCustom500 = fs.existsSync(custom500Path)
     this.custom500 = null
