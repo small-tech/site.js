@@ -50,7 +50,7 @@ function status () {
     const configuration = fs.readFileSync(path.join(path.sep, 'etc', 'systemd', 'system', 'site.js.service'), 'utf-8').trim().split('\n')
 
     const account = configuration[8].trim().replace('User=', '')
-    const execStart = configuration[14].trim()
+    const execStart = configuration[14].trim().replace('=node ', '=')
 
     // Launch configuration.
     const binaryAndPathBeingServed = /ExecStart=(.*?) (.*?) @hostname/.exec(execStart)
@@ -62,6 +62,8 @@ function status () {
     const domain = (_domain = /--domain=(.*?)(\s|--|$)/.exec(execStart)) === null ? null : _domain[1]
     const aliases = (_aliases = /--aliases=(.*?)(\s|--|$)/.exec(execStart)) === null ? null : _aliases[1].split(',')
     const skipDomainReachabilityCheck = execStart.includes('--skip-domain-reachability-check')
+    const accessLogErrorsOnly = execStart.includes('--access-log-errors-only')
+    const accessLogDisable = execStart.includes('--access-log-disable')
 
     let statisticsUrl = null
     if (isActive) {
@@ -72,7 +74,9 @@ function status () {
     const optionalOptions = {
       domain,
       aliases,
-      skipDomainReachabilityCheck
+      skipDomainReachabilityCheck,
+      accessLogErrorsOnly,
+      accessLogDisable
     }
 
     daemonDetails = {

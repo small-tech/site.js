@@ -404,6 +404,8 @@ test('[commands] help', t => {
   --domain                          The main domain to serve (defaults to system hostname if not specified).
   --aliases                         Additional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
   --skip-domain-reachability-check  Do not run pre-flight check for domain reachability.
+  --access-log-errors-only            Display only errors in the access log (HTTP status codes _4xx_ and _5xx_).
+  --access-log-disable                Completely disable the access log. Not even errors are logged.
 
   For serve command:
 
@@ -511,6 +513,8 @@ test('[commands] help', t => {
     --domain          The main domain to serve (defaults to system hostname if not specified).
     --aliases         Additional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
     --skip-domain-reachability-check  Do not run pre-flight check for domain reachability.
+    --access-log-errors-only            Display only errors in the access log (HTTP status codes _4xx_ and _5xx_).
+    --access-log-disable                Completely disable the access log. Not even errors are logged.
 
     --sync-to                   The host to sync to (other sync options only relevant if this is supplied).
     --sync-from                 The folder to sync from.
@@ -600,6 +604,8 @@ test('[commands] help', t => {
     --domain                        The main domain to serve (defaults to system hostname if not specified).
     --aliases                       Additional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
     --skip-domain-reachability-check  Do not run pre-flight check for domain reachability.
+    --access-log-errors-only            Display only errors in the access log (HTTP status codes _4xx_ and _5xx_).
+    --access-log-disable                Completely disable the access log. Not even errors are logged.
 
     --sync-to                   The host to sync to (other sync options only relevant if this is supplied).
     --sync-from                 The folder to sync from.
@@ -686,6 +692,8 @@ test('[commands] help', t => {
     --domain                        The main domain to serve (defaults to system hostname if not specified).
     --aliases                       Additional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
     --skip-domain-reachability-check  Do not run pre-flight check for domain reachability.
+    --access-log-errors-only            Display only errors in the access log (HTTP status codes _4xx_ and _5xx_).
+    --access-log-disable                Completely disable the access log. Not even errors are logged.
 
     --sync-to                   The host to sync to (other sync options only relevant if this is supplied).
     --sync-from                 The folder to sync from.

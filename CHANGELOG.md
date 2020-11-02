@@ -27,6 +27,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
+  - `--access-log-errors-only` option when starting a server (regular process or daemon). (#157)
+
+    Displays only errors in the access log (HTTP status codes _4xx_ and _5xx_). Successful access requests (_1xx_, _2xx_, and _3xx_) are not logged. This is useful during development if you feel overwhelmed by the output and miss other, non-access-related errors.
+
+  - `--access-log-disable` option when starting a server (regular process or daemon). (#157)
+
+    Completely disable the access log. No access requests, _not even errors_ will be logged. Be careful when using this in production as you might miss important errors.
+
   - Support for [custom Hugo 404 pages](https://gohugo.io/templates/404/) (#237).
 
     Create a 404.html page in your `layouts/` folder so that it gets created in your `.generated` folder and it will be used instead of the default 404 page. If you have both a custom static 404 page (defined at /404/index.html) and a custom Hugo 404 page, the Hugo 404 page will take precedence.

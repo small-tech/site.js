@@ -601,6 +601,10 @@ If `command` is omitted, behaviour defaults to `serve`.
 
   - `--skip-domain-reachability-check`:	Do not run pre-flight check for domain reachability.
 
+  - `--access-log-errors-only`: Display only errors in the access log (HTTP status codes _4xx_ and _5xx_). Successful access requests (_1xx_, _2xx_, and _3xx_) are not logged. This is useful during development if you feel overwhelmed by the output and miss other, non-access-related errors.
+
+  - `--access-log-disable`: Completely disable the access log. No access requests, _not even errors_ will be logged. Be careful when using this in production as you might miss important errors.
+
 #### For the `serve` command:
 
   - `--sync-to`: The host to sync to.

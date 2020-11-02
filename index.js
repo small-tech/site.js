@@ -275,6 +275,20 @@ class Site {
     this.aliases = Array.isArray(options.aliases) ? options.aliases : []
     this.syncHost = options.syncHost
     this.skipDomainReachabilityCheck = options.skipDomainReachabilityCheck
+    this.accessLogErrorsOnly = options.accessLogErrorsOnly
+    this.accessLogDisable = options.accessLogDisable
+
+    if (this.skipDomainReachabilityCheck) {
+      this.log(`   ⚠     ${clr('❨site.js❩ Domain reachability pre-flight check is disabled.', 'yellow')}`)
+    }
+
+    if (this.accessLogErrorsOnly && !this.accessLogDisable) {
+      this.log(`   ⚠     ${clr('❨site.js❩ Access log is only showing errors.', 'yellow')}`)
+    }
+
+    if (this.accessLogDisable) {
+      this.log(`   ⚠     ${clr('❨site.js❩ Access log is disabled (not even errors will be shown).', 'yellow')}`)
+    }
 
     // Substitute shorthand www alias for full domain.
     this.aliases = this.aliases.map(alias => alias === 'www' ? `www.${Site.hostname}` : alias)
@@ -337,9 +351,12 @@ class Site {
     this.app.use(this.stats.middleware)
 
     // Logging.
-    this.app.use(morgan(function (tokens, req, res) {
+    this.app.use(morgan((tokens, req, res) => {
 
-      if (process.env.QUIET) {
+      const status = tokens.status(req, res)
+      const isError = status.startsWith('4') || status.startsWith('5')
+
+      if (process.env.QUIET || this.accessLogDisable || (this.accessLogErrorsOnly && !isError)) {
         return
       }
 
@@ -404,17 +421,14 @@ class Site {
         url = `📄 ${url}`
       }
 
-      let status = tokens.status(req, res)
-
       const statusToTextColour = {
-        '404': 'red',
         '304': 'cyan',
         '200': 'green',
       }
 
       let textColour = statusToTextColour[status]
       if (hasWarning) { textColour = 'yellow' }
-      if (hasError) { textColour = 'red' }
+      if (hasError || isError) { textColour = 'red' }
 
       const log = [
         clr(method, textColour),

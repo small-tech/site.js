@@ -79,6 +79,8 @@ class Help {
     const optionEnsureCanSync = option('ensure-can-sync')
     const optionLiveSync = option('live-sync')
     const optionSyncFolderAndContents = option('sync-folder-and-contents')
+    const optionAccessLogErrorsOnly = option('access-log-errors-only')
+    const optionAccessLogDisable = option('access-log-disable')
 
     // Black right-pointing triangle (U+25B6)
     // (There are several similar unicode gylphs but this is the one that works well across
@@ -139,6 +141,8 @@ class Help {
     ${optionDomain}\t\t\t\tThe main domain to serve (defaults to system hostname if not specified).
     ${optionAliases}\t\t\t\tAdditional domain aliases to obtain TLS certs for. Will 302 redirect to main domain.
     ${optionSkipDomainReachabilityCheck}\tDo not run pre-flight check for domain reachability.
+    ${optionAccessLogErrorsOnly}\t\tDisplay only errors in the access log (HTTP status codes _4xx_ and _5xx_).
+    ${optionAccessLogDisable}\t\tCompletely disable the access log. Not even errors are logged.
 
     ${ this.systemdExists ? `For ${commandServe} command:
     ` : '' }

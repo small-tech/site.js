@@ -21,6 +21,12 @@ const SYNC_FROM = 'sync-from'
 const LIVE_SYNC = 'live-sync'
 const SYNC_FOLDER_AND_CONTENTS = 'sync-folder-and-contents'
 
+// This will only show errors in the access log (HTTP response codes 4xx and 5xx).
+const ACCESS_LOG_ERRORS_ONLY = 'access-log-errors-only'
+
+// This will disable the access log completely. Not even errors will be shown.
+const ACCESS_LOG_DISABLE = 'access-log-disable'
+
 // This will skip the domain reachability check when starting a global server. Useful if you are setting up a server
 // where you know that the DNS has not propagated yet. Note that if you specify this flag, you double check that you’ve
 // specified the domain and any aliases correctly as you will not be warned if you make a mistake.
@@ -125,6 +131,13 @@ function serve (args) {
   // Internal: exit on launch. (Used in pre-flight checks to ensure server can launch before installing a daemon.)
   const exitAfterLaunch = args.named[EXIT_AFTER_LAUNCH]
 
+  const accessLogErrorsOnly = args.named[ACCESS_LOG_ERRORS_ONLY]
+
+  // Disable the access log (not even access errors will be shown).
+  // Note: if you want to quiet all messages, you must set the QUIET environment variable when running Site.js.
+  const accessLogDisable = args.named[ACCESS_LOG_DISABLE]
+
+
   //
   // Sync options.
   //
@@ -203,7 +216,9 @@ function serve (args) {
         global,
         proxyPort,
         aliases,
-        skipDomainReachabilityCheck
+        skipDomainReachabilityCheck,
+        accessLogErrorsOnly,
+        accessLogDisable
       }
 
       if (syncRequested) {

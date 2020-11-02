@@ -39,9 +39,8 @@ function status () {
 
     console.log(`\n         Path   : ${clr(daemonDetails.pathBeingServed, textColour)}`)
     console.log(`         Domain : ${clr(daemonDetails.optionalOptions.domain, 'yellow') || clr(crossPlatformHostname, daemonDetails.optionalOptions.skipDomainReachabilityCheck && isActive ? 'yellow' : textColour)}`)
-
-
     console.log(`         Account: ${clr(daemonDetails.account, textColour)}`)
+    console.log(`         Binary : ${clr(daemonDetails.siteJSBinary, textColour)}`)
 
     if (daemonDetails.optionalOptions.aliases !== null) {
       const aliasesString = daemonDetails.optionalOptions.aliases.reduce(
@@ -49,6 +48,14 @@ function status () {
         ''
       )
       console.log(`         Aliases: ${aliasesString.replace(/, $/, '')}`)
+    }
+
+    if (daemonDetails.optionalOptions.accessLogErrorsOnly && !daemonDetails.optionalOptions.accessLogDisable) {
+      console.log(`\n         ${clr('Access log is only showing errors.', 'yellow')}`)
+    }
+
+    if (daemonDetails.optionalOptions.accessLogDisable) {
+      console.log(`\n         ${clr('Access log is disabled (not even errors will be shown).', 'yellow')}`)
     }
 
     if (daemonDetails.optionalOptions.skipDomainReachabilityCheck) {

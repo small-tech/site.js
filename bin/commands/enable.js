@@ -89,6 +89,12 @@ function enable (args) {
       // This will skip the domain reachability check when starting a global server.
       const skipDomainReachabilityCheck = args.named['skip-domain-reachability-check'] === true ? ' --skip-domain-reachability-check ' : ''
 
+      // This will only show errors in the access log.
+      const accessLogErrorsOnly = args.named['access-log-errors-only'] === true ? ' --access-log-errors-only ' : ''
+
+      // This will disable the access log completely. Do not do this unless you have a good
+      // reason to as you may miss important errors.
+      const accessLogDisable = args.named['access-log-disable'] === true ? ' --access-log-disable ' : ''
 
       // Expectation: At this point, regardless of whether we are running as a regular
       // Node script or as a standalone executable created with Nexe, all paths should
@@ -102,7 +108,7 @@ function enable (args) {
         process.exit(1)
       }
 
-      const launchCommand = `${executable} ${absolutePathToServe} @hostname ${domain} ${aliases} ${skipDomainReachabilityCheck}`
+      const launchCommand = `${executable} ${absolutePathToServe} @hostname ${domain} ${aliases} ${skipDomainReachabilityCheck} ${accessLogErrorsOnly} ${accessLogDisable}`
 
       let accountName
       try {
