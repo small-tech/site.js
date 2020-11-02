@@ -724,6 +724,8 @@ For more information and examples, see [4042302.org](https://4042302.org).
 
 ![Screenshot of the custom 404 error page included in the unit tests](images/custom-404.png)
 
+### Custom static 404 and 500 error pages
+
 You can specify a custom error page for 404 (not found) and 500 (internal server error) errors. To do so, create a folder with the status code you want off of the root of your web content (i.e., `/404` and/or `/500`) and place at least an `index.html` file in the folder. You can also, optionally, put any assets you want to display on your error pages into those folders and load them in via relative URLs. Your custom error pages will be served with the proper error code and at the URL that was being accessed.
 
 If you want to display the path that could not be found in your custom 404 page, use the following template placeholder somewhere on your page and it will be automatically substituted:
@@ -737,6 +739,16 @@ e.g., The example from [the test site](https://github.com/small-tech/site.js/blo
 ```html
 <p><strong>Sorry, I can’t find</strong> THE_PATH</p>
 ```
+
+### Custom Hugo 404 error page
+
+If your site uses the Hugo static site generator, you can create [a custom Hugo 404 error page](https://gohugo.io/templates/404/).
+
+Put a `404.html` page in your `layouts/` folder so that it gets created in your `.generated` folder when the site is built and it will be used instead of the default 404 page.
+
+__Note:__ If you have both a custom static 404 page (defined at `/404/index.html`) and a custom Hugo 404 page, the Hugo 404 page will take precedence.
+
+## Default 404 and 500 error pages
 
 If you do not create custom error pages, the built-in default error pages will be displayed for 404 and 500 errors.
 
@@ -752,7 +764,7 @@ When Site.js launches, you will see a line similar to the following in the conso
 
 This is your private, cryptographically secure URL where you can access ephemeral statistics about your site. If you want to share your statistics, link to them publicly. If you want to keep them private, keep the URL secret.
 
-You can remind yourself of the statistics URL while running the Site.js daemon in production using the `site status` command while the server is active.
+__Note:__ You can remind yourself of the statistics URL while running the Site.js daemon in production using the `site status` command while the server is active.
 
 ![Screenshot of the statistics page](/images/statistics.png)
 

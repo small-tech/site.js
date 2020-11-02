@@ -27,6 +27,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
+  - Support for [custom Hugo 404 pages](https://gohugo.io/templates/404/) (#237).
+
+    Create a 404.html page in your `layouts/` folder so that it gets created in your `.generated` folder and it will be used instead of the default 404 page. If you have both a custom static 404 page (defined at /404/index.html) and a custom Hugo 404 page, the Hugo 404 page will take precedence.
+
   - New npm build task: `update-nexe`.
 
     This task updates the Nexe base image for your platform, architecture, and version of Node.js. As you are basically building a modified version of Node.js this will take a while. The --all and --deploy options are not available on the build script when updating Nexe and will result in an error.
