@@ -8,6 +8,9 @@
 //
 //////////////////////////////////////////////////////////////////////
 
+const os           = require('os')
+const fs           = require('fs')
+const path         = require('path')
 const childProcess = require('child_process')
 
 function status () {
@@ -39,7 +42,40 @@ function status () {
     isEnabled = false
   }
 
-  return { isActive, isEnabled }
+  let daemonDetails = null
+  if (isEnabled) {
+    // Parse the systemd unit configuration file to retrieve daemon details.
+    const configuration = fs.readFileSync(path.join(path.sep, 'etc', 'systemd', 'system', 'site.js.service'), 'utf-8').trim().split('\n')
+
+    const account = configuration[8].trim().replace('User=', '')
+    const execStart = configuration[14].trim()
+
+    // Launch configuration.
+    const binaryAndPathBeingServed = /ExecStart=(.*?) (.*?) @hostname/.exec(execStart)
+    const siteJSBinary = binaryAndPathBeingServed[1]
+    const pathBeingServed = binaryAndPathBeingServed[2]
+
+    // Optional options.
+    let _domain, _aliases
+    const domain = (_domain = /--domain=(.*?)(\s|--|$)/.exec(execStart)) === null ? null : _domain[1]
+    const aliases = (_aliases = /--aliases=(.*?)(\s|--|$)/.exec(execStart)) === null ? null : _aliases[1].split(',')
+    const skipDomainReachabilityCheck = execStart.includes('--skip-domain-reachability-check')
+
+    const optionalOptions = {
+      domain,
+      aliases,
+      skipDomainReachabilityCheck
+    }
+
+    daemonDetails = {
+      account,
+      siteJSBinary,
+      pathBeingServed,
+      optionalOptions
+    }
+  }
+
+  return { isActive, isEnabled, daemonDetails }
 }
 
 module.exports = status
