@@ -37,6 +37,10 @@ This is a bugfix release that upgrades [JSDB](https://github.com/small-tech/jsdb
 
   - Object keys containing non-alphanumeric characters are now properly supported.
 
+### Changed
+
+  - Cosmetic: Site.js logo now displays in block text in terminal.
+
 ## [15.3.0] - 2020-10-28
 
 ### Added
