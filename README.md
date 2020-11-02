@@ -746,7 +746,7 @@ e.g., The example from [the test site](https://github.com/small-tech/site.js/blo
 
 ### Custom Hugo 404 error page
 
-If your site uses the Hugo static site generator, you can create [a custom Hugo 404 error page](https://gohugo.io/templates/404/).
+As of version 15.4.0, if your site uses the Hugo static site generator, you can create [a custom Hugo 404 error page](https://gohugo.io/templates/404/).
 
 Put a `404.html` page in your `layouts/` folder so that it gets created in your `.generated` folder when the site is built and it will be used instead of the default 404 page.
 
@@ -768,7 +768,7 @@ When Site.js launches, you will see a line similar to the following in the conso
 
 This is your private, cryptographically secure URL where you can access ephemeral statistics about your site. If you want to share your statistics, link to them publicly. If you want to keep them private, keep the URL secret.
 
-__Note:__ You can remind yourself of the statistics URL while running the Site.js daemon in production using the `site status` command while the server is active.
+__Note:__ As of version 15.4.0, you can remind yourself of the statistics URL while running the Site.js daemon in production using the `site status` command while the server is active.
 
 ![Screenshot of the statistics page](/images/statistics.png)
 
@@ -783,8 +783,25 @@ As of version 13.0.0, Site.js includes the [Hugo static site generator](https://
 To create a new Hugo site and start serving it:
 
 ```shell
+# Create a folder to hold your site and switch to it.
 mkdir my-site
+cd my-site
+
+# Generate empty Hugo site.
+site hugo new site .hugo
+
+# Create the most basic layout template possible.
+echo 'Hello, world!' > .hugo/layouts/index.html
+
+# Start Site.js
+site
 ```
+
+When you hit _https://localhost_, you should see the ‘Hello, world!’ page.
+
+This basic example doesn’t take advantage of any of the features that you’d want to use Hugo for (like markdown authoring, list page creation, etc.). For a slightly more advanced one that does, see the [Basic Hugo Blog example](https://github.com/small-tech/site.js/tree/master/examples/basic-hugo-blog).
+
+Of course, if you already know how Hugo works, just [download a theme](https://themes.gohugo.io/) and [set up your configuration](https://gohugo.io/getting-started/configuration/,) and you’ll be up and running in no time. Everything in your _.hugo_ folder works exactly as it does in any other Hugo site.
 
 __Note:__ During development, this feature uses Site.js’s live reload instead of Hugo’s. Your web page must have at least a `<body>` tag for it to work.
 
