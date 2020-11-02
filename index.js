@@ -193,8 +193,6 @@ class Site {
 
       this.readAndCacheManifest()
 
-      console.log(this.RELEASE_CHANNEL)
-
       let message = [
         this.releaseChannel === this.RELEASE_CHANNEL.release ? `\n${prefix1}` : `\n${prefix1}Site.js\n\n`
       ].concat(this.releaseChannelFormattedForConsole).concat([
