@@ -33,8 +33,14 @@ function status () {
   if (daemonDetails !== null) {
     const textColour = isActive ? 'green' : 'red'
 
+    if (isActive) {
+      console.log(`\n         Stats  : ${clr(daemonDetails.statisticsUrl, textColour)}`)
+    }
+
     console.log(`\n         Path   : ${clr(daemonDetails.pathBeingServed, textColour)}`)
     console.log(`         Domain : ${clr(daemonDetails.optionalOptions.domain, 'yellow') || clr(crossPlatformHostname, daemonDetails.optionalOptions.skipDomainReachabilityCheck && isActive ? 'yellow' : textColour)}`)
+
+
     console.log(`         Account: ${clr(daemonDetails.account, textColour)}`)
 
     if (daemonDetails.optionalOptions.aliases !== null) {

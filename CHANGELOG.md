@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - Status command now displays daemon details if daemon is enabled (#36).
 
+  - Status command now displays statistics URL if daemon is active (#232).
+
   - Implement shorter custom ssh connection timeout for sync for when the host exists but you are not authorised to connect to it.
 
     Previously, the timeout was the default TCP connection timeout of 120 seconds which would make it look like the process had hanged. The new timeout is 5 seconds, which provides timely feedback.

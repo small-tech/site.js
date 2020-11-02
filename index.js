@@ -44,7 +44,6 @@ const decache                   = require('decache')
 const prepareRequest            = require('bent')
 const clr                       = require('./lib/clr')
 const cli                       = require('./bin/lib/cli')
-const serve                     = require('./bin/commands/serve')
 const Stats                     = require('./lib/Stats')
 const asyncForEach              = require('./lib/async-foreach')
 const errors                    = require('./lib/errors')
@@ -1575,6 +1574,5 @@ class Site {
     })
   }
 }
-
 
 module.exports = Site

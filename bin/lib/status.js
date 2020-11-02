@@ -8,10 +8,12 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-const os           = require('os')
-const fs           = require('fs')
-const path         = require('path')
-const childProcess = require('child_process')
+const fs                    = require('fs')
+const path                  = require('path')
+const childProcess          = require('child_process')
+const crossPlatformHostname = require('@small-tech/cross-platform-hostname')
+
+const Site         = require('../../')
 
 function status () {
 
@@ -61,6 +63,12 @@ function status () {
     const aliases = (_aliases = /--aliases=(.*?)(\s|--|$)/.exec(execStart)) === null ? null : _aliases[1].split(',')
     const skipDomainReachabilityCheck = execStart.includes('--skip-domain-reachability-check')
 
+    let statisticsUrl = null
+    if (isActive) {
+      const statisticsPath = fs.readFileSync(path.join(Site.settingsDirectory, 'statistics-route'), 'utf-8')
+      statisticsUrl = `https://${domain || crossPlatformHostname}${statisticsPath}`
+    }
+
     const optionalOptions = {
       domain,
       aliases,
@@ -70,6 +78,7 @@ function status () {
     daemonDetails = {
       account,
       siteJSBinary,
+      statisticsUrl,
       pathBeingServed,
       optionalOptions
     }
