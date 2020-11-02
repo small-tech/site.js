@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Update Help output to add examples for update, start, stop, restart commands and match the readme (#137).
   - Document that `.generated` folder should be added to `.gitignore` (#197).
   - Update docs to include Mac install example for alpha/beta installs (#201).
+  - Improve Hugo documentation.
 
 ### Added
 
@@ -42,6 +43,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - New npm build task: `update-nexe`.
 
     This task updates the Nexe base image for your platform, architecture, and version of Node.js. As you are basically building a modified version of Node.js this will take a while. The --all and --deploy options are not available on the build script when updating Nexe and will result in an error.
+
+### Fixed
+
+  - Completed incomplete basic getting started with Hugo example in the readme.
 
 ## [15.3.1] - 2020-10-29
 
