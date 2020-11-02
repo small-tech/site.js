@@ -726,6 +726,18 @@ For more information and examples, see [4042302.org](https://4042302.org).
 
 You can specify a custom error page for 404 (not found) and 500 (internal server error) errors. To do so, create a folder with the status code you want off of the root of your web content (i.e., `/404` and/or `/500`) and place at least an `index.html` file in the folder. You can also, optionally, put any assets you want to display on your error pages into those folders and load them in via relative URLs. Your custom error pages will be served with the proper error code and at the URL that was being accessed.
 
+If you want to display the path that could not be found in your custom 404 page, use the following template placeholder somewhere on your page and it will be automatically substituted:
+
+```
+THE_PATH
+```
+
+e.g., The example from [the test site](https://github.com/small-tech/site.js/blob/master/test/site/404/index.html) shown in the screenshot uses the following code:
+
+```html
+<p><strong>Sorry, I can’t find</strong> THE_PATH</p>
+```
+
 If you do not create custom error pages, the built-in default error pages will be displayed for 404 and 500 errors.
 
 When creating your own servers (see [API](#API)), you can generate the default error pages programmatically using the static methods `Site.default404ErrorPage()` and `Site.default500ErrorPage()`, passing in the missing path and the error message as the argument, respectively to get the HTML string of the error page returned.
