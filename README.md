@@ -740,7 +740,7 @@ When Site.js launches, you will see a line similar to the following in the conso
 
 This is your private, cryptographically secure URL where you can access ephemeral statistics about your site. If you want to share your statistics, link to them publicly. If you want to keep them private, keep the URL secret.
 
-If forget the URL while running the Site.js daemon in production, you can see it using the `site status` command while the server is active.
+You can remind yourself of the statistics URL while running the Site.js daemon in production using the `site status` command while the server is active.
 
 ![Screenshot of the statistics page](/images/statistics.png)
 
