@@ -94,6 +94,15 @@ function sync (options) {
           const errorMessage = _[errorCode]
           if (typeof errorMessage !== 'undefined') {
             console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} ${errorCode} (${errorMessage})\n`)
+
+            // This is a cryptic error that most likely signals that
+            // rsync is not installed on the server. Let the person know.
+            if (errorCode === '12') {
+              console.log(`         ${clr('This is most likely because you don’t have rsync installed on your server.', 'yellow')}\n`)
+              console.log(`         You can have it installed automatically by running your daemon with:`)
+              console.log(`         ${clr('site enable', 'green')} ${clr('--ensure-can-sync', 'cyan')}\n`)
+            }
+
             process.exit(1)
           }
         }
