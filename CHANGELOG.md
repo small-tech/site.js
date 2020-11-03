@@ -12,11 +12,13 @@ This release implements a lot of small improvements, some of which have been lon
 
 #### General:
 
-  - Running `site` without specifying a path while inside a special subfolder of your site (`.dynamic`, `.hugo`, `.wildcard`, `.db`) now magically does the right thing and serves the site root instead of the folder you’re in. If you really do want to serve one of these folders or a subfolder thereof, specifically state your intent by passing the current folder (`.`) as an argument.
+  - Running `site` without specifying a path while inside a special subfolder of your site (`.dynamic`, `.hugo`, `.wildcard`, `.db`) now magically does the right thing and serves the site root instead of the folder you’re in. If you really do want to serve one of these folders or a subfolder thereof, specifically state your intent by passing the current folder (`.`) as an argument. (#217)
 
   - Status command now displays daemon details if daemon is enabled (#36).
 
   - Status command now displays statistics URL if daemon is active (#232).
+
+  - On Linux-like systems, the installation script now uses wget or curl to download the Site.js binary based on whichever is present (favouring wget), instead of expecting wget to be present and failing if it isn’t (#140).
 
   - Implement shorter custom ssh connection timeout for sync for when the host exists but you are not authorised to connect to it.
 

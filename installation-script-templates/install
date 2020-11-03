@@ -23,6 +23,27 @@
 #
 ######################################################################
 
+# Use either wget or curl to download the Site.js binary,
+# whichever exists on the system (favour wget).
+which wget > /dev/null
+if [ $? -eq 0 ]
+then
+  # wget exists, we’ll use that.
+  download="wget -q"
+else
+  which curl > /dev/null
+  if [ $? -eq 0 ]
+  then
+    # curl exists, we’ll use that.
+    download="curl -Os"
+  else
+    echo
+    echo " ❌ The installation script needs either wget or curl installed to continue."
+    echo
+    exit 1
+  fi
+fi
+
 set -e
 
 function cleanUp {
@@ -101,13 +122,13 @@ if [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux-gnueabihf" ]]; then
   cpuArchitecture=`uname -m`
   if [[ "$cpuArchitecture" == "x86_64" ]]; then
     # Linux on x64.
-    wget -q "https://sitejs.org/binaries/${releaseChannel}/linux/${binaryVersion}.tar.gz"
+    $download "https://sitejs.org/binaries/${releaseChannel}/linux/${binaryVersion}.tar.gz"
   elif [[ "$cpuArchitecture" == "armv7l" || "$cpuArchitecture" == "armv6l" ]]; then
     # Linux on ARM. Tested on Raspberry Pi Zero W (armv6l), 3B+ and 4B (both reporting armv7l).
-    wget -q "https://sitejs.org/binaries/${releaseChannel}/linux-arm/${binaryVersion}.tar.gz"
+    $download "https://sitejs.org/binaries/${releaseChannel}/linux-arm/${binaryVersion}.tar.gz"
   elif [[ "$cpuArchitecture" == "aarch64" ]]; then
     # Linux on ARM64. Tested with Pinebook Pro.
-    wget -q "https://sitejs.org/binaries/${releaseChannel}/linux-arm64/${binaryVersion}.tar.gz"
+    $download "https://sitejs.org/binaries/${releaseChannel}/linux-arm64/${binaryVersion}.tar.gz"
   else
     # Error: unsupported architecture.
     echo
@@ -118,7 +139,7 @@ if [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux-gnueabihf" ]]; then
   fi
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   # macOS
-  curl -Os "https://sitejs.org/binaries/${releaseChannel}/macos/${binaryVersion}.tar.gz"
+  $download "https://sitejs.org/binaries/${releaseChannel}/macos/${binaryVersion}.tar.gz"
 else
   # Error: Unsupported operating system.
   echo
