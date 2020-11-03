@@ -217,7 +217,7 @@ function enable (args) {
         const stdout = error.stdout.toString()
         const errorMessage = stdout.slice(stdout.match(/❌.*?/).index)
 
-        console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Server launch pre-flight check failed: \n  `, errorMessage.replace('❌', '  '), '\n')
+        console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Server launch failed: \n  `, errorMessage.replace('❌', '  ').replace('❨site.js❩ Error: ', ''), '\n')
         process.exit(1)
       }
 
