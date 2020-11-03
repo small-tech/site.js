@@ -65,7 +65,7 @@ We exist in part thanks to patronage by people like you. If you share [our visio
 
 Copy and paste the following commands into your terminal:
 
-__(Note: all commands should be run in your regular account, not as root.)__
+__(Note: all commands should be run in your regular account, not as root.)__ (As of 15.4.0, Site.js will refuse to run if launched from the root account.)
 
 ### Native binaries
 
@@ -424,7 +424,7 @@ __Available on Linux distributions with systemd (most Linux distributions, but [
 
 __For production use, passwordless sudo is required.__ On systems where the sudo configuration directory is set to `/etc/sudoers.d`, Site.js will automatically install this rule. On other systems, you might have to [set it up yourself](https://serverfault.com/questions/160581/how-to-setup-passwordless-sudo-on-linux).
 
-__Please make sure that you are NOT running as root.__
+__Please make sure that you are NOT running as root.__ (As of 15.4.0, Site.js will refuse to run if launched from the root account.)
 
 On your live, public server, you can start serving the _my-site_ directory at your _hostname_ as a daemon that is automatically run at system startup and restarted if it crashes with:
 
