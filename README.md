@@ -197,7 +197,9 @@ Start serving the current directory at https://localhost as a regular process us
 $ site
 ```
 
-This is a shorthand for the full form of the `serve` command which, for the above example, is:
+Note that if your current working directory is inside a special subfolder of your site (`.dynamic`, `.hugo`, `.wildcard`, `.db`) Site.js (as of version 15.4.0) magically does the right thing and serves the site root instead of the folder you’re in. If you really do want to serve one of these folders or a subfolder thereof, specifically state your intent by passing the current folder (`.`) as an argument.
+
+The above caveat aside, the command above is a shorthand for the full form of the `serve` command:
 
 ```shell
 $ site serve . @localhost:443

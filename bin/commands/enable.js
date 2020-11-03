@@ -21,6 +21,8 @@ const runtime = require('../lib/runtime')
 const ensure = require('../lib/ensure')
 const clr = require('../../lib/clr')
 
+const Util = require('../../lib/Util')
+
 const Site = require('../../index')
 
 function enable (args) {
@@ -69,13 +71,15 @@ function enable (args) {
       //
       // Create the systemd service unit.
       //
-      const pathToServe = args.positional.length === 1 ? args.positional[0] : '.'
+      const _pathToServe = args.positional.length === 1 ? args.positional[0] : '.'
       const binaryExecutable = '/usr/local/bin/site'
       const sourceDirectory = path.resolve(__dirname, '..', '..')
       const nodeExecutable = `node ${path.join(sourceDirectory, 'bin/site.js')}`
       const executable = runtime.isBinary ? binaryExecutable : nodeExecutable
 
-      const absolutePathToServe = path.resolve(pathToServe)
+      // It is a common mistake to start the server in a .dynamic folder (or subfolder)
+      // or a .hugo folder or subfolder. In these cases, try to recover and do the right thing.
+      const {pathToServe, absolutePathToServe} = Util.magicallyRewritePathToServeIfNecessary(args.positional[0], _pathToServe)
 
       // If there are aliase, we will add them to the configuration so they can
       // be passed to the serve command when Site.js is started.

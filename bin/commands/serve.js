@@ -110,7 +110,7 @@ function serve (args) {
   // Add defaults for any arguments not provided.
   global = global === null ? false : global
   port = port === null ? 443 : port
-  path = path === null ? '.' : path
+  path = path === null ? null : path
 
   //
   // Parse named arguments.

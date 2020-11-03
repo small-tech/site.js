@@ -12,6 +12,8 @@ This release implements a lot of small improvements, some of which have been lon
 
 #### General:
 
+  - Running `site` without specifying a path while inside a special subfolder of your site (`.dynamic`, `.hugo`, `.wildcard`, `.db`) now magically does the right thing and serves the site root instead of the folder you’re in. If you really do want to serve one of these folders or a subfolder thereof, specifically state your intent by passing the current folder (`.`) as an argument.
+
   - Status command now displays daemon details if daemon is enabled (#36).
 
   - Status command now displays statistics URL if daemon is active (#232).

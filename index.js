@@ -47,6 +47,7 @@ const cli                       = require('./bin/lib/cli')
 const Stats                     = require('./lib/Stats')
 const asyncForEach              = require('./lib/async-foreach')
 const errors                    = require('./lib/errors')
+const Util                      = require('./lib/Util')
 
 
 class Site {
@@ -267,8 +268,15 @@ class Site {
     if (typeof options.domain === 'string') {
       Site.hostname = options.domain
     }
-    this.pathToServe = typeof options.path === 'string' ? options.path : '.'
-    this.absolutePathToServe = path.resolve(this.pathToServe)
+
+    const _pathToServe = typeof options.path === 'string' ? options.path : '.'
+
+    // It is a common mistake to start the server in a .dynamic folder (or subfolder)
+    // or a .hugo folder or subfolder. In these cases, try to recover and do the right thing.
+    const {pathToServe, absolutePathToServe} = Util.magicallyRewritePathToServeIfNecessary(options.path, _pathToServe)
+
+    this.pathToServe = pathToServe
+    this.absolutePathToServe = absolutePathToServe
     this.databasePath = path.join(this.absolutePathToServe, '.db')
     this.port = typeof options.port === 'number' ? options.port : 443
     this.global = typeof options.global === 'boolean' ? options.global : false
