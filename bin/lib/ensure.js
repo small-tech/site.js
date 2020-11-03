@@ -146,7 +146,7 @@ class Ensure {
     if (os.platform() === 'win32') {
       if (fs.existsSync(rsyncOnWindowsPath)) return // Already installed.
     } else {
-      if (this.commandExists('rsync')) return // Already installed. 
+      if (this.commandExists('rsync')) return // Already installed.
     }
 
     if (os.platform() === 'darwin') {
@@ -157,7 +157,7 @@ class Ensure {
     if (os.platform() === 'win32') {
       //
       // Since Windows does not have rsync, we use the @small-tech/portable-rsync-with-ssh-for-windows package to include a portable
-      // build of rsync and ssh that uses cygwin emulation. 
+      // build of rsync and ssh that uses cygwin emulation.
       //
       // We copy all the files to an external directory so that we can call execSync() on it as we’re wrapped in an executable using Nexe
       // (https://github.com/nexe/nexe).
@@ -171,17 +171,17 @@ class Ensure {
       const internalRsyncBundleDirectory = path.join(appRootDirectory, 'node_modules', '@small-tech', 'portable-rsync-with-ssh-for-windows')
       const internalBinDirectory = path.join(internalRsyncBundleDirectory, 'bin')
       const internalEtcDirectory = path.join(internalRsyncBundleDirectory, 'etc')
-      
+
       const binFiles = fs.readdirSync(internalBinDirectory)
       const etcFiles = fs.readdirSync(internalEtcDirectory)
-            
+
       const externalRsyncBundleDirectory = rsyncOnWindowsPath
       const externalBinDirectory = path.join(externalRsyncBundleDirectory, 'bin')
       const externalEtcDirectory = path.join(externalRsyncBundleDirectory, 'etc')
-      
+
       fs.ensureDirSync(externalBinDirectory)
       fs.ensureDirSync(externalEtcDirectory)
-      
+
       binFiles.forEach(fileToCopy => {
         try {
           const fileBuffer = fs.readFileSync(path.join(internalBinDirectory, fileToCopy), 'binary')
@@ -190,7 +190,7 @@ class Ensure {
           throw new Error(`   ❌    ❨site.js❩ Panic: Could not copy bin file to external directory: ${error.message}`)
         }
       })
-      
+
       etcFiles.forEach(fileToCopy => {
         try {
           const fileBuffer = fs.readFileSync(path.join(internalEtcDirectory, fileToCopy), 'binary')
