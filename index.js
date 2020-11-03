@@ -257,6 +257,15 @@ class Site {
     // Introduce ourselves.
     Site.logAppNameAndVersion()
 
+    // Refuse to run if this is the root account.
+    if (process.env.USER === 'root' && process.env.SUDO_USER === undefined) {
+      // This is an attempt to run Site.js from the root account.
+      // Reject for security reasons.
+      console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Refusing to run from the root account for security reasons.\n`)
+      console.log(`         ${clr('Please create and use an account with regular privileges to run Site.js.', 'yellow')}\n`)
+      process.exit(1)
+    }
+
     this.eventEmitter = new EventEmitter()
 
     // Ensure that the settings directory exists and create it if it doesn’t.

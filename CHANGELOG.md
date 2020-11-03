@@ -31,6 +31,7 @@ This release implements a lot of small improvements, some of which have been lon
 #### Security:
 
   - Site.js will now refuse to serve the root or home directory for security reasons (#178).
+  - Site.js will now refuse to run if started from the root account for security reasons (#194).
 
 #### Documentation:
 
