@@ -12,6 +12,10 @@ This release implements a lot of small improvements, some of which have been lon
 
 #### General:
 
+  - You can now run multiple local servers on your development machine (not on staging or production).
+
+    Running multiple local servers at different HTTPS ports no longer results in an error due to port 80 being unavailable for the HTTP Server. However, know that only the first server will get the HTTP Server at port 80 that redirects HTTP calls to HTTPS and also serves your local root certificate authority public key.
+
   - Running `site` without specifying a path while inside a special subfolder of your site (`.dynamic`, `.hugo`, `.wildcard`, `.db`) now magically does the right thing and serves the site root instead of the folder you’re in. If you really do want to serve one of these folders or a subfolder thereof, specifically state your intent by passing the current folder (`.`) as an argument. (#217)
 
   - Status command now displays daemon details if daemon is enabled (#36).
