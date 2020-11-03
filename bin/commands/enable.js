@@ -81,7 +81,7 @@ function enable (args) {
       // or a .hugo folder or subfolder. In these cases, try to recover and do the right thing.
       const {pathToServe, absolutePathToServe} = Util.magicallyRewritePathToServeIfNecessary(args.positional[0], _pathToServe)
 
-      // If there are aliase, we will add them to the configuration so they can
+      // If there are aliases, we will add them to the configuration so they can
       // be passed to the serve command when Site.js is started.
       const _aliases = args.named['aliases']
       const aliases = _aliases === undefined ? '' : `--aliases=${_aliases}`

@@ -26,6 +26,10 @@ This release implements a lot of small improvements, some of which have been lon
 
   - Displays a graceful error message if an attempt is made to serve a file instead of a directory (#208).
 
+#### Security:
+
+  - Site.js will now refuse to serve the root or home directory for security reasons (#178).
+
 #### Documentation:
 
   - Document initial run `@hostname` error on Mac with stale DNS cache (#138).

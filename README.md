@@ -205,6 +205,8 @@ The above caveat aside, the command above is a shorthand for the full form of th
 $ site serve . @localhost:443
 ```
 
+__Note:__ Site.js will refuse to serve the root directory or your home directory for security reasons.
+
 #### To serve on a different port
 
 Just specify the port explicitly as in the following example:
