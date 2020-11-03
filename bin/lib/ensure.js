@@ -225,10 +225,10 @@ class Ensure {
         childProcess.execSync('sudo pacman -S rsync', options)
         console.log('   🎉    ❨site.js❩ Rsync installed using pacman.')
       } else {
-      // No supported package managers installed. Warn the person.
-      console.log('\n   ⚠️     ❨site.js❩ Linux: No supported package manager found for installing Rsync on Linux (tried apt, yum, and pacman). Please install Rsync manually and run Site.js again.\n')
+        // No supported package managers installed. Warn the person.
+        console.log('\n   ⚠️     ❨site.js❩ Linux: No supported package manager found for installing Rsync on Linux (tried apt, yum, and pacman). Please install Rsync manually and run Site.js again.\n')
+        process.exit(1)
       }
-      process.exit(1)
     } catch (error) {
       // There was an error and we couldn’t install the dependency. Warn the person.
       console.log('\n   ⚠️     ❨site.js❩ Linux: Failed to install Rsync. Please install it manually and run Site.js again.\n', error)

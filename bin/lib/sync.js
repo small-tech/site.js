@@ -82,7 +82,7 @@ function sync (options) {
         _[25] = 'The --max-delete limit stopped deletions'
         _[30] = 'Timeout in data send/receive'
         _[35] = 'Timeout waiting for daemon connection'
-        _[127] = 'Rsync not found; please run site enable --sync'
+        _[127] = `Rsync not found; please run ${clr('site enable', 'green')} ${clr('--ensure-can-sync', 'cyan')}`
         _[255] = `SSH error while connecting to ${clr(options.host, 'cyan')} – is this hostname/SSH certificates correct?`
 
         // Scrape the error code from the error string (not ideal but it’s all

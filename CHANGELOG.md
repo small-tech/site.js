@@ -62,6 +62,7 @@ This release implements a lot of small improvements, some of which have been lon
 ### Fixed
 
   - Completed incomplete basic getting started with Hugo example in the readme.
+  - Automatic rsync install no longer exits with error following successful installation (#97).
 
 ## [15.3.1] - 2020-10-29
 
