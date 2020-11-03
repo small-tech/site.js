@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [15.4.0] - In progress…
 
+This release implements a lot of small improvements, some of which have been longstanding.
+
 ### Improved
 
 #### General:
@@ -17,6 +19,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Implement shorter custom ssh connection timeout for sync for when the host exists but you are not authorised to connect to it.
 
     Previously, the timeout was the default TCP connection timeout of 120 seconds which would make it look like the process had hanged. The new timeout is 5 seconds, which provides timely feedback.
+
+  - Displays a graceful error message if an attempt is made to serve a file instead of a directory (#208).
 
 #### Documentation:
 

@@ -246,7 +246,7 @@ function serve (args) {
 
       } catch (error) {
         if (error instanceof errors.InvalidPathToServeError) {
-          console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} The path to serve ${clr(options.path, 'yellow')} does not exist.\n`)
+          console.log(`\n   ❌    ${clr(`❨site.js❩ Error:`, 'red')} ${error.message}\n`)
           process.exit(1)
         } else {
           // Rethrow

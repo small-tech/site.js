@@ -602,9 +602,19 @@ class Site {
   // Middleware and routes that are unique to regular sites
   // (not used on proxy servers).
   async configureAppRoutes () {
-    // Ensure that the requested path to serve actually exists.
-    if (!fs.existsSync(this.absolutePathToServe)) {
-      throw new errors.InvalidPathToServeError(`Path ${this.pathToServe} does not exist.`)
+    let statusOfPathToServe
+    try {
+      statusOfPathToServe = fs.statSync(this.absolutePathToServe)
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        throw new errors.InvalidPathToServeError(`Path ${clr(this.pathToServe, 'yellow')} does not exist.`)
+      } else {
+        throw new errors.InvalidPathToServeError('Unexpected file system error', error)
+      }
+    }
+
+    if (statusOfPathToServe.isFile()) {
+      throw new errors.InvalidPathToServeError(`${clr(this.pathToServe, 'yellow')} is a file. Site.js can only serve directories.`)
     }
 
     // Async
