@@ -33,7 +33,7 @@ async function update () {
   Site.logAppNameAndVersion()
   ensure.root()
 
-  console.log(`   🧐    ❨site.js❩ Checking for ${releaseChannel} updates…\n`)
+  console.log(`\n   🧐    ❨site.js❩ Checking for ${releaseChannel} updates…\n`)
 
   let response
   try {
@@ -51,18 +51,29 @@ async function update () {
   const humanReadableCurrentVersion = Site.humanReadableBinaryVersion
   const humanReadableLatestVersion = Site.binaryVersionToHumanReadableDateString(latestVersion)
 
+  const showDetails = () => {
+    console.log(`         ────────────────────────────────────────────────`)
+    console.log(`         Latest version : ${latestVersion}`)
+    console.log(`         Released on    : ${humanReadableLatestVersion}`)
+    console.log(`         ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈`)
+    console.log(`         Current version: ${currentVersion}`)
+    console.log(`         Released on    : ${humanReadableCurrentVersion}`)
+    console.log(`         ────────────────────────────────────────────────\n`)
+  }
+
   if (currentVersion !== latestVersion) {
     // Are we running a newer version than the latest release version?
     if (currentVersion > latestVersion) {
-      console.log(`   🤓    ❨site.js❩ You are running a newer ${releaseChannel} version (released on ${humanReadableCurrentVersion}) than the latest version released on ${humanReadableLatestVersion}.\n`)
+      console.log(`   🤓    ❨site.js❩ You’re running an unreleased version.`)
+      showDetails()
       exitGracefully()
       return
     }
 
     // The current version is not newer than the latest version and we know
-    // that it isn’t equal to the release version so it must be older. Let’s
-    // update!
-    console.log(`   🎁    ❨site.js❩ There is a new version of Site.js available in the ${releaseChannel} channel: (${latestVersion} released on ${humanReadableLatestVersion}). You currently have version ${currentVersion} released on ${humanReadableCurrentVersion}.\n`)
+    // that it isn’t equal to the release version so it must be older. Let’s update!
+    console.log(`   🎁    ❨site.js❩ A new version of Site.js is available.`)
+    showDetails()
 
     //
     // Compose the right binary URL for the platform and architecture.

@@ -24,6 +24,8 @@ This release implements a lot of small improvements, some of which have been lon
 
     Previously, the timeout was the default TCP connection timeout of 120 seconds which would make it look like the process had hanged. The new timeout is 5 seconds, which provides timely feedback.
 
+  - Version update messages are now easier to read and understand (#207).
+
   - Displays a graceful error message if an attempt is made to serve a file instead of a directory (#208).
 
   - Displays explanation of rsync error 12 along with advice for solving it (#85).
