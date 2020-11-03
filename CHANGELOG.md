@@ -43,6 +43,7 @@ This release implements a lot of small improvements, some of which have been lon
   - Document how `baseURL` handling works for generated Hugo content. (#200).
   - Update docs to include Mac install example for alpha/beta installs (#201).
   - Improve Hugo documentation.
+  - General proof-read and update of the documentation (#196).
 
 ### Added
 
