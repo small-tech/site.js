@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Document initial run `@hostname` error on Mac with stale DNS cache (#138).
   - Update Help output to add examples for update, start, stop, restart commands and match the readme (#137).
   - Document that `.generated` folder should be added to `.gitignore` (#197).
+  - Document how `baseURL` handing works for generated Hugo content. (#200).
   - Update docs to include Mac install example for alpha/beta installs (#201).
   - Improve Hugo documentation.
 

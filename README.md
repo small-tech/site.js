@@ -809,6 +809,8 @@ __Note:__ During development, this feature uses Site.js’s live reload instead 
 
 If Site.js finds a folder called _.hugo_ in your site’s root, it will build it using its integrated Hugo instance (you don’t need to install Hugo separately) and place the generated files into a folder called _.generated_ in your site’s root. It will also automatically serve these files.
 
+One difference with plain Hugo is that if you set a `baseURL` in your configuration, it will be ignored as Site.js sets the `baseURL` automatically to the correct value based on whether you are running locally in development or at your hostname during staging or production.
+
 __Note:__ You should add `.generated` to your `.gitignore` file so as not to accidentally add the generated content into your source code repository.
 
 You can pass any command you would normally pass to Hugo using Site.js’s integrated Hugo instance:
