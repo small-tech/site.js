@@ -28,6 +28,8 @@ const Site = require('../../index')
 function enable (args) {
   Site.logAppNameAndVersion()
 
+  // Security
+  Util.refuseToRunAsRoot()
 
   //
   // Sanity checks.
