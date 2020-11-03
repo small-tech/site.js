@@ -25,17 +25,17 @@ We exist in part thanks to patronage by people like you. If you share [our visio
 
   - __Secure by default.__
 
-    __At localhost:__ Automatically provisions locally-trusted TLS for development (courtesy of [mkcert](https://github.com/FiloSottile/mkcert) seamlessly integrated via [Auto Encrypt Localhost](https://source.small-tech.org/site.js/lib/auto-encrypt-localhost)).
+    __At localhost:__ Automatically provisions locally-trusted TLS for development (courtesy of [mkcert](https://github.com/FiloSottile/mkcert) seamlessly integrated via [Auto Encrypt Localhost](https://github.com/small-tech/auto-encrypt-localhost)).
 
-    __And everywhere else:__ Automatically provisions globally-trusted TLS for staging and production (courtesy of [Let’s Encrypt](https://letsencrypt.org/) seamlessly integrated via [Auto Encrypt](https://source.small-tech.org/site.js/lib/auto-encrypt) and [systemd](https://freedesktop.org/wiki/Software/systemd/)).
+    __And everywhere else:__ Automatically provisions globally-trusted TLS for staging and production (courtesy of [Let’s Encrypt](https://letsencrypt.org/) seamlessly integrated via [Auto Encrypt](https://github.com/small-tech/auto-encrypt) and [systemd](https://freedesktop.org/wiki/Software/systemd/)).
 
-    Your server will score an A+ on the [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest).
+    Your server will score [an A+](https://www.ssllabs.com/ssltest/analyze.html?d=sitejs.org) on the [SSL Labs SSL Server Test](https://www.ssllabs.com/ssltest).
 
   - __Supports the creation of static web sites, dynamic web sites, and hybrid sites__ (via integrated [Node.js](https://nodejs.org/) and [Express](https://expressjs.com)).
 
   - __Includes a fast and simple database__ ([JSDB](https://github.com/small-tech/jsdb)).
 
-  - __Supports [Wildcard routes](#wildcard-routes)__ for purely client-side specialisation using path-based parameters.
+  - __Supports [wildcard routes](#wildcard-routes)__ for purely client-side specialisation using path-based parameters.
 
   - __Supports [DotJS](#dotjs) for dynamic routes.__ (DotJS is PHP-like simple routing for Node.js introduced by Site.js for quickly prototyping and building dynamic sites).
 
@@ -149,7 +149,7 @@ Site.js tries to seamlessly install the dependencies it needs when run. That sai
 
   - `sudo`
   - `bash` (on Linux, macOS, etc.) or `PowerShell` running under [Windows Terminal](https://github.com/Microsoft/Terminal) (on Windows 10).
-  - `wget` or `curl` (on Linux and macOS) us required to download the installation script when installing Site.js using the one-line installation command. On Linux, you can install either via your distribution’s package manager (e.g., `sudo apt install wget` on Ubuntu-like systems). macOS comes with curl installed.
+  - `wget` or `curl` (on Linux and macOS) are required to download the installation script when installing Site.js using the one-line installation command. On Linux, you can install either via your distribution’s package manager (e.g., `sudo apt install wget` on Ubuntu-like systems). macOS comes with `curl` installed.
 
 If it turns out that any of these prerequisites are a widespread cause of first-run woe, we can look into having them installed automatically in the future. Please [open an issue](https://github.com/small-tech/site.js/issues) if any of these affects you during your deployments or in everyday use.
 
@@ -205,7 +205,7 @@ The above caveat aside, the command above is a shorthand for the full form of th
 $ site serve . @localhost:443
 ```
 
-__Note:__ Site.js will refuse to serve the root directory or your home directory for security reasons.
+__Note:__ As of 15.4.0, Site.js will refuse to serve the root directory or your home directory for security reasons.
 
 #### To serve on a different port
 
@@ -235,7 +235,7 @@ For example, if you’re on an iPhone, hit the `/.ca` route in your browser:
 http://192.168.2.42/.ca
 ```
 
-The browser will download the local root certificate authority’s public key and prompt you to install profile on your iPhone. You then have to go to Settings → Profile Downloaded → Tap Install when the Install Profile pop-up appears showing you the mkcert certificate you downloaded. Then, go to Settings → General → About → Certificate Trust Settings → Turn on the switch next to the mkcert certificate you downloaded. You should now be able to hit `https://192.168.2.42` and see your site from your iPhone.
+The browser will download the local root certificate authority’s public key and prompt you to install the profile on your iPhone. You then have to go to Settings → Profile Downloaded → Tap Install when the Install Profile pop-up appears showing you the mkcert certificate you downloaded. Then, go to Settings → General → About → Certificate Trust Settings → Turn on the switch next to the mkcert certificate you downloaded. You should now be able to hit `https://192.168.2.42` and see your site from your iPhone.
 
 You can also tranfer your key to your other devices manually. You can find the key at `~/.small-tech/site.js/tls/local/rootCA.pem` after you’ve created a local server at least once. For more details on transferring your key to other devices, please refer to [the relevant section in the mkcert documentation](https://github.com/FiloSottile/mkcert#mobile-devices).
 
@@ -379,7 +379,7 @@ The above command will:
   1. Generate any Hugo content that might need to be generated.
   2. Sync your site from the local _my-demo_ folder via rsync over ssh to the host _my-demo.site_.
 
-Without any customisations, the sync feature assumes that your account on your remote server has the same name as your account on your local machine and that the folder you are watching (_my-demo_, in the example above) is located at _/home/your-account/my-demo_ on the remote server. Also, by default, the contents of the folder will be synced, not the folder itself. You can change these defaults by specifying a full-qualified remote connection string as the `--sync-to` value.
+Without any customisations, the sync feature assumes that your account on your remote server has the same name as your account on your local machine and that the folder you are watching (_my-demo_, in the example above) is located at _/home/your-account/my-demo_ on the remote server. Also, by default, the contents of the folder will be synced, not the folder itself. You can change these defaults by specifying a fully-qualified remote connection string as the `--sync-to` value.
 
 The remote connection string has the format:
 
@@ -436,9 +436,13 @@ The `enable` command sets up your server to start automatically when your server
 
 For example, if you run the command on a connected server that has the ar.al domain pointing to it and `ar.al` set in _/etc/hostname_, you will be able to access the site at https://ar.al. (Yes, of course, [ar.al](https://ar.al) runs on Site.js.) The first time you hit your live site, it will take a little longer to load as your Let’s Encrypt certificates are being automatically provisioned by Auto Encrypt.
 
-The automatic TLS certificate provisioning will get certificates for the naked domain and the _www_ subdomain. There is currently no option to add other subdomains. Also, please ensure that both the naked domain and the _www_ subdomain are pointing to your server before you enable your server and hit it to ensure that the provisioning works. This is especially important if you are migrating an existing site.
+By default, the automatic TLS certificate provisioning gets certificates for your naked domain only, which it bases on your hostname.
 
-__Note:__ As of 13.0.0, the `enable` will run pre-flight checks and refuse to install the service if the domain name and any aliases you have specified are not reachable. As of 14.1.0, you can use the `--skip-domain-reachability-check` flag to override this behaviour and skip the pre-flight checks. Note that if you use this flag, the server launched by the installed service will also not check for reachability. This is useful if you want to set up a server via a script prior to DNS propagation. Just make sure you haven’t made any typos in any of the domain names as you will not be warned about any mistakes.
+If you want to serve your site at a domain that’s different to your hostname, specify it using the `--domain` option.
+
+If you also want certificates for the _www_ subdomain, specify it using the `--aliases` option. You can specify multiple subdomains to provision certificates for by separating them using commas (without spaces).
+
+__Note:__ As of 13.0.0, the `enable` will run pre-flight checks and refuse to install the service if the domain name and any aliases you have specified are not reachable. As of 14.1.0, you can use the `--skip-domain-reachability-check` flag to override this behaviour and skip the pre-flight checks. If you use this flag, the server launched by the installed service will also not check for reachability. This is useful if you want to set up a server via a script prior to DNS propagation. Just make sure you haven’t made any typos in any of the domain names as you will not be warned about any mistakes.
 
 When the server is enabled, you can also use the following commands:
 
@@ -446,14 +450,16 @@ When the server is enabled, you can also use the following commands:
   - `stop`: Stop server.
   - `restart`: Restart server.
   - `disable`: Stop server and remove from startup.
-  - `logs`: Display and tail server logs.
-  - `status`: Display detailed server information (press ‘q’ to exit).
+  - `logs`: Display and tail server logs (press _Ctrl+C_ to exit).
+  - `status`: Display detailed server information.
 
 Site.js uses the [systemd](https://freedesktop.org/wiki/Software/systemd/) to start and manage the daemon. Beyond the commands listed above that Site.js supports natively (and proxies to systemd), you can make use of all systemd functionality via the [systemctl](https://www.freedesktop.org/software/systemd/man/systemctl.html) and [journalctl](https://www.freedesktop.org/software/systemd/man/journalctl.html) commands.
 
 ## Build and test from source
 
-Site.js is built using and supports Node.js LTS (currently version 12.16.2).
+Site.js is built using and supports Node.js 12 LTS (currently version 12.16.2).
+
+It has also been tested to work with the latest LTS (14.x).
 
 The build is created using Nexe and our own pre-built Nexe base Node.js binaries hosted on SiteJS.org. Please make sure that the version of your Node.js runtime matches the currently supported version stated above to ensure that the correct Nexe binary build is downloaded and used by the build script.
 
@@ -462,23 +468,17 @@ The build is created using Nexe and our own pre-built Nexe base Node.js binaries
 ```shell
 # Clone and install.
 mkdir site.js && cd site.js
-git clone https://source.small-tech.org/site.js/app.git
+git clone https://github.com/small-tech/site.js.git app
 cd app
 ./install
 
-# Run the app once (so that it can get your Node.js binary
-# permission to bind to ports < 1024 on Linux ­– otherwise
-# the tests will fail.)
-bin/site.js test/site
+# Make sure your computer is reachable from your
+# hostname if you’re going to run the tests.
+# (e.g., using PageKit or ngrok, etc.)
 
-# You should be able to see the site at https://localhost
-# now. Press Ctrl+C to stop the server.
-
-# Run unit tests.
+# Run tests.
 npm test
 ```
-
-__Note:__ If you upgrade your Node.js binary, please run `bin/site.js` again before running the tests (or using Site.js as a module in your own app) so that it can get permissions for your Node.js binary to bind to ports < 1024. Otherwise, it will fail with `Error: listen EACCES: permission denied 0.0.0.0:443`.
 
 ### Install as global Node.js module
 
