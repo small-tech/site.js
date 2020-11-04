@@ -13,7 +13,7 @@
 //
 // Once downloaded, the Nexe base images are stored at ~/.nexe
 //
-// To update the Nexe base image for your platform, pass the 
+// To update the Nexe base image for your platform, pass the
 // --update-nexe option.
 //
 ///////////////////////////////////////////////////////////////////////////
@@ -278,7 +278,7 @@ async function buildBinary () {
     fs.moveSync(path.join(hugoTemporaryDirectoryPath, fileName), path.join(hugoBinaryDirectoryPath, fileName), {overwrite: true})
   }
 
-  const platforms = ['darwin-amd64', 'linux-amd64', 'linux-arm', 'windows-amd64.exe']
+  const platforms = ['darwin-amd64', 'linux-amd64', 'linux-arm', 'linux-arm64', 'windows-amd64.exe']
 
   function removeAllMkcertPlatforms () {
     platforms.forEach(platform => {
