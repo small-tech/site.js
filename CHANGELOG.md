@@ -24,7 +24,7 @@ We ran into the following two issues while upgrading our own sites:
 
   - Upgrade bundled mkcert binaries to version 1.4.2 and add the new arm64 mkcert binary.
   - Use new arm64 Hugo and mkcert binaries in Site.js arm64 releases.
-  - Improve the build script (rebuild node_modules on deploy for safety and auto-commit install script updates).
+  - Improve the build script (rebuild node_modules on deploy for safety, auto-commit and push install script updates, auto-push release tag).
 
 ## [15.4.2] - 2020-11-04
 
