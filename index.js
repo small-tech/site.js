@@ -115,7 +115,7 @@ class Site {
   static binaryVersionToHumanReadableDateString (binaryVersion) {
     // Is this the dummy version that signals a development build?
     if (binaryVersion === '20000101000000') {
-      return 'Dev'
+      return 'Unbuilt (development version)'
     }
     const m = moment(binaryVersion, 'YYYYMMDDHHmmss')
     return `${m.format('MMMM Do, YYYY')} at ${m.format('HH:mm:ss')}`
@@ -194,7 +194,7 @@ class Site {
       this.readAndCacheManifest()
 
       let message = [
-        this.releaseChannel === this.RELEASE_CHANNEL.release ? `\n${prefix1}` : `\n${prefix1}Site.js\n\n`
+        this.releaseChannel === this.RELEASE_CHANNEL.release || this.binaryVersion === '20000101000000' /* (dev) */ ? `\n${prefix1}` : `\n${prefix1}Site.js\n\n`
       ].concat(this.releaseChannelFormattedForConsole).concat([
         `${prefix2}Created ${clr(this.humanReadableBinaryVersion, 'green')}\n`,
         '\n',
