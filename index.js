@@ -363,7 +363,7 @@ class Site {
     // Logging.
     this.app.use(morgan((tokens, req, res) => {
 
-      const status = tokens.status(req, res)
+      const status = tokens.status(req, res) || '?'
       const isError = status.startsWith('4') || status.startsWith('5')
 
       if (process.env.QUIET || this.accessLogDisable || (this.accessLogErrorsOnly && !isError)) {
