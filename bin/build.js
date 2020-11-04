@@ -505,6 +505,16 @@ async function buildBinary () {
 
   // Only zip and copy files to the local working copy of the Site.js web site if explicitly asked to.
   if (commandLineOptions.deploy) {
+    const mainSourceDirectory        = path.join(__dirname, '..')
+
+    //
+    // Rebuild node_modules to ensure that all dependencies are as we expect them.
+    //
+    console.log('   • Rebuilding node modules…')
+
+    fs.removeSync(path.join(mainSourceDirectory, 'node_modules'))
+    childProcess.execSync('npm i', {env: process.env, cwd: mainSourceDirectory})
+
     //
     // Zip.
     //
@@ -514,7 +524,6 @@ async function buildBinary () {
     // part of Linux distributions whereas tar and gzip are. We do not use
     // gzip directly as that does not maintain the executable flag on the binary.
     const zipFileName                = `${binaryVersion}.tar.gz`
-    const mainSourceDirectory        = path.join(__dirname, '..')
     const linuxX64WorkingDirectory   = path.join(mainSourceDirectory, linuxX64Directory  )
     const linuxArmWorkingDirectory   = path.join(mainSourceDirectory, linuxArmDirectory  )
     const linuxArm64WorkingDirectory = path.join(mainSourceDirectory, linuxArm64Directory)
