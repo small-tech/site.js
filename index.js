@@ -542,7 +542,7 @@ class Site {
           const sourcePath = path.join(this.pathToServe, file)
           const destinationPath = `../.generated${mountPath}`
 
-          const localBaseURL = `https://localhost${mountPath}`
+          const localBaseURL = `https://localhost${this.port === 443 ? '' : `:${this.port}`}${mountPath}`
           const globalBaseURL = `https://${Site.hostname}${mountPath}`
           let baseURL = this.global ? globalBaseURL : localBaseURL
 
