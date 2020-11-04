@@ -506,14 +506,6 @@ async function buildBinary () {
   // Only zip and copy files to the local working copy of the Site.js web site if explicitly asked to.
   if (commandLineOptions.deploy) {
     //
-    // Tag the release.
-    //
-    console.log('   • Tagging the release (don’t forget to git push --tags)…')
-
-    const capitaliseFirstLetter = word => `${word.slice(0,1).toUpperCase()}${word.slice(1)}`
-    childProcess.execSync(`git tag -s ${binaryVersion} -m '${capitaliseFirstLetter(manifest.releaseChannel)} (package version: ${manifest.packageVersion}, source version: ${manifest.sourceVersion})'`)
-
-    //
     // Zip.
     //
     console.log('   • Zipping binaries…')
@@ -666,6 +658,24 @@ async function buildBinary () {
       } else {
         console.log(`   • This is a ${releaseChannel} build, not updating the Windows install script as ${releaseChannel} builds are not supported on Windows.`)
       }
+
+      //
+      // Commit the installation script changes.
+      //
+      console.log('   • Committing and pushing latest generated installation script…')
+
+      childProcess.execSync('git add installation-script-templates/install')
+      childProcess.execSync(`git commit -m "Update installation script for ${manifest.releaseChannel} version ${manifest.packageVersion}"`)
+      childProcess.execSync('git push')
+
+      //
+      // Tag the release and push tags.
+      //
+      console.log('   • Tagging the release and pushing tags…')
+
+      const capitaliseFirstLetter = word => `${word.slice(0,1).toUpperCase()}${word.slice(1)}`
+      childProcess.execSync(`git tag -s ${binaryVersion} -m '${capitaliseFirstLetter(manifest.releaseChannel)} (package version: ${manifest.packageVersion}, source version: ${manifest.sourceVersion})'`)
+      childProcess.execSync('git push --tags')
 
     } else {
       console.log(`   • No local working copy of Site.js web site found. Skipped copy of release binaries. Please clone https://small-tech.org/site.js/site to ${websitePath} and ensure you have commit permissions on the repository before attempting to deploy.`)
