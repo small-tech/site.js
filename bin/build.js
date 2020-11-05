@@ -54,10 +54,9 @@ if (commandLineOptions.deploy && childProcess.execSync('git status').toString().
 const websitePath = path.resolve(path.join(__dirname, '..', '..', 'site'))
 
 if (commandLineOptions.deploy && !fs.existsSync(websitePath)) {
-  console.log('❌ Error: No local working copy of Site.js web site found.')
-  console.log(`Please clone https://small-tech.org/site.js/site to ${websitePath}`)
-  console.log('(and ensure you have commit permissions on the repository)')
-  console.log('before attempting to deploy.\n')
+  console.log('❌ Error: No local working copy of Site.js web site found.\n')
+  console.log(`   Please clone https://small-tech.org/site.js/site to ${websitePath}`)
+  console.log('   (and ensure you have commit permissions on the repository) before attempting to deploy.\n')
   process.exit(1)
 }
 
