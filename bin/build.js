@@ -32,6 +32,8 @@ const cpuArchitecture = os.arch()
 // Parse the command-line arguments.
 const commandLineOptions = minimist(process.argv.slice(2), {boolean: true})
 
+const mainSourceDirectory = path.join(__dirname, '..')
+
 // Display help on syntax error or if explicitly requested.
 if (commandLineOptions._.length !== 0 || commandLineOptions.h || commandLineOptions.help) {
   console.log('\n Usage: npm run build [--deploy] [--all] [--install] [--alpha] [--beta] [--update-nexe]\n')
@@ -53,11 +55,23 @@ if (commandLineOptions.deploy && childProcess.execSync('git status').toString().
 
 const websitePath = path.resolve(path.join(__dirname, '..', '..', 'site'))
 
-if (commandLineOptions.deploy && !fs.existsSync(websitePath)) {
-  console.log('❌ Error: No local working copy of Site.js web site found.\n')
-  console.log(`   Please clone https://small-tech.org/site.js/site to ${websitePath}`)
-  console.log('   (and ensure you have commit permissions on the repository) before attempting to deploy.\n')
-  process.exit(1)
+if (commandLineOptions.deploy) {
+  // Ensure that a working copy of the Site.js web site exists
+  // locally where we ex[ect it to so we can deploy to it.
+  if (!fs.existsSync(websitePath)) {
+    console.log('❌ Error: No local working copy of Site.js web site found.\n')
+    console.log(`   Please clone https://small-tech.org/site.js/site to ${websitePath}`)
+    console.log('   (and ensure you have commit permissions on the repository) before attempting to deploy.\n')
+    process.exit(1)
+  }
+
+  // Ensure that we are on the master branch.
+  // (Deployments are only allowed from the master branch.)
+  const gitBranch = childProcess.execSync('git branch --show-current', {env: process.env, cwd: mainSourceDirectory})
+  if (gitBranch !== 'master') {
+    console.log('❌ Error: Refusing to deploy non-master branch.\n')
+    process.exit(1)
+  }
 }
 
 //
@@ -237,7 +251,6 @@ async function buildBinary () {
   //
   // Build.
   //
-  const mainSourceDirectory = path.join(__dirname, '..')
 
   // Move all the third-party binaries out of the node_modules folders so they
   // are not all included in the various builds.
