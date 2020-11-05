@@ -69,7 +69,7 @@ if (commandLineOptions.deploy) {
   // (Deployments are only allowed from the master branch.)
   const gitBranch = childProcess.execSync('git branch --show-current', {env: process.env, cwd: mainSourceDirectory})
   if (gitBranch !== 'master') {
-    console.log('❌ Error: Refusing to deploy non-master branch.\n')
+    console.log(`❌ Error: Refusing to deploy non-master (${gitBranch}) branch.\n`)
     process.exit(1)
   }
 }
