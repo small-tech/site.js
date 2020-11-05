@@ -554,6 +554,19 @@ async function buildBinary () {
       process.exit(1)
     }
 
+    const INDEX                                  = 'index.js'
+    const websitePathForBinaries                 = path.resolve(path.join(websitePath, 'binaries', releaseChannel))
+    const websitePathForVersionRoutesFolder      = path.join(websitePath, '.dynamic', 'version')
+    const websitePathForBinaryVersionRouteFolder = path.join(websitePathForVersionRoutesFolder, releaseChannel)
+    const websitePathForBinaryVersionRouteFile   = path.join(websitePathForBinaryVersionRouteFolder, INDEX)
+    const websitePathForInstallScripts           = path.join(websitePath, 'installation-scripts')
+    const websitePathForLinuxAndMacInstallScript = path.join(websitePathForInstallScripts, 'install')
+    const websitePathForWindowsInstallScript     = path.join(websitePathForInstallScripts, 'install.txt')
+
+    // Ensure website version route folders exist
+    fs.ensureDirSync(websitePathForVersionRoutesFolder)
+    fs.ensureDirSync(websitePathForBinaryVersionRouteFolder)
+
     //
     // Linux and macOS.
     //
@@ -669,18 +682,6 @@ async function buildBinary () {
     //
     // If it cannot find the Site.js web site, the build script will simply skip this step.
     //
-    const INDEX                                  = 'index.js'
-    const websitePathForBinaries                 = path.resolve(path.join(websitePath, 'binaries', releaseChannel))
-    const websitePathForVersionRoutesFolder      = path.join(websitePath, '.dynamic', 'version')
-    const websitePathForBinaryVersionRouteFolder = path.join(websitePathForVersionRoutesFolder, releaseChannel)
-    const websitePathForBinaryVersionRouteFile   = path.join(websitePathForBinaryVersionRouteFolder, INDEX)
-    const websitePathForInstallScripts           = path.join(websitePath, 'installation-scripts')
-    const websitePathForLinuxAndMacInstallScript = path.join(websitePathForInstallScripts, 'install')
-    const websitePathForWindowsInstallScript     = path.join(websitePathForInstallScripts, 'install.txt')
-
-    // Ensure website version route folders exist
-    fs.ensureDirSync(websitePathForVersionRoutesFolder)
-    fs.ensureDirSync(websitePathForBinaryVersionRouteFolder)
 
     console.log('   • Copying release binaries to the Site.js web site…')
 
