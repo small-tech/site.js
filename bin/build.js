@@ -13,7 +13,7 @@
 //
 // Once downloaded, the Nexe base images are stored at ~/.nexe
 //
-// To update the Nexe base image for your platform, pass the 
+// To update the Nexe base image for your platform, pass the
 // --update-nexe option.
 //
 ///////////////////////////////////////////////////////////////////////////
@@ -32,6 +32,8 @@ const cpuArchitecture = os.arch()
 // Parse the command-line arguments.
 const commandLineOptions = minimist(process.argv.slice(2), {boolean: true})
 
+const mainSourceDirectory = path.join(__dirname, '..')
+
 // Display help on syntax error or if explicitly requested.
 if (commandLineOptions._.length !== 0 || commandLineOptions.h || commandLineOptions.help) {
   console.log('\n Usage: npm run build [--deploy] [--all] [--install] [--alpha] [--beta] [--update-nexe]\n')
@@ -49,6 +51,27 @@ if (cpuArchitecture !== 'x64' && cpuArchitecture !== 'arm' && cpuArchitecture !=
 if (commandLineOptions.deploy && childProcess.execSync('git status').toString().match('working tree clean') === null) {
   console.log('❌ Error: Cannot deploy when working copy is dirty. Please commit or stash changes before retrying.\n')
   process.exit(1)
+}
+
+const websitePath = path.resolve(path.join(__dirname, '..', '..', 'site'))
+
+if (commandLineOptions.deploy) {
+  // Ensure that a working copy of the Site.js web site exists
+  // locally where we ex[ect it to so we can deploy to it.
+  if (!fs.existsSync(websitePath)) {
+    console.log('❌ Error: No local working copy of Site.js web site found.\n')
+    console.log(`   Please clone https://small-tech.org/site.js/site to ${websitePath}`)
+    console.log('   (and ensure you have commit permissions on the repository) before attempting to deploy.\n')
+    process.exit(1)
+  }
+
+  // Ensure that we are on the master branch.
+  // (Deployments are only allowed from the master branch.)
+  const gitBranch = (childProcess.execSync('git branch --show-current', {env: process.env, cwd: mainSourceDirectory})).toString().replace(/\n/g, '').trim()
+  if (gitBranch !== 'master') {
+    console.log(`❌ Error: Refusing to deploy non-master (${gitBranch}) branch.\n`)
+    process.exit(1)
+  }
 }
 
 //
@@ -233,6 +256,16 @@ async function buildBinary () {
   // are not all included in the various builds.
   const nodeModulesPath = path.resolve(__dirname, '..', 'node_modules')
 
+  if (commandLineOptions.deploy) {
+    //
+    // Rebuild node_modules to ensure that all dependencies are as we expect them.
+    //
+    console.log('   • Rebuilding node modules before creating deployment builds…')
+
+    fs.removeSync(nodeModulesPath)
+    childProcess.execSync('npm i', {env: process.env, cwd: mainSourceDirectory})
+  }
+
   const mkcertBinaryDirectoryPath = path.join(nodeModulesPath, '@small-tech', 'auto-encrypt-localhost', 'mkcert-bin')
   const hugoBinaryDirectoryPath   = path.join(nodeModulesPath, '@small-tech', 'node-hugo', 'hugo-bin')
 
@@ -278,7 +311,7 @@ async function buildBinary () {
     fs.moveSync(path.join(hugoTemporaryDirectoryPath, fileName), path.join(hugoBinaryDirectoryPath, fileName), {overwrite: true})
   }
 
-  const platforms = ['darwin-amd64', 'linux-amd64', 'linux-arm', 'windows-amd64.exe']
+  const platforms = ['darwin-amd64', 'linux-amd64', 'linux-arm', 'linux-arm64', 'windows-amd64.exe']
 
   function removeAllMkcertPlatforms () {
     platforms.forEach(platform => {
@@ -504,14 +537,89 @@ async function buildBinary () {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Only zip and copy files to the local working copy of the Site.js web site if explicitly asked to.
+  // Check that a local working copy of the Site.js web site exists at the relative location
+  // that we expect it to. If it doesn’t skip this step.
   if (commandLineOptions.deploy) {
+
+    // Update the install file and deploy them to the Site.js web site.
+    console.log('   • Updating the installation scripts and copying them to local Site.js web site working copy.')
+
+    const installationScriptTemplatesFolder = path.join(mainSourceDirectory, 'installation-script-templates')
+
+    // Check again that the wokring tree is clean. We just did an npm install
+    // so if the tree is not clean, it’s because the package-lock.json file has
+    // changed and that means that there is something unexpected in the node_modules.
+    if (childProcess.execSync('git status').toString().match('working tree clean') === null) {
+      console.log('❌ Error: Working copy is dirty after npm i. Please take a look at your package-lock.json and commit it before retrying.\n')
+      process.exit(1)
+    }
+
     //
-    // Tag the release.
+    // Linux and macOS.
     //
-    console.log('   • Tagging the release (don’t forget to git push --tags)…')
+
+    const linuxAndMacOSInstallScriptFile = path.join(installationScriptTemplatesFolder, 'install')
+
+    const binaryVersionVariableName = `${releaseChannel}BinaryVersion`
+    const binaryVersionVariable = `${binaryVersionVariableName}=${binaryVersion}`
+    const binaryVersionRegExp = new RegExp(`${binaryVersionVariableName}=\\d{14}`)
+
+    const sourceVersionVariableName = `${releaseChannel}SourceVersion`
+    const sourceVersionVariable = `${sourceVersionVariableName}=${sourceVersion}`
+    const sourceVersionRegExp = new RegExp(`${sourceVersionVariableName}=[0-9a-fA-F]{7}`)
+
+    const packageVersionVariableName = `${releaseChannel}PackageVersion`
+    const packageVersionVariable = `${packageVersionVariableName}=${packageVersion}`
+    const packageVersionRegExp = new RegExp(`${packageVersionVariableName}=\\d+\\.\\d+\\.\\d+`)
+
+    let linuxAndMacOSInstallScript
+    linuxAndMacOSInstallScript = fs.readFileSync(linuxAndMacOSInstallScriptFile, 'utf-8')
+    linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(binaryVersionRegExp, binaryVersionVariable)
+    linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(sourceVersionRegExp, sourceVersionVariable)
+    linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(packageVersionRegExp, packageVersionVariable)
+
+    // As we have three different release types, each with a different version, we need to persist
+    // the template with the other values. Changes should be checked into the repository.
+    fs.writeFileSync(linuxAndMacOSInstallScriptFile, linuxAndMacOSInstallScript)
+    fs.copyFileSync(linuxAndMacOSInstallScriptFile, websitePathForLinuxAndMacInstallScript)
+
+    //
+    // Windows.
+    //
+    // (Note: Windows script does not support alpha and beta builds.)
+    //
+
+    if (releaseChannel === 'release') {
+      const windowsInstallScriptFile = path.join(installationScriptTemplatesFolder, 'windows')
+
+      let windowsInstallScript
+      windowsInstallScript = fs.readFileSync(windowsInstallScriptFile, 'utf-8')
+      windowsInstallScript = windowsInstallScript.replace(/\d{14}/g, binaryVersion)
+      windowsInstallScript = windowsInstallScript.replace(/\/[0-9a-fA-F]{7}\)/g, `/${sourceVersion})`)
+      windowsInstallScript = windowsInstallScript.replace(/\d+\.\d+\.\d+/g, packageVersion)
+
+      fs.writeFileSync(websitePathForWindowsInstallScript, windowsInstallScript)
+    } else {
+      console.log(`   • This is a ${releaseChannel} build, not updating the Windows install script as ${releaseChannel} builds are not supported on Windows.`)
+    }
+
+    //
+    // Commit the installation script changes.
+    //
+    console.log('   • Committing and pushing latest generated installation script…')
+
+    childProcess.execSync('git add installation-script-templates/install')
+    childProcess.execSync(`git commit -m "Update installation script for ${manifest.releaseChannel} version ${manifest.packageVersion}"`)
+    childProcess.execSync('git push')
+
+    //
+    // Tag the release and push tags.
+    //
+    console.log('   • Tagging the release and pushing tags…')
 
     const capitaliseFirstLetter = word => `${word.slice(0,1).toUpperCase()}${word.slice(1)}`
     childProcess.execSync(`git tag -s ${binaryVersion} -m '${capitaliseFirstLetter(manifest.releaseChannel)} (package version: ${manifest.packageVersion}, source version: ${manifest.sourceVersion})'`)
+    childProcess.execSync('git push --tags')
 
     //
     // Zip.
@@ -522,7 +630,6 @@ async function buildBinary () {
     // part of Linux distributions whereas tar and gzip are. We do not use
     // gzip directly as that does not maintain the executable flag on the binary.
     const zipFileName                = `${binaryVersion}.tar.gz`
-    const mainSourceDirectory        = path.join(__dirname, '..')
     const linuxX64WorkingDirectory   = path.join(mainSourceDirectory, linuxX64Directory  )
     const linuxArmWorkingDirectory   = path.join(mainSourceDirectory, linuxArmDirectory  )
     const linuxArm64WorkingDirectory = path.join(mainSourceDirectory, linuxArm64Directory)
@@ -563,8 +670,6 @@ async function buildBinary () {
     // If it cannot find the Site.js web site, the build script will simply skip this step.
     //
     const INDEX                                  = 'index.js'
-    const websitePath                            = path.resolve(path.join(__dirname, '..', '..', 'site'))
-    const websitePathForIndex                    = path.resolve(path.join(websitePath, 'index.html'))
     const websitePathForBinaries                 = path.resolve(path.join(websitePath, 'binaries', releaseChannel))
     const websitePathForVersionRoutesFolder      = path.join(websitePath, '.dynamic', 'version')
     const websitePathForBinaryVersionRouteFolder = path.join(websitePathForVersionRoutesFolder, releaseChannel)
@@ -577,99 +682,38 @@ async function buildBinary () {
     fs.ensureDirSync(websitePathForVersionRoutesFolder)
     fs.ensureDirSync(websitePathForBinaryVersionRouteFolder)
 
-    // Check that a local working copy of the Site.js web site exists at the relative location
-    // that we expect it to. If it doesn’t skip this step.
-    if (fs.existsSync(websitePath)) {
-      console.log('   • Copying release binaries to the Site.js web site…')
+    console.log('   • Copying release binaries to the Site.js web site…')
 
-      const linuxX64VersionZipFilePath    = path.join(linuxX64WorkingDirectory,   zipFileName)
-      const linuxArmVersionZipFilePath    = path.join(linuxArmWorkingDirectory,   zipFileName)
-      const linuxArm64VersionZipFilePath  = path.join(linuxArm64WorkingDirectory, zipFileName)
-      const macOsVersionZipFilePath       = path.join(macOsWorkingDirectory,      zipFileName)
-      const windowsVersionZipFilePath     = path.join(windowsWorkingDirectory,    zipFileName)
+    const linuxX64VersionZipFilePath    = path.join(linuxX64WorkingDirectory,   zipFileName)
+    const linuxArmVersionZipFilePath    = path.join(linuxArmWorkingDirectory,   zipFileName)
+    const linuxArm64VersionZipFilePath  = path.join(linuxArm64WorkingDirectory, zipFileName)
+    const macOsVersionZipFilePath       = path.join(macOsWorkingDirectory,      zipFileName)
+    const windowsVersionZipFilePath     = path.join(windowsWorkingDirectory,    zipFileName)
 
-      const websitePathForLinuxX64Version   = path.join(websitePathForBinaries, 'linux'      )
-      const websitePathForLinuxArmVersion   = path.join(websitePathForBinaries, 'linux-arm'  )
-      const websitePathForLinuxArm64Version = path.join(websitePathForBinaries, 'linux-arm64')
-      const websitePathForMacVersion        = path.join(websitePathForBinaries, 'macos'      )
-      const websitePathForWindowsVersion    = path.join(websitePathForBinaries, 'windows'    )
+    const websitePathForLinuxX64Version   = path.join(websitePathForBinaries, 'linux'      )
+    const websitePathForLinuxArmVersion   = path.join(websitePathForBinaries, 'linux-arm'  )
+    const websitePathForLinuxArm64Version = path.join(websitePathForBinaries, 'linux-arm64')
+    const websitePathForMacVersion        = path.join(websitePathForBinaries, 'macos'      )
+    const websitePathForWindowsVersion    = path.join(websitePathForBinaries, 'windows'    )
 
-      fs.ensureDirSync(websitePathForBinaries, {recursive: true})
-      fs.ensureDirSync(websitePathForLinuxX64Version  )
-      fs.ensureDirSync(websitePathForLinuxArmVersion  )
-      fs.ensureDirSync(websitePathForLinuxArm64Version)
-      fs.ensureDirSync(websitePathForMacVersion       )
-      fs.ensureDirSync(websitePathForWindowsVersion   )
+    fs.ensureDirSync(websitePathForBinaries, {recursive: true})
+    fs.ensureDirSync(websitePathForLinuxX64Version  )
+    fs.ensureDirSync(websitePathForLinuxArmVersion  )
+    fs.ensureDirSync(websitePathForLinuxArm64Version)
+    fs.ensureDirSync(websitePathForMacVersion       )
+    fs.ensureDirSync(websitePathForWindowsVersion   )
 
-      fs.copyFileSync(linuxX64VersionZipFilePath,   path.join(websitePathForLinuxX64Version,   zipFileName))
-      fs.copyFileSync(linuxArmVersionZipFilePath,   path.join(websitePathForLinuxArmVersion,   zipFileName))
-      fs.copyFileSync(linuxArm64VersionZipFilePath, path.join(websitePathForLinuxArm64Version, zipFileName))
-      fs.copyFileSync(macOsVersionZipFilePath,      path.join(websitePathForMacVersion,        zipFileName))
-      fs.copyFileSync(windowsVersionZipFilePath,    path.join(websitePathForWindowsVersion,    zipFileName))
+    fs.copyFileSync(linuxX64VersionZipFilePath,   path.join(websitePathForLinuxX64Version,   zipFileName))
+    fs.copyFileSync(linuxArmVersionZipFilePath,   path.join(websitePathForLinuxArmVersion,   zipFileName))
+    fs.copyFileSync(linuxArm64VersionZipFilePath, path.join(websitePathForLinuxArm64Version, zipFileName))
+    fs.copyFileSync(macOsVersionZipFilePath,      path.join(websitePathForMacVersion,        zipFileName))
+    fs.copyFileSync(windowsVersionZipFilePath,    path.join(websitePathForWindowsVersion,    zipFileName))
 
-      // Write out a dynamic route on the SiteJS.org web site to return the binary version. This endpoint is used by
-      // the auto-update feature to decide whether the binary should be updated.
-      console.log(`   • Adding dynamic binary version endpoint for ${releaseChannel} version to Site.js web site.`)
-      const binaryVersionRoute = `module.exports = (request, response) => { response.end('${binaryVersion}') }\n`
-      fs.writeFileSync(websitePathForBinaryVersionRouteFile, binaryVersionRoute, {encoding: 'utf-8'})
-
-      // Update the install file and deploy them to the Site.js web site.
-      console.log('   • Updating the installation scripts and copying them to local Site.js web site working copy.')
-
-      const installationScriptTemplatesFolder = path.join(mainSourceDirectory, 'installation-script-templates')
-
-      //
-      // Linux and macOS.
-      //
-
-      const linuxAndMacOSInstallScriptFile = path.join(installationScriptTemplatesFolder, 'install')
-
-      const binaryVersionVariableName = `${releaseChannel}BinaryVersion`
-      const binaryVersionVariable = `${binaryVersionVariableName}=${binaryVersion}`
-      const binaryVersionRegExp = new RegExp(`${binaryVersionVariableName}=\\d{14}`)
-
-      const sourceVersionVariableName = `${releaseChannel}SourceVersion`
-      const sourceVersionVariable = `${sourceVersionVariableName}=${sourceVersion}`
-      const sourceVersionRegExp = new RegExp(`${sourceVersionVariableName}=[0-9a-fA-F]{7}`)
-
-      const packageVersionVariableName = `${releaseChannel}PackageVersion`
-      const packageVersionVariable = `${packageVersionVariableName}=${packageVersion}`
-      const packageVersionRegExp = new RegExp(`${packageVersionVariableName}=\\d+\\.\\d+\\.\\d+`)
-
-      let linuxAndMacOSInstallScript
-      linuxAndMacOSInstallScript = fs.readFileSync(linuxAndMacOSInstallScriptFile, 'utf-8')
-      linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(binaryVersionRegExp, binaryVersionVariable)
-      linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(sourceVersionRegExp, sourceVersionVariable)
-      linuxAndMacOSInstallScript = linuxAndMacOSInstallScript.replace(packageVersionRegExp, packageVersionVariable)
-
-      // As we have three different release types, each with a different version, we need to persist
-      // the template with the other values. Changes should be checked into the repository.
-      fs.writeFileSync(linuxAndMacOSInstallScriptFile, linuxAndMacOSInstallScript)
-      fs.copyFileSync(linuxAndMacOSInstallScriptFile, websitePathForLinuxAndMacInstallScript)
-
-      //
-      // Windows.
-      //
-      // (Note: Windows script does not support alpha and beta builds.)
-      //
-
-      if (releaseChannel === 'release') {
-        const windowsInstallScriptFile = path.join(installationScriptTemplatesFolder, 'windows')
-
-        let windowsInstallScript
-        windowsInstallScript = fs.readFileSync(windowsInstallScriptFile, 'utf-8')
-        windowsInstallScript = windowsInstallScript.replace(/\d{14}/g, binaryVersion)
-        windowsInstallScript = windowsInstallScript.replace(/\/[0-9a-fA-F]{7}\)/g, `/${sourceVersion})`)
-        windowsInstallScript = windowsInstallScript.replace(/\d+\.\d+\.\d+/g, packageVersion)
-
-        fs.writeFileSync(websitePathForWindowsInstallScript, windowsInstallScript)
-      } else {
-        console.log(`   • This is a ${releaseChannel} build, not updating the Windows install script as ${releaseChannel} builds are not supported on Windows.`)
-      }
-
-    } else {
-      console.log(`   • No local working copy of Site.js web site found. Skipped copy of release binaries. Please clone https://small-tech.org/site.js/site to ${websitePath} and ensure you have commit permissions on the repository before attempting to deploy.`)
-    }
+    // Write out a dynamic route on the SiteJS.org web site to return the binary version. This endpoint is used by
+    // the auto-update feature to decide whether the binary should be updated.
+    console.log(`   • Adding dynamic binary version endpoint for ${releaseChannel} version to Site.js web site.`)
+    const binaryVersionRoute = `module.exports = (request, response) => { response.end('${binaryVersion}') }\n`
+    fs.writeFileSync(websitePathForBinaryVersionRouteFile, binaryVersionRoute, {encoding: 'utf-8'})
   }
 
   console.log('\n 😁👍 Done!\n')
