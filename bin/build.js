@@ -51,6 +51,8 @@ if (commandLineOptions.deploy && childProcess.execSync('git status').toString().
   process.exit(1)
 }
 
+const websitePath = path.resolve(path.join(__dirname, '..', '..', 'site'))
+
 if (commandLineOptions.deploy && !fs.existsSync(websitePath)) {
   console.log('❌ Error: No local working copy of Site.js web site found. Skipped deploy. Please clone https://small-tech.org/site.js/site to ${websitePath} and ensure you have commit permissions on the repository before attempting to deploy.\n')
   process.exit(1)
@@ -240,6 +242,9 @@ async function buildBinary () {
   const nodeModulesPath = path.resolve(__dirname, '..', 'node_modules')
 
   if (commandLineOptions.deploy) {
+    console.log('Deploy :) ', websitePath)
+    process.exit(1)
+
     //
     // Rebuild node_modules to ensure that all dependencies are as we expect them.
     //
@@ -650,7 +655,6 @@ async function buildBinary () {
     // If it cannot find the Site.js web site, the build script will simply skip this step.
     //
     const INDEX                                  = 'index.js'
-    const websitePath                            = path.resolve(path.join(__dirname, '..', '..', 'site'))
     const websitePathForBinaries                 = path.resolve(path.join(websitePath, 'binaries', releaseChannel))
     const websitePathForVersionRoutesFolder      = path.join(websitePath, '.dynamic', 'version')
     const websitePathForBinaryVersionRouteFolder = path.join(websitePathForVersionRoutesFolder, releaseChannel)
