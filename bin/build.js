@@ -51,6 +51,11 @@ if (commandLineOptions.deploy && childProcess.execSync('git status').toString().
   process.exit(1)
 }
 
+if (commandLineOptions.deploy && !fs.existsSync(websitePath)) {
+  console.log('❌ Error: No local working copy of Site.js web site found. Skipped deploy. Please clone https://small-tech.org/site.js/site to ${websitePath} and ensure you have commit permissions on the repository before attempting to deploy.\n')
+  process.exit(1)
+}
+
 //
 // There are six elements that go into uniquely identifying a build:
 //
@@ -228,6 +233,7 @@ async function buildBinary () {
   //
   // Build.
   //
+  const mainSourceDirectory = path.join(__dirname, '..')
 
   // Move all the third-party binaries out of the node_modules folders so they
   // are not all included in the various builds.
@@ -516,8 +522,7 @@ async function buildBinary () {
   // Only zip and copy files to the local working copy of the Site.js web site if explicitly asked to.
   // Check that a local working copy of the Site.js web site exists at the relative location
   // that we expect it to. If it doesn’t skip this step.
-  if (commandLineOptions.deploy && fs.existsSync(websitePath)) {
-    const mainSourceDirectory = path.join(__dirname, '..')
+  if (commandLineOptions.deploy) {
 
     // Update the install file and deploy them to the Site.js web site.
     console.log('   • Updating the installation scripts and copying them to local Site.js web site working copy.')
@@ -691,8 +696,6 @@ async function buildBinary () {
     const binaryVersionRoute = `module.exports = (request, response) => { response.end('${binaryVersion}') }\n`
     fs.writeFileSync(websitePathForBinaryVersionRouteFile, binaryVersionRoute, {encoding: 'utf-8'})
 
-  } else {
-    console.log(`   • No local working copy of Site.js web site found. Skipped deploy. Please clone https://small-tech.org/site.js/site to ${websitePath} and ensure you have commit permissions on the repository before attempting to deploy.`)
   }
 
   console.log('\n 😁👍 Done!\n')
