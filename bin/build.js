@@ -244,9 +244,6 @@ async function buildBinary () {
   const nodeModulesPath = path.resolve(__dirname, '..', 'node_modules')
 
   if (commandLineOptions.deploy) {
-    console.log('Deploy :) ', websitePath)
-    process.exit(1)
-
     //
     // Rebuild node_modules to ensure that all dependencies are as we expect them.
     //
