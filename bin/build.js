@@ -533,6 +533,14 @@ async function buildBinary () {
 
     const installationScriptTemplatesFolder = path.join(mainSourceDirectory, 'installation-script-templates')
 
+    // Check again that the wokring tree is clean. We just did an npm install
+    // so if the tree is not clean, it’s because the package-lock.json file has
+    // changed and that means that there is something unexpected in the node_modules.
+    if (childProcess.execSync('git status').toString().match('working tree clean') === null) {
+      console.log('❌ Error: Working copy is dirty after npm i. Please take a look at your package-lock.json and commit it before retrying.\n')
+      process.exit(1)
+    }
+
     //
     // Linux and macOS.
     //
@@ -560,11 +568,6 @@ async function buildBinary () {
     // As we have three different release types, each with a different version, we need to persist
     // the template with the other values. Changes should be checked into the repository.
     fs.writeFileSync(linuxAndMacOSInstallScriptFile, linuxAndMacOSInstallScript)
-
-    console.log('DEBUG EARLY EXIT')
-    process.exit()
-
-
     fs.copyFileSync(linuxAndMacOSInstallScriptFile, websitePathForLinuxAndMacInstallScript)
 
     //
@@ -698,7 +701,6 @@ async function buildBinary () {
     console.log(`   • Adding dynamic binary version endpoint for ${releaseChannel} version to Site.js web site.`)
     const binaryVersionRoute = `module.exports = (request, response) => { response.end('${binaryVersion}') }\n`
     fs.writeFileSync(websitePathForBinaryVersionRouteFile, binaryVersionRoute, {encoding: 'utf-8'})
-
   }
 
   console.log('\n 😁👍 Done!\n')
