@@ -651,7 +651,18 @@ class Site {
     const proxyWebSocketUrl = `ws://localhost:${this.proxyPort}`
 
     let prettyLog = function (message) {
-      this.log(`   🔁    ❨site.js❩ ${message}`)
+
+      const match = /^\[HPM\] Proxy created: \/  -> (ws|http):\/\/localhost:(\d+)$/.exec(message)
+
+      if (match === null) {
+        // Unexpected message, log as warning.
+        this.log(`   🔁    ${clr('❨site.js❩ Unexpected message from proxy middleware:', 'yellow')} ${message}`)
+      } else {
+        // Expected message. Log after improving it for clarity.
+        const { proxyType, proxyProtocol } = match[1] === 'ws' ? { proxyType: 'WebSocket', proxyProtocol: 'wss' } : { proxyType: 'HTTP', proxyProtocol: 'https' }
+        const proxyPort = match[2]
+        this.log(`   🔁    ❨site.js❩ ${clr(`${proxyType} proxy`, 'green')} set up for port ${clr(proxyPort, 'cyan')} at ${clr(`${proxyProtocol}://localhost`, 'cyan')}.`)
+      }
     }
     prettyLog = prettyLog.bind(this)
 
@@ -1100,7 +1111,6 @@ class Site {
   // Callback used in proxy servers.
   proxyCallback (server) {
     const location = this.prettyLocation()
-    this.log(`   🚚    ❨site.js❩ Proxying: HTTP/WS on localhost:${this.proxyPort} ←→ HTTPS/WSS on ${location}`)
     this.showStatisticsUrl(location)
   }
 
