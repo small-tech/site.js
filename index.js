@@ -659,7 +659,7 @@ class Site {
         this.log(`   🔁    ${clr('❨site.js❩ Unexpected message from proxy middleware:', 'yellow')} ${message}`)
       } else {
         // Expected message. Log after improving it for clarity.
-        const { proxyType, proxyProtocol } = match[1] === 'ws' ? { proxyType: 'WebSocket', proxyProtocol: 'wss' } : { proxyType: 'HTTP', proxyProtocol: 'https' }
+        const [proxyType, proxyProtocol] = match[1] === 'ws' ? ['WebSocket', 'wss'] : ['HTTP', 'https']
         const proxyPort = match[2]
         this.log(`   🔁    ❨site.js❩ ${clr(`${proxyType} proxy`, 'green')} set up for port ${clr(proxyPort, 'cyan')} at ${clr(`${proxyProtocol}://localhost`, 'cyan')}.`)
       }
