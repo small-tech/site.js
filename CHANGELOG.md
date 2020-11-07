@@ -4,15 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Development] - in progress…
-
-### Improved
-
-  - HTTP and WebSocket proxy messages are now easier to understand (#38).
+## [16.0.1] - 2020-11-07
 
 ### Fixed
 
   - No longer crashes if run from source that’s not under git. Thank you to [kapitaali](https://github.com/kapitaali) for reporting [this bug](https://github.com/small-tech/site.js/issues/20#issuecomment-723048260) (#250).
+
+### Improved
+
+  - HTTP and WebSocket proxy messages are now easier to understand (#38).
 
 ## [16.0.0] - 2020-11-05
 
