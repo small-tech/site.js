@@ -71,7 +71,7 @@ function manifest () {
       // When running under Node (not wrapped as a binary), there will be no manifest file. So mock one.
       _manifest = {
         releaseChannel: 'npm',
-        binaryVersion: '20000101000000',
+        binaryVersion: '19481210233000',
         packageVersion: (require(path.join('..', 'package.json'))).version,
         sourceVersion: childProcess.execSync('git log -1 --oneline').toString().match(/^[0-9a-fA-F]{7}/)[0],
         hugoVersion: (new Hugo()).version,

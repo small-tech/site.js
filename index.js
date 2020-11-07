@@ -84,12 +84,24 @@ class Site {
       // When running under Node (not wrapped as a binary), there will be no manifest file. So mock one.
       const options = {shell: os.platform() === 'win32' ? 'powershell' : '/bin/bash', env: process.env}
 
+      let sourceVersion
+      try {
+        const [silenceOutput1, silenceOutput2] = os.platform() === 'win32' ? ['', ''] : ['> /dev/null', '2>&1']
+        const command = `pushd ${__dirname} ${silenceOutput1}; git log -1 --oneline ${silenceOutput2}`
+        sourceVersion = childProcess.execSync(command, options).toString().match(/^[0-9a-fA-F]{7}/)[0]
+      } catch (error) {
+        // We are not running from source.
+        sourceVersion = 'npm'
+      }
+
       // Note: we switch to __dirname because we need to if Site.js is running as a daemon from source.
       this.#manifest = {
         releaseChannel: 'npm',
-        binaryVersion: '20000101000000',
+        // Note: the time is a guess based on the minutes at:
+        // http://undocs.org/en/A/PV.183 ;)
+        binaryVersion: '19481210233000',
         packageVersion: (require(path.join(__dirname, 'package.json'))).version,
-        sourceVersion: childProcess.execSync(`pushd ${__dirname} ${os.platform() === 'win32' ? '' : '> /dev/null'}; git log -1 --oneline`,options).toString().match(/^[0-9a-fA-F]{7}/)[0],
+        sourceVersion,
         hugoVersion: (new Hugo()).version,
         platform: {linux: 'linux', win32: 'windows', 'darwin': 'macOS'}[os.platform()],
         architecture: os.arch()
@@ -114,8 +126,8 @@ class Site {
 
   static binaryVersionToHumanReadableDateString (binaryVersion) {
     // Is this the dummy version that signals a development build?
-    if (binaryVersion === '20000101000000') {
-      return 'Unbuilt (development version)'
+    if (binaryVersion === '19481210233000') {
+      return 'n/a (not running from binary release)'
     }
     const m = moment(binaryVersion, 'YYYYMMDDHHmmss')
     return `${m.format('MMMM Do, YYYY')} at ${m.format('HH:mm:ss')}`
@@ -194,7 +206,7 @@ class Site {
       this.readAndCacheManifest()
 
       let message = [
-        this.releaseChannel === this.RELEASE_CHANNEL.release || this.binaryVersion === '20000101000000' /* (dev) */ ? `\n${prefix1}` : `\n${prefix1}Site.js\n\n`
+        this.releaseChannel === this.RELEASE_CHANNEL.release || this.binaryVersion === '19481210233000' /* (dev) */ ? `\n${prefix1}` : `\n${prefix1}Site.js\n\n`
       ].concat(this.releaseChannelFormattedForConsole).concat([
         `${prefix2}Created ${clr(this.humanReadableBinaryVersion, 'green')}\n`,
         '\n',
