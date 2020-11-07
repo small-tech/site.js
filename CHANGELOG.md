@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   - HTTP and WebSocket proxy messages are now easier to understand (#38).
 
+### Fixed
+
+  - No longer crashes if run from source that’s not under git. Thank you to [kapitaali](https://github.com/kapitaali) for reporting [this bug](https://github.com/small-tech/site.js/issues/20#issuecomment-723048260) (#250).
+
 ## [16.0.0] - 2020-11-05
 
 ### Breaking change
