@@ -76,7 +76,7 @@ function enable (args) {
       const _pathToServe = args.positional.length === 1 ? args.positional[0] : '.'
       const binaryExecutable = '/usr/local/bin/site'
       const sourceDirectory = path.resolve(__dirname, '..', '..')
-      const nodeExecutable = `node ${path.join(sourceDirectory, 'bin/site.js')}`
+      const nodeExecutable = `${childProcess.execSync('which node').toString().trim()} ${path.join(sourceDirectory, 'bin/site.js')}`
       const executable = runtime.isBinary ? binaryExecutable : nodeExecutable
 
       // It is a common mistake to start the server in a .dynamic folder (or subfolder)
