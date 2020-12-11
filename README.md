@@ -549,6 +549,15 @@ npm run update-nexe
 npm run deploy
 ```
 
+Note that the deployment script requires a modern version of git to work (e.g., will not work on elementary OS 5.1.7 which is based on Ubuntu 18.04.) To install the latest version of git on Ubuntu-esque operating systems (like elementary OS):
+
+```
+sudo apt install software-properties-common
+sudo add-apt-repository ppa:git-core/ppa
+sudo apt update
+sudo apt install git
+```
+
 ## Syntax
 
 ```shell
