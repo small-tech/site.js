@@ -11,6 +11,7 @@ const fs = require('fs-extra')
 const path = require('path')
 
 const Site = require('../../index')
+const Util = require('../../lib/Util')
 const runtime = require('./runtime')
 const getStatus = require('./status')
 const clr = require('../../lib/clr')
@@ -141,7 +142,7 @@ class Ensure {
   // (This will install it automatically if a supported package manager exists.)
   rsyncExists() {
 
-    const rsyncOnWindowsPath = path.join(os.homedir(), '.small-tech.org', 'site.js', 'portable-rsync-with-ssh-for-windows')
+    const rsyncOnWindowsPath = path.join(Util.unprivilegedHomeDirectory(), '.small-tech.org', 'site.js', 'portable-rsync-with-ssh-for-windows')
 
     if (os.platform() === 'win32') {
       if (fs.existsSync(rsyncOnWindowsPath)) return // Already installed.

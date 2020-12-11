@@ -168,7 +168,7 @@ function serve (args) {
 
       ;(async () => {
         // Generate any content that needs to be generated (e.g., Hugo content).
-        await generateContent(path, syncOptions.host, Site)
+        await generateContent(syncOptions.from, syncOptions.host, Site)
 
         // Any content that needs to be generated has been generated. Ready to sync.
         sync(syncOptions)
@@ -318,8 +318,8 @@ function localFolder (args) {
 
   let localFolder = null
 
-  // If --sync-from is not specified, we default to the path to be served (or default path).
-  const syncFrom = args.named[SYNC_FROM] || path
+  // If --sync-from is not specified, we default to the path to be served (or use a default path).
+  const syncFrom = args.named[SYNC_FROM] || path || '.'
   const syncFromEndsWithPathSeparator = syncFrom.endsWith(pathModule.sep)
 
   // Handle the sync-folder-and-contents flag or its lack

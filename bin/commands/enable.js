@@ -116,14 +116,7 @@ function enable (args) {
 
       const launchCommand = `${executable} ${absolutePathToServe} @hostname ${domain} ${aliases} ${skipDomainReachabilityCheck} ${accessLogErrorsOnly} ${accessLogDisable}`
 
-      let accountName
-      try {
-        // Courtesy: https://www.unix.com/302402784-post4.html
-        accountName = childProcess.execSync(`awk -v val=${accountUID} -F ":" '$3==val{print $1}' /etc/passwd`, {env: process.env, stdio: 'pipe'}).toString().replace('\n', '')
-      } catch (error) {
-        console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Could not get account name \n${error}.\n`)
-        process.exit(1)
-      }
+      const accountName = Util.unprivilegedAccountName()
 
       const unit = `[Unit]
       Description=Site.js

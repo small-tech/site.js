@@ -187,7 +187,7 @@ class Site {
   static set hostname (domain) { this._hostname = domain }
 
   // This is the directory that settings and other persistent data is stored for Site.js.
-  static get settingsDirectory () { return path.join(os.homedir(), '.small-tech.org', 'site.js') }
+  static get settingsDirectory () { return path.join(Util.unprivilegedHomeDirectory(), '.small-tech.org', 'site.js') }
 
   // Logs a nicely-formatted version string based on
   // the version set in the package.json file to console.
@@ -883,7 +883,7 @@ class Site {
     }
 
     // Specify custom certificate directory for Site.js.
-    options.settingsPath = path.join(os.homedir(), '.small-tech.org', 'site.js', 'tls')
+    options.settingsPath = path.join(Util.unprivilegedHomeDirectory(), '.small-tech.org', 'site.js', 'tls')
 
     // Create and return the HTTPS server.
     return https.createServer(options, requestListener)

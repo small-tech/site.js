@@ -4,11 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [16.0.2] - unreleased
+## [16.0.2] - 2020-12-11
 
 ### Fixed
 
-  - No longer crashes on enable command when running under Node.js on older systemd versions that require an absolute path for the binary in the service unit description. (Bug encountered on elementary OS Hera 5.1.7).
+  - Regression: `site disable` crashes
+  - Regression: `--sync-to` without `--sync-from` fails (#254)
+  - No longer crashes on enable command when running under Node.js on older systemd versions that require an absolute path for the binary in the service unit description. (Bug encountered on elementary OS Hera 5.1.7). (#255)
 
 ## [16.0.1] - 2020-11-07
 

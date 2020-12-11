@@ -20,6 +20,7 @@ const Graceful = require('node-graceful')
 
 const RsyncWatcher = require('./RsyncWatcher')
 const ensure = require('./ensure')
+const Util = require('../../lib/Util')
 const clr = require('../../lib/clr')
 
 
@@ -146,7 +147,7 @@ function sync (options) {
     console.log('   💫    ❨site.js❩ Sync will include the database as requested.')
   }
 
-  const sshDirectory = path.join(os.homedir(), '.ssh')
+  const sshDirectory = path.join(Util.unprivilegedHomeDirectory(), '.ssh')
   const folderToSyncPathSegments = path.resolve(rsyncOptions.sync.from).split(path.sep)
   const folderToSyncName = folderToSyncPathSegments[folderToSyncPathSegments.length - 1]
 
@@ -190,7 +191,7 @@ function sync (options) {
     }
 
     // Configure the rsync library to use our bundled rsync executable instead of the system one.
-    const externalRsyncBundleDirectory = path.join(os.homedir(), '.small-tech.org', 'site.js', 'portable-rsync-with-ssh-for-windows')
+    const externalRsyncBundleDirectory = path.join(Util.unprivilegedHomeDirectory(), '.small-tech.org', 'site.js', 'portable-rsync-with-ssh-for-windows')
     const externalRsyncBundleBinDirectory = path.join(externalRsyncBundleDirectory, 'bin')
     const rsyncExecutable = path.join(externalRsyncBundleBinDirectory, 'rsync.exe')
     const sshExecutable = path.join(externalRsyncBundleBinDirectory, 'ssh.exe')

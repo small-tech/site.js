@@ -27,6 +27,7 @@ const minimist        = require('minimist')
 const package         = require('../package.json')
 const moment          = require('moment')
 const Hugo            = require('@small-tech/node-hugo')
+const Util            = require('../lib/Util')
 const cpuArchitecture = os.arch()
 
 // Parse the command-line arguments.
@@ -515,7 +516,7 @@ async function buildBinary () {
     // At this point, the new Nexe binary will be at ~/.nexe/<node version>/out/Release/node and
     // needs to be copied to ~/.nexe/<platform>-<cpu architecture>-<node version>
 
-    const nexeBaseBinariesPath = path.join(os.homedir(), '.nexe')
+    const nexeBaseBinariesPath = path.join(Util.unprivilegedHomeDirectory(), '.nexe')
     const compiledNexeBaseBinaryPath = path.join(nexeBaseBinariesPath, nodeVersion, 'out', 'Release', 'node')
     const nexeBaseBinaryNewName = `${platform}-${cpuArchitecture}-${nodeVersion}`
     const nexeBaseBinaryNewPath = path.join(nexeBaseBinariesPath, nexeBaseBinaryNewName)
