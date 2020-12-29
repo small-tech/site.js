@@ -82,6 +82,8 @@ class Help {
     const optionAccessLogErrorsOnly = option('access-log-errors-only')
     const optionAccessLogDisable = option('access-log-disable')
 
+    const optionDocker = option('docker')
+
     // Black right-pointing triangle (U+25B6)
     // (There are several similar unicode gylphs but this is the one that works well across
     // Linux, macOS, and Windows).
@@ -150,6 +152,7 @@ class Help {
     ${optionSyncFrom}\t\t\t\tThe folder to sync from.
     ${optionLiveSync}\t\t\t\tWatch for changes and live sync them to a remote server.
     ${optionSyncFolderAndContents}\t\tSync local folder and contents (default is to sync the folder’s contents only).
+    ${optionDocker}\t\t\t\tSet when running in a Docker container (does not disable privileged ports).
 
     ${ this.systemdExists ? `For ${commandEnable} command:
 
