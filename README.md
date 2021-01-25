@@ -814,7 +814,7 @@ When you hit _https://localhost_, you should see the ‘Hello, world!’ page.
 
 This basic example doesn’t take advantage of any of the features that you’d want to use Hugo for (like markdown authoring, list page creation, etc.). For a slightly more advanced one that does, see the [Basic Hugo Blog example](https://github.com/small-tech/site.js/tree/master/examples/basic-hugo-blog).
 
-Of course, if you already know how Hugo works, just [download a theme](https://themes.gohugo.io/) and [set up your configuration](https://gohugo.io/getting-started/configuration/,) and you’ll be up and running in no time. Everything in your _.hugo_ folder works exactly as it does in any other Hugo site.
+Of course, if you already know how Hugo works, just [download a theme](https://themes.gohugo.io/) and [set up your configuration](https://gohugo.io/getting-started/configuration/) and you’ll be up and running in no time. Everything in your _.hugo_ folder works exactly as it does in any other Hugo site.
 
 __Note:__ During development, this feature uses Site.js’s live reload instead of Hugo’s. Your web page must have at least a `<body>` tag for it to work.
 
