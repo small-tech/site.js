@@ -403,6 +403,8 @@ The above command will result in the following directory structure on the remote
 
 (As of 15.4.0) If the sync command cannot connect in 5 seconds, it will time out. If this happens, check that you have the correct host and account details specified. If you do, there might be a problem with your connection.
 
+(As of 16.1.0) It’s a common mistake to start the sync without specifying the `--sync-from` option when not in the root of your site but in one of the well-known subfolders (e.g., `.hugo` if you’re working on a Hugo site or your `.dynamic` folder if you happen to be in it because you’re working on a site that uses DotJS.) In these instances, Site.js will detect the mistake and understand that you want to sync the site, not the subfolder and behave accordingly. If you _really_ want to sync one of the well-known subfolders for some reason, then specifically specify it by setting `--sync-from=.`. Note that this magic rewriting of the sync path doesn’t happen any time you specify a folder explicitly using the `--sync-from` option.
+
 #### Live Sync
 
 With the Live Sync feature, you can have Site.js watch for changes to your content and sync them to your server in real-time (e.g., if you want to live blog something or want to keep a page updated with local data you’re collecting from a sensor).

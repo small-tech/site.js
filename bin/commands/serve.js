@@ -319,7 +319,22 @@ function localFolder (args) {
   let localFolder = null
 
   // If --sync-from is not specified, we default to the path to be served (or use a default path).
-  const syncFrom = args.named[SYNC_FROM] || path || '.'
+  const dotWasSpecificallyRequestedForSyncFrom = (args.named[SYNC_FROM] === '.')
+  let syncFrom = args.named[SYNC_FROM] || path || '.'
+
+  // A common mistake is to start a sync from the .hugo, .dynamic, etc. folder
+  // because you happen to be working in it. Try to detect this and magically fix it.
+  if (!dotWasSpecificallyRequestedForSyncFrom && syncFrom === '.') {
+    let absoluteSyncPath = pathModule.resolve(syncFrom)
+    const specialFolders = /\.dynamic.*$|\.hugo.*$|\.db.*$|\.wildcard.*$/
+    const intelligentSyncPath = absoluteSyncPath.replace(specialFolders, '')
+
+    if (absoluteSyncPath !== intelligentSyncPath) {
+      syncFrom = pathModule.relative(absoluteSyncPath, intelligentSyncPath)
+      console.log(`   🧙    ❨site.js❩ ${clr('Magically changed sync path to the site root.', 'yellow')}`)
+    }
+  }
+
   const syncFromEndsWithPathSeparator = syncFrom.endsWith(pathModule.sep)
 
   // Handle the sync-folder-and-contents flag or its lack
