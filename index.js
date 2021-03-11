@@ -265,7 +265,7 @@ class Site {
   //
   //       For details, see: https://source.small-tech.org/site.js/app/-/issues/169
 
-  constructor (options) {
+  constructor (options, app = express()) {
     // Introduce ourselves.
     Site.logAppNameAndVersion()
 
@@ -331,7 +331,7 @@ class Site {
     // Create the Express app. We will configure it later.
     //
     this.stats = this.initialiseStatistics()
-    this.app = express()
+    this.app = app
 
     // Create the HTTPS server.
     this.createServer()
