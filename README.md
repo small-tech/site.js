@@ -1496,39 +1496,16 @@ This is the JavaScript that’s injected into your page:
 
 You can also include Site.js as a Node module into your Node project. This section details the API you can use if you do that.
 
-Site.js’s `createServer` method behaves like the built-in _https_ module’s `createServer` function. Anywhere you use `require('https').createServer`, you can simply replace it with:
+Site.js behaves similar to the built-in _https_ module’s `createServer` function. Anywhere you use `require('https').createServer`, you can simply replace it with:
 
 ```js
 const Site = require('@small-tech/site.js')
-new Site().createServer
+new Site()
 ```
 
-### createServer([options], [requestListener])
+### constructor (options, app)
 
-  - __options__ _(object)_: see [https.createServer](https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener). Populates the `cert` and `key` properties from the automatically-created [Auto Encrypt Localhost](https://source.small-tech.org/site.js/lib/auto-encrypt-localhost) or Let’s Encrypt certificates and will overwrite them if they exist in the options object you pass in. If your options has `options.global = true` set, globally-trusted TLS certificates are obtained from Let’s Encrypt using [Auto Encrypt](https://source.small-tech.org/site.js/lib/auto-encrypt).
-
-  - __requestListener__ _(function)_: see [https.createServer](https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener). If you don’t pass a request listener, Site.js will use its default one.
-
-    __Returns:__ [https.Server](https://nodejs.org/api/https.html#https_class_https_server) instance, configured with either locally-trusted certificates via Auto Encrypt Localhost or globally-trusted ones from Let’s Encrypt via Auto Encrypt.
-
-#### Example
-
-```js
-const Site = require('@small-tech/site.js')
-const express = require('express')
-
-const app = express()
-app.use(express.static('.'))
-
-const options = {} // to use globally-trusted certificates instead, set this to {global: true}
-const server = new Site().createServer(options, app).listen(443, () => {
-  console.log(` 🎉 Serving on https://localhost\n`)
-})
-```
-
-### constructor (options)
-
-Options is an optional parameter object that may contain the following properties, all optional:
+`options` is an optional parameter object that may contain the following properties, all optional:
 
   - __path__ _(string)_: the directory to serve using [Express](http://expressjs.com/).static.
 
@@ -1539,6 +1516,8 @@ Options is an optional parameter object that may contain the following propertie
   - __proxyPort__ _(number)_: if provided, a proxy server will be created for the port (and `path` will be ignored).
 
     __Returns:__ Site instance.
+
+`app` is an optional instance of an Express app. It defaults to `express()`.
 
 __Note:__ if you want to run the site on a port < 1024 on Linux, ensure that privileged ports are disabled ([see details](https://source.small-tech.org/site.js/app/-/issues/169)). e.g., use:
 
@@ -1553,7 +1532,6 @@ require('lib/ensure').disablePrivilegedPorts()
   - __callback__ _(function)_: a function to be called when the server is ready. This parameter is optional. Default callbacks are provided for both regular and proxy servers.
 
     __Returns:__ [https.Server](https://nodejs.org/api/https.html#https_class_https_server) instance, configured with either locally or globally-trusted certificates.
-
 
 #### Examples
 
@@ -1573,11 +1551,27 @@ const Site = require('@small-tech/site.js')
 const server = new Site({global: true}).serve()
 ```
 
+Add Express middleware:
+
+```js
+const Site = require('@small-tech/site.js')
+const express = require('express')
+
+const app = express()
+app.use((req, res, next) => {
+  // Do something cool...
+  next()
+})
+
+const options = {} // to use globally-trusted certificates instead, set this to {global: true}
+new Site(options, app).serve()
+```
+
 Start a proxy server to proxy local port 1313 at your hostname:
 
 ```js
 const Site = require('@small-tech/site.js')
-const server = new Site(proxyPort: 1313, global: true}).serve({)
+const server = new Site({proxyPort: 1313, global: true}).serve()
 ```
 
 ## Troubleshooting
