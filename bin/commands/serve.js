@@ -377,7 +377,7 @@ function remoteConnectionInfo (args) {
   }
 
   function defaultRemotePath (account) {
-    const localFolderPath = pathModule.resolve(syncFrom || path)
+    const localFolderPath = pathModule.resolve(syncFrom || path || pathModule.dirname('.'))
     const localFolderFragments = localFolderPath.split(pathModule.sep)
     const localFolderName = localFolderFragments[localFolderFragments.length-1]
 
