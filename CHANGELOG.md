@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [16.1.0] - 2021-03-11
+
+## Fixed
+
+  - Regression: `--sync-to` without `--sync-from` no longer fails (https://source.small-tech.org/site.js/app/-/issues/254)
+
+## Improved
+
+  - The addition of a generated folder now causes the server to restart. So, for example, if you’re going from a plain site to a Hugo site and you sync, you do not need to manually restart your production server. (https://source.small-tech.org/site.js/app/-/issues/261)
+
+  - Sync now detects common erroneous invocations from well-known site subfolders (e.g., .hugo, .dynamic, etc.) and magically fixes the path (just like the serve command does for the path to serve). (https://source.small-tech.org/site.js/app/-/issues/262)
+
 ## [16.0.6] - 2021-03-08
 
 Update to @small-tech/https version 2.1.2, which includes @small-tech/auto-encrypt version 2.2.0.

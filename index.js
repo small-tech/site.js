@@ -1200,11 +1200,15 @@ class Site {
 
     const roots = []
 
+    //
     // Serve any generated static content (e.g., Hugo output) that might exist.
-    const generatedStaticFilesDirectory = path.join(this.pathToServe, '.generated')
-    if (fs.existsSync(generatedStaticFilesDirectory)) {
+    //
+    this.generatedStaticFilesDirectory = path.join(this.pathToServe, '.generated')
+
+    this.generatedContentExists = fs.existsSync(this.generatedStaticFilesDirectory)
+    if (this.generatedContentExists) {
       this.log(`   🎠    ❨site.js❩ Serving generated static files.`)
-      roots.push(generatedStaticFilesDirectory)
+      roots.push(this.generatedStaticFilesDirectory)
     }
 
     // Add the regular static web root.
@@ -1317,6 +1321,13 @@ class Site {
         // Wildcard route change.
         //
         this.log(`   🐁    ❨site.js❩ Wildcard route change: ${clr(`${this.prettyFileWatcherEvent(event)}`, 'green')} (${clr(file, 'cyan')}).`)
+        this.log('\n   🐁    ❨site.js❩ Requesting restart…\n')
+        await this.restartServer()
+      } else if (file.includes('/.generated') && !this.generatedContentExists && fs.existsSync(this.generatedStaticFilesDirectory)) {
+        //
+        // Generated folder has been added.
+        //
+        this.log(`   🐁    ❨site.js❩ Generated folder has been added: ${clr(`${this.prettyFileWatcherEvent(event)}`, 'green')} (${clr(file, 'cyan')}).`)
         this.log('\n   🐁    ❨site.js❩ Requesting restart…\n')
         await this.restartServer()
       }
