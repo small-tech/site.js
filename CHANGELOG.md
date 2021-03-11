@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [16.0.7] - 2021-03-11
+
+## Fixed
+
+  - Regression: `--sync-to` without `--sync-from` no longer fails (https://source.small-tech.org/site.js/app/-/issues/254)
+
 ## [16.0.6] - 2021-03-08
 
 Update to @small-tech/https version 2.1.2, which includes @small-tech/auto-encrypt version 2.2.0.
