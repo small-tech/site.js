@@ -4,13 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [16.1.1] - 2021-04-11
+
+### Fixed
+
+  - Initial double load issue on Firefox during development with hot reloading. Removed the Firefox hack in @small-tech/instant and @small-tech/sendevent forks as the original issue it was attempting to work around does not appear to be manifesting on latest Firefox.
+
 ## [16.1.0] - 2021-03-11
 
-## Fixed
+### Fixed
 
   - Regression: `--sync-to` without `--sync-from` no longer fails (https://source.small-tech.org/site.js/app/-/issues/254)
 
-## Improved
+### Improved
 
   - The addition of a generated folder now causes the server to restart. So, for example, if you’re going from a plain site to a Hugo site and you sync, you do not need to manually restart your production server. (https://source.small-tech.org/site.js/app/-/issues/261)
 
@@ -20,11 +26,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Update to @small-tech/https version 2.1.2, which includes @small-tech/auto-encrypt version 2.2.0.
 
-## Fixed
+### Fixed
 
   - Regression: check for certificate renewal bug.
 
-## Updated
+### Updated
 
   - Includes the latest Let’s Encrypt staging certificate authority root certificate for tests.
 
