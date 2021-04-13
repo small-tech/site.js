@@ -765,7 +765,9 @@ class Site {
   // (We need to add the WebSocket (WSS) routes after the server has been created).
   endAppConfiguration () {
     // Create the file watcher to watch for changes on dynamic and wildcard routes.
-    this.createFileWatcher()
+    if (!this.isProxyServer) {
+      this.createFileWatcher()
+    }
 
     // If we need to load dynamic routes from a routesJS file, do it now.
     if (this.routesJsFile !== undefined) {

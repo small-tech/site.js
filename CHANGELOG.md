@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [16.2.0] - 2021-04-13
+
+### Added
+
+  - Proxy servers are now supported in production. To proxy whatever is running over HTTP and WS at port 8080 at https://your.domain, for example, enable the server using:
+
+    ```shell
+    site enable :8080
+    ```
+
 ## [16.1.1] - 2021-04-11
 
 ### Fixed

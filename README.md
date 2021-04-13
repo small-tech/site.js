@@ -242,7 +242,7 @@ You can also tranfer your key to your other devices manually. You can find the k
 
 #### Proxy server
 
-You can use Site.js as a development-time reverse proxy for HTTP and WebSocket connections. This is useful if you have a web app written in any language that only supports HTTP (not TLS) that you want to deploy securely.
+You can use Site.js as a reverse proxy for HTTP and WebSocket connections. This is useful if you have a web app written in any language that only supports HTTP (not TLS) that you want to deploy securely.
 
 For example, the following is a simple HTTP server written in Python 3 (_server.py_) that runs insecurely on port 3000:
 
@@ -270,7 +270,6 @@ Then, proxy it securely from https://localhost using:
 ```shell
 $ site :3000
 ```
-
 
 Again, this is a convenient shortcut. The full form of this command is:
 
@@ -446,6 +445,12 @@ If you also want certificates for the _www_ subdomain, specify it using the `--a
 
 __Note:__ As of 13.0.0, the `enable` will run pre-flight checks and refuse to install the service if the domain name and any aliases you have specified are not reachable. As of 14.1.0, you can use the `--skip-domain-reachability-check` flag to override this behaviour and skip the pre-flight checks. If you use this flag, the server launched by the installed service will also not check for reachability. This is useful if you want to set up a server via a script prior to DNS propagation. Just make sure you haven’t made any typos in any of the domain names as you will not be warned about any mistakes.
 
+__Note:__ As of 16.2.0, you can now also run proxy servers in production. To proxy whatever is running over HTTP and WS on port 8080 at https://your.domain, do:
+
+```shell
+$ site enable :8080
+```
+
 When the server is enabled, you can also use the following commands:
 
   - `start`: Start server.
@@ -480,6 +485,13 @@ cd app
 
 # Run tests.
 npm test
+```
+
+Note that if you have a large amount of logs, the logs tests might fail due to a timeout. In this case, try clearing your journalctl logs:
+
+```
+journalctl --rotate
+journalctl --vacuum-time=1s
 ```
 
 ### Install as global Node.js module

@@ -80,7 +80,16 @@ function enable (args) {
 
       // It is a common mistake to start the server in a .dynamic folder (or subfolder)
       // or a .hugo folder or subfolder. In these cases, try to recover and do the right thing.
-      const {pathToServe, absolutePathToServe} = Util.magicallyRewritePathToServeIfNecessary(args.positional[0], _pathToServe)
+      let pathToServe
+      let absolutePathToServe
+      if (args.positional[0].startsWith(':')) {
+        // This is a proxy server, leave as is.
+        absolutePathToServe = args.positional[0]
+      } else {
+        const paths = Util.magicallyRewritePathToServeIfNecessary(args.positional[0], _pathToServe)
+        pathToServe = paths.pathToServe
+        absolutePathToServe = paths.absolutePathToServe
+      }
 
       // If there are aliases, we will add them to the configuration so they can
       // be passed to the serve command when Site.js is started.
