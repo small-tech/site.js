@@ -37,7 +37,7 @@ function status () {
       const owncastActiveState = daemonDetails.owncast.isActive ? clr('active', 'green') : clr('inactive', 'red')
       const owncastEnabledState = clr('enabled', 'green')
 
-      console.log(`\n         ${clr('Owncast', textColour)}: ${owncastActiveState} and ${owncastEnabledState}.`)
+      console.log(`\n         Owncast: ${owncastActiveState} and ${owncastEnabledState}.`)
     }
 
     if (isActive) {
