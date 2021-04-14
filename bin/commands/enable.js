@@ -17,12 +17,12 @@ const childProcess = require('child_process')
 
 const tcpPortUsed = require('tcp-port-used')
 
+const status = require('../lib/status')
 const runtime = require('../lib/runtime')
 const ensure = require('../lib/ensure')
 const clr = require('../../lib/clr')
 
 const Util = require('../../lib/Util')
-
 const Site = require('../../index')
 
 function enable (args) {
@@ -44,6 +44,12 @@ function enable (args) {
   // Ensure privileged ports are disabled on Linux machines.
   // For details, see: https://source.small-tech.org/site.js/app/-/issues/169
   ensure.privilegedPortsAreDisabled()
+
+  // Check that a service is not already enabled.
+  if (status().isEnabled) {
+    console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} A Site.js service is already enabled.\n\n         ${clr('Please disable it before retrying using:', 'yellow')} site ${clr('disable', 'green')}\n`)
+    process.exit(1)
+  }
 
   // While we’ve already checked that the Site.js daemon is not
   // active, above, it is still possible that there is another service
@@ -73,12 +79,11 @@ function enable (args) {
       //
       // Create the systemd service unit.
       //
-      const _pathToServe = args.positional.length === 1 ? args.positional[0] : '.'
+      let pathToServe = args.positional.length === 1 ? args.positional[0] : '.'
       const binaryExecutable = '/usr/local/bin/site'
       const sourceDirectory = path.resolve(__dirname, '..', '..')
       const executable = runtime.isBinary ? binaryExecutable : `${childProcess.execSync('which node').toString().trim()} ${path.join(sourceDirectory, 'bin/site.js')}`
 
-      let pathToServe = args.positional[0]
       let absolutePathToServe
 
       if (args.named['owncast']) {
@@ -95,7 +100,7 @@ function enable (args) {
       } else {
         // It is a common mistake to start the server in a .dynamic folder (or subfolder)
         // or a .hugo folder or subfolder. In these cases, try to recover and do the right thing.
-        const paths = Util.magicallyRewritePathToServeIfNecessary(args.positional[0], _pathToServe)
+        const paths = Util.magicallyRewritePathToServeIfNecessary(args.positional[0], pathToServe)
         pathToServe = paths.pathToServe
         absolutePathToServe = paths.absolutePathToServe
       }
