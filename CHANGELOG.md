@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [16.3.0] - 2021-04-14
+
+### Added
+
+  - Owncast support.
+
+    You can now install and run a production-ready Owncast server with the following command: `site enable --owncast`.
+
 ## [16.2.0] - 2021-04-13
 
 ### Added
