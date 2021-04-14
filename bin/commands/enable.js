@@ -66,6 +66,9 @@ function enable (args) {
       console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Cannot start daemon. Port 443 is already in use.\n`)
       process.exit(1)
     } else {
+      // Ensure the settings directory exists (and is created with regular permissions).
+      fs.ensureDirSync(Site.settingsDirectory)
+
       // Ensure we are root (we do this here instead of before the asynchronous call to
       // avoid any timing-related issues around a restart and a port-in-use error).
       ensure.root()
@@ -257,7 +260,6 @@ function enable (args) {
             const internalOwncastInstallationScriptPath = path.resolve(path.join(__dirname, '..', 'sh', 'install-owncast.sh'))
             const installationScript = fs.readFileSync(internalOwncastInstallationScriptPath, 'utf-8')
             const externalOwncastInstallationScriptPath = path.join(Site.settingsDirectory, 'install-owncast.sh')
-            fs.ensureDirSync(Site.settingsDirectory)
             fs.writeFileSync(externalOwncastInstallationScriptPath, installationScript, {encoding: 'utf-8', mode: 0o755})
             childProcess.execSync(`OWNCAST_INSTALL_DIRECTORY=${owncastDirectory} ${externalOwncastInstallationScriptPath}`, {env: process.env, stdio: 'pipe'})
             console.log(`   💮️    ❨site.js❩ Owncast installed at ${owncastDirectory}.`)
