@@ -252,8 +252,13 @@ function enable (args) {
           }
 
           try {
-            const owncastInstallationScript = path.resolve(path.join(__dirname, '..', 'sh', 'install-owncast.sh'))
-            childProcess.execSync(`OWNCAST_INSTALL_DIRECTORY=${owncastDirectory} ${owncastInstallationScript}`, {env: process.env, stdio: 'pipe'})
+            // Copy the installation script to our settings directory
+            // and run it from there (for when we’re running from within a Nexe bundle).
+            const internalOwncastInstallationScriptPath = path.resolve(path.join(__dirname, '..', 'sh', 'install-owncast.sh'))
+            const installationScript = fs.readFileSync(internalOwncastInstallationScriptPath, 'utf-8')
+            const externalOwncastInstallationScriptPath = path.join(Site.settingsDirectory, 'install-owncast.sh')
+            fs.writeFileSync(externalOwncastInstallationScriptPath, installationScript, {encoding: 'utf-8', mode: 0o755})
+            childProcess.execSync(`OWNCAST_INSTALL_DIRECTORY=${owncastDirectory} ${externalOwncastInstallationScriptPath}`, {env: process.env, stdio: 'pipe'})
             console.log(`   💮️    ❨site.js❩ Owncast installed at ${owncastDirectory}.`)
           } catch (error) {
             console.log(error, `\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Could not install Owncast.\n`)
