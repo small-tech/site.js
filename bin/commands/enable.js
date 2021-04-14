@@ -11,18 +11,18 @@
 //////////////////////////////////////////////////////////////////////
 
 const os = require('os')
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 const childProcess = require('child_process')
 
 const tcpPortUsed = require('tcp-port-used')
 
+const status = require('../lib/status')
 const runtime = require('../lib/runtime')
 const ensure = require('../lib/ensure')
 const clr = require('../../lib/clr')
 
 const Util = require('../../lib/Util')
-
 const Site = require('../../index')
 
 function enable (args) {
@@ -44,6 +44,12 @@ function enable (args) {
   // Ensure privileged ports are disabled on Linux machines.
   // For details, see: https://source.small-tech.org/site.js/app/-/issues/169
   ensure.privilegedPortsAreDisabled()
+
+  // Check that a service is not already enabled.
+  if (status().isEnabled) {
+    console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} A Site.js service is already enabled.\n\n         ${clr('Please disable it before retrying using:', 'yellow')} site ${clr('disable', 'green')}\n`)
+    process.exit(1)
+  }
 
   // While we’ve already checked that the Site.js daemon is not
   // active, above, it is still possible that there is another service
@@ -73,20 +79,28 @@ function enable (args) {
       //
       // Create the systemd service unit.
       //
-      const _pathToServe = args.positional.length === 1 ? args.positional[0] : '.'
+      let pathToServe = args.positional.length === 1 ? args.positional[0] : '.'
       const binaryExecutable = '/usr/local/bin/site'
       const sourceDirectory = path.resolve(__dirname, '..', '..')
       const executable = runtime.isBinary ? binaryExecutable : `${childProcess.execSync('which node').toString().trim()} ${path.join(sourceDirectory, 'bin/site.js')}`
 
-      // It is a common mistake to start the server in a .dynamic folder (or subfolder)
-      // or a .hugo folder or subfolder. In these cases, try to recover and do the right thing.
-      let pathToServe
       let absolutePathToServe
-      if (args.positional[0].startsWith(':')) {
+
+      if (args.named['owncast']) {
+        console.log('   💮️    ❨site.js❩ Owncast setup requested.')
+
+        // This is going to be a proxy server for Owncast (at its default port).
+        // Override any setting that might have been passed (it should not have been).
+        pathToServe = ':8080'
+      }
+
+      if (pathToServe.startsWith(':')) {
         // This is a proxy server, leave as is.
-        absolutePathToServe = args.positional[0]
+        absolutePathToServe = pathToServe
       } else {
-        const paths = Util.magicallyRewritePathToServeIfNecessary(args.positional[0], _pathToServe)
+        // It is a common mistake to start the server in a .dynamic folder (or subfolder)
+        // or a .hugo folder or subfolder. In these cases, try to recover and do the right thing.
+        const paths = Util.magicallyRewritePathToServeIfNecessary(args.positional[0], pathToServe)
         pathToServe = paths.pathToServe
         absolutePathToServe = paths.absolutePathToServe
       }
@@ -205,9 +219,94 @@ function enable (args) {
       }
 
       //
-      // Save the systemd service unit.
+      // Save the Site.js systemd service unit.
       //
-      fs.writeFileSync('/etc/systemd/system/site.js.service', unit, 'utf-8')
+      const systemdServicesDirectory = path.join('/', 'etc', 'systemd', 'system')
+      const siteJsServiceFilePath = path.join(systemdServicesDirectory, 'site.js.service')
+      fs.writeFileSync(siteJsServiceFilePath, unit, 'utf-8')
+
+      //
+      // Owncast integration. If the --owncast flag is supplied, also:
+      //   - (a) install owncast if it doesn’t already exist.
+      //   - (b) create and install the systemd unit for owncast if it doesn’t already exist.
+      //
+      if (args.named['owncast']) {
+        console.log('   💮️    ❨site.js❩ Setting up to serve your Owncast instance.')
+
+        // Is Owncast installed? If so, just use it.
+        // Otherwise, install it.
+        // Note: we expect Owncast to be installed in ~/owncast.
+        const owncastDirectory = path.join(Util.unprivilegedHomeDirectory(), 'owncast')
+        const owncastBinaryPath = path.join(owncastDirectory, 'owncast')
+        try {
+          fs.accessSync(owncastBinaryPath, fs.constants.X_OK)
+        } catch (error) {
+          // The Owncast binary is not where we expect it to be.
+          // Install Owncast there.
+          console.log(`   💮️    ❨site.js❩ Owncast installation not found at ${owncastDirectory}, running installation script…`)
+
+          // Ensure that the directory is empty and exists.
+          if (fs.existsSync(owncastDirectory)) {
+            console.log(`   💮️    ❨site.js❩ Owncast directory exists at ${owncastDirectory}, removing it before installation.`)
+            fs.removeSync(owncastDirectory)
+          }
+
+          try {
+            // Copy the installation script to our settings directory
+            // and run it from there (for when we’re running from within a Nexe bundle).
+            const internalOwncastInstallationScriptPath = path.resolve(path.join(__dirname, '..', 'sh', 'install-owncast.sh'))
+            const installationScript = fs.readFileSync(internalOwncastInstallationScriptPath, 'utf-8')
+            const externalOwncastInstallationScriptPath = path.join(Site.settingsDirectory, 'install-owncast.sh')
+            fs.writeFileSync(externalOwncastInstallationScriptPath, installationScript, {encoding: 'utf-8', mode: 0o755})
+            childProcess.execSync(`OWNCAST_INSTALL_DIRECTORY=${owncastDirectory} ${externalOwncastInstallationScriptPath}`, {env: process.env, stdio: 'pipe'})
+            console.log(`   💮️    ❨site.js❩ Owncast installed at ${owncastDirectory}.`)
+          } catch (error) {
+            console.log(error, `\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Could not install Owncast.\n`)
+            process.exit(1)
+          }
+        }
+
+        console.log('   💮️    ❨site.js❩ Owncast installation is OK.')
+
+        // Is the Owncast service installed? If so, leave it be.
+        // Otherwise, install it.
+        const owncastServiceFilePath = path.join(systemdServicesDirectory, 'owncast.service')
+        if (!fs.existsSync(owncastServiceFilePath)) {
+          // Create Owncast service unit based on template at
+          // https://github.com/owncast/owncast/blob/develop/examples/owncast-sample.service
+          const owncastUnit = `
+          [Unit]
+          Description=Owncast
+
+          [Service]
+          Type=simple
+          WorkingDirectory=${owncastDirectory}
+          ExecStart=${owncastBinaryPath}
+          Restart=on-failure
+          RestartSec=5
+
+          [Install]
+          WantedBy=multi-user.target
+          `
+          fs.writeFileSync(owncastServiceFilePath, owncastUnit, 'utf-8')
+        }
+
+        console.log('   💮️    ❨site.js❩ Owncast service unit is installed.')
+
+        // Also start the Owncast service.
+        try {
+          // Start.
+          childProcess.execSync('sudo systemctl start owncast', {env: process.env, stdio: 'pipe'})
+          console.log(`   💮️    ❨site.js❩ Owncast launched as daemon.`)
+
+          // Enable.
+          childProcess.execSync('sudo systemctl enable owncast', {env: process.env, stdio: 'pipe'})
+          console.log(`   💮️    ❨site.js❩ Owncast daemon installed for auto-launch at startup.`)
+        } catch (error) {
+          console.log(error, `\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Could not enable Owncast server.\n`)
+          process.exit(1)
+        }
+      }
 
       // Pre-flight check: run the server normally and ensure that it starts up properly
       // before installing it as a daemon. If there are any issues we want to catch it here
@@ -230,7 +329,7 @@ function enable (args) {
 
 
       //
-      // Enable and start systemd service.
+      // Enable and start the Site.js systemd service.
       //
       try {
         // Start.

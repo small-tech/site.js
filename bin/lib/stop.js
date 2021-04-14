@@ -6,8 +6,9 @@
 //
 //////////////////////////////////////////////////////////////////////
 
+const fs = require('fs')
+const path = require('path')
 const childProcess = require('child_process')
-
 const status = require('../lib/status')
 const clr = require('../../lib/clr')
 
@@ -30,6 +31,19 @@ function stop () {
     childProcess.execSync('sudo systemctl stop site.js', {env: process.env, stdio: 'pipe'})
   } catch (error) {
     throwError(`Could not stop Site.js server (${error}).`)
+  }
+
+  // Also see if we should stop the Owncast service.
+  const systemdServicesDirectory = path.join('/', 'etc', 'systemd', 'system')
+  const owncastServiceFilePath = path.join(systemdServicesDirectory, 'owncast.service')
+  if (fs.existsSync(owncastServiceFilePath)) {
+    console.log('   💮️    ❨site.js❩ Also stopping Owncast service.')
+    try {
+      // Start the Owncast service.
+      childProcess.execSync('sudo systemctl stop owncast', {env: process.env, stdio: 'pipe'})
+    } catch (error) {
+      throwError(`Could not stop Owncast service (${error}).`)
+    }
   }
 
   console.log('\n   🎈    ❨site.js❩ Server stopped.\n')

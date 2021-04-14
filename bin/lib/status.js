@@ -21,7 +21,7 @@ function status () {
   if (isWindows) {
     // Daemons are not supported on Windows so we know for sure that it is
     // neither active nor enabled :)
-    return { isActive: false, isEnabled: false }
+    return { isActive: false, isEnabled: false, daemonDetails: {} }
   }
 
   // Note: do not call ensure.systemctl() here as it will
@@ -42,6 +42,27 @@ function status () {
     isEnabled = true
   } catch (error) {
     isEnabled = false
+  }
+
+  let owncastIsActive
+  try {
+    childProcess.execSync('systemctl is-active owncast', {env: process.env, stdio: 'pipe'})
+    owncastIsActive = true
+  } catch (error) {
+    owncastIsActive = false
+  }
+
+  let owncastIsEnabled
+  try {
+    childProcess.execSync('systemctl is-enabled owncast', {env: process.env, stdio: 'pipe'})
+    owncastIsEnabled = true
+  } catch (error) {
+    owncastIsEnabled = false
+  }
+
+  const owncast = {
+    isActive: owncastIsActive,
+    isEnabled: owncastIsEnabled
   }
 
   let daemonDetails = null
@@ -84,7 +105,8 @@ function status () {
       siteJSBinary,
       statisticsUrl,
       pathBeingServed,
-      optionalOptions
+      optionalOptions,
+      owncast
     }
   }
 

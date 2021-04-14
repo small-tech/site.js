@@ -41,6 +41,8 @@ We exist in part thanks to patronage by people like you. If you share [our visio
 
   - __Includes [Hugo static site generator](#static-site-generation).__
 
+  - __Includes [one command installation of production-ready Owncast server](#owncast-integration).__
+
   - __[Sync](#sync) to deploy__ (uses rsync for quick deployments). Can also [Live Sync](#live-sync) for live blogging, etc. For sites that implement the [Small Web](https://ar.al/2020/08/07/what-is-the-small-web/) conventions, you can also use the simplified [pull and push commands](#pull-and-push).
 
   - __Has privacy-respecting [ephemeral statics](#ephemeral-statistics)__. Gives you insight into how your site is being used, not into the people using it.
@@ -1503,6 +1505,30 @@ This is the JavaScript that’s injected into your page:
   delete __site_js__pathFragments
 </script>
 ```
+
+## Owncast integration
+
+[Owncast](https://owncast.online/) is a self-hosted live video and web chat server. Site.js is the easiest way to set up and use Owncast on your production server.
+
+Run:
+
+```shell
+site enable --owncast
+```
+
+__That’s it!__
+
+### What it does:
+
+  - Install Owncast if it isn’t already installed (the Owncast installer, in turn, will install ffmpeg if it isn’t already installed).
+  - Set up Owncast as a systemd service.
+  - Set up Site.js as a systemd service.
+  - Start serving Owncast at http://localhost:8080 and the chat at ws://localhost:8080
+  - Start Site.js as a TLS proxy at https://your.hostname to serve your Owncast instance over HTTPS and WSS.
+
+As usual, your Let’s Encrypt certificates will be automatically provisioned when you first hit your Owncast instance and renewed automatically for you from there on in.
+
+Note that currently, while Site.js will get automatic updates, Owncast will not. However, newer versions of Site.js will always install the latest release version of Owncast. So, to update Owncast, simply disable and re-enable your server using the command above.
 
 ## API
 
