@@ -257,6 +257,7 @@ function enable (args) {
             const internalOwncastInstallationScriptPath = path.resolve(path.join(__dirname, '..', 'sh', 'install-owncast.sh'))
             const installationScript = fs.readFileSync(internalOwncastInstallationScriptPath, 'utf-8')
             const externalOwncastInstallationScriptPath = path.join(Site.settingsDirectory, 'install-owncast.sh')
+            fs.ensureDirSync(Site.settingsDirectory)
             fs.writeFileSync(externalOwncastInstallationScriptPath, installationScript, {encoding: 'utf-8', mode: 0o755})
             childProcess.execSync(`OWNCAST_INSTALL_DIRECTORY=${owncastDirectory} ${externalOwncastInstallationScriptPath}`, {env: process.env, stdio: 'pipe'})
             console.log(`   💮️    ❨site.js❩ Owncast installed at ${owncastDirectory}.`)
