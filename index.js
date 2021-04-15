@@ -369,6 +369,17 @@ class Site {
     // Express.js security with HTTP headers.
     this.app.use(helmet())
 
+    // Opt out of Google Chrome tracking everything you do.
+    // Note: if you’re reading this, stop using Google Chrome.
+    // It is ridiculous for web servers to essentially have to ask
+    // “please do not violate the privacy of the people who are viewing
+    // this site” with every request.
+    // For more info, see: https://plausible.io/blog/google-floc
+    this.app.use((request, response, next) => {
+      response.set('Permissions-Policy', 'interest-cohort=()')
+      next()
+    })
+
     // Statistics middleware (captures anonymous, ephemeral statistics).
     this.app.use(this.stats.middleware)
 

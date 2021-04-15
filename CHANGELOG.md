@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [16.4.0] - 2021-04-15
+
+### Added
+
+  - Your server will now send out a `Permissions-Policy: interest-cohort=()` header on every request. Why? Because otherwise Google will soon start tracking the people who view your site using Google Chrome.
+
+    __Note:__ if you’re reading this, stop using Google Chrome. It is ridiculous for web servers to essentially have to ask please do not violate the privacy of the people who are viewing this site” with every request. For more info, see: https://plausible.io/blog/google-floc
+
 ## [16.3.2] - 2021-04-14
 
 ### Fixed
