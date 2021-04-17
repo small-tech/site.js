@@ -21,6 +21,7 @@ const status = require('../lib/status')
 const runtime = require('../lib/runtime')
 const ensure = require('../lib/ensure')
 const clr = require('../../lib/clr')
+const installOwncast = require('../lib/install-owncast')
 
 const Util = require('../../lib/Util')
 const Site = require('../../index')
@@ -61,7 +62,7 @@ function enable (args) {
   // is already in use and, if it is, refuse to install and activate the
   // service. This is should provide the least amount of surprise in usage.
   tcpPortUsed.check(443)
-  .then(inUse => {
+  .then(async inUse => {
     if (inUse) {
       console.log(`\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Cannot start daemon. Port 443 is already in use.\n`)
       process.exit(1)
@@ -246,23 +247,10 @@ function enable (args) {
         } catch (error) {
           // The Owncast binary is not where we expect it to be.
           // Install Owncast there.
-          console.log(`   💮️    ❨site.js❩ Owncast installation not found at ${owncastDirectory}, running installation script…`)
-
-          // Ensure that the directory is empty and exists.
-          if (fs.existsSync(owncastDirectory)) {
-            console.log(`   💮️    ❨site.js❩ Owncast directory exists at ${owncastDirectory}, removing it before installation.`)
-            fs.removeSync(owncastDirectory)
-          }
+          console.log(`   💮️    ❨site.js❩ Owncast installation not found at ${owncastDirectory}.`)
 
           try {
-            // Copy the installation script to our settings directory
-            // and run it from there (for when we’re running from within a Nexe bundle).
-            const internalOwncastInstallationScriptPath = path.resolve(path.join(__dirname, '..', 'sh', 'install-owncast.sh'))
-            const installationScript = fs.readFileSync(internalOwncastInstallationScriptPath, 'utf-8')
-            const externalOwncastInstallationScriptPath = path.join(Site.settingsDirectory, 'install-owncast.sh')
-            fs.writeFileSync(externalOwncastInstallationScriptPath, installationScript, {encoding: 'utf-8', mode: 0o755})
-            childProcess.execSync(`OWNCAST_INSTALL_DIRECTORY=${owncastDirectory} ${externalOwncastInstallationScriptPath}`, {env: process.env, stdio: 'pipe'})
-            console.log(`   💮️    ❨site.js❩ Owncast installed at ${owncastDirectory}.`)
+            await installOwncast(owncastDirectory)
           } catch (error) {
             console.log(error, `\n   ❌    ${clr('❨site.js❩ Error:', 'red')} Could not install Owncast.\n`)
             process.exit(1)

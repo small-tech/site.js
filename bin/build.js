@@ -232,9 +232,6 @@ const resources = [
   // Not sure if this is a different regression in Nexe 4’s resolve dependencies.
   // Afaik, it was being included correctly before.
   'node_modules/@small-tech/instant/client/bundle.js',
-
-  // Bundle the Owncast installation script.
-  'bin/sh/install-owncast.sh',
 ]
 
 const input = 'bin/site.js'

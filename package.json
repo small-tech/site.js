@@ -1,6 +1,6 @@
 {
   "name": "@small-tech/site.js",
-  "version": "16.4.0",
+  "version": "16.4.1",
   "description": "Small Web construction set.",
   "keywords": [
     "web server",
@@ -69,12 +69,14 @@
     "debounce": "^1.2.0",
     "decache": "^4.5.1",
     "express": "^4.17.1",
+    "extract-zip": "^2.0.1",
     "fs-extra": "^8.1.0",
     "gunzip-maybe": "^1.4.1",
     "helmet": "^3.21.2",
     "http-proxy-middleware": "^1.0.6",
     "minimist": "^1.2.5",
     "morgan": "^1.9.1",
+    "node-fetch": "^2.6.1",
     "node-graceful": "^2.0.1",
     "prompts": "github:aral/prompts#custom-symbols-for-confirm",
     "request-ip": "^2.1.3",
