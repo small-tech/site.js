@@ -380,6 +380,10 @@ class Site {
       next()
     })
 
+    // Add any custom middleware from a .middleware folder
+    // supplied by the person (if any).
+    this.appAddCustomMiddleware()
+
     // Statistics middleware (captures anonymous, ephemeral statistics).
     this.app.use(this.stats.middleware)
 
@@ -1419,6 +1423,23 @@ class Site {
           // file inside it with the content to serve. Warn the person.
           this.log(`   ❗    ❨site.js❩ Wilcard directory found at /.wildcard/${wildcard} but there is no index.html inside it. Ignoring…`)
         }
+      })
+    }
+  }
+
+  // To enable any aspect of the server to be customised, you can
+  // specify custom Express middleware in a .middleware folder. Any files
+  // here will be read (in lexicographical order, so use, e.g. 1_something.js, 2_something_else.js)
+  // if middleware order is important for you.
+  appAddCustomMiddleware () {
+    const customMiddlewareDirectory = path.join(this.pathToServe, '.middleware')
+
+    if (fs.existsSync(customMiddlewareDirectory)) {
+      const customMiddleware = getRoutes(customMiddlewareDirectory)
+      customMiddleware.forEach(middleware => {
+        this.log(`   👣️    ❨site.js❩ Adding custom middleware: ${middleware.path}`)
+        decache(middleware.callback)
+        this.app.use(require(middleware.callback))
       })
     }
   }

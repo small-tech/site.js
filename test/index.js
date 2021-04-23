@@ -39,6 +39,7 @@ async function secureGet (url) {
   return new Promise((resolve, reject) => {
     https.get(url, (response) => {
       const statusCode = response.statusCode
+      const headers = response.headers
       const location = response.headers.location
       const contentType = response.headers['content-type']
 
@@ -50,7 +51,7 @@ async function secureGet (url) {
       let body = ''
       response.on('data', _ => body += _)
       response.on('end', () => {
-        resolve({statusCode, contentType, location, body})
+        resolve({statusCode, contentType, location, body, headers})
       })
     })
   })
@@ -771,6 +772,32 @@ test('[site.js] proxy', async t => {
   t.end()
 })
 
+
+test('[site.js] custom middleware', async t => {
+  const site = new Site({path: 'test/site-custom-middleware'})
+  const server = await site.serve()
+
+  let response
+  try {
+    response = await secureGet('https://localhost/index.html')
+  } catch (error) {
+    console.log(error)
+    process.exit(1)
+  }
+
+  t.equal(response.statusCode, 200, 'request succeeds')
+  t.strictEqual(response.headers['access-control-allow-origin'], '*', 'access-control-allow-origin header is correct'),
+  t.strictEqual(response.headers['access-control-allow-headers'], 'Origin, X-Requested-With, Content-Type, Accept', 'access-control-allow-headers is correct')
+
+  await new Promise ((resolve, reject) => {
+    site.server.close(error => {
+      if (error) reject(error)
+      resolve()
+    })
+  })
+
+  t.end()
+})
 
 test('[site.js] serve method', async t => {
   const site = new Site({path: 'test/site'})
