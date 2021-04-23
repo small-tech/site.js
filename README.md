@@ -1257,6 +1257,22 @@ module.exports = function (client, request) {
 }
 ```
 
+### Custom Middleware
+
+As of version 16.5.0, you can now add any piece of standard Express middleware to your server by defining them as modules in a `.middleware` directory in your project.
+
+For example, to have your server allow all cross-origin requests, define the following middleware in `.middleware/allow-all-cors.js`:
+
+```js
+module.exports = (request, response, next) => {
+  response.header('Access-Control-Allow-Origin', '*')
+  response.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+  next()
+}
+```
+
+This gives you full flexibility in customising your server however you like.
+
 ### Persisting data on the server with JavaScript Database (JSDB)
 
 The chat examples so far have been ephemeral; the chat log is not stored anywhere. While that has its uses, it does mean, for example, that someone coming into a conversation after it has already started will not see what was said. You can easily implement that feature using the bundled JavaScript Database (JSDB).

@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [16.5.0] - 2021-04-23
+
+### Added
+
+  - Custom middleware. You can now add any piece of standard Express middleware to your server by defining them as modules in a `.middleware` directory in your project.
+
 ## [16.4.1] - 2021-04-17
 
 ### Fixed
