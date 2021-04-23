@@ -49,7 +49,6 @@ const asyncForEach              = require('./lib/async-foreach')
 const errors                    = require('./lib/errors')
 const Util                      = require('./lib/Util')
 
-
 class Site {
 
   //
@@ -1535,17 +1534,20 @@ class Site {
       }
 
       //
-      // Rule 1: Check if a routes.js file exists. If it does, we just need to load that in.
-      // ===================================================================================
+      // Rule 1: Check if a routes.js/.cjs file exists. If it does, we just need to load that in.
+      // ========================================================================================
       //
 
       const routesJsFile = path.join(dynamicRoutesDirectory, 'routes.js')
+      const routesCjsFile = path.join(dynamicRoutesDirectory, 'routes.cjs')
 
-      if (fs.existsSync(routesJsFile)) {
-        this.log('   🐁    ❨site.js❩ Found routes.js file, will load dynamic routes from there.')
+      const advancedRoutesFile = fs.existsSync(routesJsFile) ? routesJsFile : fs.existsSync(routesCjsFile) ? routesCjsFile : undefined
+
+      if (advancedRoutesFile !== undefined) {
+        this.log(`   🐁    ❨site.js❩ Found advanced routes file (${advancedRoutesFile}), will load dynamic routes from there.`)
         // We flag that this needs to be done here and actually require the file
         // once the server has been created so that WebSocket routes can be added also.
-        this.routesJsFile = routesJsFile
+        this.routesJsFile = advancedRoutesFile
 
         // Add POST handling in case there are POST routes defined.
         addBodyParser()

@@ -876,7 +876,7 @@ In either case, your dynamic routes go into a directory named _.dynamic_ in the 
 
 ### DotJS
 
-DotJS maps JavaScript modules in a file system hierarchy to routes on your web site in a manner that will be familiar to anyone who has ever used PHP.
+DotJS maps JavaScript modules defined in `.js` and `.cjs` files within a file system hierarchy to routes on your web site in a manner that will be familiar to anyone who has ever used PHP.
 
 #### GET-only (simplest approach)
 
