@@ -1000,7 +1000,7 @@ class Site {
         // instead of possibly accessing the accessor defined in the other branch of this conditional, thereby
         // triggering it to be created when all we want to do is perform housekeeping.
         this.log('   💾    ❨site.js❩ Opening database.')
-        globalThis._db = JSDB.open(this.databasePath)
+        globalThis._db = JSDB.open(this.databasePath, { cjs: true })
         globalThis.db = globalThis._db
         this.log('   💾    ❨site.js❩ Database ready.')
       } else {
@@ -1010,7 +1010,7 @@ class Site {
             get: (function () {
               if (!globalThis._db) {
                 this.log('   💾    ❨site.js❩ Lazily creating database.')
-                globalThis._db = JSDB.open(this.databasePath)
+                globalThis._db = JSDB.open(this.databasePath, { cjs: true })
                 this.log('   💾    ❨site.js❩ Database ready.')
               }
               return globalThis._db

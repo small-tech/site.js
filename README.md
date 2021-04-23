@@ -1356,6 +1356,8 @@ Similarly, if you wanted just the first message that contained the word `kitten`
 db.messages.where('text').includes('kitten').getFirst()
 ```
 
+__As of version 16.6.0__, Site.js stores its JSDB tables with the `.cjs` extension instead of `.js` for better compatibility when used in mixed CommonJS/ESM projects.
+
 You can learn more about JSDB in the [JSDB documentation](https://github.com/small-tech/jsdb/blob/master/README.md).
 
 ### Advanced routing (routes.js file)

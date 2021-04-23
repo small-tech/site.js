@@ -432,7 +432,7 @@ test('[site.js] database', async t => {
 
   // On start-up, the database and a table called test should have been created.
 
-  const tablePath = path.join(databasePath, 'test.js')
+  const tablePath = path.join(databasePath, 'test.cjs')
   t.ok(fs.existsSync(databasePath), 'database is created')
   t.ok(fs.existsSync(tablePath), 'table is created')
 
