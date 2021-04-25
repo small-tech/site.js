@@ -1,6 +1,6 @@
 {
   "name": "@small-tech/site.js",
-  "version": "16.6.0",
+  "version": "17.0.0",
   "description": "Small Web construction set.",
   "keywords": [
     "web server",
@@ -8,6 +8,7 @@
     "dynamic site",
     "dotJS",
     "hugo",
+    "owncast",
     "let's encrypt",
     "mkcert",
     "automatic",

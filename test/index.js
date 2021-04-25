@@ -352,11 +352,19 @@ test('[site.js] dynamic route loading from routes.js file', async t => {
 
   const routerStack = site.app._router.stack
 
-  const getRouteWithParameter = routerStack[12].route
+  const regularDotJSRoute1 = routerStack[11].route
+  t.true(regularDotJSRoute1.methods.get, 'request method should be GET')
+  t.strictEquals(regularDotJSRoute1.path, '/other-route-that-should-be-loaded', 'path should be correct and contain parameter')
+
+  const regularDotJSRoute2 = routerStack[12].route
+  t.true(regularDotJSRoute2.methods.get, 'request method should be GET')
+  t.strictEquals(regularDotJSRoute2.path, '/sub-route-that-should-be-loaded', 'path should be correct and contain parameter')
+
+  const getRouteWithParameter = routerStack[14].route
   t.true(getRouteWithParameter.methods.get, 'request method should be GET')
   t.strictEquals(getRouteWithParameter.path, '/hello/:thing', 'path should be correct and contain parameter')
 
-  const wssRoute = routerStack[13].route
+  const wssRoute = routerStack[15].route
   t.true(wssRoute.methods.get, 'request method should be GET (prior to WebSocket upgrade)')
   t.strictEquals(wssRoute.path, '/echo/.websocket', 'path should be correct and contain parameter')
 

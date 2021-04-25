@@ -332,6 +332,10 @@ class Site {
     this.stats = this.initialiseStatistics()
     this.app = express()
 
+    // Add a reference to the to Site.js instance to the app.
+    this.app.Site = Site
+    this.app.site = this
+
     // Create the HTTPS server.
     this.createServer()
   }
@@ -1446,9 +1450,11 @@ class Site {
   // Add dynamic routes, if any, if a <pathToServe>/.dynamic/ folder exists.
   // If there are errors in any of your dynamic routes, you will get 500 (server) errors.
   //
-  // Each of the routing conventions are mutually exclusive and applied according to the following precedence rules:
+  // Each of the routing conventions ­– apart from advanced _routes.js_-based routing
+  // (as of Site.js version 17.0.0) – are mutually exclusive and applied according to
+  // the following precedence rules:
   //
-  // 1. Advanced _routes.js_-based advanced routing.
+  // 1. Advanced _routes.js_-based routing.
   //
   // 2. Separate folders for _.https_ and _.wss_ routes routing (the _.http_ folder itself will apply
   // precedence rules 3 and 4 internally).
@@ -1473,10 +1479,17 @@ class Site {
       // Attempts to load HTTPS routes from the passed directory,
       // adhering to rules 3 & 4.
       const loadHttpsRoutesFrom = (httpsRoutesDirectory) => {
+
         // Attempts to load HTTPS GET routes from the passed directory.
-        const loadHttpsGetRoutesFrom = (httpsGetRoutesDirectory) => {
+        const loadHttpsGetRoutesFrom = (httpsGetRoutesDirectory, skipAdvancedRoutingFile = false) => {
           const httpsGetRoutes = getRoutes(httpsGetRoutesDirectory)
           httpsGetRoutes.forEach(route => {
+            // Skip adding the advanced routing file as an HTTPS GET route,
+            // even if it looks like one.
+            if (skipAdvancedRoutingFile && route.path === '/routes') {
+              return
+            }
+
             this.log(`   🐁    ❨site.js❩ Adding HTTPS GET route: ${route.path}`)
 
             // Ensure we are loading a fresh copy in case it has changed.
@@ -1530,7 +1543,7 @@ class Site {
         // ========================================================
         //
 
-        loadHttpsGetRoutesFrom(httpsRoutesDirectory)
+        loadHttpsGetRoutesFrom(httpsRoutesDirectory, /* skipAdvancedRoutingFile = */ true)
       }
 
       //
@@ -1544,14 +1557,13 @@ class Site {
       const advancedRoutesFile = fs.existsSync(routesJsFile) ? routesJsFile : fs.existsSync(routesCjsFile) ? routesCjsFile : undefined
 
       if (advancedRoutesFile !== undefined) {
-        this.log(`   🐁    ❨site.js❩ Found advanced routes file (${advancedRoutesFile}), will load dynamic routes from there.`)
+        this.log(`   🐁    ❨site.js❩ Found advanced routes file (${advancedRoutesFile}), adding to app.`)
         // We flag that this needs to be done here and actually require the file
         // once the server has been created so that WebSocket routes can be added also.
         this.routesJsFile = advancedRoutesFile
 
         // Add POST handling in case there are POST routes defined.
         addBodyParser()
-        return
       }
 
       //

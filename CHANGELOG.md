@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [17.0.0] - 2021-04-25
+
+### Breaking change
+
+  - If you have an advanced routes file (routes.js) it is loaded prior to any DotJS routes. Previously, the presence of a advanced routes file meant that routes were only loaded from it and that any DotJS routes, if they existed, were ignored. This change means you can use DotJS in your sites and (instead of or), when you need to, define some of your routes using the full expressiveness of Express routes.
+
+      Although this is a breaking change in that it changes behaviour, the practical impact on existing sites should be minimal given that a project that was using advanced routing would not have had DotJS routes. The only place where this might impact you is if you forgot to delete some old DotJS routes and get surprised when they’re added to your application.
+
+### Added
+
+  - In advanced routes (in routes.js) you now have access to the Site.js class (`app.Site`) and Site.js instance (`app.site`) through the Express `app` instance.
+
+  - In the statistics view, any routes that begin with _/admin/…_ are shown as ‘Administration page’ to hide any cryptographically-secure paths that may be used as per convention.
+
 ## [16.6.0] - 2021-04-23
 
 ### Changed

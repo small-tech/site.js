@@ -1389,6 +1389,8 @@ module.exports = app => {
 
 When using the _routes.js_ file, you can use all of the features in [express](https://expressjs.com/) and [our fork of express-ws](https://github.com/aral/express-ws) (which itself wraps [ws](https://github.com/websockets/ws#usage-examples)).
 
+__As of Site.js 17.0.0,__ you can also use DotJS routes alongside your advanced routes file. The routes in the _routes.js_ file are loaded first (see [Routing precedence](#routing-precedence), below).
+
 ### Routing precedence
 
 #### Between dynamic route and static route
@@ -1420,9 +1422,9 @@ The behaviour observed under Linux at the time of writing is that _fun/index.js_
 
 #### Between the various routing methods
 
-Each of the routing conventions are mutually exclusive and applied according to the following precedence rules:
+Each of the routing conventions ­– apart from advanced _routes.js_-based routing (as of Site.js version 17.0.0) – are mutually exclusive and applied according to the following precedence rules:
 
-1. Advanced _routes.js_-based advanced routing.
+1. Advanced _routes.js_-based routing.
 
 2. DotJS with separate folders for _.https_ and _.wss_ routes routing (the _.http_ folder itself will apply precedence rules 3 and 4 internally).
 
@@ -1430,9 +1432,9 @@ Each of the routing conventions are mutually exclusive and applied according to 
 
 4. DotJS with GET-only routing.
 
-So, if Site.js finds a _routes.js_ file in the root folder of your site’s folder, it will only use the routes from that file (it will not apply file-based routing).
+If Site.js finds a _routes.js_ file in the root folder of your site’s folder, as of Site.js version 17.0.0, it will load any routes defined in that file first before looking for any file-based DotJS routes.
 
-If Site.js cannot find a _routes.js_ file, it will look to see if separate _.https_ and _.wss_ folders have been defined (the existence of just one of these is enough) and attempt to load DotJS routes from those folders. (If it finds separate _.get_ or _.post_ folders within the _.https_ folder, it will add the relevant routes from those folders; if it can’t it will load GET-only routes from the _.https_ folder and its subfolders.)
+Next Site.js, will look to see if separate _.https_ and _.wss_ folders have been defined (the existence of just one of these is enough) and attempt to load DotJS routes from those folders. (If it finds separate _.get_ or _.post_ folders within the _.https_ folder, it will add the relevant routes from those folders; if it can’t it will load GET-only routes from the _.https_ folder and its subfolders.)
 
 If separate _.https_ and _.wss_ folders do not exist, Site.js will expect all defined DotJS routes to be HTTPS and will initially look for separate _.get_ and _.post_ folders (the existence of either is enough to trigger this mode). If they exist, it will add the relevant routes from those folders and their subfolders.
 
@@ -1461,6 +1463,36 @@ const appPath = require.main.filename.replace('bin/site.js', '')
 ### Security
 
 The code within your JavaScript routes is executed on the server. Exercise the same caution as you would when creating any Node.js app (sanitise input, etc.)
+
+### Creating an Admin page.
+
+Given that Site.js is for single-tenant apps and sites, you can create an admin page for your site/app using the same convention that Site.js itself uses for the statistics route: by using a cryptographically secure path for it. In fact, Site.js will hide the path from your statistics view if you adhere to the convention of creating it at _/admin/cryptographically-secure-path_. Unlike the statistics URL, you will have to implement this functionality using the advanced routing feature. e.g.,
+
+```js
+const crypto = require('crypto')
+
+// Create a cryptographically-secure path for the admin route
+// and save it in a table called admin in the built-in JSDB database.
+if (db.admin === undefined) {
+  db.admin = {}
+  db.admin.route = crypto.randomBytes(16).toString('hex')
+}
+
+// Output the admin path to the logs so you know what it is.
+console.log(`   🔑️    ❨My site❩ Admin page is at /${db.admin.route}`)
+
+module.exports = app => {
+  // Add the admin route using the cryptographically-secure path.
+  app.get(`/admin/${db.admin.route}`, (request, response) => {
+    response.html(`
+    <h1>Admin page</h1>
+    <p>Welcome to the admin page.</p>
+    <hr>
+    <p><a href='https://${app.site.prettyLocation()}${app.site.stats.route}'>Site statistics.</a></p>
+  `)
+  })
+}
+```
 
 ## Wildcard routes
 
