@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [17.0.1] - 2021-04-27
+
+### Fixed
+
+  - Regression (in 17.0.0): Web Socket server is created only once when using both routes.js file (advanced routing) and DotJS together.
+
 ## [17.0.0] - 2021-04-25
 
 ### Breaking change

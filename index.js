@@ -787,9 +787,10 @@ class Site {
       this.createFileWatcher()
     }
 
+    this.createWebSocketServer()
+
     // If we need to load dynamic routes from a routesJS file, do it now.
     if (this.routesJsFile !== undefined) {
-      this.createWebSocketServer()
       const routesJSFilePath = path.resolve(this.routesJsFile)
       decache(routesJSFilePath)
       require(routesJSFilePath)(this.app)
@@ -798,7 +799,6 @@ class Site {
     // If there are WebSocket routes, create a regular WebSocket server and
     // add the WebSocket routes (if any) to the app.
     if (this.wssRoutes !== undefined) {
-      this.createWebSocketServer()
       this.wssRoutes.forEach(route => {
         this.log(`   🐁    ❨site.js❩ Adding WebSocket (WSS) route: ${route.path}`)
         decache(route.callback)
