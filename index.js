@@ -1343,6 +1343,13 @@ class Site {
         this.log(`   🐁    ❨site.js❩ Wildcard route change: ${clr(`${this.prettyFileWatcherEvent(event)}`, 'green')} (${clr(file, 'cyan')}).`)
         this.log('\n   🐁    ❨site.js❩ Requesting restart…\n')
         await this.restartServer()
+      } else if (file.includes('/.middleware')) {
+        //
+        // Middleware route change.
+        //
+        this.log(`   🐁    ❨site.js❩ Middleware change: ${clr(`${this.prettyFileWatcherEvent(event)}`, 'green')} (${clr(file, 'cyan')}).`)
+        this.log('\n   🐁    ❨site.js❩ Requesting restart…\n')
+        await this.restartServer()
       } else if (file.includes('/.generated') && !this.generatedContentExists && fs.existsSync(this.generatedStaticFilesDirectory)) {
         //
         // Generated folder has been added.
