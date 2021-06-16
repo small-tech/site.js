@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [17.1.0] - 2021-06-16
+
+### Updated
+
+  - Now installs the latest [Owncast](https://owncast.online) ([version 0.0.7](https://github.com/owncast/owncast/releases/tag/v0.0.7)) when [setting up an Owncast server](https://owncast.online/quickstart/sitejs/) using `site enable --owncast`.
+
 ## [17.0.2] - 2021-04-29
 
 ### Fixed

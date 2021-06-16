@@ -17,7 +17,7 @@ const unzip = require('extract-zip')
 
 async function installOwncast(owncastInstallDirectory) {
 
-  const owncastVersion = '0.0.6'
+  const owncastVersion = '0.0.7'
   const tempDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'owncast-'))
 
   console.log(`   💮️    ❨site.js❩ Installing Owncast version ${owncastVersion}…`)
