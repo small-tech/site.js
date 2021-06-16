@@ -32,6 +32,11 @@ const ACCESS_LOG_DISABLE = 'access-log-disable'
 // specified the domain and any aliases correctly as you will not be warned if you make a mistake.
 const SKIP_DOMAIN_REACHABILITY_CHECK = 'skip-domain-reachability-check'
 
+// Whether or not content from this site can be embedded in other sites via iframes, etc.
+// If this option is present, we do not send the X-Frame-Options.
+// Use case: To allow Owncast videos to be embedded on other sites.
+const ALLOW_EMBEDS = 'allow-embeds'
+
 // Internal: used for pre-flight check to ensure the server can launch before creating a daemon.
 const EXIT_AFTER_LAUNCH = 'exit-after-launch'
 
@@ -137,6 +142,11 @@ function serve (args) {
   // Note: if you want to quiet all messages, you must set the QUIET environment variable when running Site.js.
   const accessLogDisable = args.named[ACCESS_LOG_DISABLE]
 
+  // Whether or not content from this site can be embedded in other sites via iframes, etc.
+  // If this option is present, we do not send the X-Frame-Options.
+  // Use case: To allow Owncast videos to be embedded on other sites.
+  const allowEmbeds = args.named[ALLOW_EMBEDS]
+
 
   //
   // Sync options.
@@ -218,7 +228,8 @@ function serve (args) {
         aliases,
         skipDomainReachabilityCheck,
         accessLogErrorsOnly,
-        accessLogDisable
+        accessLogDisable,
+        allowEmbeds
       }
 
       if (syncRequested) {

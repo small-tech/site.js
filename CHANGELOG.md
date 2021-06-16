@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [17.2.0] - 2021-06-16
+
+### Added
+
+  - The new `--allow-embeds` option for the `serve` and `enable` commands allows site content to be embedded in other sites via iframes, etc. By default, this is off and an [X-Frame-Options](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options) header set to `SAMEORIGIN` is sent for security purposes to avoid click-jacking attacks, etc.
+
+### Fixed
+
+  - Owncast installations are run with the `--allow-embeds` option by default so live streams can now be embedded on other sites.
+
 ## [17.1.0] - 2021-06-16
 
 ### Updated

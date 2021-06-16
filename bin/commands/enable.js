@@ -128,6 +128,9 @@ function enable (args) {
       // reason to as you may miss important errors.
       const accessLogDisable = args.named['access-log-disable'] === true ? ' --access-log-disable ' : ''
 
+      // This will allow site content to be embedded in iframes.
+      const allowEmbeds = args.named['owncast'] /* to enable Owncast stream embeds */ || (args.named['allow-embeds'] === true) ? ' --allow-embeds ' : ''
+
       // Expectation: At this point, regardless of whether we are running as a regular
       // Node script or as a standalone executable created with Nexe, all paths should
       // be set correctly.
@@ -140,7 +143,7 @@ function enable (args) {
         process.exit(1)
       }
 
-      const launchCommand = `${executable} ${absolutePathToServe} @hostname ${domain} ${aliases} ${skipDomainReachabilityCheck} ${accessLogErrorsOnly} ${accessLogDisable}`
+      const launchCommand = `${executable} ${absolutePathToServe} @hostname ${domain} ${aliases} ${skipDomainReachabilityCheck} ${accessLogErrorsOnly} ${accessLogDisable} ${allowEmbeds}`
 
       const accountName = Util.unprivilegedAccountName()
 

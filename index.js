@@ -370,7 +370,9 @@ class Site {
   // that go at the start of the app configuration.
   startAppConfiguration() {
     // Express.js security with HTTP headers.
-    this.app.use(helmet())
+    this.app.use(helmet({
+      frameguard: !this.options.allowEmbeds
+    }))
 
     // Opt out of Google Chrome tracking everything you do.
     // Note: if you’re reading this, stop using Google Chrome.

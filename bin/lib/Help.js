@@ -72,6 +72,7 @@ class Help {
     const optionAliases = option('aliases')
     const optionDomain = option('domain')
     const optionSkipDomainReachabilityCheck = option('skip-domain-reachability-check')
+    const optionAllowEmbeds = option('allow-embeds')
 
     const optionSyncFrom = option('sync-from')
     const optionSyncTo = option('sync-to')
@@ -143,6 +144,7 @@ class Help {
     ${optionSkipDomainReachabilityCheck}\tDo not run pre-flight check for domain reachability.
     ${optionAccessLogErrorsOnly}\t\tDisplay only errors in the access log (HTTP status codes _4xx_ and _5xx_).
     ${optionAccessLogDisable}\t\tCompletely disable the access log. Not even errors are logged.
+    ${optionAllowEmbeds}\t\tAllow site contents to be embedded on other sites via iframes.
 
     ${ this.systemdExists ? `For ${commandServe} command:
     ` : '' }
