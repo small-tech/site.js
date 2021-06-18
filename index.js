@@ -687,10 +687,10 @@ class Site {
       const match = /^\[HPM\] Proxy created: \/  -> (ws|http):\/\/localhost:(\d+)$/.exec(message)
 
       if (match === null) {
-        // Unexpected message, log as warning.
-        this.log(`   🔁    ${clr('❨site.js❩ Unexpected message from proxy middleware:', 'yellow')} ${message}`)
+        // Regular messages.
+        this.log(`   🔁    ❨site.js❩ Proxy: ${message}`)
       } else {
-        // Expected message. Log after improving it for clarity.
+        // Proxy created message. Log after improving it for clarity.
         const [proxyType, proxyProtocol] = match[1] === 'ws' ? ['WebSocket', 'wss'] : ['HTTP', 'https']
         const proxyPort = match[2]
         this.log(`   🔁    ❨site.js❩ ${clr(`${proxyType} proxy`, 'green')} set up for port ${clr(proxyPort, 'cyan')} at ${clr(`${proxyProtocol}://localhost`, 'cyan')}.`)
@@ -787,9 +787,8 @@ class Site {
     // Create the file watcher to watch for changes on dynamic and wildcard routes.
     if (!this.isProxyServer) {
       this.createFileWatcher()
+      this.createWebSocketServer()
     }
-
-    this.createWebSocketServer()
 
     // If we need to load dynamic routes from a routesJS file, do it now.
     if (this.routesJsFile !== undefined) {
