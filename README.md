@@ -1578,7 +1578,13 @@ __That’s it!__
 
 As usual, your Let’s Encrypt certificates will be automatically provisioned when you first hit your Owncast instance and renewed automatically for you from there on in.
 
-Note that currently, while Site.js will get automatic updates, Owncast will not. However, newer versions of Site.js will always install the latest release version of Owncast. So, to update Owncast, simply disable and re-enable your server using the command above.
+Note that currently, while Site.js will get automatic updates, Owncast will not. However, newer versions of Site.js will always install the latest release version of Owncast.
+
+### To update Owncast:
+
+  1. Run `sudo rm -rf ~/owncast` to remove the old version.
+  2. Run `site disable` to disable your site.
+  3. Run `site enable --owncast` again.
 
 ## API
 
