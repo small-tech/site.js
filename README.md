@@ -1391,6 +1391,8 @@ When using the _routes.js_ file, you can use all of the features in [express](ht
 
 __As of Site.js 17.0.0,__ you can also use DotJS routes alongside your advanced routes file. The routes in the _routes.js_ file are loaded first (see [Routing precedence](#routing-precedence), below).
 
+As the handler in _routes.js_ is called once at server initialisation it is a good place to create long running processes like other servers, or other global functionality.)
+
 ### Routing precedence
 
 #### Between dynamic route and static route
