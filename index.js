@@ -1217,7 +1217,10 @@ class Site {
   // Add static routes.
   // (Note: directories that begin with a dot (hidden directories) will be ignored.)
   appAddStaticRoutes () {
-    const instantOptions = { watch: ['html', 'js', 'css', 'svg', 'png', 'jpg', 'jpeg'] }
+    const instantOptions = {
+      dotfiles: 'ignore',
+      watch: ['html', 'js', 'css', 'svg', 'png', 'jpg', 'jpeg']
+    }
 
     const roots = []
 

@@ -468,6 +468,17 @@ test('[site.js] database', async t => {
   t.strictEquals(response.contentType, 'application/json; charset=utf-8', 'response type is JSON')
   t.strictEquals(response.body, '[{"name":"Aral","age":43},{"name":"Laura","age":33}]', 'table state after call is as expected')
 
+  // Security: ensure that the database tables cannot be accessed.
+
+  try {
+    response = await secureGet('https://localhost/.db/test.cjs')
+  } catch (error) {
+    console.log(error)
+    process.exit(1)
+  }
+
+  t.strictEquals(response.statusCode, 404, 'database table cannot be retrieved via HTTPS request')
+
   await new Promise ((resolve, reject) => {
     site.server.close(error => {
       if (error) reject(error)
