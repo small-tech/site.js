@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [17.3.3] - 2021-12-31
+
+### Fixed
+
+  - __Security issue__: due to a misconfiguration of how [dotfiles](https://github.com/pillarjs/send#dotfiles) are handled in the [send](https://www.npmjs.com/package/send) package that’s used within the static file serving functionality, if an attacker knew the exact path to a file in a dotfile directory (for example, the default `.db` [JSDB](https://github.com/small-tech/jsdb#javascript-database-jsdb)), they could download the files (e.g., the database tables) within it. This was due to the default dotfiles setting in send being “similar to `'ignore'`”, not exactly like it. The fix was to explicitly set it to `'ignore'` so that files within dotfile directories are not served.
+
 ## [17.3.2] - 2021-12-29
 
 ### Fixed
