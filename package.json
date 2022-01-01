@@ -1,6 +1,6 @@
 {
   "name": "@small-tech/site.js",
-  "version": "17.3.3",
+  "version": "17.3.4",
   "description": "Small Web construction set.",
   "keywords": [
     "web server",
@@ -57,7 +57,7 @@
     "@small-tech/express-ws": "^1.0.0",
     "@small-tech/https": "^2.1.2",
     "@small-tech/instant": "^1.1.2",
-    "@small-tech/jsdb": "cjs",
+    "@small-tech/jsdb": "^1.2.2",
     "@small-tech/node-hugo": "^2.0.0",
     "@small-tech/portable-rsync-with-ssh-for-windows": "^1.0.0",
     "@small-tech/rsync-with-portable-cygwin-path-support-on-windows": "^1.0.0",
