@@ -1468,7 +1468,19 @@ The code within your JavaScript routes is executed on the server. Exercise the s
 
 ### Creating an Admin page.
 
-Given that Site.js is for single-tenant apps and sites, you can create an admin page for your site/app using the same convention that Site.js itself uses for the statistics route: by using a cryptographically secure path for it. In fact, Site.js will hide the path from your statistics view if you adhere to the convention of creating it at _/admin/cryptographically-secure-path_. Unlike the statistics URL, you will have to implement this functionality using the advanced routing feature. e.g.,
+Given that Site.js is for single-tenant apps and sites, you can create an admin page for your site/app using the same convention that Site.js itself uses for the statistics route: by using a cryptographically secure path for it.
+
+#### Before you use this unconventional method, please understand its security model:
+
+1. __Your admin page URL is a secret. Do not share it. Do not share screenshots of it.__
+
+2. If your admin page URL or the secret path fragment get exposed, change it immediately.
+
+3. Site.js will hide the path from your statistics view if you adhere to the convention of creating it at _/admin/cryptographically-secure-path_.
+
+The decision to implement this pattern, like any other development decision, should be based on the threat model of your use case.
+
+Unlike the statistics URL, you will have to implement this functionality using the advanced routing feature. e.g.,
 
 ```js
 const crypto = require('crypto')
