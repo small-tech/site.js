@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [17.4.0] - 2021-01-05
+
+### Improved
+
+  - Statistics view now displays referrer URLs not IP addresses (so you can see where people link to your site from). Note that these are based what browsers tell us so they can be spoofed.
+
 ## [17.3.6] - 2021-01-05
 
 ### Fixed
