@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [17.3.5] - 2022-01-05
+
+### Improved
+
+  - Statistics: any 32-digit hexademical string (e.g., as used in the admin pattern or for ids) found in Urls is masked so as not to leak them in public statistics.
+
+  - The statistics route itself is masked in the browser (requires JavaScript to be on) so it is not inadvertently revealed in screenshots or browser history (this does not mean you should access private routes on public computers as browsers may still cache URLs).
+
+  - Updated readme with JavaScript snippet you can use on your own sites to mask routes with random cryptographically-secure path fragments to protect them from being inadvertently leaked in screenshots.
+
+  (Please see the readme for the full security model of this unconventional method if you’re going to make use of it on your own sites.)
+
 ## [17.3.4] - 2022-01-01
 
 ### Fixed
