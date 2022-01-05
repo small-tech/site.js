@@ -795,7 +795,7 @@ When Site.js launches, you will see a line similar to the following in the conso
 📊    ❨site.js❩ For statistics, see https://localhost/b64bd821d521b6a65a307c2b83060766
 ```
 
-This is your private, cryptographically secure random URL where you can access ephemeral statistics about your site. If you want to share your statistics, link to them publicly. If you want to keep them private, keep the URL secret.
+This is your private, cryptographically secure random URL where you can access ephemeral statistics about your site. If you want to share your statistics, link to them publicly. If you want to keep them private, please keep the URL secret.
 
 __Note:__ As of version 15.4.0, you can remind yourself of the statistics URL while running the Site.js daemon in production using the `site status` command while the server is active.
 
@@ -1474,13 +1474,15 @@ Given that Site.js is for single-tenant apps and sites, you can create an admin 
 
 #### Before you use this unconventional method, please understand its security model:
 
-1. __Your admin page URL is a secret. Do not share it. Do not share screenshots of it.__
+1. __Your admin page URL is a secret. Do NOT share it. Do NOT share screenshots of it.__
 
-2. __Do not access the admin page from a public computer.__
+2. __Do NOT access the admin page from a public computer.__
 
-3. If your admin page URL or the secret path fragment get exposed, change it immediately.
+3. __DO__ keep it in your password manager.
 
-4. Site.js will automatically hide paths that contain hexademical strings of 32 characters or more in a path fragment while storing statistics so these are not inadvertently revealed in public statistics.
+4. If your admin page URL or the secret path fragment get exposed, change it immediately.
+
+5. Site.js will automatically hide paths that contain hexademical strings of 32 characters or more in a path fragment while storing statistics so these are not inadvertently revealed in public statistics.
 
 The decision to implement this pattern, like any other development decision, should be based on the threat model of your use case.
 
