@@ -795,9 +795,11 @@ When Site.js launches, you will see a line similar to the following in the conso
 📊    ❨site.js❩ For statistics, see https://localhost/b64bd821d521b6a65a307c2b83060766
 ```
 
-This is your private, cryptographically secure URL where you can access ephemeral statistics about your site. If you want to share your statistics, link to them publicly. If you want to keep them private, keep the URL secret.
+This is your private, cryptographically secure random URL where you can access ephemeral statistics about your site. If you want to share your statistics, link to them publicly. If you want to keep them private, keep the URL secret.
 
 __Note:__ As of version 15.4.0, you can remind yourself of the statistics URL while running the Site.js daemon in production using the `site status` command while the server is active.
+
+__Note:__ As of version 17.3.5, Site.js masks the secret path fragment from the your address bar so you do not inadvertently share in screenshots, etc.
 
 ![Screenshot of the statistics page](/images/statistics.png)
 
@@ -1468,17 +1470,33 @@ The code within your JavaScript routes is executed on the server. Exercise the s
 
 ### Creating an Admin page.
 
-Given that Site.js is for single-tenant apps and sites, you can create an admin page for your site/app using the same convention that Site.js itself uses for the statistics route: by using a cryptographically secure path for it.
+Given that Site.js is for single-tenant apps and sites, you can create an admin page for your site/app using the same convention that Site.js itself uses for the statistics route: by using a cryptographically secure random path for it.
 
 #### Before you use this unconventional method, please understand its security model:
 
 1. __Your admin page URL is a secret. Do not share it. Do not share screenshots of it.__
 
-2. If your admin page URL or the secret path fragment get exposed, change it immediately.
+2. __Do not access the admin page from a public computer.__
 
-3. Site.js will hide the path from your statistics view if you adhere to the convention of creating it at _/admin/cryptographically-secure-path_.
+3. If your admin page URL or the secret path fragment get exposed, change it immediately.
+
+4. Site.js will automatically hide paths that contain hexademical strings of 32 characters or more in a path fragment while storing statistics so these are not inadvertently revealed in public statistics.
 
 The decision to implement this pattern, like any other development decision, should be based on the threat model of your use case.
+
+If you do choose to implement this pattern, you can add a snippet of JavaScript to your admin pages to hide the secret path from your address bar so you do not inadvertently share screenshots with the secret path fragment showing:
+
+```js
+<script>
+  const secretHexademicalStringOf32CharactersOrMore = /[0-9,a-z]{32,}/g
+
+  if (secretHexademicalStringOf32CharactersOrMore.exec(window.location) !== null) {
+    // Hide the secret URL fragment so it is not accidentally displayed
+    // in screenshots and is not added to the browser history.
+    history.replaceState({}, '', window.location.href.replace(secretHexademicalStringOf32CharactersOrMore, '…'))
+  }
+</script>
+```
 
 Unlike the statistics URL, you will have to implement this functionality using the advanced routing feature. e.g.,
 
@@ -1493,7 +1511,7 @@ if (db.admin === undefined) {
 }
 
 // Output the admin path to the logs so you know what it is.
-console.log(`   🔑️    ❨My site❩ Admin page is at /${db.admin.route}`)
+console.log(`   🔑️    ❨My site❩ Admin page is at /admin/${db.admin.route}`)
 
 module.exports = app => {
   // Add the admin route using the cryptographically-secure path.
