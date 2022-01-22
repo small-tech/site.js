@@ -77,7 +77,7 @@
     "http-proxy-middleware": "^1.0.6",
     "minimist": "^1.2.5",
     "morgan": "^1.9.1",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^3.1.1",
     "node-graceful": "^2.0.1",
     "prompts": "github:aral/prompts#custom-symbols-for-confirm",
     "request-ip": "^2.1.3",
