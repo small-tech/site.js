@@ -1594,6 +1594,8 @@ This is the JavaScript that’s injected into your page:
 
 [Owncast](https://owncast.online/) is a self-hosted live video and web chat server. Site.js is the easiest way to set up and use Owncast on your production server.
 
+The version of Owncast installed by Site.js is currently 0.0.10.
+
 Run:
 
 ```shell
