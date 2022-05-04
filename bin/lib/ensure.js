@@ -69,7 +69,9 @@ class Ensure {
       const options = {env: process.env, stdio: 'inherit'}
       try {
         if (runtime.isNode) {
-          childProcess.execSync(`sudo node ${path.join(__dirname, '..', 'site.js')} ${process.argv.slice(2).concat(['--dont-log-app-name-and-version']).join(' ')}`, options)
+          const nodePath = childProcess.execSync('which node').toString().trim()
+          const command = `sudo ${nodePath} ${path.join(__dirname, '..', 'site.js')} ${process.argv.slice(2).concat(['--dont-log-app-name-and-version']).join(' ')}`
+          childProcess.execSync(command, options)
         } else {
           childProcess.execSync(`sudo site ${process.argv.slice(2).concat(['--dont-log-app-name-and-version']).join(' ')}`, options)
         }
