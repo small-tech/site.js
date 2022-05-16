@@ -58,7 +58,7 @@ const websitePath = path.resolve(path.join(__dirname, '..', '..', 'site'))
 
 if (commandLineOptions.deploy) {
   // Ensure that a working copy of the Site.js web site exists
-  // locally where we ex[ect it to so we can deploy to it.
+  // locally where we expect it to so we can deploy to it.
   if (!fs.existsSync(websitePath)) {
     console.log('❌ Error: No local working copy of Site.js web site found.\n')
     console.log(`   Please clone https://small-tech.org/site.js/site to ${websitePath}`)
@@ -347,6 +347,7 @@ async function buildBinary () {
   }
 
   function stripForPlatform  (platform) {
+    console.log('Stripping for platform', platform)
     removeAllMkcertPlatforms ()
     removeAllHugoPlatforms   ()
     restoreMkcertBinary      (platform)
@@ -483,6 +484,7 @@ async function buildBinary () {
     try {
       childProcess.execSync('QUIET=true site disable')
     } catch (error) {
+      console.log('Ignoring error', error)
       // Ignore error. It just means Site.js was not enabled; which is what we want.
     }
 
