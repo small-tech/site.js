@@ -125,7 +125,7 @@ Note that the latest alpha or beta build available may be older than the latest 
 
 ### Linux
 
-Any recent Linux distribution should work. However, Site.js is most thoroughly tested at Small Technology Foundation on Ubuntu 20.04/Pop!_OS 20.04 (development and staging) and Ubuntu 18.04 LTS (production).
+Any recent Linux distribution should work. However, Site.js is most thoroughly tested on Ubuntu-esque distributions (development and staging) and Ubuntu LTS (production).
 
 There are builds available for x64, ARM, and ARM64.
 
@@ -223,6 +223,20 @@ That, again, is shorthand for the full version of the command, which is:
 $ site serve . @localhost:666
 ```
 
+#### A note about running in containers
+
+If your development machine runs an ‘immutable’ OS like [Fedora Silverblue](https://silverblue.fedoraproject.org/), you will likely be running Site.js inside a container (e.g., in a [podman](https://podman.io/) container via [DistroBox](https://distrobox.privatedns.org).)
+
+If so, make sure you [run the container with real root](https://distrobox.privatedns.org/useful_tips.html#run-the-container-with-real-root) and make sure that your container is [set up for using an init system inside it](https://distrobox.privatedns.org/useful_tips.html#using-init-system-inside-a-distrobox) (for systemd-related functionality).
+
+For Distrobox, for example, this means passing the `--root` and `--init` flags to the `distrobox create` command. e.g., The following will create a rootful Ubuntu container using the latest Ubuntu image and call it _ubuntu-root-init_:
+
+```shell
+distrobox create --image ubuntu:latest --name ubuntu-root-init --root --init
+```
+
+All [tests](#build-and-test-from-source) should pass when run within such a container that is also accessible from your container’s hostname.
+
 #### Accessing your local server over the local area network
 
 You can access local servers via their IPv4 address over a local area network.
@@ -240,7 +254,6 @@ http://192.168.2.42/.ca
 The browser will download the local root certificate authority’s public key and prompt you to install the profile on your iPhone. You then have to go to Settings → Profile Downloaded → Tap Install when the Install Profile pop-up appears showing you the mkcert certificate you downloaded. Then, go to Settings → General → About → Certificate Trust Settings → Turn on the switch next to the mkcert certificate you downloaded. You should now be able to hit `https://192.168.2.42` and see your site from your iPhone.
 
 You can also tranfer your key to your other devices manually. You can find the key at `~/.small-tech/site.js/tls/local/rootCA.pem` after you’ve created a local server at least once. For more details on transferring your key to other devices, please refer to [the relevant section in the mkcert documentation](https://github.com/FiloSottile/mkcert#mobile-devices).
-
 
 #### Proxy server
 
@@ -468,7 +481,7 @@ Site.js uses the [systemd](https://freedesktop.org/wiki/Software/systemd/) to st
 
 Site.js is built using and supports Node.js 12 LTS (currently version 12.16.2).
 
-It has also been tested to work with the latest LTS (14.x).
+It has also been tested to work with the latest LTS (18.x).
 
 The build is created using Nexe and our own pre-built Nexe base Node.js binaries hosted on SiteJS.org. Please make sure that the version of your Node.js runtime matches the currently supported version stated above to ensure that the correct Nexe binary build is downloaded and used by the build script.
 
