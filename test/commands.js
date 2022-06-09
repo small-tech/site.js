@@ -794,7 +794,7 @@ test('[commands] logs', t => {
 
     actualOutput = dehydrate(stdout)
     t.true(actualOutput.includes(dehydrate('📜 ❨site.js❩ Tailing logs (press Ctrl+C to exit).')), 'stdout includes our header')
-    t.true(actualOutput.includes(dehydrate('-- Logs begin at')), 'stdout includes journalctl header')
+    t.true(actualOutput.includes(dehydrate('❨site.js❩ Serving')), 'stdout includes something we know was logged')
     t.end()
   })
 })
