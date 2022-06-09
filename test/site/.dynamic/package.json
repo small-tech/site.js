@@ -11,6 +11,6 @@
   "license": "AGPL-3.0-or-later",
   "devDependencies": {
     "cows": "^2.1.0",
-    "markdown-it": "^8.4.2"
+    "markdown-it": "^12.3.2"
   }
 }
