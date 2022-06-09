@@ -55,7 +55,7 @@
   "dependencies": {
     "@small-tech/cross-platform-hostname": "^1.0.0",
     "@small-tech/express-ws": "^1.0.0",
-    "@small-tech/https": "^2.1.2",
+    "@small-tech/https": "^2.2.0",
     "@small-tech/instant": "^1.1.2",
     "@small-tech/jsdb": "^1.2.2",
     "@small-tech/node-hugo": "^2.0.0",
