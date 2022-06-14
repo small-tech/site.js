@@ -712,7 +712,6 @@ class Site {
 
     const httpsProxy = createProxyMiddleware({
       target: proxyHttpUrl,
-      changeOrigin: true,
       logProvider,
       logLevel: 'info',
     })
