@@ -124,8 +124,8 @@ class Ensure {
   // execute, we carry it out every time.
   //
   // For more details, see: https://source.small-tech.org/site.js/app/-/issues/169
-  privilegedPortsAreDisabled () {
-    if (os.platform() === 'linux') {
+  privilegedPortsAreDisabled (docker) {
+    if (os.platform() === 'linux' && !docker) {
       try {
         Site.logAppNameAndVersion()
 

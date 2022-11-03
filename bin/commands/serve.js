@@ -20,6 +20,7 @@ const SYNC_TO = 'sync-to'
 const SYNC_FROM = 'sync-from'
 const LIVE_SYNC = 'live-sync'
 const SYNC_FOLDER_AND_CONTENTS = 'sync-folder-and-contents'
+const DOCKER = 'docker'
 
 // This will only show errors in the access log (HTTP response codes 4xx and 5xx).
 const ACCESS_LOG_ERRORS_ONLY = 'access-log-errors-only'
@@ -155,6 +156,9 @@ function serve (args) {
   const syncRequested = args.named[SYNC_TO] !== undefined
   const liveSync = args.named[LIVE_SYNC]
 
+  // Is Site.js running in a Docker container?
+  const docker = args.named[DOCKER]
+
   //
   // Handle initial sync setup-related tasks.
   //
@@ -196,7 +200,7 @@ function serve (args) {
 
   // Ensure privileged ports are disabled on Linux machines.
   // For details, see: https://source.small-tech.org/site.js/app/-/issues/169
-  ensure.privilegedPortsAreDisabled()
+  ensure.privilegedPortsAreDisabled(docker)
 
   // Start a server and also sync if requested.
   tcpPortUsed.check(port)
